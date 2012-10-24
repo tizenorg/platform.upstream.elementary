@@ -1,0 +1,63 @@
+Elementary 1.7.1
+
+Changes since Elementary 1.7.0:
+-------------------------
+
+Fixes:
+
+   * Now elm_datetime_field_limit_set() can set year limits wihtout problems.
+   * Fix re-order animation when iot doesn't end correctly.
+   * Fix popup to apply the same style to the notify sub-widget.
+   * Fix Ctxpopup direction if unknown priority used
+   * Fix diskselector when bounce off and round enabled.
+   * Fix bubble info field set.
+   * Escape theme filename correctly.
+   * Fix diskselector selection of middle item.
+   * Fix copy&paste error in elm_flip.
+   * Fix possible invalid memory access in elm_access.
+   * Fix diskselector bug with more than 4 items.
+   * Fix a bug in elm_panel. Content should be a sub-object of elm_panel.
+   * Fix conform widget to be part of focus chain.
+   * Fix genlist reorder mode item not being resized on genlist resize.
+   * Fixed gengrid wrong_calc_job parameter.
+
+Changes since Elementary 1.0.0:
+-------------------------
+
+Additions:
+
+   * Focus can be moved in all directions by elm_widget_focus_go function.
+   * Reload theme when it change on disk.
+   * Fileselector: Add a wheel spinner that show/spin while EIO is working
+   * Add elm_map_overlays_get & elm_map_overlay_visible_get functions.
+   * Toolbar: Add elm_toolbar_standard_priority_set/get APIs.
+   * Add elm_object_scroll_hold/freeze_get.
+   * Add ELM_CALENDAR_LAST_DAY_OF_MONTH enum type
+   * Add elm_progressbar_format_function_set API function
+   * Add elm_map_overlay_del_cb_set API function
+   * Add "changed" signal to the progressbar widgets
+   * Use Edje to enable accessibility on TEXTBLOCK.
+   * Initialize Emotion when necessary.
+   * Elm_Win_Trap and elm_win_trap_set() to allow e17 integration.
+   * elm_flip_go_to()
+   * On focus loss, Elm_Spinner properly hide Elm_Entry and display label properly.
+
+Fixes:
+
+   * Genlist : fixed genlist expandable effect bug when we expand/contract items with many children very quickly.
+   * Genlist : realize move items during tree effect only when the item is not in the queue.
+   * Add missing files in the tarball.
+   * Fileselector : honor the folder_only option when using EIO
+   * Segment Selector : do not abuse user object item data.
+   * Image: fixed elm_image_orient_set/get.
+   * QuickLaunch: reset main loop after fork.
+
+Improvements:
+
+   * Allocate once and reuse Evas_Map.
+   * Allow freeze/thaw on Elm_Layout and reduce number of object update.
+   * Defer Elm_Calendar generation until really needed.
+   * Defer Elm_Slider update until really needed.
+
+Removal:
+
