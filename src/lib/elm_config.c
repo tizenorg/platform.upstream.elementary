@@ -1629,6 +1629,23 @@ elm_config_scale_set(double scale)
    _elm_rescale();
 }
 
+/*
+ * Add backwards compatability implementation for elm_scale_get and elm_scale_set
+ * to allow running unmodified Tizen applications on a new drop of elementary
+ */
+
+EAPI double
+elm_scale_get(void) 
+{ 
+   return elm_config_scale_get(); 
+}
+
+EAPI void
+elm_scale_set(double scale) 
+{ 
+   elm_config_scale_set(scale);
+}
+
 EAPI Eina_Bool
 elm_config_password_show_last_get(void)
 {
