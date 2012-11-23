@@ -5,7 +5,7 @@ License:        LGPLV2.1+
 Summary:        EFL toolkit for small touchscreens
 Url:            http://trac.enlightenment.org/e/wiki/Elementary
 Group:          Graphics/X11
-Source0:        elementary-%{version}.tar.gz
+Source0:        elementary-%{version}.tar.bz2
 BuildRequires:  doxygen
 BuildRequires:  pkgconfig(ecore)
 BuildRequires:  pkgconfig(ecore-evas)
