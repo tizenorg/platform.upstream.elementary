@@ -7,9 +7,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: elementary 1.7.1\n"
+"Project-Id-Version: elementary 1.7.2\n"
 "Report-Msgid-Bugs-To: enlightenment-devel@lists.sourceforge.net\n"
-"POT-Creation-Date: 2012-10-20 13:35+0200\n"
+"POT-Creation-Date: 2012-11-22 15:42-0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -110,7 +110,7 @@ msgstr ""
 msgid "Genlist Item"
 msgstr ""
 
-#: src/lib/elm_label.c:348
+#: src/lib/elm_label.c:355
 msgid "Label"
 msgstr ""
 

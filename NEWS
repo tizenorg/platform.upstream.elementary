@@ -1,4 +1,19 @@
-Elementary 1.7.1
+Elementary 1.7.2
+
+Changes since Elementary 1.7.1:
+-------------------------
+
+Fixes:
+
+   * Fix promote and demote in genlist when the object isn't yet fully builded
+   * Fix the elm_flip to accept proxy object.
+   * Fix wrong parameter for thumbnail error in elm_icon.
+   * Fix missing event selected in elm_index (elm_index_item_selected_set)
+   * Fix update the min size hint on elm_label after a text set
+   * Fix flip widget who show the two face at same time
+   * Fix the naviframe to delete contents which are preserved_on set if the naviframe is deleted.
+   * Fix the naviframe to clear the title contents when it's item is deleted.
+
 
 Changes since Elementary 1.7.0:
 -------------------------
@@ -20,6 +35,8 @@ Fixes:
    * Fix conform widget to be part of focus chain.
    * Fix genlist reorder mode item not being resized on genlist resize.
    * Fixed gengrid wrong_calc_job parameter.
+   * Fix elm_transit image animation that last few frames are skipped.
+   * FIx elm_transit to accept proxy object.
 
 Changes since Elementary 1.0.0:
 -------------------------

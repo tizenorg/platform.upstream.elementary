@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Elementary\n"
 "Report-Msgid-Bugs-To: enlightenment-devel@lists.sourceforge.net\n"
-"POT-Creation-Date: 2012-10-20 13:35+0200\n"
+"POT-Creation-Date: 2012-11-22 15:42-0800\n"
 "PO-Revision-Date: 2012-08-14 23:01+0200\n"
 "Last-Translator: Massimo Maiurana <maiurana@gmail.com>\n"
 "Language-Team: none\n"
@@ -108,7 +108,7 @@ msgstr ""
 msgid "Genlist Item"
 msgstr "Voce elenco"
 
-#: src/lib/elm_label.c:348
+#: src/lib/elm_label.c:355
 msgid "Label"
 msgstr ""
 
