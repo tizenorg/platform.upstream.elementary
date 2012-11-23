@@ -1,26 +1,23 @@
 Name:           elementary
-Version:        1.7.1
-Release:        1
-License:        LGPLV2.1+
+Version:        1.7.8
+Release:        2 
+License:        LGPL-2.1+
 Summary:        EFL toolkit for small touchscreens
 Url:            http://trac.enlightenment.org/e/wiki/Elementary
-Group:          Graphics/X11
-Source0:        elementary-%{version}.tar.gz
-BuildRequires:  doxygen
+Group:          Graphics/EFL
+Source0:        elementary-%{version}.tar.bz2
+Source1001:     elementary.manifest
 BuildRequires:  pkgconfig(ecore)
 BuildRequires:  pkgconfig(ecore-evas)
-BuildRequires:  pkgconfig(ecore-fb)
 BuildRequires:  pkgconfig(ecore-file)
 BuildRequires:  pkgconfig(ecore-imf)
-BuildRequires:  pkgconfig(ecore-x)
-BuildRequires:  pkgconfig(edbus)
 BuildRequires:  pkgconfig(edje)
 BuildRequires:  pkgconfig(eet)
 BuildRequires:  pkgconfig(efreet)
 BuildRequires:  pkgconfig(eina)
 BuildRequires:  pkgconfig(evas)
 BuildRequires:  pkgconfig(x11)
-BuildRequires:  python-devel
+BuildRequires:  eet-tools
 
 %description
 Elementary is a widget set. It is a new-style of widget set much more canvas
@@ -33,6 +30,18 @@ fine-grained library splitting means all of this is shared, just a new
 widget "personality" is on top. And that is... Elementary, my dear watson.
 Elementary.
 
+%package examples
+Summary:   EFL elementary examples
+
+%description examples
+EFL elementary examples
+
+%package tools
+Summary:   EFL elementary configuration and test apps
+
+%description tools
+EFL elementary configuration and test apps
+
 %package devel
 Summary:        Development components for the elementary package
 Group:          Development/Libraries
@@ -43,11 +52,12 @@ Development files for elementary
 
 %prep
 %setup -q
+cp %{SOURCE1001} .
 
 
 %build
 
-%configure --disable-static
+%autogen --disable-static --enable-build-examples
 make %{?_smp_mflags}
 
 %install
@@ -60,23 +70,39 @@ make %{?_smp_mflags}
 
 %postun -p /sbin/ldconfig
 
-%files -f %{name}.lang
+%lang_package 
+
+%files 
+%manifest %{name}.manifest
 %defattr(-,root,root,-)
-%doc COPYING
-%{_bindir}/*
+%license COPYING
+%{_bindir}/elementary_quicklaunch
+%{_bindir}/elementary_run
 %{_libdir}/edje/*
-%{_libdir}/elementary/*
+%{_libdir}/elementary/modules/*
 %{_libdir}/*.so.*
-%{_datadir}/applications/*
 %{_datadir}/elementary/*
 %{_datadir}/icons/elementary.png
 
+%files examples
+%manifest %{name}.manifest
+%defattr(-,root,root,-)
+%{_libdir}/elementary/examples/*
+
+%files tools
+%manifest %{name}.manifest
+%defattr(-,root,root,-)
+%{_datadir}/applications/*
+%{_bindir}/elementary_config
+%{_bindir}/elementary_test*
 
 %files devel
+%manifest %{name}.manifest
 %defattr(-,root,root,-)
 %{_includedir}/elementary-1/*.h
 %{_libdir}/*.so
 %{_libdir}/pkgconfig/*.pc
+%{_libdir}/cmake/Elementary/*.cmake
 
 
 
