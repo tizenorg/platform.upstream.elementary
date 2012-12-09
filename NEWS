@@ -1,3 +1,29 @@
+Elementary 1.7.3
+
+Changes since Elementary 1.7.2:
+-------------------------
+
+Fixes:
+
+   * Fix the naviframe to clear the text parts when it's item is deleted.
+   * Fix the mapbuf to update it's content correcltly evenif they go outside of the buffer.
+   * Fix the naviframe to resize it's items which are inserted.
+   * Fix layout when content_set or text_set is executed with NULL part name.
+   * Fix the naviframe to send signal emits one time for content show/hide, text show/hide.
+   * Fix case where tooltips could go offscreen unnecessarily
+   * Fix possible divide by zero in els_scroller animator.
+   * Fix uninitialized data path in elm_flip, elm_gesture_layer, elm_interface_scrollable, els_scroller.
+   * Fix possible segv in elm_quicklaunch infrastructure.
+   * Fix elm_conform buffer to always terminate with at least one '\0'.
+   * Fix forgotten break in elm_map that would have thrown error when the action was properly
+   taken in fact.
+   * Fix the mapbuf to show it's content properly, If the content doesn't
+   have resized, it wouldn't be showed up.
+   * Safer call to mkstemp in elm_cnp.
+   * Simplify test in elm_entry_text_set.
+   * Fix wheel scroll direction with shift.
+   * Fix focus problem in multibuttonentry. Entry can get focus only when multibuttonentry is focused.
+
 Elementary 1.7.2
 
 Changes since Elementary 1.7.1:
@@ -13,6 +39,7 @@ Fixes:
    * Fix flip widget who show the two face at same time
    * Fix the naviframe to delete contents which are preserved_on set if the naviframe is deleted.
    * Fix the naviframe to clear the title contents when it's item is deleted.
+   * Fix the naviframe to clear the text parts when it's item is deleted.
 
 
 Changes since Elementary 1.7.0:

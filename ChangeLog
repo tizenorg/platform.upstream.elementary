@@ -544,3 +544,74 @@
 
         1.7.2 release
 
+2012-11-23  Carsten Haitzler (The Rasterman)
+
+        * Fix build on systems without clearenv() (eg bsd).
+
+2012-11-23  ChunEon Park (Hermet)
+
+        * Free the text parts of the naviframe item when item is deleted.
+
+2012-11-29  ChunEon Park (Hermet)
+
+        * Fix the mapbuf to update it's contents correctly, even if they go
+        outside of the buffer
+
+2012-11-30  ChunEon Park (Hermet)
+
+        * Fix the naviframe to resize it's items which are inserted.
+
+2012-11-30  WooHyun Jung
+
+        * Fix layout when content_set or text_set is called with NULL part name.
+
+2012-11-30  ChunEon Park (Hermet)
+
+        * emit the signals for content_set/unset text_set/unset one time!
+
+2012-12-02  Mike Blumenkrantz
+
+        * Fix case where tooltips could go offscreen unnecessarily
+
+2012-12-04  Cedric Bail
+
+	* Fix a possible divide by zero in els_scroller animator.
+
+2012-12-05  Cedric Bail
+
+	* Fix uninitialized data path in elm_flip, elm_gesture_layer,
+	elm_interface_scrollable, els_scroller.
+
+2012-12-05  Shilpa Onkar Singh (shilpa.singh@samsung.com)
+
+	* Fix naviframe to not send hide signals even before item doens't created
+  	yet.
+
+2012-12-06  Cedric Bail
+
+	* Fix possible segv in elm_quicklaunch infrastructure.
+	* Make sure elm_conform always finish with at least one '\0'.
+	* Fix forgotten break in elm_map that would have thrown error when the
+	action was properly taken in fact.
+
+2012-12-06 ChunEon Park (Hermet)
+
+	* Fix the mapbuf to show the content always. Sometimes mapbuf couldn't show
+	the content properly.
+
+2012-12-07  Cedric Bail
+
+	* Safer call to mkstemp in elm_cnp.
+	* Simplify test in elm_entry_text_set.
+
+2012-12-06 Daniel Juyung Seo (SeoZ)
+
+	* Fix wheel scroll direction with shift.
+
+2012-12-07  WooHyun Jung
+
+	* Fix focus problem in multibuttonentry. Entry can get focus only when multibuttonentry is focused.
+
+2012-12-07  Luis Felipe Strano Moraes
+
+	* Release 1.7.3
