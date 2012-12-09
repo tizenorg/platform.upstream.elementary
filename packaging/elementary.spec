@@ -1,5 +1,5 @@
 Name:           elementary
-Version:        1.7.2
+Version:        1.7.3
 Release:        1
 License:        LGPLV2.1+
 Summary:        EFL toolkit for small touchscreens
