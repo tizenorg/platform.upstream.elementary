@@ -5968,3 +5968,41 @@ static const Eo_Class_Description class_desc = {
 };
 
 EO_DEFINE_CLASS(elm_obj_entry_class_get, &class_desc, ELM_OBJ_LAYOUT_CLASS, ELM_SCROLLABLE_INTERFACE, EVAS_SMART_CLICKABLE_INTERFACE, NULL);
+   evas_object_smart_callback_call(data, SIG_ANCHOR_HOVER_OPENED, &ei);
+   evas_object_smart_callback_add(wd->anchor_hover.hover, "clicked", _anchor_hover_clicked, data);
+
+   /* FIXME: Should just check if there's any callback registered to the smart
+    * events instead.
+    * This is used to determine if anyone cares about the hover or not. */
+   if (!elm_object_part_content_get(wd->anchor_hover.hover, "middle") &&
+         !elm_object_part_content_get(wd->anchor_hover.hover, "left") &&
+         !elm_object_part_content_get(wd->anchor_hover.hover, "right") &&
+         !elm_object_part_content_get(wd->anchor_hover.hover, "top") &&
+         !elm_object_part_content_get(wd->anchor_hover.hover, "bottom"))
+     {
+        evas_object_del(wd->anchor_hover.hover);
+        wd->anchor_hover.hover = NULL;
+     }
+   else
+     evas_object_show(wd->anchor_hover.hover);
+}
+/* END - ANCHOR HOVER */
+
+EAPI void
+elm_entry_magnifier_disabled_set(Evas_Object *obj, Eina_Bool disabled)
+{
+  /* TODO: Forward port tizen specific magnification feature */
+}
+
+EAPI Eina_Bool
+elm_entry_magnifier_disabled_get(const Evas_Object *obj)
+{
+  /* TODO: Forward port tizen specific magnification feature */
+}
+
+EAPI void
+elm_entry_magnifier_type_set(Evas_Object *obj, int type)
+{
+  /* TODO: Forward port tizen specific magnification feature */
+}
+
