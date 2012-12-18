@@ -1559,3 +1559,5 @@ EAPI void      elm_config_audio_mute_set(Edje_Channel channel, Eina_Bool mute);
  * @}
  */
 
+EAPI Evas_Coord elm_finger_size_get(void);
+EAPI void       elm_finger_size_set(Evas_Coord size);
