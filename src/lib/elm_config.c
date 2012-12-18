@@ -2590,6 +2590,12 @@ elm_config_finger_size_get(void)
 }
 
 EAPI void
+elm_finger_size_set(Evas_Coord size)
+{
+   elm_config_finger_size_set(size);
+}
+
+EAPI void
 elm_config_finger_size_set(Evas_Coord size)
 {
    if (size < 0) return;
@@ -3439,3 +3445,10 @@ _elm_config_shutdown(void)
    if (_elm_key_bindings)
      eina_hash_free(_elm_key_bindings);
 }
+
+EAPI Evas_Coord
+elm_finger_size_get(void)
+{
+   return elm_config_finger_size_get();
+}
+
