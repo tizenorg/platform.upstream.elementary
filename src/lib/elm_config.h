@@ -1259,3 +1259,5 @@ EAPI void   elm_config_glayer_double_tap_timeout_set(double double_tap_timeout);
  * @}
  */
 
+EAPI Evas_Coord elm_finger_size_get(void);
+EAPI void       elm_finger_size_set(Evas_Coord size);
