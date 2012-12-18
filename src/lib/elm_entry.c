@@ -4094,3 +4094,21 @@ _entry_hover_anchor_clicked(void *data, Evas_Object *obj, void *event_info)
      evas_object_show(wd->anchor_hover.hover);
 }
 /* END - ANCHOR HOVER */
+
+EAPI void
+elm_entry_magnifier_disabled_set(Evas_Object *obj, Eina_Bool disabled)
+{
+  /* TODO: Forward port tizen specific magnification feature */
+}
+
+EAPI Eina_Bool
+elm_entry_magnifier_disabled_get(const Evas_Object *obj)
+{
+  /* TODO: Forward port tizen specific magnification feature */
+}
+
+EAPI void
+elm_entry_magnifier_type_set(Evas_Object *obj, int type)
+{
+  /* TODO: Forward port tizen specific magnification feature */
+}
