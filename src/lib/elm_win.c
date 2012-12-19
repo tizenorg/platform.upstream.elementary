@@ -3603,6 +3603,13 @@ elm_win_indicator_mode_set(Evas_Object *obj,
 #endif
 }
 
+// Wrapper that only exist in the Tizen 2.0 Elementary tree
+EAPI void
+elm_win_indicator_state_set(Evas_Object *obj, Elm_Win_Indicator_Mode mode)
+{
+   elm_win_indicator_mode_set(obj, mode);
+}
+
 EAPI Elm_Win_Indicator_Mode
 elm_win_indicator_mode_get(const Evas_Object *obj)
 {
