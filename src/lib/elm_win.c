@@ -4689,6 +4689,13 @@ _indicator_mode_set(Eo *obj EINA_UNUSED, void *_pd, va_list *list)
    evas_object_smart_callback_call(obj, SIG_INDICATOR_PROP_CHANGED, NULL);
 }
 
+// Wrapper that only exist in the Tizen 2.0 Elementary tree
+EAPI void
+elm_win_indicator_state_set(Evas_Object *obj, Elm_Win_Indicator_Mode mode)
+{
+   elm_win_indicator_mode_set(obj, mode);
+}
+
 EAPI Elm_Win_Indicator_Mode
 elm_win_indicator_mode_get(const Evas_Object *obj)
 {

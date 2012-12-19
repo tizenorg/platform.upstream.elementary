@@ -103,6 +103,9 @@
 #include <elm_win_legacy.h>
 #endif
 
+// Wrapper that only exist in the Tizen 2.0 elementary tree
+EAPI void elm_win_indicator_state_set(Evas_Object *obj, Elm_Win_Indicator_Mode mode);
+
 /**
  * @}
  */
