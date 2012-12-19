@@ -1480,6 +1480,9 @@ struct _Elm_Win_Trap
  */
 EAPI Eina_Bool elm_win_trap_set(const Elm_Win_Trap *trap);
 
+// Wrapper that only exist in the Tizen 2.0 elementary tree
+EAPI void elm_win_indicator_state_set(Evas_Object *obj, Elm_Win_Indicator_Mode mode);
+
 /**
  * @}
  */
