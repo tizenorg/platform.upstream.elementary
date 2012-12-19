@@ -825,6 +825,9 @@ EAPI void             _elm_widget_item_del_pre_hook_set(Elm_Widget_Item *item, E
 EAPI void             elm_widget_tree_dump(const Evas_Object *top);
 EAPI void             elm_widget_tree_dot_dump(const Evas_Object *top, FILE *output);
 
+/* Added for backwards compatability */
+EAPI const Eina_List *elm_widget_sub_object_list_get(const Evas_Object *obj);
+
 /**
  * Convenience macro to create new widget item, doing casts for you.
  * @see _elm_widget_item_new()
