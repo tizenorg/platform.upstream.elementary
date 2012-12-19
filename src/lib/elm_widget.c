@@ -5128,3 +5128,10 @@ elm_widget_tree_dot_dump(const Evas_Object *top,
    (void)output;
 #endif
 }
+
+EAPI const Eina_List *
+elm_widget_sub_object_list_get(const Evas_Object *obj)
+{
+   API_ENTRY return NULL;
+   return (const Eina_List *)sd->subobjs;
+}
