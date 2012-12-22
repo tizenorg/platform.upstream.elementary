@@ -615,3 +615,59 @@
 2012-12-07  Luis Felipe Strano Moraes
 
 	* Release 1.7.3
+
+2012-12-08  ChunEon Park (Hermet)
+
+	* Fix the naviframe title_set problem that caused the title visible status reset.
+
+2012-12-10  Cedric Bail
+
+	* Make sure private data is not NULL in elm_interface_scrollable.
+	* Correctly handle failure case in _x11_notify_handler_image.
+	* Fix missuse of EINA_INLIST_FOREACH in elm_transit.c.
+
+2012-12-12  WooHyun Jung
+
+	* Now, dummy object is always smart member of naviframe.
+
+2012-12-12  Nicolas Aguirre
+
+	* backport r76226 : Elm: Fix Escape namespace to compile on Windows.
+
+2012-12-13  Nicolas Aguirre
+
+	* Fix build on win32
+
+2012-12-17 Vincent Torri
+
+	* Add XML output to doc
+	* Add installation rule for doc
+
+2012-12-17  Chueon Park (Hermet)
+
+	* Fix the popup that returned invalid action buttons.
+
+2012-12-17  Chueon Park (Hermet)
+
+	* Makes naviframe safety even if someone deletes the naviframe in transition finished cb.
+
+2012-12-18  Chueon Park (Hermet)
+
+	* Don't Elm_transit image animation use image preloading to avoid image flickering.
+
+2012-12-18  Chueon Park (Hermet)
+
+	* Let image update right now if the image preloading is disabled.
+
+2012-12-21  Stefan Schmidt
+
+	* Fix small memory leak in elm_map error path.
+
+2012-12-21  Jihoon Kim
+
+	* Fix memory leak in _item_tag_remove of elm_entry.
+
+2012-12-21  Luis Felipe Strano Moraes
+
+	* 1.7.4 release
+

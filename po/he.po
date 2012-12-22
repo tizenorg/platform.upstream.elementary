@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: elementary\n"
 "Report-Msgid-Bugs-To: enlightenment-devel@lists.sourceforge.net\n"
-"POT-Creation-Date: 2012-12-07 14:14-0200\n"
+"POT-Creation-Date: 2012-12-21 03:52-0800\n"
 "PO-Revision-Date: 2010-12-26 10:05+0200\n"
 "Last-Translator: Aharon Hillel <a.hillel@samsung.com>\n"
 "Language-Team: General\n"
@@ -25,7 +25,7 @@ msgstr ""
 msgid "Home"
 msgstr ""
 
-#: src/lib/elc_fileselector.c:992 src/lib/elm_entry.c:1402
+#: src/lib/elc_fileselector.c:992 src/lib/elm_entry.c:1405
 msgid "Cancel"
 msgstr "בטל"
 
@@ -81,23 +81,23 @@ msgstr "default:RTL"
 msgid "diskselector item"
 msgstr ""
 
-#: src/lib/elm_entry.c:1396
+#: src/lib/elm_entry.c:1399
 msgid "Copy"
 msgstr "העתק"
 
-#: src/lib/elm_entry.c:1399
+#: src/lib/elm_entry.c:1402
 msgid "Cut"
 msgstr "גזור"
 
-#: src/lib/elm_entry.c:1413
+#: src/lib/elm_entry.c:1416
 msgid "Select"
 msgstr "התחל בחירה"
 
-#: src/lib/elm_entry.c:1419
+#: src/lib/elm_entry.c:1422
 msgid "Paste"
 msgstr "הדבק"
 
-#: src/lib/elm_entry.c:2650
+#: src/lib/elm_entry.c:2653
 msgid "Entry"
 msgstr ""
 

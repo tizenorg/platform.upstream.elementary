@@ -731,6 +731,7 @@ maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
 	-test -z "$(MAINTAINERCLEANFILES)" || rm -f $(MAINTAINERCLEANFILES)
+@EFL_BUILD_DOC_FALSE@uninstall-local:
 @EFL_BUILD_DOC_FALSE@clean-local:
 clean: clean-recursive
 
@@ -796,7 +797,7 @@ ps: ps-recursive
 
 ps-am:
 
-uninstall-am:
+uninstall-am: uninstall-local
 
 .MAKE: $(RECURSIVE_CLEAN_TARGETS) $(RECURSIVE_TARGETS) ctags-recursive \
 	install-am install-strip tags-recursive
@@ -813,10 +814,10 @@ uninstall-am:
 	installcheck-am installdirs installdirs-am maintainer-clean \
 	maintainer-clean-generic mostlyclean mostlyclean-generic \
 	mostlyclean-libtool pdf pdf-am ps ps-am tags tags-recursive \
-	uninstall uninstall-am
+	uninstall uninstall-am uninstall-local
 
 
-.PHONY: doc
+.PHONY: doc install-doc
 
 @EFL_BUILD_DOC_TRUE@widget-build:
 @EFL_BUILD_DOC_TRUE@	@$(MAKE) -C widgets
@@ -853,19 +854,19 @@ uninstall-am:
 @EFL_BUILD_DOC_TRUE@doc-clean:
 @EFL_BUILD_DOC_TRUE@	rm -rf img/widget html/ latex/ man/ xml/ $(top_builddir)/$(PACKAGE_DOCNAME).tar*
 
-@EFL_BUILD_DOC_TRUE@gen-doc:
+@EFL_BUILD_DOC_TRUE@doc-build:
 @EFL_BUILD_DOC_TRUE@	$(efl_doxygen)
 @EFL_BUILD_DOC_TRUE@	cp -r $(srcdir)/img/* html/
 @EFL_BUILD_DOC_TRUE@	cp -r $(srcdir)/img/* latex/
 
 #run the last rule whenever the elm widget tree changes
 #commit the changed pictures, then. depends on python and graphviz
-@EFL_BUILD_DOC_TRUE@doc: all doc-clean widget-preview gen-doc
+@EFL_BUILD_DOC_TRUE@doc: all doc-clean widget-preview doc-build
 @EFL_BUILD_DOC_TRUE@	@echo "Entering src/examples/"
 @EFL_BUILD_DOC_TRUE@	$(MAKE) -C $(top_builddir)/src/examples screenshots
 @EFL_BUILD_DOC_TRUE@	rm -rf $(PACKAGE_DOCNAME).tar*
 @EFL_BUILD_DOC_TRUE@	mkdir -p $(PACKAGE_DOCNAME)/doc
-@EFL_BUILD_DOC_TRUE@	cp -R html/ latex/ man/ $(PACKAGE_DOCNAME)/doc
+@EFL_BUILD_DOC_TRUE@	cp -R html/ latex/ man/ xml/ $(PACKAGE_DOCNAME)/doc
 @EFL_BUILD_DOC_TRUE@	tar cf $(PACKAGE_DOCNAME).tar $(PACKAGE_DOCNAME)/
 @EFL_BUILD_DOC_TRUE@	bzip2 -9 $(PACKAGE_DOCNAME).tar
 @EFL_BUILD_DOC_TRUE@	rm -rf $(PACKAGE_DOCNAME)/
@@ -873,8 +874,18 @@ uninstall-am:
 
 @EFL_BUILD_DOC_TRUE@clean-local: doc-clean
 
+# what about examples screenshots ?
+@EFL_BUILD_DOC_TRUE@install-doc: doc-build
+@EFL_BUILD_DOC_TRUE@	install -d $(docdir)
+@EFL_BUILD_DOC_TRUE@	cp -R html latex man xml $(docdir)
+
+@EFL_BUILD_DOC_TRUE@uninstall-local:
+@EFL_BUILD_DOC_TRUE@	rm -rf $(docdir)/html $(docdir)/latex $(docdir)/man $(docdir)/xml
+
 @EFL_BUILD_DOC_FALSE@doc:
 @EFL_BUILD_DOC_FALSE@	@echo "Documentation not built. Run ./configure --help"
+
+@EFL_BUILD_DOC_FALSE@install-doc: doc
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

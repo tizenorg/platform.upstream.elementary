@@ -181,9 +181,9 @@ _item_text_signals_emit(Elm_Naviframe_Item *it)
    char buf[1024];
 
    if ((it->title_label) && (it->title_label[0]))
-     edje_object_signal_emit(VIEW(it), "elm,state,title,show", "elm");
+     edje_object_signal_emit(VIEW(it), "elm,state,title_label,show", "elm");
    else
-     edje_object_signal_emit(VIEW(it), "elm,state,title,hide", "elm");
+     edje_object_signal_emit(VIEW(it), "elm,state,title_label,hide", "elm");
 
    if ((it->subtitle_label) && (it->subtitle_label[0]))
      edje_object_signal_emit(VIEW(it), "elm,state,subtitle,show", "elm");
@@ -282,9 +282,9 @@ _item_text_set_hook(Elm_Object_Item *it,
         eina_stringshare_replace(&nit->title_label, label);
         snprintf(buf, sizeof(buf), "elm.text.title");
         if (label)
-          edje_object_signal_emit(VIEW(it), "elm,state,title,show", "elm");
+          edje_object_signal_emit(VIEW(it), "elm,state,title_label,show", "elm");
         else
-          edje_object_signal_emit(VIEW(it), "elm,state,title,hide", "elm");
+          edje_object_signal_emit(VIEW(it), "elm,state,title_label,hide", "elm");
 
         //XXX: ACCESS
         if (_elm_config->access_mode == ELM_ACCESS_MODE_ON)
@@ -972,10 +972,10 @@ _on_item_show_finished(void *data,
 
    elm_widget_tree_unfocusable_set(it->content, it->content_unfocusable);
 
-   evas_object_smart_callback_call(WIDGET(it), SIG_TRANSITION_FINISHED, data);
-
    if (sd->freeze_events)
      evas_object_freeze_events_set(VIEW(it), EINA_FALSE);
+
+   evas_object_smart_callback_call(WIDGET(it), SIG_TRANSITION_FINISHED, data);
 }
 
 static void
@@ -1115,11 +1115,9 @@ _elm_naviframe_smart_add(Evas_Object *obj)
 {
    EVAS_SMART_DATA_ALLOC(obj, Elm_Naviframe_Smart_Data);
 
-   priv->dummy_edje = ELM_WIDGET_DATA(priv)->resize_obj =
-       edje_object_add(evas_object_evas_get(obj));
-
    ELM_WIDGET_CLASS(_elm_naviframe_parent_sc)->base.add(obj);
 
+   priv->dummy_edje = ELM_WIDGET_DATA(priv)->resize_obj;
    priv->auto_pushed = EINA_TRUE;
    priv->freeze_events = EINA_TRUE;
 
@@ -1223,6 +1221,7 @@ elm_naviframe_item_push(Evas_Object *obj,
 
    evas_object_show(VIEW(it));
    elm_widget_resize_object_set(obj, VIEW(it));
+   evas_object_smart_member_add(sd->dummy_edje, obj);
 
    if (prev_it)
      {
@@ -1290,6 +1289,7 @@ elm_naviframe_item_insert_before(Evas_Object *obj,
                   title_label, prev_btn, next_btn, content, item_style);
    if (!it) return NULL;
    elm_widget_resize_object_set(obj, VIEW(it));
+   evas_object_smart_member_add(sd->dummy_edje, obj);
 
    sd->stack = eina_inlist_prepend_relative
        (sd->stack, EINA_INLIST_GET(it),
@@ -1319,6 +1319,7 @@ elm_naviframe_item_insert_after(Evas_Object *obj,
                   title_label, prev_btn, next_btn, content, item_style);
    if (!it) return NULL;
    elm_widget_resize_object_set(obj, VIEW(it));
+   evas_object_smart_member_add(sd->dummy_edje, obj);
 
    /* let's share that whole logic, if it goes to the top */
    if (elm_naviframe_top_item_get(obj) == after)
@@ -1373,6 +1374,7 @@ elm_naviframe_item_pop(Evas_Object *obj)
           }
 
         elm_widget_resize_object_set(obj, VIEW(prev_it));
+        evas_object_smart_member_add(sd->dummy_edje, obj);
         evas_object_raise(VIEW(prev_it));
 
         //XXX: ACCESS
@@ -1447,6 +1449,7 @@ elm_naviframe_item_promote(Elm_Object_Item *it)
    sd->stack = eina_inlist_demote(sd->stack, EINA_INLIST_GET(nit));
 
    elm_widget_resize_object_set(WIDGET(it), VIEW(nit));
+   evas_object_smart_member_add(sd->dummy_edje, WIDGET(it));
 
    /* this was the previous top one */
    prev_it = EINA_INLIST_CONTAINER_GET

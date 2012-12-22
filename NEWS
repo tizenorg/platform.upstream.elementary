@@ -1,3 +1,23 @@
+Elementary 1.7.4
+
+Changes since Elementary 1.7.3:
+-------------------------
+
+Fixes:
+
+   * Fix the naviframe title_set problem that caused the title visible status reset
+   * Make sure data is not NULL in elm_interface_scrollable.
+   * Correctly handle failure case in _x11_notify_handler_image.
+   * Fix missuse of EINA_INLIST_FOREACH in elm_transit.c.
+   * Now, dummy object is always smart member of naviframe.
+   * Fix the popup that returned invalid action buttons.
+   * Fix the naviframe to not have crash even if user deletes the naviframe in the transition finished cb.
+   * Fix Don't elm_transit image animation use the image preloading to avoid image flickering.
+   * Fix the image to show the image right now if the image preloading is disabled.
+   * Fix small memory leak in elm_map error path
+   * Fix memory leak in _item_tag_remove of elm_entry.
+
+
 Elementary 1.7.3
 
 Changes since Elementary 1.7.2:
