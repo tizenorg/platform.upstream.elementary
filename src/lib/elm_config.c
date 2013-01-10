@@ -2252,8 +2252,16 @@ elm_config_preferred_engine_get(void)
 EAPI void
 elm_config_preferred_engine_set(const char *engine)
 {
-   if (engine)
-     eina_stringshare_replace(&(_elm_preferred_engine), engine);
+   char *d;
+   if (engine) {
+#define ENGINE_COMPARE(name) (!strcmp(name, engine))
+     if (!(d = getenv("DISPLAY")) && (ENGINE_COMPARE(ELM_SOFTWARE_X11) ||
+			              ENGINE_COMPARE(ELM_OPENGL_X11)))
+	eina_stringshare_replace(&(_elm_preferred_engine), ELM_WAYLAND_EGL);
+     else
+	eina_stringshare_replace(&(_elm_preferred_engine), engine);
+#undef ENGINE_COMPARE
+   }
    else
      {
         if (_elm_preferred_engine) eina_stringshare_del(_elm_preferred_engine);
