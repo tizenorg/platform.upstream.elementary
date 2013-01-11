@@ -2,6 +2,96 @@
 #include <Elementary_Cursor.h>
 #include "elm_priv.h"
 
+typedef struct _Elm_Win Elm_Win;
+
+struct _Elm_Win
+{
+   Ecore_Evas *ee;
+   Evas *evas;
+   Evas_Object *parent, *win_obj, *img_obj, *frame_obj;
+   Eina_List *subobjs;
+#ifdef HAVE_ELEMENTARY_X
+   Ecore_X_Window xwin;
+   Ecore_Event_Handler *client_message_handler;
+   Ecore_Event_Handler *property_handler;
+#endif
+   Ecore_Job *deferred_resize_job;
+   Ecore_Job *deferred_child_eval_job;
+
+   Elm_Win_Type type;
+   Elm_Win_Keyboard_Mode kbdmode;
+   Elm_Win_Indicator_Mode indmode;
+   Elm_Win_Indicator_Opacity_Mode ind_o_mode;
+   struct
+     {
+        const char *info;
+        Ecore_Timer *timer;
+        int repeat_count;
+        int shot_counter;
+     } shot;
+   int resize_location;
+   int *autodel_clear, rot;
+   int show_count;
+   struct
+     {
+        int x, y;
+     } screen;
+   struct
+     {
+        Ecore_Evas *ee;
+        Evas *evas;
+        Evas_Object *obj, *hot_obj;
+        int hot_x, hot_y;
+     } pointer;
+   struct
+     {
+        Evas_Object *top;
+
+        struct
+          {
+             Evas_Object *target;
+             Eina_Bool visible : 1;
+             Eina_Bool handled : 1;
+          } cur, prev;
+
+        const char *style;
+        Ecore_Job *reconf_job;
+
+        Eina_Bool enabled : 1;
+        Eina_Bool changed_theme : 1;
+        Eina_Bool top_animate : 1;
+        Eina_Bool geometry_changed : 1;
+     } focus_highlight;
+   struct
+   {
+      const char  *name;
+      Ecore_Timer *timer;
+      Eina_List   *names;
+   } profile;
+
+   Evas_Object *icon;
+   const char *title;
+   const char *icon_name;
+   const char *role;
+
+   double aspect;
+   Eina_Bool urgent : 1;
+   Eina_Bool modal : 1;
+   Eina_Bool demand_attention : 1;
+   Eina_Bool autodel : 1;
+   Eina_Bool constrain : 1;
+   Eina_Bool resizing : 1;
+   Eina_Bool iconified : 1;
+   Eina_Bool withdrawn : 1;
+   Eina_Bool sticky : 1;
+   Eina_Bool fullscreen : 1;
+   Eina_Bool maximized : 1;
+   Eina_Bool skip_focus : 1;
+   Eina_Bool floating : 1;
+};
+
+static const char *widtype = NULL;
+
 static const char WIN_SMART_NAME[] = "elm_win";
 
 static const Elm_Win_Trap *trap = NULL;
@@ -160,6 +250,7 @@ static const char SIG_UNFULLSCREEN[] = "unfullscreen";
 static const char SIG_MAXIMIZED[] = "maximized";
 static const char SIG_UNMAXIMIZED[] = "unmaximized";
 static const char SIG_IOERR[] = "ioerr";
+static const char SIG_PROFILE_CHANGED[] = "profile,changed";
 
 static const Evas_Smart_Cb_Description _smart_callbacks[] = {
    {SIG_DELETE_REQUEST, ""},
@@ -176,6 +267,7 @@ static const Evas_Smart_Cb_Description _smart_callbacks[] = {
    {SIG_MAXIMIZED, ""},
    {SIG_UNMAXIMIZED, ""},
    {SIG_IOERR, ""},
+   {SIG_PROFILE_CHANGED, ""},
    {NULL, NULL}
 };
 
@@ -822,6 +914,57 @@ _elm_win_focus_out(Ecore_Evas *ee)
    /* if (sd->img_obj) */
    /*   { */
    /*   } */
+}
+
+static void
+_elm_win_profile_update(Ecore_Evas *ee)
+{
+   Evas_Object *obj = ecore_evas_object_associate_get(ee);
+   Elm_Win *win;
+
+   if (!obj) return;
+   win = elm_widget_data_get(obj);
+   if (!win) return;
+
+   if (win->profile.timer)
+     ecore_timer_del(win->profile.timer);
+   win->profile.timer = NULL;
+
+   /* TODO: We need the ability to bind a profile to a specific window.
+    * Elementary's configuration still has a single global profile for the app.
+    */
+   _elm_config_profile_set(win->profile.name);
+
+   evas_object_smart_callback_call(win->win_obj, SIG_PROFILE_CHANGED, NULL);
+}
+
+static Eina_Bool
+_elm_win_profile_change_delay(void *data)
+{
+   Elm_Win *win = data;
+   const char *profile;
+   Eina_Bool changed = EINA_FALSE;
+
+   profile = eina_list_nth(win->profile.names, 0);
+   if (profile)
+     {
+        if (win->profile.name)
+          {
+             if (strcmp(win->profile.name, profile))
+               {
+                  eina_stringshare_replace(&(win->profile.name), profile);
+                  changed = EINA_TRUE;
+               }
+          }
+        else
+          {
+             win->profile.name = eina_stringshare_add(profile);
+             changed = EINA_TRUE;
+          }
+     }
+   win->profile.timer = NULL;
+   if (changed) _elm_win_profile_update(win->ee);
+   return EINA_FALSE;
 }
 
 static void
@@ -3218,6 +3361,59 @@ elm_win_withdrawn_get(const Evas_Object *obj)
 
    return sd->withdrawn;
 }
+
+EAPI void
+elm_win_profiles_set(Evas_Object *obj, const char **profiles, unsigned int num_profiles)
+{
+   Elm_Win *win;
+   char **profiles_int;
+   const char *str;
+   unsigned int i, num;
+   Eina_List *l;
+
+   ELM_CHECK_WIDTYPE(obj, widtype);
+   win = elm_widget_data_get(obj);
+   if (!win) return;
+   if (!profiles) return;
+
+   if (win->profile.timer) ecore_timer_del(win->profile.timer);
+   win->profile.timer = ecore_timer_add(0.1, _elm_win_profile_change_delay, win);
+   EINA_LIST_FREE(win->profile.names, str) eina_stringshare_del(str);
+
+   for (i = 0; i < num_profiles; i++)
+     {
+        if ((profiles[i]) &&
+            _elm_config_profile_exists(profiles[i]))
+          {
+             str = eina_stringshare_add(profiles[i]);
+             win->profile.names = eina_list_append(win->profile.names, str);
+          }
+     }
+
+   num = eina_list_count(win->profile.names);
+   profiles_int = alloca(num * sizeof(char *));
+
+   if (profiles_int)
+     {
+        i = 0;
+        EINA_LIST_FOREACH(win->profile.names, l, str)
+          {
+             if (str)
+               profiles_int[i] = strdup(str);
+             else
+               profiles_int[i] = NULL;
+             i++;
+          }
+        ecore_evas_profiles_set(win->ee, (const char **)profiles_int, i);
+        for (i = 0; i < num; i++)
+          {
+             if (profiles_int[i]) free(profiles_int[i]);
+          }
+     }
+   else
+     ecore_evas_profiles_set(win->ee, profiles, num_profiles);
+}
+
 
 EAPI void
 elm_win_urgent_set(Evas_Object *obj,

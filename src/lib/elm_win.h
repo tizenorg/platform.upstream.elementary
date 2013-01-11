@@ -707,6 +707,17 @@ EAPI void                  elm_win_withdrawn_set(Evas_Object *obj, Eina_Bool wit
 EAPI Eina_Bool             elm_win_withdrawn_get(const Evas_Object *obj);
 
 /**
+ * Set the profile list of a window.
+ *
+ * @param obj The window object
+ * @param profiles The list of profile's name
+ * @param num_profiles The number of profile names
+ *
+ * @ingroup Win
+ */
+EAPI void                  elm_win_profiles_set(Evas_Object *obj, const char **profiles, unsigned int num_profiles); 
+
+/**
  * Set the urgent state of a window.
  *
  * @param obj The window object

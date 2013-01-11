@@ -2283,6 +2283,29 @@ _elm_config_profile_set(const char *profile)
      }
 }
 
+Eina_Bool
+_elm_config_profile_exists(const char *profile)
+{    
+   Eina_List *profs = _elm_config_profiles_list();
+   Eina_List *l;
+   const char *p, *dir;
+   Eina_Bool res = EINA_FALSE;
+                  
+   EINA_LIST_FOREACH(profs, l, p)
+     {
+        if (!strcmp(profile, p))
+          {
+             res = EINA_TRUE;
+             break;
+          }
+     }
+
+   EINA_LIST_FREE(profs, dir)
+     eina_stringshare_del(dir);
+
+   return res;
+}
+
 void
 _elm_config_shutdown(void)
 {
