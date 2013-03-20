@@ -1,6 +1,7 @@
-# Elementary translation file for Left To Right languages.
-# This file is distributed under the same license as the Elementary package.
-# FIRST AUTHOR <a.hillel@samsung.com>, 2010.
+# Chinese translations for elementary package
+# elementary 软件包的简体中文翻译.
+# This file is put in the public domain.
+# Aron Xu <happyaron.xu@gmail.com>, 2012.
 #
 #: src/lib/elm_config.c:2084
 msgid ""
@@ -8,98 +9,98 @@ msgstr ""
 "Project-Id-Version: elementary\n"
 "Report-Msgid-Bugs-To: enlightenment-devel@lists.sourceforge.net\n"
 "POT-Creation-Date: 2013-01-04 12:33-0200\n"
-"PO-Revision-Date: 2010-12-26 10:05+0200\n"
-"Last-Translator: Aharon Hillel <a.hillel@samsung.com>\n"
-"Language-Team: General\n"
-"Language: \n"
+"PO-Revision-Date: 2012-12-22 05:55+0800\n"
+"Last-Translator: Aron Xu <happyaron.xu@gmail.com>\n"
+"Language-Team: Chinese (simplified)\n"
+"Language: zh_CN\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: src/lib/elc_fileselector.c:749
 msgid "Up"
-msgstr ""
+msgstr "向上"
 
 #: src/lib/elc_fileselector.c:764
 msgid "Home"
-msgstr ""
+msgstr "主目录"
 
 #: src/lib/elc_fileselector.c:992 src/lib/elm_entry.c:1405
 msgid "Cancel"
-msgstr "בטל"
+msgstr "取消"
 
 #: src/lib/elc_fileselector.c:1001
 msgid "OK"
-msgstr "אשר"
+msgstr "确定"
 
 #: src/lib/elm_button.c:55
 msgid "Clicked"
-msgstr ""
+msgstr "点击"
 
 #: src/lib/elm_button.c:255 src/lib/elm_check.c:200 src/lib/elm_gengrid.c:618
 #: src/lib/elm_genlist.c:1287 src/lib/elm_list.c:1360 src/lib/elm_radio.c:241
 #: src/lib/elm_spinner.c:503 src/lib/elm_toolbar.c:1253
 msgid "State: Disabled"
-msgstr ""
+msgstr "状态：已禁用"
 
 #: src/lib/elm_button.c:279
 msgid "Button"
-msgstr ""
+msgstr "按钮"
 
 #: src/lib/elm_calendar.c:132
 msgid "%B %Y"
-msgstr ""
+msgstr "%B %Y"
 
 #: src/lib/elm_check.c:47 src/lib/elm_check.c:50 src/lib/elm_check.c:213
 #: src/lib/elm_radio.c:83 src/lib/elm_radio.c:242
 msgid "State: On"
-msgstr ""
+msgstr "状态：开启"
 
 #: src/lib/elm_check.c:60 src/lib/elm_check.c:63 src/lib/elm_check.c:225
 #: src/lib/elm_radio.c:244
 msgid "State: Off"
-msgstr ""
+msgstr "状态：关闭"
 
 #: src/lib/elm_check.c:209 src/lib/elm_check.c:222
 msgid "State"
-msgstr ""
+msgstr "状态"
 
 #: src/lib/elm_check.c:289
 msgid "Check"
-msgstr ""
+msgstr "检查"
 
 #: src/lib/elm_colorselector.c:895
 msgid "color selector palette item"
-msgstr ""
+msgstr "色彩选择器项目"
 
+# Don't change it!
 #: src/lib/elm_config.c:2100
 msgid "default:LTR"
-msgstr "default:RTL"
+msgstr "default:LTR"
 
 #: src/lib/elm_diskselector.c:622
 msgid "diskselector item"
-msgstr ""
+msgstr "磁盘选择器项目"
 
 #: src/lib/elm_entry.c:1399
 msgid "Copy"
-msgstr "העתק"
+msgstr "复制"
 
 #: src/lib/elm_entry.c:1402
 msgid "Cut"
-msgstr "גזור"
+msgstr "粘贴"
 
 #: src/lib/elm_entry.c:1416
 msgid "Select"
-msgstr "התחל בחירה"
+msgstr "选择"
 
 #: src/lib/elm_entry.c:1422
 msgid "Paste"
-msgstr "הדבק"
+msgstr "粘贴"
 
 #: src/lib/elm_entry.c:2653
 msgid "Entry"
-msgstr ""
+msgstr "条目"
 
 #: src/lib/elm_gengrid.c:650
 msgid "Gengrid Item"
@@ -111,23 +112,23 @@ msgstr ""
 
 #: src/lib/elm_label.c:355
 msgid "Label"
-msgstr ""
+msgstr "标签"
 
 #: src/lib/elm_list.c:1400
 msgid "List Item"
-msgstr ""
+msgstr "列表条目"
 
 #: src/lib/elm_progressbar.c:260
 msgid "progressbar"
-msgstr ""
+msgstr "进度条"
 
 #: src/lib/elm_radio.c:271
 msgid "Radio"
-msgstr ""
+msgstr "无线电"
 
 #: src/lib/elm_slider.c:778
 msgid "slider"
-msgstr ""
+msgstr "滑块"
 
 #: src/lib/elm_spinner.c:534
 msgid "spinner increment button"
@@ -142,22 +143,66 @@ msgid "spinner"
 msgstr ""
 
 #: src/lib/elm_toolbar.c:988
-#, fuzzy
 msgid "Selected"
-msgstr "התחל בחירה"
+msgstr "已选择"
 
 #: src/lib/elm_toolbar.c:1251
 msgid "Separator"
-msgstr ""
+msgstr "分隔符"
 
 #: src/lib/elm_toolbar.c:1255
 msgid "State: Selected"
-msgstr ""
+msgstr "状态：已选择"
 
 #: src/lib/elm_toolbar.c:1257
 msgid "Has menu"
-msgstr ""
+msgstr "有菜单"
 
 #: src/lib/elm_toolbar.c:1322
 msgid "Tool Item"
-msgstr ""
+msgstr "工具项目"
+
+#~ msgid "Bubble"
+#~ msgstr "气泡"
+
+#~ msgid "calendar item"
+#~ msgstr "日历条目"
+
+#~ msgid "calendar decrement button"
+#~ msgstr "日历减量按钮"
+
+#~ msgid "calendar increment button"
+#~ msgstr "日历增量按钮"
+
+#~ msgid "calendar month"
+#~ msgstr "日历月"
+
+#~ msgid "clock increment button for am,pm"
+#~ msgstr "上下午的时钟增量按钮"
+
+#~ msgid "clock decrement button for am,pm"
+#~ msgstr "上下午的时钟减量按钮"
+
+#~ msgid "State: Editable"
+#~ msgstr "状态：可编辑"
+
+#~ msgid "Clock"
+#~ msgstr "时钟"
+
+#~ msgid "Index Item"
+#~ msgstr "索引条目"
+
+#~ msgid "Index"
+#~ msgstr "索引"
+
+#~ msgid "state: opened"
+#~ msgstr "状态：已打开"
+
+#~ msgid "state: closed"
+#~ msgstr "状态：已关闭"
+
+#~ msgid "panel button"
+#~ msgstr "面板按钮"
+
+#~ msgid "Unselected"
+#~ msgstr "未选择"

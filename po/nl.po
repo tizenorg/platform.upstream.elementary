@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: elementary 0.7.0.57309\n"
 "Report-Msgid-Bugs-To: enlightenment-devel@lists.sourceforge.net\n"
-"POT-Creation-Date: 2012-12-21 03:52-0800\n"
+"POT-Creation-Date: 2013-01-04 12:33-0200\n"
 "PO-Revision-Date: 2011-06-19 16:41+0100\n"
 "Last-Translator: Heimen Stoffels <vistausss@gmail.com>\n"
 "Language-Team: Dutch <vistausss@gmail.com>\n"
@@ -42,7 +42,7 @@ msgid "Clicked"
 msgstr ""
 
 #: src/lib/elm_button.c:255 src/lib/elm_check.c:200 src/lib/elm_gengrid.c:618
-#: src/lib/elm_genlist.c:1287 src/lib/elm_list.c:1353 src/lib/elm_radio.c:241
+#: src/lib/elm_genlist.c:1287 src/lib/elm_list.c:1360 src/lib/elm_radio.c:241
 #: src/lib/elm_spinner.c:503 src/lib/elm_toolbar.c:1253
 msgid "State: Disabled"
 msgstr ""
@@ -117,7 +117,7 @@ msgstr ""
 msgid "Label"
 msgstr ""
 
-#: src/lib/elm_list.c:1393
+#: src/lib/elm_list.c:1400
 msgid "List Item"
 msgstr ""
 

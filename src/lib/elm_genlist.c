@@ -4569,6 +4569,7 @@ _elm_genlist_smart_del(Evas_Object *obj)
 
    if (sd->decorate_all_mode)
      elm_genlist_decorate_mode_set(ELM_WIDGET_DATA(sd)->obj, EINA_FALSE);
+   sd->queue = eina_list_free(sd->queue);
    elm_genlist_clear(obj);
    evas_object_del(sd->pan_obj);
    sd->pan_obj = NULL;
@@ -4791,13 +4792,15 @@ _elm_genlist_clear(Evas_Object *obj,
      }
    sd->clear_me = EINA_FALSE;
    sd->pan_changed = EINA_TRUE;
-   if (sd->calc_job)
+   if (!sd->queue)
      {
-        ecore_job_del(sd->calc_job);
-        sd->calc_job = NULL;
+        if (sd->calc_job)
+          {
+             ecore_job_del(sd->calc_job);
+             sd->calc_job = NULL;
+          }
+        _clear(sd);
      }
-   if (sd->selected) sd->selected = eina_list_free(sd->selected);
-   _clear(sd);
    sd->pan_x = 0;
    sd->pan_y = 0;
    sd->minw = 0;
