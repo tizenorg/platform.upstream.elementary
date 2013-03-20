@@ -1,10 +1,10 @@
 Name:           elementary
-Version:        1.7.4
+Version:        1.7.5
 Release:        1
 License:        LGPLV2.1+
 Summary:        EFL toolkit for small touchscreens
 Url:            http://trac.enlightenment.org/e/wiki/Elementary
-Group:          Graphics/X11
+Group:          Graphics/EFL
 Source0:        elementary-%{version}.tar.bz2
 BuildRequires:  doxygen
 BuildRequires:  pkgconfig(ecore)
@@ -60,9 +60,11 @@ make %{?_smp_mflags}
 
 %postun -p /sbin/ldconfig
 
-%files -f %{name}.lang
+%lang_package 
+
+%files 
 %defattr(-,root,root,-)
-%doc COPYING
+%license COPYING
 %{_bindir}/*
 %{_libdir}/edje/*
 %{_libdir}/elementary/*
