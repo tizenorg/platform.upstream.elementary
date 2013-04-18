@@ -1,6 +1,6 @@
 Name:           elementary
 Version:        1.7.5
-Release:        1
+Release:        2 
 License:        LGPLV2.1+
 Summary:        EFL toolkit for small touchscreens
 Url:            http://trac.enlightenment.org/e/wiki/Elementary
