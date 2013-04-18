@@ -1,3 +1,6 @@
+* Thu Apr 18 2013 Rusty Lynch <rusty.lynch@intel.com> accepted/trunk/20130320.004832@059952f
+- Elementary: Patch from Alex Wu <zhiwen.wu@linux.intel.com> to fix glview tests in Wayland:
+
 * Tue Mar 19 2013 Anas Nashif <anas.nashif@intel.com> upstream/1.7.5@67e4f58
 - Update to 1.7.5
 
