@@ -47,7 +47,7 @@ Development files for elementary
 
 %build
 
-%configure --disable-static
+%autogen --disable-static
 make %{?_smp_mflags}
 
 %install
