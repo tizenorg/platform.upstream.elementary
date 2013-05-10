@@ -1,3 +1,12 @@
+* Fri May 10 2013 Rusty Lynch <rusty.lynch@intel.com> submit/tizen/20130509.174056@69ef9f4
+- Force ELM_WAYLAND_EGL if engine set called when DISPLAY not set
+- Adding tickernoti widget
+- Add elm_win_indicator_state_set
+- Add elm_widget_sub_object_list_get()
+- Adding elm_finger_size_get and elm_finger_size_set
+- Add elm_scale_get and elm_scale_set
+- Add dummy implemention of Tizen specific elm_config magnification
+
 * Thu Apr 18 2013 Rusty Lynch <rusty.lynch@intel.com> accepted/trunk/20130320.004832@059952f
 - Elementary: Patch from Alex Wu <zhiwen.wu@linux.intel.com> to fix glview tests in Wayland:
 
