@@ -1,3 +1,6 @@
+* Sun May 19 2013 Rusty Lynch <rusty.lynch@intel.com> submit/tizen/20130517.020932@944fb57
+- Add elm_gesture_layer_* support from Tizen 2.1
+
 * Fri May 10 2013 Rusty Lynch <rusty.lynch@intel.com> submit/tizen/20130509.174056@69ef9f4
 - Force ELM_WAYLAND_EGL if engine set called when DISPLAY not set
 - Adding tickernoti widget
