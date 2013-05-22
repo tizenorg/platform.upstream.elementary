@@ -82,6 +82,7 @@
  * @li "unfullscreen": window has stopped being fullscreen
  * @li "maximized": window has been maximized
  * @li "unmaximized": window has stopped being maximized
+ * @li "wm,rotation,changed": rotation of window has been changed by window manager
  * @li "ioerr": there has been a low-level I/O error with the display system
  *
  * Examples:
@@ -1482,6 +1483,12 @@ EAPI Eina_Bool elm_win_trap_set(const Elm_Win_Trap *trap);
 
 // Wrapper that only exist in the Tizen 2.0 elementary tree
 EAPI void elm_win_indicator_state_set(Evas_Object *obj, Elm_Win_Indicator_Mode mode);
+
+EAPI Eina_Bool             elm_win_wm_rotation_supported_get(const Evas_Object *obj);
+EAPI void                  elm_win_wm_rotation_preferred_rotation_set(Evas_Object *obj, const int rotation);
+EAPI int                   elm_win_wm_rotation_preferred_rotation_get(const Evas_Object *obj);
+EAPI void                  elm_win_wm_rotation_available_rotations_set(Evas_Object *obj, const int *rotations, unsigned int count);
+EAPI Eina_Bool             elm_win_wm_rotation_available_rotations_get(const Evas_Object *obj, int **rotations, unsigned int *count);
 
 /**
  * @}
