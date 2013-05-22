@@ -1,3 +1,6 @@
+* Wed May 22 2013 Rusty Lynch <rusty.lynch@intel.com> accepted/tizen/20130520.103640@72102d0
+- Adding elm_win_wm_rotation support
+
 * Sun May 19 2013 Rusty Lynch <rusty.lynch@intel.com> submit/tizen/20130517.020932@944fb57
 - Add elm_gesture_layer_* support from Tizen 2.1
 
