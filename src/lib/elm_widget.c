@@ -400,6 +400,7 @@ _elm_widget_sub_object_add_func(Evas_Object *obj,
                return EINA_FALSE;
           }
         sdc->parent_obj = obj;
+        sdc->orient_mode = sd->orient_mode;
         _elm_widget_top_win_focused_set(sobj, sd->top_win_focused);
 
         /* update child focusable-ness on self and parents, now that a
@@ -3523,7 +3524,18 @@ elm_widget_theme_object_set(Evas_Object *obj,
                             const char  *wstyle)
 {
    API_ENTRY return EINA_FALSE;
-   return _elm_theme_object_set(obj, edj, wname, welement, wstyle);
+   char buf[128];
+
+   if (!_elm_theme_object_set(obj, edj, wname, welement, wstyle))
+     return EINA_FALSE;
+
+   if (sd->orient_mode != -1)
+     {
+        snprintf(buf, sizeof(buf), "elm,state,orient,%d", sd->orient_mode);
+        elm_widget_signal_emit(obj, buf, "elm");
+
+     }
+   return EINA_TRUE;
 }
 
 EAPI Eina_Bool
@@ -3614,6 +3626,62 @@ elm_widget_name_find(const Evas_Object *obj, const char *name, int recurse)
    API_ENTRY return NULL;
    if (!name) return NULL;
    return _widget_name_find(obj, name, recurse);
+}
+
+EAPI void
+elm_widget_orientation_mode_disabled_set(Evas_Object *obj, Eina_Bool disabled)
+{
+   int orient_mode = -1;
+
+   API_ENTRY return;
+
+   if (disabled && (sd->orient_mode == -1)) return;
+   if (!disabled && (sd->orient_mode != -1)) return;
+
+   if (!disabled)
+     {
+        //Get current orient mode from it's parent otherwise, 0.
+        sd->orient_mode = 0;
+        ELM_WIDGET_DATA_GET(sd->parent_obj, sd_parent);
+        if (!sd_parent) orient_mode = 0;
+        else orient_mode = sd_parent->orient_mode;
+     }
+   elm_widget_orientation_set(obj, orient_mode);
+}
+
+EAPI Eina_Bool
+elm_widget_orientation_mode_disabled_get(const Evas_Object *obj)
+{
+   Eina_Bool ret;
+
+   API_ENTRY return EINA_FALSE;
+
+   if (sd->orient_mode == -1) ret = EINA_TRUE;
+   else ret = EINA_FALSE;
+   return ret;
+}
+
+EAPI void
+elm_widget_orientation_set(Evas_Object *obj, int rotation)
+{
+   Evas_Object *child;
+   Eina_List *l;
+
+   API_ENTRY return;
+
+   if ((sd->orient_mode == rotation) || (sd->orient_mode == -1)) return;
+
+   sd->orient_mode = rotation;
+
+   EINA_LIST_FOREACH (sd->subobjs, l, child)
+     elm_widget_orientation_set(child, rotation);
+
+   if (rotation != -1)
+     {
+        char buf[128];
+        snprintf(buf, sizeof(buf), "elm,state,orient,%d", sd->orient_mode);
+        elm_widget_signal_emit(obj, buf, "elm");
+     }
 }
 
 /**

@@ -120,6 +120,15 @@ struct _Elm_Win_Smart_Data
       Eina_Bool    top_animate : 1;
       Eina_Bool    geometry_changed : 1;
    } focus_highlight;
+   struct
+   {
+      int          preferred_rot; // specified by app
+      int         *rots;          // available rotations
+      unsigned int count;         // number of elements in available rotations
+      Eina_Bool    wm_supported : 1;
+      Eina_Bool    use : 1;
+   } wm_rot;
+
 
    Evas_Object *icon;
    const char  *title;
@@ -160,6 +169,8 @@ static const char SIG_UNFULLSCREEN[] = "unfullscreen";
 static const char SIG_MAXIMIZED[] = "maximized";
 static const char SIG_UNMAXIMIZED[] = "unmaximized";
 static const char SIG_IOERR[] = "ioerr";
+static const char SIG_ROTATION_CHANGED[] = "rotation,changed";
+static const char SIG_WM_ROTATION_CHANGED[] = "wm,rotation,changed";
 
 static const Evas_Smart_Cb_Description _smart_callbacks[] = {
    {SIG_DELETE_REQUEST, ""},
@@ -176,6 +187,8 @@ static const Evas_Smart_Cb_Description _smart_callbacks[] = {
    {SIG_MAXIMIZED, ""},
    {SIG_UNMAXIMIZED, ""},
    {SIG_IOERR, ""},
+   {SIG_ROTATION_CHANGED, ""},
+   {SIG_WM_ROTATION_CHANGED, ""},
    {NULL, NULL}
 };
 
@@ -194,6 +207,8 @@ static int _elm_win_count_withdrawn = 0;
 static Eina_Bool _elm_win_auto_throttled = EINA_FALSE;
 
 static Ecore_Job *_elm_win_state_eval_job = NULL;
+
+static void _elm_win_resize_objects_eval(Evas_Object *obj);
 
 static void
 _elm_win_state_eval(void *data __UNUSED__)
@@ -835,6 +850,8 @@ _elm_win_state_change(Ecore_Evas *ee)
    Eina_Bool ch_iconified = EINA_FALSE;
    Eina_Bool ch_fullscreen = EINA_FALSE;
    Eina_Bool ch_maximized = EINA_FALSE;
+   Eina_Bool ch_rotation = EINA_FALSE;
+   Eina_Bool ch_wm_rotation = EINA_FALSE;
 
    EINA_SAFETY_ON_NULL_RETURN(sd);
 
@@ -867,6 +884,14 @@ _elm_win_state_change(Ecore_Evas *ee)
      {
         sd->maximized = ecore_evas_maximized_get(sd->ee);
         ch_maximized = EINA_TRUE;
+     }
+   if (sd->wm_rot.use)
+     {
+        if (sd->rot != ecore_evas_rotation_get(sd->ee))
+          {
+             sd->rot = ecore_evas_rotation_get(sd->ee);
+             ch_wm_rotation = EINA_TRUE;
+          }
      }
 
    if (sd->withdrawn) _elm_win_count_withdrawn++;
@@ -902,6 +927,19 @@ _elm_win_state_change(Ecore_Evas *ee)
           evas_object_smart_callback_call(obj, SIG_MAXIMIZED, NULL);
         else
           evas_object_smart_callback_call(obj, SIG_UNMAXIMIZED, NULL);
+     }
+   if (ch_rotation)
+     {
+       // TODO: Implement me
+     }
+   if (ch_wm_rotation)
+     {
+        evas_object_size_hint_min_set(obj, -1, -1);
+        evas_object_size_hint_max_set(obj, -1, -1);
+        _elm_win_resize_objects_eval(obj);
+        elm_widget_orientation_set(obj, sd->rot);
+
+        evas_object_smart_callback_call(obj, SIG_WM_ROTATION_CHANGED, NULL);
      }
 }
 
@@ -1314,6 +1352,9 @@ _elm_win_smart_del(Evas_Object *obj)
    if (sd->deferred_child_eval_job) ecore_job_del(sd->deferred_child_eval_job);
    if (sd->shot.info) eina_stringshare_del(sd->shot.info);
    if (sd->shot.timer) ecore_timer_del(sd->shot.timer);
+
+   if (sd->wm_rot.rots) free(sd->wm_rot.rots);
+   sd->wm_rot.rots = NULL;
 
 #ifdef HAVE_ELEMENTARY_X
    if (sd->x.client_message_handler)
@@ -2755,6 +2796,9 @@ elm_win_add(Evas_Object *parent,
         // do nothing
      }
 
+   sd->wm_rot.wm_supported = ecore_evas_wm_rotation_supported_get(sd->ee);
+   sd->wm_rot.preferred_rot = -1; // it means that elm_win doesn't use preferred rotation.
+
    return obj;
 }
 
@@ -3439,6 +3483,18 @@ elm_win_render(Evas_Object *obj)
    ecore_evas_manual_render(sd->ee);
 }
 
+static int
+_win_rotation_degree_check(int rotation)
+{
+   if ((rotation > 360) || (rotation < 0))
+     {
+        WRN("Rotation degree should be 0 ~ 360 (passed degree: %d)", rotation);
+        rotation %= 360;
+        if (rotation < 0) rotation += 360;
+     }
+   return rotation;
+}
+
 EAPI void
 elm_win_rotation_set(Evas_Object *obj,
                      int rotation)
@@ -3455,6 +3511,8 @@ elm_win_rotation_set(Evas_Object *obj,
 #ifdef HAVE_ELEMENTARY_X
    _elm_win_xwin_update(sd);
 #endif
+   elm_widget_orientation_set(obj, rotation);
+   evas_object_smart_callback_call(obj, SIG_ROTATION_CHANGED, NULL);
 }
 
 EAPI void
@@ -3483,6 +3541,114 @@ elm_win_rotation_get(const Evas_Object *obj)
    ELM_WIN_DATA_GET_OR_RETURN_VAL(obj, sd, -1);
 
    return sd->rot;
+}
+
+EAPI Eina_Bool
+elm_win_wm_rotation_supported_get(const Evas_Object *obj)
+{
+   ELM_WIN_CHECK(obj) EINA_FALSE;
+   ELM_WIN_DATA_GET_OR_RETURN_VAL(obj, sd, EINA_FALSE);
+   return sd->wm_rot.wm_supported;
+}
+
+/* This will unset a preferred rotation, if given preferred rotation is '-1'.
+ */
+EAPI void
+elm_win_wm_rotation_preferred_rotation_set(Evas_Object *obj,
+                                           const int rotation)
+{
+   int rot;
+
+   ELM_WIN_CHECK(obj);
+   ELM_WIN_DATA_GET_OR_RETURN(obj, sd);
+
+   if (!sd->wm_rot.use)
+     sd->wm_rot.use = EINA_TRUE;
+
+   // '-1' means that elm_win doesn't use preferred rotation.
+   if (rotation == -1)
+     rot = -1;
+   else
+     rot = _win_rotation_degree_check(rotation);
+
+   if (sd->wm_rot.preferred_rot == rot) return;
+   sd->wm_rot.preferred_rot = rot;
+
+   ecore_evas_wm_rotation_preferred_rotation_set(sd->ee, rot);
+}
+
+EAPI int
+elm_win_wm_rotation_preferred_rotation_get(const Evas_Object *obj)
+{
+   ELM_WIN_CHECK(obj) -1;
+   ELM_WIN_DATA_GET_OR_RETURN_VAL(obj, sd, -1);
+   if (!sd->wm_rot.use) return -1;
+   return sd->wm_rot.preferred_rot;
+}
+
+EAPI void
+elm_win_wm_rotation_available_rotations_set(Evas_Object *obj,
+                                            const int   *rotations,
+                                            unsigned int count)
+{
+   unsigned int i;
+   int r;
+
+   ELM_WIN_CHECK(obj);
+   ELM_WIN_DATA_GET_OR_RETURN(obj, sd);
+
+   if (!sd->wm_rot.use)
+     sd->wm_rot.use = EINA_TRUE;
+
+   if (sd->wm_rot.rots) free(sd->wm_rot.rots);
+
+   sd->wm_rot.rots = NULL;
+   sd->wm_rot.count = 0;
+
+   if (count > 0)
+     {
+        sd->wm_rot.rots = calloc(count, sizeof(int));
+        if (!sd->wm_rot.rots) return;
+        for (i = 0; i < count; i++)
+          {
+             r = _win_rotation_degree_check(rotations[i]);
+             sd->wm_rot.rots[i] = r;
+          }
+     }
+
+   sd->wm_rot.count = count;
+
+   ecore_evas_wm_rotation_available_rotations_set(sd->ee,
+                                                  sd->wm_rot.rots,
+                                                  sd->wm_rot.count);
+}
+
+EAPI Eina_Bool
+elm_win_wm_rotation_available_rotations_get(const Evas_Object *obj,
+                                            int              **rotations,
+                                            unsigned int      *count)
+{
+   ELM_WIN_CHECK(obj) EINA_FALSE;
+   ELM_WIN_DATA_GET_OR_RETURN_VAL(obj, sd, EINA_FALSE);
+   if (!sd->wm_rot.use) return EINA_FALSE;
+
+   if (sd->wm_rot.count > 0)
+     {
+        if ((rotations) && (*rotations))
+          {
+             *rotations = calloc(sd->wm_rot.count, sizeof(int));
+             if (*rotations)
+               {
+                  memcpy(*rotations,
+                         sd->wm_rot.rots,
+                         sizeof(int) * sd->wm_rot.count);
+               }
+          }
+     }
+
+   if (count) *count = sd->wm_rot.count;
+
+   return EINA_TRUE;
 }
 
 EAPI void
