@@ -1,113 +1,111 @@
-# German translations for elementary package
-# German messages for elementary.
-# Copyright (C) 2011 Enlightenment development team
-# This file is distributed under the same license as the elementary package.
-# Fabian Nowak <timystery@arcor.de>, 2011.
+# Esperanto translation for enlightenment
+# Copyright (c) 2013 Rosetta Contributors and Canonical Ltd 2013
+# This file is distributed under the same license as the enlightenment package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2013.
 #
 #: src/lib/elm_config.c:2084
 msgid ""
 msgstr ""
-"Project-Id-Version: elementary 0.7.0.57309\n"
+"Project-Id-Version: enlightenment\n"
 "Report-Msgid-Bugs-To: enlightenment-devel@lists.sourceforge.net\n"
 "POT-Creation-Date: 2013-05-11 16:56-0300\n"
-"PO-Revision-Date: 2011-06-19 16:41+0100\n"
-"Last-Translator: Heimen Stoffels <vistausss@gmail.com>\n"
-"Language-Team: Dutch <vistausss@gmail.com>\n"
-"Language: de\n"
+"PO-Revision-Date: 2013-04-06 21:14+0000\n"
+"Last-Translator: Eliovir <Unknown>\n"
+"Language-Team: Esperanto <eo@li.org>\n"
+"Language: eo\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Poedit-Language: Dutch\n"
-"X-Poedit-Country: NETHERLANDS\n"
+"X-Launchpad-Export-Date: 2013-04-08 06:21+0000\n"
+"X-Generator: Launchpad (build 16550)\n"
 
 #: src/lib/elc_fileselector.c:749
 msgid "Up"
-msgstr "Omhoog"
+msgstr "Supren"
 
 #: src/lib/elc_fileselector.c:764
 msgid "Home"
-msgstr "Persoonlijke map"
+msgstr "Hejmo"
 
 #: src/lib/elc_fileselector.c:992 src/lib/elm_entry.c:1413
 msgid "Cancel"
-msgstr "Annuleren"
+msgstr "Nuligi"
 
 #: src/lib/elc_fileselector.c:1001
 msgid "OK"
-msgstr "OK"
+msgstr "Bone"
 
 #: src/lib/elm_button.c:55
 msgid "Clicked"
-msgstr ""
+msgstr "Alklakita"
 
 #: src/lib/elm_button.c:255 src/lib/elm_check.c:200 src/lib/elm_gengrid.c:618
 #: src/lib/elm_genlist.c:1287 src/lib/elm_list.c:1360 src/lib/elm_radio.c:241
 #: src/lib/elm_spinner.c:499 src/lib/elm_toolbar.c:1253
 msgid "State: Disabled"
-msgstr ""
+msgstr "Stato: malŝaltita"
 
 #: src/lib/elm_button.c:279
 msgid "Button"
-msgstr ""
+msgstr "Butono"
 
 #: src/lib/elm_calendar.c:132
 msgid "%B %Y"
-msgstr ""
+msgstr "%B %Y"
 
 #: src/lib/elm_check.c:47 src/lib/elm_check.c:50 src/lib/elm_check.c:213
 #: src/lib/elm_radio.c:83 src/lib/elm_radio.c:242
 msgid "State: On"
-msgstr ""
+msgstr "Stato: enŝaltita"
 
 #: src/lib/elm_check.c:60 src/lib/elm_check.c:63 src/lib/elm_check.c:225
 #: src/lib/elm_radio.c:244
 msgid "State: Off"
-msgstr ""
+msgstr "Stato: malŝaltita"
 
 #: src/lib/elm_check.c:209 src/lib/elm_check.c:222
 msgid "State"
-msgstr ""
+msgstr "Stato"
 
 #: src/lib/elm_check.c:289
 msgid "Check"
-msgstr ""
+msgstr "Kontroli"
 
 #: src/lib/elm_colorselector.c:895
 msgid "color selector palette item"
-msgstr ""
+msgstr "ero de elektilo de kolorpaletro"
 
 #: src/lib/elm_config.c:2100
 msgid "default:LTR"
-msgstr "Standaard: LTR"
+msgstr "default:LTR"
 
 #: src/lib/elm_diskselector.c:622
 msgid "diskselector item"
-msgstr ""
+msgstr "ero de diskelektilo"
 
 #: src/lib/elm_entry.c:1407
 msgid "Copy"
-msgstr "Kopiëren"
+msgstr "Kopii"
 
 #: src/lib/elm_entry.c:1410
 msgid "Cut"
-msgstr "Knippen"
+msgstr "Eltondi"
 
 #: src/lib/elm_entry.c:1424
 msgid "Select"
-msgstr "Selecteren"
+msgstr "Elekti"
 
 #: src/lib/elm_entry.c:1430
 msgid "Paste"
-msgstr "Plakken"
+msgstr "Alglui"
 
 #: src/lib/elm_entry.c:2664
 msgid "Entry"
-msgstr ""
+msgstr "Ero"
 
 #: src/lib/elm_gengrid.c:650
 msgid "Gengrid Item"
-msgstr ""
+msgstr "Ero de komuna krado"
 
 #: src/lib/elm_genlist.c:1321
 msgid "Genlist Item"
@@ -115,53 +113,52 @@ msgstr ""
 
 #: src/lib/elm_label.c:355
 msgid "Label"
-msgstr ""
+msgstr "Etikedo"
 
 #: src/lib/elm_list.c:1400
 msgid "List Item"
-msgstr ""
+msgstr "Listero"
 
 #: src/lib/elm_progressbar.c:260
 msgid "progressbar"
-msgstr ""
+msgstr "progresbreto"
 
 #: src/lib/elm_radio.c:271
 msgid "Radio"
-msgstr ""
+msgstr "Radiobutono"
 
 #: src/lib/elm_slider.c:778
 msgid "slider"
-msgstr ""
+msgstr "ŝovilo"
 
 #: src/lib/elm_spinner.c:530
 msgid "spinner increment button"
-msgstr ""
+msgstr "alkrementa sago-butono"
 
 #: src/lib/elm_spinner.c:538
 msgid "spinner decrement button"
-msgstr ""
+msgstr "dekrementa sago-butono"
 
 #: src/lib/elm_spinner.c:545
 msgid "spinner"
-msgstr ""
+msgstr "sago-butono"
 
 #: src/lib/elm_toolbar.c:988
-#, fuzzy
 msgid "Selected"
-msgstr "Selecteren"
+msgstr "Elektita"
 
 #: src/lib/elm_toolbar.c:1251
 msgid "Separator"
-msgstr ""
+msgstr "Disigilo"
 
 #: src/lib/elm_toolbar.c:1255
 msgid "State: Selected"
-msgstr ""
+msgstr "Stato: elektita"
 
 #: src/lib/elm_toolbar.c:1257
 msgid "Has menu"
-msgstr ""
+msgstr "Ĝi havas menuo"
 
 #: src/lib/elm_toolbar.c:1322
 msgid "Tool Item"
-msgstr ""
+msgstr "Ila ero"

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: elementary\n"
 "Report-Msgid-Bugs-To: enlightenment-devel@lists.sourceforge.net\n"
-"POT-Creation-Date: 2013-01-04 12:33-0200\n"
+"POT-Creation-Date: 2013-05-11 16:56-0300\n"
 "PO-Revision-Date: 2010-12-26 10:05+0200\n"
 "Last-Translator: Aharon Hillel <a.hillel@samsung.com>\n"
 "Language-Team: General\n"
@@ -25,7 +25,7 @@ msgstr ""
 msgid "Home"
 msgstr ""
 
-#: src/lib/elc_fileselector.c:992 src/lib/elm_entry.c:1405
+#: src/lib/elc_fileselector.c:992 src/lib/elm_entry.c:1413
 msgid "Cancel"
 msgstr "בטל"
 
@@ -39,7 +39,7 @@ msgstr ""
 
 #: src/lib/elm_button.c:255 src/lib/elm_check.c:200 src/lib/elm_gengrid.c:618
 #: src/lib/elm_genlist.c:1287 src/lib/elm_list.c:1360 src/lib/elm_radio.c:241
-#: src/lib/elm_spinner.c:503 src/lib/elm_toolbar.c:1253
+#: src/lib/elm_spinner.c:499 src/lib/elm_toolbar.c:1253
 msgid "State: Disabled"
 msgstr ""
 
@@ -81,23 +81,23 @@ msgstr "default:RTL"
 msgid "diskselector item"
 msgstr ""
 
-#: src/lib/elm_entry.c:1399
+#: src/lib/elm_entry.c:1407
 msgid "Copy"
 msgstr "העתק"
 
-#: src/lib/elm_entry.c:1402
+#: src/lib/elm_entry.c:1410
 msgid "Cut"
 msgstr "גזור"
 
-#: src/lib/elm_entry.c:1416
+#: src/lib/elm_entry.c:1424
 msgid "Select"
 msgstr "התחל בחירה"
 
-#: src/lib/elm_entry.c:1422
+#: src/lib/elm_entry.c:1430
 msgid "Paste"
 msgstr "הדבק"
 
-#: src/lib/elm_entry.c:2653
+#: src/lib/elm_entry.c:2664
 msgid "Entry"
 msgstr ""
 
@@ -129,15 +129,15 @@ msgstr ""
 msgid "slider"
 msgstr ""
 
-#: src/lib/elm_spinner.c:534
+#: src/lib/elm_spinner.c:530
 msgid "spinner increment button"
 msgstr ""
 
-#: src/lib/elm_spinner.c:542
+#: src/lib/elm_spinner.c:538
 msgid "spinner decrement button"
 msgstr ""
 
-#: src/lib/elm_spinner.c:549
+#: src/lib/elm_spinner.c:545
 msgid "spinner"
 msgstr ""
 

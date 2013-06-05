@@ -1,4 +1,57 @@
+Elementary 1.7.7
+
+Changes since Elementary 1.7.6:
+-------------------------
+
+Fixes:
+
+   * Quit the scroll animator if the scroller don't have a bounce and reach a edge.
+   * Fix the scroller show by a page if the page size is set and the region_bring_in or region_show is called.
+
+Elementary 1.7.6
+
+Changes since Elementary 1.7.5:
+-------------------------
+
+Improvements:
+
+   * Better 64bits support.
+
+Fixes:
+
+   * when parent of ctxpopup is resized, ctxpopup calls dismissed signal.
+   * When string in entry is changed, access to sd should be forbidden after smart_callback_call is called.
+   * Fix memory leak of the ctxpopup and callback function to be ctxpopup obj is delivered to.
+   * In _timer_cb of elm_notify, access to sd should be forbidden after smart_callback_call is called.
+   * Fix the scroll position is calculated by the size of pan object, not the size of scroller.
+   * Fix a elm_transit crash issue when user delete all target objects in the effect end callback.
+   * elm_entry_single_line_set should not change cnp_mode when PLAINTEXT mode.
+   * ignore tab key widget focus change if control/alt is pressed
+   * prevent blank entry hoversels
+   * Fix vsync option in gl engine windows
+   * Fix elm_progressbar_pulse() to abort if pulsing not enabled
+   * Fix scroller acceleration bug. It was accelerated even it's scrolled after finishing the previous scroll. This happens with page scroll enabled.
+   * Fix initial value of the spinner on the first mouse move.
+   * Entry: Fixed a bug with text appending.
+   * List : Focus_next should be executed only when access mode is enabled.
+   * Focus highlight should be reconfigured when theme is changed.
+   * Fix the elm_shutdown bug in _elm_shutdown_config.
+   * fix ctxpopup geometry when parent is an elm_win
+        
 Elementary 1.7.5
+
+Changes since Elementary 1.7.5:
+-------------------------
+
+Fixes:
+
+   * Fix potential problem which would cause resource leak.
+   * Fix omitting signal emission when customized text parts change the text.
+   * Fix the bug which the callbacks of the sub-object are added even if the sub-object is added the parent object.
+   * Fix "changed" signal being sent twice in case of toggle style when check is clicked.
+   * elm_plug should call elm_widget_can_focus_set after adding parent class.
+   * Now, widget itself is the object which gets mouse_up event for stealing focus from another object. By this change, a widget with scroller interface can change its focus state before mouse_up of hit_rect.
+   * Fix index refill bug when autohide disabled.
 
 Changes since Elementary 1.7.4:
 -------------------------
@@ -96,6 +149,7 @@ Fixes:
    * Fixed gengrid wrong_calc_job parameter.
    * Fix elm_transit image animation that last few frames are skipped.
    * FIx elm_transit to accept proxy object.
+   * Fix a memory leak of elm_genlist - EINA_LIST_FREE should be used for returned value of elm_genlist_realized_items_get
 
 Changes since Elementary 1.0.0:
 -------------------------

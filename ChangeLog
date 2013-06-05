@@ -691,4 +691,129 @@
 
 	* 1.7.5 release
 
+2013-01-06  Jaehyun Cho (jae_hyun_cho@naver.com)
 
+        * Fix omitting signal emission when customized text parts change the text.
+
+2013-01-08  Jaehwan Kim
+
+        * Fix the bug which the callbacks of the sub-object are added even if the sub-object is added the parent object.
+
+2013-01-10  Shinwoo Kim
+
+	* backport r82456: Fix potential problem which would cause resource leak.
+
+2013-01-16  Shilpa Singh <shilpa.singh@samsung.com>, Rajeev Ranjan <rajeev.r@samsung.com>
+
+        * Fix "changed" signal being sent twice in case of toggle style when check is clicked.
+
+2013-01-16  WooHyun Jung
+
+        * elm_plug should call elm_widget_can_focus_set after adding parent class.
+        * Now, widget itself is the object which gets mouse_up event for stealing focus from another object. By this change, a widget with scroller interface can change its focus state before mouse_up of hit_rect.
+
+2013-01-16  Jaeun Choi
+
+        * Fix bug where index is not re-filled if autohide disabled
+
+2013-01-17  Bora Hwang (bora1.hwang@samsung.com)
+
+        * when parent of ctxpopup is resized, ctxpopup calls dismissed signal
+
+2013-01-19  WooHyun Jung
+
+        * When string in entry is changed, access to sd should be forbidden after smart_callback_call is called.
+
+2013-01-18  Thiep Ha (thiep.ha@samsung.com)
+
+        * Fix memory leak of the ctxpopup and callback function to be a ctxpoup obj is delivered to.
+
+2013-01-23  WooHyun Jung
+
+        * In _timer_cb of elm_notify, access to sd should be forbidden after smart_callback_call is called.
+
+2013-01-29  Jaehwan Kim
+
+        * Fix the scroll position is calculated by the size of pan object, not the size of scroller.
+
+2013-01-29  ChunEon Park (Hermet)
+
+        * Fix a elm_transit crash issue when user delete all target objects in the effect end callback.
+
+2013-02-07  WooHyun Jung
+
+        * elm_entry_single_line_set should not change cnp_mode when PLAINTEXT mode.
+
+2013-02-17  Cedric Bail
+
+	* Improve support for some 64bits system.
+
+2013-02-17 Mike Blumenkrantz
+
+        * ignore tab key widget focus change if control/alt is pressed
+        * prevent blank entry hoversels
+
+2013-02-19 Stefan Schmidt
+
+        * Fix memory leaks.
+
+2013-02-20 Carsten Haitzler (The Rasterman)
+
+        * Fix gl engine vsync option pass-in in elm_win
+        * Fix elm_progressbar_pulse() to abort if pulsing not enabled
+
+2013-02-21  Jaehwan Kim
+
+        * Fix scroller acceleration bug. It was accelerated even it's scrolled
+        after finishing the previous scroll. This happens with page scroll enabled.
+
+2013-03-02  Brian J. Lovin
+
+        * Fix initial value of the spinner on the first mouse move.
+
+2013-03-11  Tom Hacohen (TAsn)
+
+	* Entry: Fixed a bug with text appending.
+
+2013-03-13  WooHyun Jung
+
+        * List : Focus_next should be executed only when access mode is enabled.
+
+2013-03-13  Tae-Hwan Kim (bluezery)
+
+        * Fix a memory leak in elm_genlist. Return value of elm_genlist_realized_items_get should be freed
+
+2013-03-18  WooHyun Jung
+
+        * Focus highlight should be reconfigured when theme is changed.
+
+2013-03-19  Jaehwan Kim
+
+        * Fix the elm_shutdown bug in _elm_shutdown_config.
+        When the elm_shutdown is used after elm_config_all_flush, the segment fault occur.
+        It's why it uses ecore_x in _prop_all_update_cb after removing it.
+
+2013-03-27  Mike Blumenkrantz
+
+        * fix ctxpopup geometry when parent is an elm_win
+
+2013-04-04  Rafael Antognolli
+
+        * 1.7.6 release
+
+2013-04-08  Jaehwan Kim
+
+        * Quit the scroll animator if the scroller don't have a bounce and reach a edge.
+
+2013-04-08  Jaehwan Kim
+
+        * Fix the scroller show by a page if the page size is set and the region_bring_in or region_show is called.
+
+2013-04-08  Rafael Antognolli
+
+        * Fix layout_example_02.
+        * Fix hoversel_example_01.
+
+2013-04-09  WooHyun Jung
+
+        * When ctxpopup includes elm_list, elm_list should get focus when ctxpopup is shown.

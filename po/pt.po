@@ -6,14 +6,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Elementary\n"
 "Report-Msgid-Bugs-To: enlightenment-devel@lists.sourceforge.net\n"
-"POT-Creation-Date: 2013-01-04 12:33-0200\n"
-"PO-Revision-Date: 2012-08-14 16:16-0000\n"
+"POT-Creation-Date: 2013-05-11 16:56-0300\n"
+"PO-Revision-Date: 2013-01-23 12:18-0000\n"
 "Last-Translator: Sérgio Marques <smarquespt@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_PT\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.5.4\n"
 
 #: src/lib/elc_fileselector.c:749
 msgid "Up"
@@ -23,7 +24,7 @@ msgstr "Para cima"
 msgid "Home"
 msgstr "Pasta pessoal"
 
-#: src/lib/elc_fileselector.c:992 src/lib/elm_entry.c:1405
+#: src/lib/elc_fileselector.c:992 src/lib/elm_entry.c:1413
 msgid "Cancel"
 msgstr "Cancelar"
 
@@ -37,7 +38,7 @@ msgstr "Clicado"
 
 #: src/lib/elm_button.c:255 src/lib/elm_check.c:200 src/lib/elm_gengrid.c:618
 #: src/lib/elm_genlist.c:1287 src/lib/elm_list.c:1360 src/lib/elm_radio.c:241
-#: src/lib/elm_spinner.c:503 src/lib/elm_toolbar.c:1253
+#: src/lib/elm_spinner.c:499 src/lib/elm_toolbar.c:1253
 msgid "State: Disabled"
 msgstr "Estado: inativo"
 
@@ -69,7 +70,7 @@ msgstr "Verificação"
 
 #: src/lib/elm_colorselector.c:895
 msgid "color selector palette item"
-msgstr ""
+msgstr "palete do seletor de cores"
 
 #: src/lib/elm_config.c:2100
 msgid "default:LTR"
@@ -77,40 +78,39 @@ msgstr "padrão: LTR"
 
 #: src/lib/elm_diskselector.c:622
 msgid "diskselector item"
-msgstr ""
+msgstr "item do seletor de disco"
 
-#: src/lib/elm_entry.c:1399
+#: src/lib/elm_entry.c:1407
 msgid "Copy"
 msgstr "Copiar"
 
-#: src/lib/elm_entry.c:1402
+#: src/lib/elm_entry.c:1410
 msgid "Cut"
 msgstr "Cortar"
 
-#: src/lib/elm_entry.c:1416
+#: src/lib/elm_entry.c:1424
 msgid "Select"
 msgstr "Selecionar"
 
-#: src/lib/elm_entry.c:1422
+#: src/lib/elm_entry.c:1430
 msgid "Paste"
 msgstr "Colar"
 
-#: src/lib/elm_entry.c:2653
+#: src/lib/elm_entry.c:2664
 msgid "Entry"
-msgstr ""
+msgstr "Entrada"
 
 #: src/lib/elm_gengrid.c:650
 msgid "Gengrid Item"
-msgstr ""
+msgstr "Item da lista genérica"
 
 #: src/lib/elm_genlist.c:1321
-#, fuzzy
 msgid "Genlist Item"
-msgstr "Lista"
+msgstr "Item da lista genérica"
 
 #: src/lib/elm_label.c:355
 msgid "Label"
-msgstr ""
+msgstr "Texto"
 
 #: src/lib/elm_list.c:1400
 msgid "List Item"
@@ -118,7 +118,7 @@ msgstr "Lista"
 
 #: src/lib/elm_progressbar.c:260
 msgid "progressbar"
-msgstr ""
+msgstr "barra de progresso"
 
 #: src/lib/elm_radio.c:271
 msgid "Radio"
@@ -126,19 +126,19 @@ msgstr "Opção"
 
 #: src/lib/elm_slider.c:778
 msgid "slider"
-msgstr ""
+msgstr "barra deslizante"
 
-#: src/lib/elm_spinner.c:534
+#: src/lib/elm_spinner.c:530
 msgid "spinner increment button"
-msgstr ""
+msgstr "botão de aumento do spinner"
 
-#: src/lib/elm_spinner.c:542
+#: src/lib/elm_spinner.c:538
 msgid "spinner decrement button"
-msgstr ""
+msgstr "botão de diminuição do spinner"
 
-#: src/lib/elm_spinner.c:549
+#: src/lib/elm_spinner.c:545
 msgid "spinner"
-msgstr ""
+msgstr "spinner"
 
 #: src/lib/elm_toolbar.c:988
 msgid "Selected"

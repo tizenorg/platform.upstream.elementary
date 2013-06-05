@@ -1375,7 +1375,15 @@ _menu_press(Evas_Object *obj)
    else if (wd->context_menu)
      {
         const char *context_menu_orientation;
+        Eina_Bool ownersel;
 
+        ownersel = elm_selection_selection_has_owner(obj);
+        if (!wd->items)
+          {
+             /* prevent stupid blank hoversel */
+             if (wd->have_selection && wd->password) return;
+             if (wd->selmode || (_elm_config->desktop_entry && ((!wd->editable) || (!ownersel)))) return;
+          }
         if (wd->hoversel) evas_object_del(wd->hoversel);
         else elm_widget_scroll_freeze_push(obj);
         wd->hoversel = elm_hoversel_add(obj);
@@ -1416,7 +1424,7 @@ _menu_press(Evas_Object *obj)
                          elm_hoversel_item_add(wd->hoversel, E_("Select"), NULL, ELM_ICON_NONE,
                                                _select, obj);
                     }
-                  if (elm_selection_selection_has_owner(obj))
+                  if (ownersel)
                     {
                        if (wd->editable)
                          elm_hoversel_item_add(wd->hoversel, E_("Paste"), NULL, ELM_ICON_NONE,
@@ -1630,9 +1638,7 @@ _entry_changed_common_handling(void *data, const char *event)
    evas_event_thaw_eval(evas_object_evas_get(data));
    if ((wd->autosave) && (wd->file))
      wd->delay_write = ecore_timer_add(2.0, _delay_write, data);
-   /* callback - this could call callbacks that delete the entry... thus...
-    * any access to wd after this could be invalid */
-   evas_object_smart_callback_call(data, event, NULL);
+
    _check_enable_return_key(data);
    text = edje_object_part_text_get(wd->ent, "elm.text");
    if (text)
@@ -1642,6 +1648,9 @@ _entry_changed_common_handling(void *data, const char *event)
         else
           _elm_entry_update_guide(data, EINA_FALSE);
      }
+   /* callback - this could call callbacks that delete the entry... thus...
+    * any access to wd after this could be invalid */
+   evas_object_smart_callback_call(data, event, NULL);
 }
 
 static void
@@ -2420,7 +2429,9 @@ _elm_entry_text_get(const Evas_Object *obj, const char *item)
         char *tmpbuf;
         size_t tlen;
         tlen = strlen(text);
-        tmpbuf = malloc(wd->append_text_len + 1);
+	/* FIXME: need that or we do copy unitialised data */
+        tmpbuf = calloc(1, tlen + wd->append_text_len -
+              wd->append_text_position + 1);
         if (!tmpbuf)
           {
              ERR("Failed to allocate memory for entry's text %p", obj);
@@ -2697,7 +2708,8 @@ elm_entry_single_line_set(Evas_Object *obj, Eina_Bool single_line)
    if (wd->single_line == single_line) return;
    wd->single_line = single_line;
    wd->linewrap = ELM_WRAP_NONE;
-   elm_entry_cnp_mode_set(obj, ELM_CNP_MODE_NO_IMAGE);
+   if (elm_entry_cnp_mode_get(obj) == ELM_CNP_MODE_MARKUP)
+     elm_entry_cnp_mode_set(obj, ELM_CNP_MODE_NO_IMAGE);
    _theme_hook(obj);
    if (wd->scroller)
      {
