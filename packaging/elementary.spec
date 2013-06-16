@@ -20,6 +20,7 @@ BuildRequires:  pkgconfig(efreet)
 BuildRequires:  pkgconfig(eina)
 BuildRequires:  pkgconfig(evas)
 BuildRequires:  pkgconfig(x11)
+BuildRequires:  eet-bin
 BuildRequires:  python-devel
 
 %description
