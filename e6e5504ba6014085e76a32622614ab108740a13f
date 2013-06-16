@@ -1,0 +1,8 @@
+Change-Id: Ie6e5504ba6014085e76a32622614ab108740a13f
+Code-Review+2: Rusty Lynch <rusty.lynch@intel.com>
+Verified+1: Rusty Lynch <rusty.lynch@intel.com>
+Submitted-by: Rusty Lynch <rusty.lynch@intel.com>
+Submitted-at: Sun, 16 Jun 2013 01:35:41 -0700
+Reviewed-on: https://review.tizen.org/gerrit/4024
+Project: platform/upstream/elementary
+Branch: refs/heads/tizen
