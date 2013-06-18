@@ -1,7 +1,7 @@
 Name:           elementary
 Version:        1.7.7
 Release:        2 
-License:        LGPLV2.1+
+License:        LGPL-2.1+
 Summary:        EFL toolkit for small touchscreens
 Url:            http://trac.enlightenment.org/e/wiki/Elementary
 Group:          Graphics/EFL
@@ -20,7 +20,7 @@ BuildRequires:  pkgconfig(efreet)
 BuildRequires:  pkgconfig(eina)
 BuildRequires:  pkgconfig(evas)
 BuildRequires:  pkgconfig(x11)
-BuildRequires:  eet-bin
+BuildRequires:  eet-tools
 BuildRequires:  python-devel
 
 %description
@@ -45,7 +45,6 @@ Development files for elementary
 %prep
 %setup -q
 
-
 %build
 
 %autogen --disable-static
@@ -53,7 +52,6 @@ make %{?_smp_mflags}
 
 %install
 %make_install
-
 
 %find_lang %{name}
 
@@ -74,13 +72,10 @@ make %{?_smp_mflags}
 %{_datadir}/elementary/*
 %{_datadir}/icons/elementary.png
 
-
 %files devel
 %defattr(-,root,root,-)
 %{_includedir}/elementary-1/*.h
 %{_libdir}/*.so
 %{_libdir}/pkgconfig/*.pc
-
-
 
 %changelog
