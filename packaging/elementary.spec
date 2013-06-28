@@ -6,6 +6,7 @@ Summary:        EFL toolkit for small touchscreens
 Url:            http://trac.enlightenment.org/e/wiki/Elementary
 Group:          Graphics/EFL
 Source0:        elementary-%{version}.tar.bz2
+Source1001: 	elementary.manifest
 BuildRequires:  doxygen
 BuildRequires:  pkgconfig(ecore)
 BuildRequires:  pkgconfig(ecore-evas)
@@ -44,6 +45,7 @@ Development files for elementary
 
 %prep
 %setup -q
+cp %{SOURCE1001} .
 
 %build
 
@@ -62,6 +64,7 @@ make %{?_smp_mflags}
 %lang_package 
 
 %files 
+%manifest %{name}.manifest
 %defattr(-,root,root,-)
 %license COPYING
 %{_bindir}/*
@@ -73,6 +76,7 @@ make %{?_smp_mflags}
 %{_datadir}/icons/elementary.png
 
 %files devel
+%manifest %{name}.manifest
 %defattr(-,root,root,-)
 %{_includedir}/elementary-1/*.h
 %{_libdir}/*.so
