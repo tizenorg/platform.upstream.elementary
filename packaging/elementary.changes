@@ -1,3 +1,6 @@
+* Thu Jun 27 23:48:26 UTC 2013 - tracy.graydon@intel.com
+- TIVI-1068: enable elementary examples 
+
 * Tue Jun 18 20:47:50 UTC 2013 - tracy.graydon@intel.com
 -  TIVI-1046: package fails to build via linkbuild for Tizen:IVI on /usr/bin/eet. 
 Adding eet-tools instead of eet-bin fixes build for Tizen:IVI without breaking Tizen project build.
