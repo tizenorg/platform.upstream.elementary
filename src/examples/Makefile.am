@@ -2,8 +2,8 @@ MAINTAINERCLEANFILES = Makefile.in
 
 .PHONY: screenshots
 
-examplesdir = $(pkgdatadir)/examples
-filesdir = $(pkgdatadir)/examples
+examplesdir = $(pkglibdir)/examples
+filesdir = $(pkglibdir)/examples
 files_DATA =
 
 AM_CPPFLAGS = \
