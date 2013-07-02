@@ -34,6 +34,12 @@ fine-grained library splitting means all of this is shared, just a new
 widget "personality" is on top. And that is... Elementary, my dear watson.
 Elementary.
 
+%package examples
+Summary:   EFL elementary examples
+
+%description examples
+EFL elementary examples
+
 %package devel
 Summary:        Development components for the elementary package
 Group:          Development/Libraries
@@ -47,7 +53,7 @@ Development files for elementary
 
 %build
 
-%autogen --disable-static
+%autogen --disable-static --enable-build-examples
 make %{?_smp_mflags}
 
 %install
@@ -71,6 +77,10 @@ make %{?_smp_mflags}
 %{_datadir}/applications/*
 %{_datadir}/elementary/*
 %{_datadir}/icons/elementary.png
+
+%files examples
+%defattr(-,root,root,-)
+%{_libdir}/elementary/examples/*
 
 %files devel
 %defattr(-,root,root,-)
