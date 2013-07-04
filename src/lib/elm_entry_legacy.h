@@ -1170,3 +1170,14 @@ EAPI void                   elm_entry_input_panel_layout_variation_set(Evas_Obje
  * @since 1.8
  */
 EAPI int                    elm_entry_input_panel_layout_variation_get(const Evas_Object *obj);
+
+/**
+ * This disables the entry's magnifer feature.
+ *
+ * @param obj The entry object
+ * @param disabled If true, the magnifier is not displayed
+ */
+
+EAPI void                        elm_entry_magnifier_disabled_set(Evas_Object *obj, Eina_Bool disabled);
+
+EAPI Eina_Bool                   elm_entry_magnifier_disabled_get(Evas_Object *obj);
