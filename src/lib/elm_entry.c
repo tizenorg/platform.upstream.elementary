@@ -1424,7 +1424,7 @@ _long_press_cb(void *data)
 {
    ELM_ENTRY_DATA_GET(data, sd);
 
-   if (_elm_config->magnifier_enable)
+   if (sd->mgf_enable)
      {
         _magnifier_create(data);
         _magnifier_show(data);
@@ -1454,7 +1454,7 @@ _entry_handler_move_start_cb(void *data,
    edje_object_part_text_cursor_geometry_get(sd->entry_edje,
                                              "elm.text",
                                              &cx, &cy, NULL, &ch);
-   if (_elm_config->magnifier_enable)
+   if (sd->mgf_enable)
      {
         _magnifier_create(data);
         _magnifier_show(data);
@@ -1468,7 +1468,8 @@ _entry_handler_move_end_cb(void *data,
                            const char *emission __UNUSED__,
                            const char *source __UNUSED__)
 {
-   if (_elm_config->magnifier_enable)
+   ELM_ENTRY_DATA_GET(data, sd);
+   if (sd->mgf_enable)
      _magnifier_hide(data);
    if (!_elm_config->desktop_entry)
      _menu_call(data);
@@ -1487,7 +1488,7 @@ _entry_handler_moving_cb(void *data,
    edje_object_part_text_cursor_geometry_get(sd->entry_edje,
                                              "elm.text",
                                              &cx, &cy, NULL, &ch);
-   if (_elm_config->magnifier_enable)
+   if (sd->mgf_enable)
      _magnifier_move(data, x + cx, y + cy + ch/2);
 }
 
@@ -1547,7 +1548,7 @@ _mouse_up_cb(void *data,
    if (ev->button == 1)
      {
         ELM_SAFE_FREE(sd->longpress_timer, ecore_timer_del);
-        if ((sd->long_pressed) && (_elm_config->magnifier_enable))
+        if ((sd->long_pressed) && (sd->mgf_enable))
           {
              _magnifier_hide(data);
              _menu_call(data);
@@ -1573,7 +1574,7 @@ _mouse_move_cb(void *data,
    if (sd->disabled) return;
    if (ev->buttons == 1)
      {
-        if ((sd->long_pressed) && (_elm_config->magnifier_enable))
+        if ((sd->long_pressed) && (sd->mgf_enable))
           {
              Evas_Coord x, y;
              Eina_Bool rv;
@@ -2968,6 +2969,7 @@ _elm_entry_smart_add(Eo *obj, void *_pd, va_list *list EINA_UNUSED)
    priv->context_menu = EINA_TRUE;
    priv->auto_save = EINA_TRUE;
    priv->editable = EINA_TRUE;
+   priv->mgf_enable = _elm_config->magnifier_enable;
 
    if (!elm_layout_theme_set(obj, "entry", "base", elm_widget_style_get(obj)))
      CRITICAL("Failed to set layout!");
@@ -5464,6 +5466,40 @@ _anchor_hover_end(Eo *obj EINA_UNUSED, void *_pd, va_list *list EINA_UNUSED)
 }
 /* END - ANCHOR HOVER */
 
+EAPI void
+elm_entry_magnifier_disabled_set(Evas_Object *obj, Eina_Bool disabled)
+{
+   ELM_ENTRY_CHECK(obj);
+   eo_do(obj, elm_obj_magnifier_disabled_set(disabled));
+}
+
+static void
+_magnifier_disabled_set(Eo *obj EINA_UNUSED, void *_pd, va_list *list)
+{
+   Eina_Bool disabled = va_arg(*list, int);
+   Elm_Entry_Smart_Data *sd = _pd;
+
+   sd->mgf_enable = !disabled;
+}
+
+EAPI Eina_Bool
+elm_entry_magnifier_disabled_get(Evas_Object *obj)
+{
+   Eina_Bool ret = EINA_FALSE;
+   ELM_ENTRY_CHECK(obj) EINA_FALSE;
+   eo_do(obj, elm_obj_magnifier_disabled_get(&ret));
+   return ret;
+}
+
+static void
+_magnifier_disabled_get(Eo *obj EINA_UNUSED, void *_pd, va_list *list)
+{
+   Eina_Bool *disabled = va_arg(*list, Eina_Bool*);
+   Elm_Entry_Smart_Data *sd = _pd;
+
+   *disabled = !sd->mgf_enable;
+}
+
 static void
 _elm_entry_smart_focus_next_manager_is(Eo *obj EINA_UNUSED, void *_pd EINA_UNUSED, va_list *list)
 {
@@ -5601,6 +5637,8 @@ _class_constructor(Eo_Class *klass)
         EO_OP_FUNC(ELM_OBJ_ENTRY_ID(ELM_OBJ_ENTRY_SUB_ID_ANCHOR_HOVER_END), _anchor_hover_end),
         EO_OP_FUNC(ELM_OBJ_ENTRY_ID(ELM_OBJ_ENTRY_SUB_ID_INPUT_PANEL_LAYOUT_VARIATION_SET), _input_panel_layout_variation_set),
         EO_OP_FUNC(ELM_OBJ_ENTRY_ID(ELM_OBJ_ENTRY_SUB_ID_INPUT_PANEL_LAYOUT_VARIATION_GET), _input_panel_layout_variation_get),
+        EO_OP_FUNC(ELM_OBJ_ENTRY_ID(ELM_OBJ_ENTRY_SUB_ID_MAGNIFIER_DISABLED_SET), _magnifier_disabled_set),
+        EO_OP_FUNC(ELM_OBJ_ENTRY_ID(ELM_OBJ_ENTRY_SUB_ID_MAGNIFIER_DISABLED_GET), _magnifier_disabled_get),
         EO_OP_FUNC_SENTINEL
    };
    eo_class_funcs_set(klass, func_desc);
@@ -5696,6 +5734,8 @@ static const Eo_Op_Description op_desc[] = {
      EO_OP_DESCRIPTION(ELM_OBJ_ENTRY_SUB_ID_ANCHOR_HOVER_END, "Ends the hover popup in the entry."),
      EO_OP_DESCRIPTION(ELM_OBJ_ENTRY_SUB_ID_INPUT_PANEL_LAYOUT_VARIATION_SET, "Set the input panel layout variation of the entry."),
      EO_OP_DESCRIPTION(ELM_OBJ_ENTRY_SUB_ID_INPUT_PANEL_LAYOUT_VARIATION_GET, "Get the input panel layout variation of the entry."),
+     EO_OP_DESCRIPTION(ELM_OBJ_ENTRY_SUB_ID_MAGNIFIER_DISABLED_SET, "Disables the entry's magnifer feature."),
+     EO_OP_DESCRIPTION(ELM_OBJ_ENTRY_SUB_ID_MAGNIFIER_DISABLED_GET, "Return true if magnifier feature is disabled."),
      EO_OP_DESCRIPTION_SENTINEL
 };
 
