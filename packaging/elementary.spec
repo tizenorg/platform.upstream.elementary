@@ -41,6 +41,12 @@ Summary:   EFL elementary examples
 %description examples
 EFL elementary examples
 
+%package config
+Summary:   EFL elementary configuration and test apps
+
+%description config
+EFL elementary configuration and test apps
+
 %package devel
 Summary:        Development components for the elementary package
 Group:          Development/Libraries
@@ -73,17 +79,23 @@ make %{?_smp_mflags}
 %manifest %{name}.manifest
 %defattr(-,root,root,-)
 %license COPYING
-%{_bindir}/*
+%{_bindir}/elementary_quicklaunch
+%{_bindir}/elementary_run
 %{_libdir}/edje/*
 %{_libdir}/elementary/*
 %{_libdir}/*.so.*
-%{_datadir}/applications/*
 %{_datadir}/elementary/*
 %{_datadir}/icons/elementary.png
 
 %files examples
 %defattr(-,root,root,-)
 %{_libdir}/elementary/examples/*
+
+%files config
+%defattr(-,root,root,-)
+%{_datadir}/applications/*
+%{_bindir}/elementary_config
+%{_bindir}/elementary_test*
 
 %files devel
 %manifest %{name}.manifest
