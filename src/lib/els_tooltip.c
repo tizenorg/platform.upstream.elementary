@@ -262,7 +262,7 @@ _elm_tooltip_hide_anim_stop(Elm_Tooltip *tt)
 static void
 _elm_tooltip_reconfigure(Elm_Tooltip *tt)
 {
-   Evas_Coord ox, oy, ow, oh, px, py, tx, ty, tw, th, cw = 0, ch = 0;
+   Evas_Coord ox, oy, ow, oh, px = 0, py = 0, tx, ty, tw, th, cw = 0, ch = 0;
    Evas_Coord eminw, eminh, ominw, ominh;
    double rel_x, rel_y;
    Eina_Bool inside_eventarea;
@@ -302,20 +302,19 @@ _elm_tooltip_reconfigure(Elm_Tooltip *tt)
                {
                   evas_object_hide(tt->tt_win);
                   elm_win_alpha_set(tt->tt_win, EINA_TRUE);
-#ifdef HAVE_ELEMENTARY_X
-                  ecore_x_window_shape_input_rectangle_set(elm_win_xwindow_get(tt->tt_win), 0, 0, 0, 0);
-#endif
-                  evas_object_show(tt->tt_win);
                }
              else
                {
                   evas_object_hide(tt->tt_win);
                   elm_win_alpha_set(tt->tt_win, EINA_FALSE);
-#ifdef HAVE_ELEMENTARY_X
-                  ecore_x_window_shape_input_rectangle_set(elm_win_xwindow_get(tt->tt_win), 0, 0, 0, 0);
-#endif
-                  evas_object_show(tt->tt_win);
                }
+#ifdef HAVE_ELEMENTARY_X
+             Ecore_X_Window win;
+             win = elm_win_xwindow_get(tt->tt_win);
+             if (win)
+               ecore_x_window_shape_input_rectangle_set(win, 0, 0, 0, 0);
+#endif
+             evas_object_show(tt->tt_win);
           }
 
         str = edje_object_data_get(tt->tooltip, "pad_x");
@@ -397,7 +396,8 @@ _elm_tooltip_reconfigure(Elm_Tooltip *tt)
         Evas_Object *win = elm_object_top_widget_get(tt->owner);
 #ifdef HAVE_ELEMENTARY_X
         Ecore_X_Window xwin = elm_win_xwindow_get(win);
-        ecore_x_pointer_xy_get(xwin, &px, &py);
+        if (xwin)
+          ecore_x_pointer_xy_get(xwin, &px, &py);
 #endif
         elm_win_screen_position_get(win, &x, &y);
         ox += x;
