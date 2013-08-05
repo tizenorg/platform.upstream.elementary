@@ -802,6 +802,12 @@ EAPI void                  elm_win_render(Evas_Object *obj);
  */
 EAPI void                  elm_win_rotation_set(Evas_Object *obj, int rotation);
 
+EAPI Eina_Bool elm_win_wm_rotation_supported_get(const Evas_Object *obj);
+EAPI void elm_win_wm_rotation_preferred_rotation_set(Evas_Object *obj, const int rotation);
+EAPI int elm_win_wm_rotation_preferred_rotation_get(const Evas_Object *obj);
+EAPI void elm_win_wm_rotation_available_rotations_set(Evas_Object *obj, const int *rotations, unsigned int count);
+EAPI Eina_Bool elm_win_wm_rotation_available_rotations_get(const Evas_Object *obj, int **rotations, unsigned int *count);
+
 /**
  * Rotates the window and resizes it.
  *
