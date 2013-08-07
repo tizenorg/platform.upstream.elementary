@@ -44,7 +44,7 @@ EFL elementary examples
 %package tools
 Summary:   EFL elementary configuration and test apps
 
-%description config
+%description tools
 EFL elementary configuration and test apps
 
 %package devel
