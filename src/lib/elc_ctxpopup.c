@@ -981,6 +981,9 @@ _on_show(void *data __UNUSED__,
         elm_list_go(sd->list);
         sd->visible = EINA_TRUE;
         elm_object_focus_set(sd->list, EINA_TRUE);
+
+        // the first item of list don't need a separator, so we send this signal
+        elm_object_item_signal_emit(sd->items->data, "elm,state,default", "elm");
         return;
      }
 
@@ -1415,6 +1418,12 @@ _item_append(Eo *obj, void *_pd, va_list *list)
    item->list_item =
      elm_list_item_append(sd->list, label, icon, NULL, _item_wrap_cb, item);
    sd->items = eina_list_append(sd->items, item);
+   if (label && icon)
+      elm_list_item_style_set(item->list_item, "ctxpopup_icon_text");
+   else if (label)
+      elm_list_item_style_set(item->list_item, "ctxpopup_text");
+   else
+      elm_list_item_style_set(item->list_item, "ctxpopup_icon");
 
    sd->dir = ELM_CTXPOPUP_DIRECTION_UNKNOWN;
 
