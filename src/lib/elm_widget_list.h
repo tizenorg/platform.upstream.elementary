@@ -65,6 +65,7 @@ struct _Elm_List_Item
 
    const char          *label;
    Eina_List           *node;
+   Eina_Stringshare    *style;
 
    Eina_Bool            is_separator : 1;
    Eina_Bool            highlighted : 1;
