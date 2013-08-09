@@ -77,6 +77,8 @@ _elm_list_item_free(Elm_List_Item *it)
    ELM_SAFE_FREE(it->long_timer, ecore_timer_del);
    ELM_SAFE_FREE(it->icon, evas_object_del);
    ELM_SAFE_FREE(it->end, evas_object_del);
+
+   eina_stringshare_del(it->style);
 }
 
 static Eina_Bool
@@ -664,8 +666,12 @@ _items_fix(Evas_Object *obj)
    i = 0;
    EINA_LIST_FOREACH(sd->items, l, it)
      {
+        const char *item_style;
+
         if (it->deleted)
           continue;
+
+        item_style = it->style ? it->style : style;
 
         it->even = i & 0x1;
         if ((it->even != it->is_even) || (!it->fixed) || (redo))
@@ -675,24 +681,24 @@ _items_fix(Evas_Object *obj)
              if (it->is_separator)
                elm_widget_theme_object_set
                  (obj, VIEW(it), "separator", sd->h_mode ?
-                 "horizontal" : "vertical", style);
+                 "horizontal" : "vertical", item_style);
              else if (sd->mode == ELM_LIST_COMPRESS)
                {
                   if (it->even)
                     elm_widget_theme_object_set
-                      (obj, VIEW(it), "list", it_compress, style);
+                      (obj, VIEW(it), "list", it_compress, item_style);
                   else
                     elm_widget_theme_object_set
-                      (obj, VIEW(it), "list", it_compress_odd, style);
+                      (obj, VIEW(it), "list", it_compress_odd, item_style);
                }
              else
                {
                   if (it->even)
                     elm_widget_theme_object_set
-                      (obj, VIEW(it), "list", it_plain, style);
+                      (obj, VIEW(it), "list", it_plain, item_style);
                   else
                     elm_widget_theme_object_set
-                      (obj, VIEW(it), "list", it_odd, style);
+                      (obj, VIEW(it), "list", it_odd, item_style);
                }
              stacking = edje_object_data_get(VIEW(it), "stacking");
              if (stacking)
@@ -2664,6 +2670,24 @@ _focus_on_selection_get(Eo *obj EINA_UNUSED, void *_pd, va_list *list)
    Eina_Bool *ret = va_arg(*list, Eina_Bool *);
    Elm_List_Smart_Data *sd = _pd;
    *ret = sd->focus_on_selection_enabled;
+}
+
+EAPI void
+elm_list_item_style_set(Elm_Object_Item *it, const char *style)
+{
+   Elm_List_Item *item = (Elm_List_Item *)it;
+   EINA_SAFETY_ON_NULL_RETURN(it);
+   if (item->style)
+     eina_stringshare_del(item->style);
+   item->style = eina_stringshare_add(style);
+}
+
+EAPI const char *
+elm_list_item_style_get(const Elm_Object_Item *it)
+{
+   const Elm_List_Item *item = (Elm_List_Item *)it;
+   EINA_SAFETY_ON_NULL_RETURN_VAL(it, NULL);
+   return item->style;
 }
 
 static void

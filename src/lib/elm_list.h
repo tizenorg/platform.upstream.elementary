@@ -99,6 +99,10 @@
 #include <elm_list_legacy.h>
 #endif
 
+EAPI void elm_list_item_style_set(Elm_Object_Item *it, const char *style);
+
+EAPI const char *elm_list_item_style_get(const Elm_Object_Item *it);
+
 /**
  * @}
  */
