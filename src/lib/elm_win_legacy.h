@@ -1314,3 +1314,4 @@ EAPI Eina_Bool             elm_win_floating_mode_get(const Evas_Object *obj);
  * @since 1.8
  */
 EAPI Ecore_Window          elm_win_window_id_get(const Evas_Object *obj);
+EAPI void elm_win_profiles_set(Evas_Object  *obj, const char  **profiles, unsigned int  num_profiles);
