@@ -5567,6 +5567,14 @@ elm_win_floating_mode_get(const Evas_Object *obj)
    return sd->floating;
 }
 
+EAPI void
+elm_win_profiles_set(Evas_Object  *obj EINA_UNUSED,
+                     const char  **profiles EINA_UNUSED,
+                     unsigned int  num_profiles EINA_UNUSED)
+{
+
+}
+
 static void
 _class_constructor(Eo_Class *klass)
 {

@@ -1302,3 +1302,5 @@ EAPI void                  elm_win_floating_mode_set(Evas_Object *obj, Eina_Bool
  */
 EAPI Eina_Bool             elm_win_floating_mode_get(const Evas_Object *obj);
 
+EAPI void elm_win_profiles_set(Evas_Object  *obj, const char  **profiles, unsigned int  num_profiles);
+
