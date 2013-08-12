@@ -8,16 +8,16 @@ msgid ""
 msgstr ""
 "Project-Id-Version: enlightenment\n"
 "Report-Msgid-Bugs-To: enlightenment-devel@lists.sourceforge.net\n"
-"POT-Creation-Date: 2013-05-11 16:56-0300\n"
-"PO-Revision-Date: 2013-04-06 21:14+0000\n"
+"POT-Creation-Date: 2013-07-29 16:19-0300\n"
+"PO-Revision-Date: 2013-06-17 13:20+0000\n"
 "Last-Translator: Eliovir <Unknown>\n"
 "Language-Team: Esperanto <eo@li.org>\n"
 "Language: eo\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2013-04-08 06:21+0000\n"
-"X-Generator: Launchpad (build 16550)\n"
+"X-Launchpad-Export-Date: 2013-06-18 06:51+0000\n"
+"X-Generator: Launchpad (build 16673)\n"
 
 #: src/lib/elc_fileselector.c:749
 msgid "Up"
@@ -40,7 +40,7 @@ msgid "Clicked"
 msgstr "Alklakita"
 
 #: src/lib/elm_button.c:255 src/lib/elm_check.c:200 src/lib/elm_gengrid.c:618
-#: src/lib/elm_genlist.c:1287 src/lib/elm_list.c:1360 src/lib/elm_radio.c:241
+#: src/lib/elm_genlist.c:1287 src/lib/elm_list.c:1365 src/lib/elm_radio.c:241
 #: src/lib/elm_spinner.c:499 src/lib/elm_toolbar.c:1253
 msgid "State: Disabled"
 msgstr "Stato: malŝaltita"
@@ -109,13 +109,13 @@ msgstr "Ero de komuna krado"
 
 #: src/lib/elm_genlist.c:1321
 msgid "Genlist Item"
-msgstr ""
+msgstr "Ero de komuna listo"
 
 #: src/lib/elm_label.c:355
 msgid "Label"
 msgstr "Etikedo"
 
-#: src/lib/elm_list.c:1400
+#: src/lib/elm_list.c:1405
 msgid "List Item"
 msgstr "Listero"
 
