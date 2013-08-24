@@ -57,7 +57,7 @@ elm_main(int argc, char **argv)
    Evas_Object *item;
    char buf[PATH_MAX];
 
-   elm_app_info_set(elm_main, "elementary", "examples/layout_example.edj");
+   elm_app_info_set(elm_main, "elementary", "config/profile.cfg");
    win = elm_win_add(NULL, "layout", ELM_WIN_BASIC);
    elm_policy_set(ELM_POLICY_QUIT, ELM_POLICY_QUIT_LAST_WINDOW_CLOSED);
    elm_win_autodel_set(win, EINA_TRUE);
@@ -72,7 +72,7 @@ elm_main(int argc, char **argv)
    layout = elm_layout_add(win);
    evas_object_size_hint_weight_set(layout, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    elm_win_resize_object_add(win, layout);
-   snprintf(buf, sizeof(buf), "%s/examples/layout_example.edj", elm_app_data_dir_get());
+   snprintf(buf, sizeof(buf), "%s/elementary/examples/layout_example.edj", elm_app_lib_dir_get());
    elm_layout_file_set(layout, buf, "example/mylayout");
    evas_object_show(layout);
 
