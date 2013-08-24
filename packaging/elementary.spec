@@ -82,7 +82,7 @@ make %{?_smp_mflags}
 %{_bindir}/elementary_quicklaunch
 %{_bindir}/elementary_run
 %{_libdir}/edje/*
-%{_libdir}/elementary/*
+%{_libdir}/elementary/modules/*
 %{_libdir}/*.so.*
 %{_datadir}/elementary/*
 %{_datadir}/icons/elementary.png
