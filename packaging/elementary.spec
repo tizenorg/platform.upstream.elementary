@@ -1,3 +1,5 @@
+%bcond_with wayland
+
 Name:       elementary
 Summary:    EFL toolkit
 Version:    1.8.alpha
@@ -11,8 +13,10 @@ Requires(postun): /sbin/ldconfig
 BuildRequires:  gettext
 BuildRequires:  efl
 BuildRequires:  efl-devel
-BuildRequires:  app-svc-devel
+%if ! %{with wayland}
 BuildRequires:  pkgconfig(x11)
+BuildRequires:  app-svc-devel
+%endif
 
 %description
 Elementary - a basic widget set that is easy to use based on EFL for mobile This package contains devel content.
