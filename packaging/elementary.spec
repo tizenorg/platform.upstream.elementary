@@ -88,10 +88,12 @@ make %{?_smp_mflags}
 %{_datadir}/icons/elementary.png
 
 %files examples
+%manifest %{name}.manifest
 %defattr(-,root,root,-)
 %{_libdir}/elementary/examples/*
 
 %files tools
+%manifest %{name}.manifest
 %defattr(-,root,root,-)
 %{_datadir}/applications/*
 %{_bindir}/elementary_config
