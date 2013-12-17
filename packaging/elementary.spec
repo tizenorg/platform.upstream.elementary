@@ -1,3 +1,5 @@
+%bcond_with wayland
+%bcond_with x
 Name:           elementary
 Version:        1.7.8
 Release:        2 
@@ -11,6 +13,14 @@ BuildRequires:  pkgconfig(ecore)
 BuildRequires:  pkgconfig(ecore-evas)
 BuildRequires:  pkgconfig(ecore-file)
 BuildRequires:  pkgconfig(ecore-imf)
+%if %{with wayland}
+BuildRequires:  pkgconfig(ecore-wayland)
+%endif
+%if %{with x}
+BuildRequires:  pkgconfig(ecore-x)
+BuildRequires:  pkgconfig(x11)
+%endif
+BuildRequires:  pkgconfig(edbus)
 BuildRequires:  pkgconfig(edje)
 BuildRequires:  pkgconfig(eet)
 BuildRequires:  pkgconfig(efreet)
@@ -18,7 +28,6 @@ BuildRequires:  pkgconfig(eina)
 BuildRequires:  pkgconfig(evas)
 BuildRequires:  pkgconfig(emotion)
 BuildRequires:  pkgconfig(ethumb_client)
-BuildRequires:  pkgconfig(x11)
 BuildRequires:  eet-tools
 
 %description
@@ -59,7 +68,15 @@ cp %{SOURCE1001} .
 
 %build
 
-%autogen --disable-static --enable-build-examples
+%reconfigure --disable-static \
+%if %{with wayland}
+         --enable-ecore-wayland \
+%endif
+%if !%{with x}
+         --disable-ecore-x \
+%endif
+         --enable-build-examples
+
 make %{?_smp_mflags}
 
 %install
