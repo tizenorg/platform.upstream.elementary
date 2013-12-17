@@ -123,11 +123,13 @@ make %{?_smp_mflags}
 
 %if ! %dbus_unavailable
 %files examples
+%manifest %{name}.manifest
 %defattr(-,root,root,-)
 %{_libdir}/elementary/examples/*
 %endif
 
 %files tools
+%manifest %{name}.manifest
 %defattr(-,root,root,-)
 %{_datadir}/applications/*
 %{_bindir}/elementary_config
