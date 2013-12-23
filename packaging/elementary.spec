@@ -72,6 +72,8 @@ cp %{SOURCE1001} .
 %endif
 %if !%{with x}
          --disable-ecore-x \
+%else
+         --enable-ecore-x \
 %endif
          --enable-build-examples
 
