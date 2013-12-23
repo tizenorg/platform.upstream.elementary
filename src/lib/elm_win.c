@@ -120,6 +120,14 @@ struct _Elm_Win_Smart_Data
       Eina_Bool    top_animate : 1;
       Eina_Bool    geometry_changed : 1;
    } focus_highlight;
+
+   struct
+   {
+      const char  *name;
+      Ecore_Timer *timer;
+      Eina_List   *names;
+   } profile;
+
    struct
    {
       int          preferred_rot; // specified by app
@@ -170,6 +178,7 @@ static const char SIG_MAXIMIZED[] = "maximized";
 static const char SIG_UNMAXIMIZED[] = "unmaximized";
 static const char SIG_IOERR[] = "ioerr";
 static const char SIG_ROTATION_CHANGED[] = "rotation,changed";
+static const char SIG_PROFILE_CHANGED[] = "profile,changed";
 static const char SIG_WM_ROTATION_CHANGED[] = "wm,rotation,changed";
 
 static const Evas_Smart_Cb_Description _smart_callbacks[] = {
@@ -188,6 +197,7 @@ static const Evas_Smart_Cb_Description _smart_callbacks[] = {
    {SIG_UNMAXIMIZED, ""},
    {SIG_IOERR, ""},
    {SIG_ROTATION_CHANGED, ""},
+   {SIG_PROFILE_CHANGED, ""},
    {SIG_WM_ROTATION_CHANGED, ""},
    {NULL, NULL}
 };
@@ -838,6 +848,58 @@ _elm_win_focus_out(Ecore_Evas *ee)
    /* if (sd->img_obj) */
    /*   { */
    /*   } */
+}
+
+static void
+_elm_win_profile_update(Ecore_Evas *ee)
+{
+   Elm_Win_Smart_Data *sd = _elm_win_associate_get(ee);
+   Evas_Object *obj;
+
+   EINA_SAFETY_ON_NULL_RETURN(sd);
+
+   obj = ELM_WIDGET_DATA(sd)->obj;
+   if (!obj) return;
+
+   if (sd->profile.timer)
+     {
+        ecore_timer_del(sd->profile.timer);
+        sd->profile.timer = NULL;
+     }
+
+   /* It should be replaced per-window ELM profile later. */
+   _elm_config_profile_set(sd->profile.name);
+
+   evas_object_smart_callback_call(obj, SIG_PROFILE_CHANGED, NULL);
+}
+
+static Eina_Bool
+_elm_win_profile_change_delay(void *data)
+{
+   Elm_Win_Smart_Data *sd = data;
+   const char *profile;
+   Eina_Bool changed = EINA_FALSE;
+
+   profile = eina_list_nth(sd->profile.names, 0);
+   if (profile)
+     {
+        if (sd->profile.name)
+          {
+             if (strcmp(sd->profile.name, profile))
+               {
+                  eina_stringshare_replace(&(sd->profile.name), profile);
+                  changed = EINA_TRUE;
+               }
+          }
+        else
+          {
+             sd->profile.name = eina_stringshare_add(profile);
+             changed = EINA_TRUE;
+          }
+     }
+   sd->profile.timer = NULL;
+   if (changed) _elm_win_profile_update(sd->ee);
+   return EINA_FALSE;
 }
 
 static void
@@ -3298,6 +3360,68 @@ elm_win_withdrawn_get(const Evas_Object *obj)
    ELM_WIN_DATA_GET_OR_RETURN_VAL(obj, sd, EINA_FALSE);
 
    return sd->withdrawn;
+}
+
+EAPI void
+elm_win_profiles_set(Evas_Object  *obj,
+                     const char  **profiles,
+                     unsigned int  num_profiles)
+{
+   char **profiles_int;
+   const char *str;
+   unsigned int i, num;
+   Eina_List *l;
+
+   ELM_WIN_CHECK(obj);
+   ELM_WIN_DATA_GET_OR_RETURN(obj, sd);
+
+   if (!profiles) return;
+
+   if (sd->profile.timer) ecore_timer_del(sd->profile.timer);
+   sd->profile.timer = ecore_timer_add(0.1, _elm_win_profile_change_delay, sd);
+   EINA_LIST_FREE(sd->profile.names, str) eina_stringshare_del(str);
+
+   for (i = 0; i < num_profiles; i++)
+     {
+        if ((profiles[i]) &&
+            _elm_config_profile_exists(profiles[i]))
+          {
+             str = eina_stringshare_add(profiles[i]);
+             sd->profile.names = eina_list_append(sd->profile.names, str);
+          }
+     }
+
+   num = eina_list_count(sd->profile.names);
+   profiles_int = alloca(num * sizeof(char *));
+
+   if (profiles_int)
+     {
+        i = 0;
+        EINA_LIST_FOREACH(sd->profile.names, l, str)
+          {
+             if (str)
+               profiles_int[i] = strdup(str);
+             else
+               profiles_int[i] = NULL;
+             i++;
+          }
+        ecore_evas_profiles_set(sd->ee, (const char **)profiles_int, i);
+        for (i = 0; i < num; i++)
+          {
+             if (profiles_int[i]) free(profiles_int[i]);
+          }
+     }
+   else
+     ecore_evas_profiles_set(sd->ee, profiles, num_profiles);
+}
+
+EAPI const char *
+elm_win_profile_get(const Evas_Object *obj)
+{
+   ELM_WIN_CHECK(obj) NULL;
+   ELM_WIN_DATA_GET_OR_RETURN_VAL(obj, sd, NULL);
+
+   return sd->profile.name;
 }
 
 EAPI void

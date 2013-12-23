@@ -128,6 +128,7 @@ struct _Elm_Conformant_Smart_Data
    Evas_Object                   *virtualkeypad;
    Evas_Object                   *clipboard;
    Evas_Object                   *scroller;
+   Evas_Object                   *win;
 #ifdef HAVE_ELEMENTARY_X
    Ecore_Event_Handler           *prop_hdl;
    Ecore_X_Virtual_Keyboard_State vkb_state;

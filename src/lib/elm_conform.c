@@ -504,11 +504,16 @@ _elm_conformant_smart_add(Evas_Object *obj)
 static void
 _elm_conformant_smart_del(Evas_Object *obj)
 {
+   Evas_Object *top;
    ELM_CONFORMANT_DATA_GET(obj, sd);
 
 #ifdef HAVE_ELEMENTARY_X
    if (sd->prop_hdl) ecore_event_handler_del(sd->prop_hdl);
 #endif
+
+   top = elm_widget_top_get(obj);
+   top = sd->win;
+   evas_object_data_set(top, "\377 elm,conformant", NULL);
 
    if (sd->show_region_job) ecore_job_del(sd->show_region_job);
 
@@ -576,5 +581,9 @@ elm_conformant_add(Evas_Object *parent)
    if (!elm_widget_sub_object_add(parent, obj))
      ERR("could not add %p as sub object of %p", obj, parent);
 
+   ELM_CONFORMANT_DATA_GET(obj, sd);
+   sd->win = elm_widget_top_get(obj);
+
+   evas_object_data_set(sd->win, "\377 elm,conformant", obj);
    return obj;
 }

@@ -58,6 +58,7 @@ struct _Elm_Transit
    Eina_Bool deleted : 1;
    Eina_Bool state_keep : 1;
    Eina_Bool finished : 1;
+   Eina_Bool smooth : 1;
 };
 
 struct _Elm_Transit_Effect_Module
@@ -559,6 +560,13 @@ elm_transit_objects_get(const Elm_Transit *transit)
 {
    ELM_TRANSIT_CHECK_OR_RETURN(transit, NULL);
    return transit->objs;
+}
+
+EAPI void
+elm_transit_smooth_set(Elm_Transit *transit, Eina_Bool smooth)
+{
+   ELM_TRANSIT_CHECK_OR_RETURN(transit);
+   transit->smooth = !!smooth;
 }
 
 EAPI void

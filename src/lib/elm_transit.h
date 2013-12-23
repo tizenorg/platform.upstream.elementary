@@ -565,6 +565,24 @@ EAPI void                   elm_transit_chain_transit_del(Elm_Transit *transit, 
 EAPI Eina_List             *elm_transit_chain_transits_get(const Elm_Transit *transit);
 
 /**
+ * Set the smooth effect for a transit.
+ *
+ * @param obj The transit object
+ * @param enabled enable or disable smooth map rendering
+ *
+ * This sets smoothing for transit map rendering. If the object added in a
+ * transit is a type that has its own smoothing settings, then both the smooth
+ * settings for this object and the map must be turned off. By default smooth
+ * maps are enabled.
+ *
+ * @see evas_map_smooth_set()
+ * @since 1.8
+ *
+ * @ingroup Transit
+ */
+EAPI void                   elm_transit_smooth_set(Elm_Transit *transit, Eina_Bool smooth);
+
+/**
  * Add the Resizing Effect to Elm_Transit.
  *
  * @note This API is one of the facades. It creates resizing effect context
