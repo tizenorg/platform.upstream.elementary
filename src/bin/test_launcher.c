@@ -596,7 +596,7 @@ l3_tim_cb(void *data)
    sly = (int)(uintptr_t)evas_object_data_get(data, "sly");
    snprintf(buf, sizeof(buf), "slot.%i.%i", slx, sly);
    elm_object_part_content_unset(ly, buf);
-   edje_object_signal_emit(elm_layout_edje_get(ly2), "drag", "app");
+   elm_layout_signal_emit(ly2, "drag", "app");
    return EINA_FALSE;
 }
 
@@ -633,7 +633,7 @@ l3_ic_down_cb(void *data __UNUSED__, Evas *e __UNUSED__, Evas_Object *obj, void 
    evas_object_data_set(obj, "px", (void *)(uintptr_t)(x));
    evas_object_data_set(obj, "py", (void *)(uintptr_t)(y));
 
-   edje_object_signal_emit(elm_layout_edje_get(ly2), "click", "app");
+   elm_layout_signal_emit(ly2, "click", "app");
 
    if (ev->flags & EVAS_BUTTON_DOUBLE_CLICK)
      {
@@ -676,10 +676,10 @@ l3_ic_up_cb(void *data __UNUSED__, Evas *e __UNUSED__, Evas_Object *obj, void *e
            (elm_object_top_widget_get(obj), "mbs");
         EINA_LIST_FOREACH(list, l, mb)
            evas_object_color_set(mb, 255, 255, 255, 255);
-        edje_object_signal_emit(elm_layout_edje_get(ly2), "drop", "app");
+        elm_layout_signal_emit(ly2, "drop", "app");
      }
    else
-      edje_object_signal_emit(elm_layout_edje_get(ly2), "unclick", "app");
+      elm_layout_signal_emit(ly2, "unclick", "app");
 }
 
 static void
@@ -712,7 +712,7 @@ l3_ic_move_cb(void *data __UNUSED__, Evas *e __UNUSED__, Evas_Object *obj, void 
              evas_object_data_del(obj, "timer");
              ecore_timer_del(tim);
           }
-        edje_object_signal_emit(elm_layout_edje_get(ly2), "cancel", "app");
+        elm_layout_signal_emit(ly2, "cancel", "app");
         return;
      }
 }
