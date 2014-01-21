@@ -2023,7 +2023,11 @@ _elm_scroll_momentum_animator(void *data)
    Evas_Coord x, y, dx, dy, px, py, maxx, maxy, minx, miny;
    Eina_Bool no_bounce_x_end = EINA_FALSE, no_bounce_y_end = EINA_FALSE;
 
-   if (!sid->pan_obj) return ECORE_CALLBACK_CANCEL;
+   if (!sid->pan_obj)
+     {
+        sid->down.momentum_animator = NULL;
+        return ECORE_CALLBACK_CANCEL;
+     }
 
    t = ecore_loop_time_get();
    dt = t - sid->down.anim_start;
@@ -2123,7 +2127,7 @@ _elm_scroll_page_x_get(Elm_Scrollable_Smart_Interface_Data *sid,
         if (offset > 0)
           x += (abs(offset) < dx ? offset : dx);
         else
-          x += (abs(offset) < dx ? offset : -dx);
+          x += (abs(offset) < dx ? offset : -(dx + 1));
      }
 
    if (sid->pagesize_h > 0)
@@ -2163,7 +2167,7 @@ _elm_scroll_page_y_get(Elm_Scrollable_Smart_Interface_Data *sid,
         if (offset > 0)
           y += (abs(offset) < dy ? offset : dy);
         else
-          y += (abs(offset) < dy ? offset : -dy);
+          y += (abs(offset) < dy ? offset : -(dy + 1));
      }
 
    if (sid->pagesize_v > 0)

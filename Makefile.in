@@ -99,7 +99,7 @@ DIST_COMMON = INSTALL NEWS README AUTHORS ChangeLog \
 	$(top_srcdir)/cmakeconfig/ElementaryConfig.cmake.in \
 	$(top_srcdir)/cmakeconfig/ElementaryConfigVersion.cmake.in \
 	$(top_srcdir)/pkgbuild/PKGBUILD.in ABOUT-NLS COPYING TODO \
-	compile config.guess config.rpath config.sub depcomp \
+	ar-lib compile config.guess config.rpath config.sub depcomp \
 	install-sh missing ltmain.sh
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ac_attribute.m4 \

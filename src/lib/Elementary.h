@@ -16,7 +16,7 @@
 #undef ELM_WINCE
 #undef ELM_ELOCATION
 #undef ELM_WEB
-#undef ELM_EMAP
+#define ELM_EMAP
 #undef ELM_DEBUG
 #define ELM_ALLOCA_H
 #define ELM_LIBINTL_H
