@@ -10,21 +10,15 @@ static void _colorpalette_longpressed_cb(void *data, Evas_Object *obj, void *eve
 EAPI_MAIN int
 elm_main(int argc, char **argv)
 {
-   Evas_Object *win, *bg, *cs, *rect, *bx, *fr;
+   Evas_Object *win, *cs, *rect, *bx, *fr;
 
-   win = elm_win_add(NULL, "color selector", ELM_WIN_BASIC);
-   elm_win_title_set(win, "Color selector");
-   elm_win_autodel_set(win, EINA_TRUE);
    elm_policy_set(ELM_POLICY_QUIT, ELM_POLICY_QUIT_LAST_WINDOW_CLOSED);
 
-   bg = elm_bg_add(win);
-   evas_object_size_hint_weight_set(bg, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-   elm_win_resize_object_add(win, bg);
-   evas_object_show(bg);
+   win = elm_win_util_standard_add("color selector", "Color selector");
+   elm_win_autodel_set(win, EINA_TRUE);
 
    bx = elm_box_add(win);
    evas_object_size_hint_weight_set(bx, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-   evas_object_size_hint_align_set(bx, EVAS_HINT_FILL, EVAS_HINT_FILL);
    elm_win_resize_object_add(win, bx);
    evas_object_show(bx);
 
@@ -73,6 +67,8 @@ _change_color(void *data, Evas_Object *obj, void *event_info)
 {
    int r, g, b, a;
    elm_colorselector_color_get(obj, &r, &g, &b, &a);
+   // ensure colors are pre-multiplied by alpha
+   evas_color_argb_premul(a, &r, &g, &b);
    evas_object_color_set(data, r, g, b, a);
 }
 
@@ -82,6 +78,8 @@ _colorpalette_clicked_cb(void *data, Evas_Object *obj, void *event_info)
    int r = 0, g = 0, b = 0 ,a = 0;
    Elm_Object_Item *color_it = (Elm_Object_Item *) event_info;
    elm_colorselector_palette_item_color_get(color_it, &r, &g, &b, &a);
+   // ensure colors are pre-multiplied by alpha
+   evas_color_argb_premul(a, &r, &g, &b);
    evas_object_color_set(data, r, g, b, a);
 }
 

@@ -3,7 +3,7 @@
 #include "test.h"
 #endif
 #include <Elementary.h>
-#ifndef ELM_LIB_QUICKLAUNCH
+
 struct _api_data
 {
    unsigned int state;  /* What state we are testing       */
@@ -19,10 +19,21 @@ enum _api_state
    CLOCK_EDIT_MIN,
    CLOCK_EDIT_HOUR,
    CLOCK_EDIT_ALL,
-   CLOCK_EDIT_ALL_ARMY,
+   CLOCK_HIDE_AM_PM,
    API_STATE_LAST
 };
 typedef enum _api_state api_state;
+
+static const char* api_state_description[] = {
+   "Hide Sec",
+   "Show AM/PM",
+   "Show Sec",
+   "Edit Min",
+   "Edit Hour",
+   "Edit All",
+   "Hide AM/PM",
+   NULL
+};
 
 static void
 set_api_state(api_data *api)
@@ -35,51 +46,53 @@ set_api_state(api_data *api)
    /* use elm_box_children_get() to get list of children */
    switch(api->state)
      { /* Put all api-changes under switch */
-        case CLOCK_HIDE_SEC:
-           elm_clock_show_seconds_set(ck, EINA_FALSE);
-           break;
+      case CLOCK_HIDE_SEC:
+        elm_clock_show_seconds_set(ck, EINA_FALSE);
+        break;
 
-          case CLOCK_SHOW_AM_PM:
-           elm_clock_show_am_pm_set(ck,  EINA_TRUE);
-           break;
+      case CLOCK_SHOW_AM_PM:
+        elm_clock_show_am_pm_set(ck,  EINA_TRUE);
+        break;
 
-          case CLOCK_SHOW_SEC:
-           elm_clock_show_seconds_set(ck, EINA_TRUE);
-           break;
+      case CLOCK_SHOW_SEC:
+        elm_clock_show_seconds_set(ck, EINA_TRUE);
+        break;
 
-          case CLOCK_EDIT_MIN:
-           elm_clock_edit_set(ck, ELM_CLOCK_EDIT_MIN_DECIMAL | ELM_CLOCK_EDIT_MIN_UNIT);
-           break;
+      case CLOCK_EDIT_MIN:
+        elm_clock_edit_set(ck, EINA_TRUE);
+        elm_clock_edit_mode_set(ck, ELM_CLOCK_EDIT_MIN_DECIMAL | ELM_CLOCK_EDIT_MIN_UNIT);
+        break;
 
-          case CLOCK_EDIT_HOUR:
-           elm_clock_edit_set(ck, ELM_CLOCK_EDIT_DEFAULT);
-           elm_clock_edit_set(ck, ELM_CLOCK_EDIT_HOUR_DECIMAL | ELM_CLOCK_EDIT_HOUR_UNIT);
-           break;
+      case CLOCK_EDIT_HOUR:
+        elm_clock_edit_set(ck, EINA_TRUE);
+        elm_clock_edit_mode_set(ck, ELM_CLOCK_EDIT_HOUR_DECIMAL | ELM_CLOCK_EDIT_HOUR_UNIT);
+        break;
 
-          case CLOCK_EDIT_ALL:
-           elm_clock_edit_set(ck, ELM_CLOCK_EDIT_ALL);
-           break;
+      case CLOCK_EDIT_ALL:
+        elm_clock_edit_set(ck, EINA_TRUE);
+        elm_clock_edit_mode_set(ck, ELM_CLOCK_EDIT_ALL);
+        break;
 
-          case CLOCK_EDIT_ALL_ARMY:
-           elm_clock_show_am_pm_set(ck,  EINA_FALSE);
-           break;
+      case CLOCK_HIDE_AM_PM:
+        elm_clock_show_am_pm_set(ck,  EINA_FALSE);
+        break;
 
       case API_STATE_LAST:
 
-         break;
+        break;
       default:
-         return;
+        return;
      }
 }
 
 static void
-_api_bt_clicked(void *data, Evas_Object *obj, void *event_info __UNUSED__)
+_api_bt_clicked(void *data, Evas_Object *obj, void *event_info EINA_UNUSED)
 {  /* Will add here a SWITCH command containing code to modify test-object */
    /* in accordance a->state value. */
    api_data *a = data;
    char str[128];
 
-   printf("clicked event on API Button: api_state=<%d>\n", a->state);
+   printf("clicked event on API Button: api_state=<%s>\n", api_state_description[a->state]);
    set_api_state(a);
    a->state++;
    sprintf(str, "Next API function (%u)", a->state);
@@ -88,13 +101,13 @@ _api_bt_clicked(void *data, Evas_Object *obj, void *event_info __UNUSED__)
 }
 
 static void
-_cleanup_cb(void *data, Evas *e __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+_cleanup_cb(void *data, Evas *e EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    free(data);
 }
 
 void
-test_clock(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+test_clock(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *win, *bx, *ck, *bt, *bxx;
    unsigned int digedit;
@@ -105,8 +118,8 @@ test_clock(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info 
    evas_object_event_callback_add(win, EVAS_CALLBACK_FREE, _cleanup_cb, api);
 
    bxx = elm_box_add(win);
-   elm_win_resize_object_add(win, bxx);
    evas_object_size_hint_weight_set(bxx, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   elm_win_resize_object_add(win, bxx);
    evas_object_show(bxx);
 
    bx = elm_box_add(bxx);
@@ -173,7 +186,7 @@ test_clock(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info 
 }
 
 static void
-_edit_bt_clicked(void *data, Evas_Object *obj, void *event_info __UNUSED__)
+_edit_bt_clicked(void *data, Evas_Object *obj, void *event_info EINA_UNUSED)
 {
    Evas_Object *ck = data;
 
@@ -188,7 +201,7 @@ _edit_bt_clicked(void *data, Evas_Object *obj, void *event_info __UNUSED__)
 }
 
 static void
-_hmode_bt_clicked(void *data, Evas_Object *obj, void *event_info __UNUSED__)
+_hmode_bt_clicked(void *data, Evas_Object *obj, void *event_info EINA_UNUSED)
 {
    Evas_Object *ck = data;
 
@@ -203,7 +216,7 @@ _hmode_bt_clicked(void *data, Evas_Object *obj, void *event_info __UNUSED__)
 }
 
 void
-test_clock2(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+test_clock2(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *win, *bx, *hbx, *ck, *bt, *bxx;
    api_data *api = calloc(1, sizeof(api_data));
@@ -213,8 +226,8 @@ test_clock2(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info
    evas_object_event_callback_add(win, EVAS_CALLBACK_FREE, _cleanup_cb, api);
 
    bxx = elm_box_add(win);
-   elm_win_resize_object_add(win, bxx);
    evas_object_size_hint_weight_set(bxx, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   elm_win_resize_object_add(win, bxx);
    evas_object_show(bxx);
 
    bx = elm_box_add(bxx);
@@ -261,7 +274,7 @@ test_clock2(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info
 }
 
 void
-test_clock3(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+test_clock3(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *win, *bx, *ck, *lb;
 
@@ -275,7 +288,7 @@ test_clock3(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info
 
    lb = elm_label_add(win);
    elm_object_text_set(lb,
-                       "Check time updates for an user mouse button hold."
+                       "Check time updates for a user mouse button hold."
                        );
    evas_object_size_hint_weight_set(lb, 0.0, 0.0);
    evas_object_size_hint_align_set(lb, EVAS_HINT_FILL, EVAS_HINT_FILL);
@@ -305,4 +318,3 @@ test_clock3(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info
 
    evas_object_show(win);
 }
-#endif

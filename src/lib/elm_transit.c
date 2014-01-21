@@ -1,4 +1,9 @@
+#ifdef HAVE_CONFIG_H
+# include "elementary_config.h"
+#endif
+
 #include <Elementary.h>
+
 #include "elm_priv.h"
 
 #define ELM_TRANSIT_CHECK_OR_RETURN(transit, ...) \
@@ -53,11 +58,13 @@ struct _Elm_Transit
    double progress;
    unsigned int effects_pending_del;
    int walking;
+   double v1, v2;
    Eina_Bool auto_reverse : 1;
    Eina_Bool event_enabled : 1;
    Eina_Bool deleted : 1;
    Eina_Bool state_keep : 1;
    Eina_Bool finished : 1;
+   Eina_Bool smooth : 1;
 };
 
 struct _Elm_Transit_Effect_Module
@@ -221,7 +228,7 @@ _transit_effect_del(Elm_Transit *transit, Elm_Transit_Effect_Module *effect_modu
 static void
 _transit_remove_dead_effects(Elm_Transit *transit)
 {
-   Elm_Transit_Effect_Module *effect_module;
+   Elm_Transit_Effect_Module *effect_module = NULL;
    Eina_Inlist *ll;
 
    EINA_INLIST_FOREACH_SAFE(transit->effect_list, ll, effect_module)
@@ -251,8 +258,7 @@ _transit_del(Elm_Transit *transit)
 
    transit->deleted = EINA_TRUE;
 
-   if (transit->animator)
-     ecore_animator_del(transit->animator);
+   ELM_SAFE_FREE(transit->animator, ecore_animator_del);
 
    //remove effects
    while (transit->effect_list)
@@ -282,7 +288,6 @@ _transit_del(Elm_Transit *transit)
      {
         EINA_LIST_FOREACH_SAFE(transit->next_chain_transits, elist, elist_next, chain_transit)
           _transit_chain_go(chain_transit);
-
      }
 
    eina_list_free(transit->next_chain_transits);
@@ -343,17 +348,32 @@ _transit_animate_cb(void *data)
       case ELM_TRANSIT_TWEEN_MODE_ACCELERATE:
          transit->progress = ecore_animator_pos_map(transit->progress,
                                                     ECORE_POS_MAP_ACCELERATE,
-                                                    0, 0);
+                                                    transit->v1, 0);
          break;
       case ELM_TRANSIT_TWEEN_MODE_DECELERATE:
          transit->progress = ecore_animator_pos_map(transit->progress,
                                                     ECORE_POS_MAP_DECELERATE,
-                                                    0, 0);
+                                                    transit->v1, 0);
          break;
       case ELM_TRANSIT_TWEEN_MODE_SINUSOIDAL:
          transit->progress = ecore_animator_pos_map(transit->progress,
                                                     ECORE_POS_MAP_SINUSOIDAL,
-                                                    0, 0);
+                                                    transit->v1, 0);
+         break;
+      case ELM_TRANSIT_TWEEN_MODE_DIVISOR_INTERP:
+         transit->progress = ecore_animator_pos_map(transit->progress,
+                                                    ECORE_POS_MAP_DIVISOR_INTERP,
+                                                    transit->v1, transit->v2);
+         break;
+      case ELM_TRANSIT_TWEEN_MODE_BOUNCE:
+         transit->progress = ecore_animator_pos_map(transit->progress,
+                                                    ECORE_POS_MAP_BOUNCE,
+                                                    transit->v1, transit->v2);
+         break;
+      case ELM_TRANSIT_TWEEN_MODE_SPRING:
+         transit->progress = ecore_animator_pos_map(transit->progress,
+                                                    ECORE_POS_MAP_SPRING,
+                                                    transit->v1, transit->v2);
          break;
       default:
          break;
@@ -454,6 +474,10 @@ elm_transit_add(void)
    EINA_MAGIC_SET(transit, ELM_TRANSIT_MAGIC);
 
    elm_transit_tween_mode_set(transit, ELM_TRANSIT_TWEEN_MODE_LINEAR);
+
+   transit->v1 = 1.0;
+   transit->v2 = 0.0;
+   transit->smooth = EINA_TRUE;
 
    return transit;
 }
@@ -562,6 +586,20 @@ elm_transit_objects_get(const Elm_Transit *transit)
 }
 
 EAPI void
+elm_transit_smooth_set(Elm_Transit *transit, Eina_Bool smooth)
+{
+   ELM_TRANSIT_CHECK_OR_RETURN(transit);
+   transit->smooth = !!smooth;
+}
+
+EAPI Eina_Bool
+elm_transit_smooth_get(const Elm_Transit *transit)
+{
+   ELM_TRANSIT_CHECK_OR_RETURN(transit, EINA_FALSE);
+   return transit->smooth;
+}
+
+EAPI void
 elm_transit_event_enabled_set(Elm_Transit *transit, Eina_Bool enabled)
 {
    ELM_TRANSIT_CHECK_OR_RETURN(transit);
@@ -636,6 +674,22 @@ elm_transit_tween_mode_get(const Elm_Transit *transit)
 }
 
 EAPI void
+elm_transit_tween_mode_factor_set(Elm_Transit *transit, double v1, double v2)
+{
+   ELM_TRANSIT_CHECK_OR_RETURN(transit);
+   transit->v1 = v1;
+   transit->v2 = v2;
+}
+
+EAPI void
+elm_transit_tween_mode_factor_get(const Elm_Transit *transit, double *v1, double *v2)
+{
+   ELM_TRANSIT_CHECK_OR_RETURN(transit);
+   if (v1) *v1 = transit->v1;
+   if (v2) *v2 = transit->v2;
+}
+
+EAPI void
 elm_transit_duration_set(Elm_Transit *transit, double duration)
 {
    ELM_TRANSIT_CHECK_OR_RETURN(transit);
@@ -662,8 +716,7 @@ elm_transit_go(Elm_Transit *transit)
    Eina_List *elist;
    Evas_Object *obj;
 
-   if (transit->animator)
-     ecore_animator_del(transit->animator);
+   ELM_SAFE_FREE(transit->animator, ecore_animator_del);
 
    EINA_LIST_FOREACH(transit->objs, elist, obj)
      _transit_obj_data_update(transit, obj);
@@ -1035,6 +1088,7 @@ _transit_effect_zoom_op(Elm_Transit_Effect *effect, Elm_Transit *transit , doubl
         _recover_image_uv(obj, map, EINA_FALSE, EINA_FALSE);
         evas_map_util_3d_perspective(map, x + (w / 2), y + (h / 2), 0,
                                      _TRANSIT_FOCAL);
+        if (!transit->smooth) evas_map_smooth_set(map, EINA_FALSE);
         evas_object_map_set(obj, map);
         evas_object_map_enable_set(obj, EINA_TRUE);
      }
@@ -1191,6 +1245,7 @@ _transit_effect_flip_op(Elm_Transit_Effect *effect, Elm_Transit *transit, double
         evas_map_util_3d_perspective(map, x + half_w, y + half_h, 0, _TRANSIT_FOCAL);
         evas_object_map_enable_set(front, EINA_TRUE);
         evas_object_map_enable_set(back, EINA_TRUE);
+        if (!transit->smooth) evas_map_smooth_set(map, EINA_FALSE);
         evas_object_map_set(obj, map);
      }
    evas_map_free(map);
@@ -1497,6 +1552,7 @@ _transit_effect_resizable_flip_op(Elm_Transit_Effect *effect, Elm_Transit *trans
                                      _TRANSIT_FOCAL);
         evas_object_map_enable_set(resizable_flip_node->front, EINA_TRUE);
         evas_object_map_enable_set(resizable_flip_node->back, EINA_TRUE);
+        if (!transit->smooth) evas_map_smooth_set(map, EINA_FALSE);
         evas_object_map_set(obj, map);
      }
    evas_map_free(map);
@@ -1674,7 +1730,7 @@ _transit_effect_wipe_context_free(Elm_Transit_Effect *effect, Elm_Transit *trans
    Eina_List *elist;
    Evas_Object *obj;
    Elm_Transit_Effect_Wipe *wipe = effect;
-   Eina_Bool reverse = elm_transit_auto_reverse_get(transit);
+   Eina_Bool reverse = transit->auto_reverse;
 
    EINA_LIST_FOREACH(transit->objs, elist, obj)
      {
@@ -1719,7 +1775,7 @@ _transit_effect_wipe_op(Elm_Transit_Effect *effect, Elm_Transit *transit, double
           _elm_fx_wipe_show(map, wipe->dir, _x, _y, _w, _h, (float)progress);
         else
           _elm_fx_wipe_hide(map, wipe->dir, _x, _y, _w, _h, (float)progress);
-
+        if (!transit->smooth) evas_map_smooth_set(map, EINA_FALSE);
         evas_object_map_enable_set(obj, EINA_TRUE);
         evas_object_map_set(obj, map);
      }
@@ -2110,7 +2166,7 @@ _blend_nodes_build(Elm_Transit *transit, Elm_Transit_Effect_Blend *blend)
 }
 
 void
-_transit_effect_blend_context_free(Elm_Transit_Effect *effect, Elm_Transit *transit __UNUSED__)
+_transit_effect_blend_context_free(Elm_Transit_Effect *effect, Elm_Transit *transit)
 {
    EINA_SAFETY_ON_NULL_RETURN(effect);
    Elm_Transit_Effect_Blend *blend = effect;
@@ -2126,7 +2182,7 @@ _transit_effect_blend_context_free(Elm_Transit_Effect *effect, Elm_Transit *tran
                               blend_node->to.g, blend_node->to.b,
                               blend_node->to.a);
 
-        if (elm_transit_auto_reverse_get(transit))
+        if (transit->auto_reverse)
           evas_object_hide(blend_node->after);
         else
           evas_object_hide(blend_node->before);
@@ -2239,7 +2295,7 @@ _transit_effect_rotation_op(Elm_Transit_Effect *effect, Elm_Transit *transit, do
         half_h = (float)h * 0.5;
 
         evas_map_util_rotate(map, degree, x + half_w, y + half_h);
-        evas_map_util_3d_perspective(map, x + half_w, y + half_h, 0, _TRANSIT_FOCAL);
+        if (!transit->smooth) evas_map_smooth_set(map, EINA_FALSE);
         evas_object_map_enable_set(obj, EINA_TRUE);
         evas_object_map_set(obj, map);
      }
@@ -2296,6 +2352,8 @@ _transit_effect_image_animation_context_free(Elm_Transit_Effect *effect, Elm_Tra
    const char *image;
    Eina_List *elist, *elist_next;
 
+   //FIXME: Reset the image to first one.
+
    EINA_LIST_FOREACH_SAFE(image_animation->images, elist, elist_next, image)
      {
         image_animation->images =
@@ -2318,34 +2376,35 @@ _transit_effect_image_animation_op(Elm_Transit_Effect *effect, Elm_Transit *tran
    unsigned int idx = 0;
    int len;
 
+   len = eina_list_count(image_animation->images);
+   if (len <= 0) return;
+
+   idx = floor(progress * len);
+   if ((int)idx >= len) return;
+
+   if (image_animation->prev_idx == idx) return;
+
    type = eina_stringshare_add("elm_image");
    //FIXME: Remove later when elm_icon is cleared.
    type_deprecated = eina_stringshare_add("elm_icon");
 
-   len = eina_list_count(image_animation->images);
-   if (len)
+   EINA_LIST_FOREACH(transit->objs, elist, obj)
      {
-        idx = floor(progress * len);
-        if (image_animation->prev_idx != idx)
+        if (elm_widget_type_check(obj, type, __func__) ||
+            elm_widget_type_check(obj, type_deprecated, __func__))
           {
-             EINA_LIST_FOREACH(transit->objs, elist, obj)
-               {
-                  if (elm_widget_type_check(obj, type, __func__) ||
-                      elm_widget_type_check(obj, type_deprecated, __func__))
-                    {
-                       const char *file = eina_list_nth(image_animation->images,
-                                                        idx);
+             const char *file = eina_list_nth(image_animation->images,
+                                              idx);
 
-                       elm_image_file_set(obj, file, NULL);
-                       elm_image_preload_disabled_set(obj, EINA_TRUE);
-                    }
-               }
+             elm_image_file_set(obj, file, NULL);
+             elm_image_preload_disabled_set(obj, EINA_TRUE);
           }
-        image_animation->prev_idx = idx;
      }
 
    eina_stringshare_del(type);
    eina_stringshare_del(type_deprecated);
+
+   image_animation->prev_idx = idx;
 }
 
 static Elm_Transit_Effect *

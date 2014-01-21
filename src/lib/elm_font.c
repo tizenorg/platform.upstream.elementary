@@ -33,12 +33,7 @@ _elm_font_properties_get(Eina_Hash **font_hash,
         if (subname)
           {
              len = subname - name;
-             name = realloc(name, sizeof(char) * len + 1);
-             if (name)
-               {
-                  memset(name, 0, sizeof(char) * len + 1);
-                  strncpy(name, font, len);
-               }
+             *subname = '\0';
           }
 
         /* add a font name */
@@ -47,9 +42,13 @@ _elm_font_properties_get(Eina_Hash **font_hash,
         if (!efp)
           {
              efp = calloc(1, sizeof(Elm_Font_Properties));
-             if (!efp) return NULL;
-             
-             efp->name = eina_stringshare_add(name);
+             if (!efp)
+               {
+                  free(name);
+                  return NULL;
+               }
+
+             efp->name = eina_stringshare_add_length(name, len);
              if (font_hash)
                {
                   if (!*font_hash)

@@ -108,7 +108,7 @@ _main_win_del_cb(void *data, Evas_Object *obj, void *event)
    Evas_Object *msg, *box, *box2, *btn, *lbl, *sep;
 
    msg = elm_notify_add(obj);
-   elm_notify_orient_set(msg, ELM_NOTIFY_ORIENT_CENTER);
+   elm_notify_align_set(msg, 0.5, 0.5);
    elm_notify_allow_events_set(msg, EINA_FALSE);
    evas_object_show(msg);
 
@@ -171,12 +171,12 @@ _win_focused_cb(void *data, Evas_Object *obj, void *event)
 EAPI_MAIN int
 elm_main(int argc, char *argv[])
 {
-   Evas_Object *win, *win2, *bg, *bigbox, *box, *btn, *o;
+   Evas_Object *win, *win2, *bigbox, *box, *btn, *o;
    char buf[256];
 
    elm_app_info_set(elm_main, "elementary", "images/logo.png");
-   win = elm_win_add(NULL, "win-example", ELM_WIN_BASIC);
-   elm_win_title_set(win, "Elm_Win Example");
+
+   win = elm_win_util_standard_add("win-example", "Elm_Win Example");
    elm_win_focus_highlight_enabled_set(win, EINA_TRUE);
    evas_object_resize(win, 400, 400);
    evas_object_show(win);
@@ -185,11 +185,6 @@ elm_main(int argc, char *argv[])
 
    evas_object_smart_callback_add(win, "delete,request", _main_win_del_cb,
                                   NULL);
-
-   bg = elm_bg_add(win);
-   evas_object_size_hint_weight_set(bg, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-   elm_win_resize_object_add(win, bg);
-   evas_object_show(bg);
 
    bigbox = elm_box_add(win);
    elm_box_horizontal_set(bigbox, EINA_TRUE);
@@ -225,11 +220,11 @@ elm_main(int argc, char *argv[])
 
 #define WIN_ACTION(name) \
    do { \
-      btn = elm_button_add(win); \
-      elm_object_text_set(btn, #name); \
-      elm_box_pack_end(box, btn); \
-      evas_object_show(btn); \
-      evas_object_smart_callback_add(btn, "clicked", _btn_##name##_cb, win2); \
+        btn = elm_button_add(win); \
+        elm_object_text_set(btn, #name); \
+        elm_box_pack_end(box, btn); \
+        evas_object_show(btn); \
+        evas_object_smart_callback_add(btn, "clicked", _btn_##name##_cb, win2); \
    } while (0)
 
    WIN_ACTION(activate);
@@ -251,19 +246,13 @@ elm_main(int argc, char *argv[])
    elm_box_pack_end(bigbox, box);
    evas_object_show(box);
 
-   win2 = elm_win_add(NULL, "sub-win-example2", ELM_WIN_BASIC);
+   win2 = elm_win_util_standard_add("sub-win-example2", "Non-managed window");
    elm_win_autodel_set(win2, EINA_TRUE);
-   elm_win_title_set(win2, "Non-managed window");
    elm_win_override_set(win2, EINA_TRUE);
    evas_object_show(win2);
 
    evas_object_smart_callback_add(win2, "focus,in", _win_focused_cb,
                                   "override");
-
-   o = elm_bg_add(win2);
-   evas_object_size_hint_weight_set(o, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-   elm_win_resize_object_add(win2, o);
-   evas_object_show(o);
 
    bigbox = elm_box_add(win2);
    evas_object_size_hint_weight_set(bigbox, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);

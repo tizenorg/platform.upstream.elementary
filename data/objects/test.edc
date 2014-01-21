@@ -1,10 +1,10 @@
 collections {
    group { name: "layout";
       images {
-	 image: "over.png" COMP;
-	 image: "under.png" COMP;
-	 image: "sky.jpg" LOSSY 80;
-	 image: "clo.png" LOSSY 60;
+         image: "over.png" COMP;
+         image: "under.png" COMP;
+         image: "sky.jpg" LOSSY 80;
+         image: "clo.png" LOSSY 60;
       }
       parts {
          part { name: "clip";
@@ -12,15 +12,15 @@ collections {
             description { state: "default" 0.0;
             }
          }
-	 part { name: "sky";
+         part { name: "sky";
             mouse_events: 1;
             clip_to: "clip";
-	    description { state: "default" 0.0;
-	       aspect: 2.6225 2.6225;
-	       aspect_preference: NONE;
-	       image.normal: "sky.jpg";
-	    }
-	    description { state: "drift" 0.0;
+            description { state: "default" 0.0;
+               aspect: 2.6225 2.6225;
+               aspect_preference: NONE;
+               image.normal: "sky.jpg";
+            }
+            description { state: "drift" 0.0;
                inherit: "default" 0.0;
                fill {
                   origin {
@@ -28,85 +28,69 @@ collections {
                      offset: 0 0;
                   }
                }
-	    }
-	 }
-	 part { name: "under";
+            }
+         }
+         part { name: "under";
             mouse_events: 0;
             clip_to: "clip";
-	    description { state: "default" 0.0;
-	       align: 0.5 0.0;
-	       aspect: 1.486068111 1.486068111;
-	       aspect_preference: HORIZONTAL;
-	       image.normal: "under.png";
-	    }
-	 }
-	 part { name: "text";
-	    type: TEXT;
+            description { state: "default" 0.0;
+               align: 0.5 0.0;
+               aspect: 1.486068111 1.486068111;
+               aspect_preference: HORIZONTAL;
+               image.normal: "under.png";
+            }
+         }
+         part { name: "text";
+            type: TEXT;
             clip_to: "clip";
-	    description { state: "default" 0.0;
-	       color: 255 255 0 255;
-	       rel1 {
-		  relative: 0.3 0.02;
-	       }
-	       rel2 {
-		  relative: 0.6 0.12;
-	       }
-	       align: 0.5 0.5;
-	       text {
-		  font: "Sans:style=Bold";
-		  size: 14;
-		  min: 1 1;
-		  text: "some edje text here";
-	       }
-	    }
-	 }
-	 part { name: "element1";
-	    type: SWALLOW;
+            description { state: "default" 0.0;
+               color: 255 255 0 255;
+               rel1.relative: 0.3 0.02;
+               rel2.relative: 0.6 0.12;
+               align: 0.5 0.5;
+               text {
+                  font: "Sans:style=Bold";
+                  size: 14;
+                  min: 1 1;
+                  text: "some edje text here";
+               }
+            }
+         }
+         part { name: "element1";
+            type: SWALLOW;
             clip_to: "clip";
-	    description { state: "default" 0.0;
-	       rel1 {
-		  relative: 0.2 0.2;
-	       }
-	       rel2 {
-		  relative: 0.4 0.3;
-	       }
-	    }
-	 }
-	 part { name: "element2";
-	    type: SWALLOW;
+            description { state: "default" 0.0;
+               rel1.relative: 0.2 0.2;
+               rel2.relative: 0.4 0.3;
+            }
+         }
+         part { name: "element2";
+            type: SWALLOW;
             clip_to: "clip";
-	    description { state: "default" 0.0;
-	       rel1 {
-		  relative: 0.6 0.3;
-	       }
-	       rel2 {
-		  relative: 0.9 0.5;
-	       }
-	    }
-	 }
-	 part { name: "element3";
-	    type: SWALLOW;
+            description { state: "default" 0.0;
+               rel1.relative: 0.6 0.3;
+               rel2.relative: 0.9 0.5;
+            }
+         }
+         part { name: "element3";
+            type: SWALLOW;
             clip_to: "clip";
-	    description { state: "default" 0.0;
-	       rel1 {
-		  relative: 0.1 0.7;
-	       }
-	       rel2 {
-		  relative: 0.9 0.9;
-	       }
-	    }
-	 }
-	 part { name: "over";
+            description { state: "default" 0.0;
+               rel1.relative: 0.1 0.7;
+               rel2.relative: 0.9 0.9;
+            }
+         }
+         part { name: "over";
             mouse_events: 0;
             clip_to: "clip";
-	    description { state: "default" 0.0;
-	       align: 0.0 1.0;
-	       aspect: 2.238095238 2.238095238;
-	       max: 329 147;
-	       aspect_preference: HORIZONTAL;
-	       image.normal: "over.png";
-	    }
-	 }
+            description { state: "default" 0.0;
+               align: 0.0 1.0;
+               aspect: 2.238095238 2.238095238;
+               max: 329 147;
+               aspect_preference: HORIZONTAL;
+               image.normal: "over.png";
+            }
+         }
          part { name: "clo";
             mouse_events: 0;
             clip_to: "clip";
@@ -170,10 +154,10 @@ collections {
    }
    group { name: "layout2";
       images {
-	 image: "over.png" COMP;
-	 image: "under.png" COMP;
-	 image: "sky.jpg" LOSSY 80;
-	 image: "clo.png" LOSSY 60;
+         image: "over.png" COMP;
+         image: "under.png" COMP;
+         image: "sky.jpg" LOSSY 80;
+         image: "clo.png" LOSSY 60;
       }
       parts {
          part { name: "clip";
@@ -181,15 +165,15 @@ collections {
             description { state: "default" 0.0;
             }
          }
-	 part { name: "sky";
+         part { name: "sky";
             mouse_events: 0;
             clip_to: "clip";
-	    description { state: "default" 0.0;
-	       aspect: 2.6225 2.6225;
-	       aspect_preference: NONE;
-	       image.normal: "sky.jpg";
-	    }
-	    description { state: "drift" 0.0;
+            description { state: "default" 0.0;
+               aspect: 2.6225 2.6225;
+               aspect_preference: NONE;
+               image.normal: "sky.jpg";
+            }
+            description { state: "drift" 0.0;
                inherit: "default" 0.0;
                fill {
                   origin {
@@ -197,85 +181,69 @@ collections {
                      offset: 0 0;
                   }
                }
-	    }
-	 }
-	 part { name: "under";
+             }
+         }
+         part { name: "under";
             mouse_events: 0;
             clip_to: "clip";
-	    description { state: "default" 0.0;
-	       align: 0.5 0.0;
-	       aspect: 1.486068111 1.486068111;
-	       aspect_preference: HORIZONTAL;
-	       image.normal: "under.png";
-	    }
-	 }
-	 part { name: "text";
-	    type: TEXT;
+            description { state: "default" 0.0;
+               align: 0.5 0.0;
+               aspect: 1.486068111 1.486068111;
+               aspect_preference: HORIZONTAL;
+               image.normal: "under.png";
+            }
+         }
+         part { name: "text";
+            type: TEXT;
             clip_to: "clip";
-	    description { state: "default" 0.0;
-	       color: 255 255 0 255;
-	       rel1 {
-		  relative: 0.3 0.02;
-	       }
-	       rel2 {
-		  relative: 0.6 0.12;
-	       }
-	       align: 0.5 0.5;
-	       text {
-		  font: "Sans:style=Bold";
-		  size: 14;
-		  min: 1 1;
-		  text: "some edje text here";
-	       }
-	    }
-	 }
-	 part { name: "element1";
-	    type: SWALLOW;
+            description { state: "default" 0.0;
+               color: 255 255 0 255;
+               rel1.relative: 0.3 0.02;
+               rel2.relative: 0.6 0.12;
+               align: 0.5 0.5;
+               text {
+                  font: "Sans:style=Bold";
+                  size: 14;
+                  min: 1 1;
+                  text: "some edje text here";
+               }
+            }
+         }
+         part { name: "element1";
+            type: SWALLOW;
             clip_to: "clip";
-	    description { state: "default" 0.0;
-	       rel1 {
-		  relative: 0.2 0.2;
-	       }
-	       rel2 {
-		  relative: 0.4 0.3;
-	       }
-	    }
-	 }
-	 part { name: "element2";
-	    type: SWALLOW;
+            description { state: "default" 0.0;
+               rel1.relative: 0.2 0.2;
+               rel2.relative: 0.4 0.3;
+            }
+         }
+         part { name: "element2";
+            type: SWALLOW;
             clip_to: "clip";
-	    description { state: "default" 0.0;
-	       rel1 {
-		  relative: 0.6 0.3;
-	       }
-	       rel2 {
-		  relative: 0.9 0.5;
-	       }
-	    }
-	 }
-	 part { name: "element3";
-	    type: SWALLOW;
+            description { state: "default" 0.0;
+               rel1.relative: 0.6 0.3;
+               rel2.relative: 0.9 0.5;
+            }
+         }
+         part { name: "element3";
+            type: SWALLOW;
             clip_to: "clip";
-	    description { state: "default" 0.0;
-	       rel1 {
-		  relative: 0.1 0.7;
-	       }
-	       rel2 {
-		  relative: 0.9 0.9;
-	       }
-	    }
-	 }
-	 part { name: "over";
+            description { state: "default" 0.0;
+               rel1.relative: 0.1 0.7;
+               rel2.relative: 0.9 0.9;
+            }
+         }
+         part { name: "over";
             mouse_events: 0;
             clip_to: "clip";
-	    description { state: "default" 0.0;
-	       align: 0.0 1.0;
-	       aspect: 2.238095238 2.238095238;
-	       max: 329 147;
-	       aspect_preference: HORIZONTAL;
-	       image.normal: "over.png";
-	    }
-	 }
+            description { state: "default" 0.0;
+               align: 0.0 1.0;
+               aspect: 2.238095238 2.238095238;
+               max: 329 147;
+               aspect_preference: HORIZONTAL;
+               image.normal: "over.png";
+            }
+         }
          part { name: "clo";
             mouse_events: 0;
             clip_to: "clip";
@@ -313,130 +281,96 @@ collections {
       parts {
          part { name: "slot.0.0"; type: SWALLOW;
             description { state: "default" 0.0;
-              rel1 { relative: 0.0  0.0;
-              }
-              rel2 { relative: 0.25 0.25;
-              }
+              rel2.relative: 0.25 0.25;
             }
          }
          part { name: "slot.1.0"; type: SWALLOW;
             description { state: "default" 0.0;
-              rel1 { relative: 0.25 0.0;
-              }
-              rel2 { relative: 0.50 0.25;
-              }
+              rel1.relative: 0.25 0.0;
+              rel2.relative: 0.50 0.25;
             }
          }
          part { name: "slot.2.0"; type: SWALLOW;
             description { state: "default" 0.0;
-              rel1 { relative: 0.50 0.0;
-              }
-              rel2 { relative: 0.75 0.25;
-              }
+              rel1.relative: 0.50 0.0;
+              rel2.relative: 0.75 0.25;
             }
          }
          part { name: "slot.3.0"; type: SWALLOW;
             description { state: "default" 0.0;
-              rel1 { relative: 0.75 0.0;
-              }
-              rel2 { relative: 1.00 0.25;
-              }
+              rel1.relative: 0.75 0.0;
+              rel2.relative: 1.00 0.25;
             }
          }
          part { name: "slot.0.1"; type: SWALLOW;
             description { state: "default" 0.0;
-              rel1 { relative: 0.0  0.25;
-              }
-              rel2 { relative: 0.25 0.50;
-              }
+              rel1.relative: 0.0  0.25;
+              rel2.relative: 0.25 0.50;
             }
          }
          part { name: "slot.1.1"; type: SWALLOW;
             description { state: "default" 0.0;
-              rel1 { relative: 0.25 0.25;
-              }
-              rel2 { relative: 0.50 0.50;
-              }
+              rel1.relative: 0.25 0.25;
+              rel2.relative: 0.50 0.50;
             }
          }
          part { name: "slot.2.1"; type: SWALLOW;
             description { state: "default" 0.0;
-              rel1 { relative: 0.50 0.25;
-              }
-              rel2 { relative: 0.75 0.50;
-              }
+              rel1.relative: 0.50 0.25;
+              rel2.relative: 0.75 0.50;
             }
          }
          part { name: "slot.3.1"; type: SWALLOW;
             description { state: "default" 0.0;
-              rel1 { relative: 0.75 0.25;
-              }
-              rel2 { relative: 1.00 0.50;
-              }
+              rel1.relative: 0.75 0.25;
+              rel2.relative: 1.00 0.50;
             }
          }
          part { name: "slot.0.2"; type: SWALLOW;
             description { state: "default" 0.0;
-              rel1 { relative: 0.0  0.50;
-              }
-              rel2 { relative: 0.25 0.75;
-              }
+              rel1.relative: 0.0  0.50;
+              rel2.relative: 0.25 0.75;
             }
          }
          part { name: "slot.1.2"; type: SWALLOW;
             description { state: "default" 0.0;
-              rel1 { relative: 0.25 0.50;
-              }
-              rel2 { relative: 0.50 0.75;
-              }
+              rel1.relative: 0.25 0.50;
+              rel2.relative: 0.50 0.75;
             }
          }
          part { name: "slot.2.2"; type: SWALLOW;
             description { state: "default" 0.0;
-              rel1 { relative: 0.50 0.50;
-              }
-              rel2 { relative: 0.75 0.75;
-              }
+              rel1.relative: 0.50 0.50;
+              rel2.relative: 0.75 0.75;
             }
          }
          part { name: "slot.3.2"; type: SWALLOW;
             description { state: "default" 0.0;
-              rel1 { relative: 0.75 0.50;
-              }
-              rel2 { relative: 1.00 0.75;
-              }
+              rel1.relative: 0.75 0.50;
+              rel2.relative: 1.00 0.75;
             }
          }
          part { name: "slot.0.3"; type: SWALLOW;
             description { state: "default" 0.0;
-              rel1 { relative: 0.0  0.75;
-              }
-              rel2 { relative: 0.25 1.00;
-              }
+              rel1.relative: 0.0  0.75;
+              rel2.relative: 0.25 1.00;
             }
          }
          part { name: "slot.1.3"; type: SWALLOW;
             description { state: "default" 0.0;
-              rel1 { relative: 0.25 0.75;
-              }
-              rel2 { relative: 0.50 1.00;
-              }
+              rel1.relative: 0.25 0.75;
+              rel2.relative: 0.50 1.00;
             }
          }
          part { name: "slot.2.3"; type: SWALLOW;
             description { state: "default" 0.0;
-              rel1 { relative: 0.50 0.75;
-              }
-              rel2 { relative: 0.75 1.00;
-              }
+              rel1.relative: 0.50 0.75;
+              rel2.relative: 0.75 1.00;
             }
          }
          part { name: "slot.3.3"; type: SWALLOW;
             description { state: "default" 0.0;
-              rel1 { relative: 0.75 0.75;
-              }
-              rel2 { relative: 1.00 1.00;
-              }
+              rel1.relative: 0.75 0.75;
             }
          }
       }
@@ -445,9 +379,8 @@ collections {
       parts {
          part { name: "slot"; type: SWALLOW;
             description { state: "default" 0.0;
-              rel1 { relative: 0.0 0.0;
-              }
-              rel2 { relative: 1.00 0.00;
+              rel2 {
+                relative: 1.00 0.00;
                 to_y: "label";
               }
             }
@@ -473,10 +406,7 @@ collections {
             description { state: "default" 0.0;
               fixed: 1 1;
               align: 0.5 1.0;
-              rel1 { relative: 0.0  1.00;
-              }
-              rel2 { relative: 1.00 1.00;
-              }
+              rel1.relative: 0.0  1.00;
               color: 224 224 224 255;
               color3: 0 0 0 64;
               text {
@@ -614,7 +544,7 @@ collections {
 
    group { name: "bg_overlay";
       images {
-	 image: "clo.png" LOSSY 60;
+          image: "clo.png" LOSSY 60;
       }
       parts {
          part { name: "clip";
@@ -693,6 +623,128 @@ collections {
                      rel2.offset: -7 -7;
                  }
             }
+      }
+   }
+   group {
+      name: "win_config";
+      parts {
+           part {
+                 name: "swallow";
+                 type: SWALLOW;
+                 description {
+                     state: "default" 0.0;
+                     min: 10 150;
+                }
+            }
+      }
+   }
+   group { name: "access_page";
+      parts {
+         part { name: "slot.0.0"; type: SWALLOW;
+            description { state: "default" 0.0;
+              rel2.relative: 0.33 0.33;
+            }
+         }
+         part { name: "slot.1.0"; type: SWALLOW;
+            description { state: "default" 0.0;
+              rel1.relative: 0.33 0.0;
+              rel2.relative: 0.66 0.33;
+            }
+         }
+         part { name: "slot.2.0"; type: SWALLOW;
+            description { state: "default" 0.0;
+              rel1.relative: 0.66 0.0;
+              rel2.relative: 1.0. 0.33;
+            }
+         }
+         part { name: "slot.0.1"; type: SWALLOW;
+            description { state: "default" 0.0;
+              rel1.relative: 0.0  0.33;
+              rel2.relative: 0.33 0.66;
+            }
+         }
+         part { name: "slot.1.1"; type: SWALLOW;
+            description { state: "default" 0.0;
+              rel1.relative: 0.33 0.33;
+              rel2.relative: 0.66 0.66;
+            }
+         }
+         part { name: "slot.2.1"; type: SWALLOW;
+            description { state: "default" 0.0;
+              rel1.relative: 0.63 0.33;
+              rel2.relative: 1.0 0.66;
+            }
+         }
+         part { name: "slot.0.2"; type: SWALLOW;
+            description { state: "default" 0.0;
+              rel1.relative: 0.0  0.66;
+              rel2.relative: 0.33 1.0;
+            }
+         }
+         part { name: "slot.1.2"; type: SWALLOW;
+            description { state: "default" 0.0;
+              rel1.relative: 0.33 0.66;
+              rel2.relative: 0.66 1.0;
+            }
+         }
+         part { name: "slot.2.2"; type: SWALLOW;
+            description { state: "default" 0.0;
+              rel1.relative: 0.66 0.66;
+            }
+         }
+      }
+   }
+   group { name: "access_icon";
+      parts {
+         part { name: "slot"; type: SWALLOW;
+            description { state: "default" 0.0;
+            }
+         }
+         part { name: "access"; type: RECT;
+            description { state: "default" 0.0;
+              rel1.to: "slot";
+              rel2.to: "slot";
+              color: 0 0 0 0;
+            }
+         }
+      }
+   }
+   group { name: "access_color_page";
+      parts {
+         part { name: "red"; type: RECT;
+            description { state: "default" 0.0;
+              rel1.relative: 0.1  0.1;
+              rel2.relative: 0.35 0.35;
+              color: 255 0 0 255;
+            }
+         }
+         part { name: "green"; type: RECT;
+            description { state: "default" 0.0;
+              rel1.relative: 0.65 0.1;
+              rel2.relative: 0.9 0.35;
+              color: 0 255 0 255;
+            }
+         }
+         part { name: "blue"; type: RECT;
+            description { state: "default" 0.0;
+              rel1.relative: 0.1 0.65;
+              rel2.relative: 0.35. 0.9;
+              color: 0 0 255 255;
+            }
+         }
+         part { name: "black"; type: RECT;
+            description { state: "default" 0.0;
+              rel1.relative: 0.65  0.65;
+              rel2.relative: 0.9 0.9;
+              color: 0 0 0 255;
+            }
+         }
+         part { name: "center"; type: SWALLOW;
+            description { state: "default" 0.0;
+              rel1.relative: 0.35 0.35;
+              rel2.relative: 0.65 0.65;
+            }
+         }
       }
    }
 }

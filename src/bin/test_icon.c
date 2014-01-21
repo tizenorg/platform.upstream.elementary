@@ -2,31 +2,31 @@
 # include "elementary_config.h"
 #endif
 #include <Elementary.h>
-#ifndef ELM_LIB_QUICKLAUNCH
+
 
 static void
-aspect_fixed_cb(void *data, Evas_Object *obj, void *event_info __UNUSED__)
+aspect_fixed_cb(void *data, Evas_Object *obj, void *event_info EINA_UNUSED)
 {
    Evas_Object *ic = (Evas_Object *)data;
    elm_image_aspect_fixed_set(ic, elm_check_state_get(obj));
 }
 
 static void
-fill_outside_cb(void *data, Evas_Object *obj, void *event_info __UNUSED__)
+fill_outside_cb(void *data, Evas_Object *obj, void *event_info EINA_UNUSED)
 {
    Evas_Object *ic = (Evas_Object *)data;
    elm_image_fill_outside_set(ic, elm_check_state_get(obj));
 }
 
 static void
-smooth_cb(void *data, Evas_Object *obj, void *event_info __UNUSED__)
+smooth_cb(void *data, Evas_Object *obj, void *event_info EINA_UNUSED)
 {
    Evas_Object *ic = (Evas_Object *)data;
    elm_image_smooth_set(ic, elm_check_state_get(obj));
 }
 
 static void
-bt_clicked(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+bt_clicked(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *win, *ic;
    char buf[PATH_MAX];
@@ -35,13 +35,12 @@ bt_clicked(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info 
    elm_win_autodel_set(win, EINA_TRUE);
 
    ic = elm_icon_add(win);
+   evas_object_size_hint_weight_set(ic, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    elm_win_resize_object_add(win, ic);
    snprintf(buf, sizeof(buf), "%s/images/insanely_huge_test_image.jpg",
             elm_app_data_dir_get());
    elm_image_file_set(ic, buf, NULL);
 
-   evas_object_size_hint_weight_set(ic, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-   evas_object_size_hint_align_set(ic, EVAS_HINT_FILL, EVAS_HINT_FILL);
    elm_image_resizable_set(ic, EINA_TRUE, EINA_TRUE);
    elm_image_aspect_fixed_set(ic, EINA_FALSE);
    elm_image_preload_disabled_set(ic, EINA_TRUE);
@@ -53,46 +52,38 @@ bt_clicked(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info 
 }
 
 void
-test_icon(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+test_icon(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
-   Evas_Object *win, *box, *content_box, *hbox, *tg, *bt;
-   win = elm_win_util_standard_add("icon test", "Icon Test");
+   Evas_Object *win, *box, *ic, *hbox, *tg, *bt;
+   char buf[PATH_MAX];
+
+   win = elm_win_util_standard_add("icon-test", "Icon Test");
    elm_win_autodel_set(win, EINA_TRUE);
+   evas_object_resize(win, 400, 400);
+   evas_object_show(win);
 
    box = elm_box_add(win);
-   elm_win_resize_object_add(win, box);
    evas_object_size_hint_weight_set(box, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   elm_win_resize_object_add(win, box);
    evas_object_show(box);
 
-   content_box = elm_box_add(win);
-   elm_win_resize_object_add(win, content_box);
-   evas_object_size_hint_weight_set(content_box, EVAS_HINT_EXPAND,
-                                    EVAS_HINT_EXPAND);
-   evas_object_size_hint_align_set(content_box, EVAS_HINT_FILL,
-                                   EVAS_HINT_FILL);
-   elm_box_pack_end(box, content_box);
-   evas_object_show(content_box);
-
-   Evas_Object *ic = elm_icon_add(win);
-   char buf[PATH_MAX];
+   ic = elm_icon_add(box);
    snprintf(buf, sizeof(buf), "%s/images/logo.png", elm_app_data_dir_get());
    elm_image_file_set(ic, buf, NULL);
    elm_image_resizable_set(ic, EINA_TRUE, EINA_TRUE);
    evas_object_size_hint_weight_set(ic, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    evas_object_size_hint_align_set(ic, EVAS_HINT_FILL, EVAS_HINT_FILL);
-
-   elm_box_pack_end(content_box, ic);
+   elm_box_pack_end(box, ic);
    evas_object_show(ic);
 
-   hbox = elm_box_add(win);
+   hbox = elm_box_add(box);
    elm_box_horizontal_set(hbox, EINA_TRUE);
-   evas_object_size_hint_weight_set(content_box, EVAS_HINT_EXPAND,
-                                    EVAS_HINT_EXPAND);
+   evas_object_size_hint_weight_set(hbox, EVAS_HINT_EXPAND, 0.0);
    elm_box_pack_end(box, hbox);
    evas_object_show(hbox);
 
    /* Test Aspect Fixed */
-   tg = elm_check_add(win);
+   tg = elm_check_add(hbox);
    elm_object_text_set(tg, "Aspect Fixed");
    elm_check_state_set(tg, EINA_TRUE);
    evas_object_smart_callback_add(tg, "changed", aspect_fixed_cb, ic);
@@ -100,14 +91,14 @@ test_icon(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info _
    evas_object_show(tg);
 
    /* Test Fill Outside */
-   tg = elm_check_add(win);
+   tg = elm_check_add(hbox);
    elm_object_text_set(tg, "Fill Outside");
    evas_object_smart_callback_add(tg, "changed", fill_outside_cb, ic);
    elm_box_pack_end(hbox, tg);
    evas_object_show(tg);
 
    /* Test Smooth */
-   tg = elm_check_add(win);
+   tg = elm_check_add(hbox);
    elm_object_text_set(tg, "Smooth");
    elm_check_state_set(tg, EINA_TRUE);
    evas_object_smart_callback_add(tg, "changed", smooth_cb, ic);
@@ -115,24 +106,21 @@ test_icon(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info _
    evas_object_show(tg);
 
    /* Test Preload, Prescale */
-   bt = elm_button_add(win);
+   bt = elm_button_add(hbox);
    elm_object_text_set(bt, "Preload & Prescale");
    evas_object_smart_callback_add(bt, "clicked", bt_clicked, NULL);
    elm_box_pack_end(hbox, bt);
    evas_object_show(bt);
-
-   evas_object_resize(win, 400, 400);
-   evas_object_show(win);
 }
 
 static void
-icon_clicked(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+icon_clicked(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    printf("clicked!\n");
 }
 
 void
-test_icon_transparent(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+test_icon_transparent(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *win, *ic;
    char buf[PATH_MAX];
@@ -156,4 +144,3 @@ test_icon_transparent(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *
 
    evas_object_show(win);
 }
-#endif

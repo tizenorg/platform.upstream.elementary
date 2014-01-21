@@ -38,6 +38,8 @@
  * This widget emits the following signals, besides the ones sent from
  * @ref Layout:
  * @li @c "clicked" - This is called when a user has clicked the bubble.
+ * @li @c "focused" - When the bubble has received focus. (since 1.8)
+ * @li @c "unfocused" - When the bubble has lost focus. (since 1.8)
  *
  * Default content parts of the bubble that you can use for are:
  * @li "default" - A content of the bubble
@@ -59,60 +61,13 @@
  * @{
  */
 
-/**
- * Defines the corner values for a bubble.
- *
- * The corner will be used to determine where the arrow of the
- * bubble points to.
- */
-typedef enum
-{
-  ELM_BUBBLE_POS_INVALID = -1,
-  ELM_BUBBLE_POS_TOP_LEFT,
-  ELM_BUBBLE_POS_TOP_RIGHT,
-  ELM_BUBBLE_POS_BOTTOM_LEFT,
-  ELM_BUBBLE_POS_BOTTOM_RIGHT,
-} Elm_Bubble_Pos;
-
-/**
- * Add a new bubble to the parent
- *
- * @param parent The parent object
- * @return The new object or NULL if it cannot be created
- *
- * This function adds a text bubble to the given parent evas object.
- *
- * @ingroup Bubble
- */
-EAPI Evas_Object                 *elm_bubble_add(Evas_Object *parent);
-
-/**
- * Set the corner of the bubble
- *
- * @param obj The bubble object.
- * @param pos The given corner for the bubble.
- *
- * This function sets the corner of the bubble. The corner will be used to
- * determine where the arrow in the frame points to and where label, icon and
- * info are shown.
- *
- *
- * @ingroup Bubble
- */
-EAPI void  elm_bubble_pos_set(Evas_Object *obj, Elm_Bubble_Pos pos);
-
-/**
- * Get the corner of the bubble
- *
- * @param obj The bubble object.
- * @return The given corner for the bubble.
- *
- * This function gets the selected corner of the bubble.
- *
- * @ingroup Bubble
- */
-EAPI Elm_Bubble_Pos elm_bubble_pos_get(const Evas_Object *obj);
-
+#include "elm_bubble_common.h"
+#ifdef EFL_EO_API_SUPPORT
+#include "elm_bubble_eo.h"
+#endif
+#ifndef EFL_NOLEGACY_API_SUPPORT
+#include "elm_bubble_legacy.h"
+#endif
 /**
  * @}
  */

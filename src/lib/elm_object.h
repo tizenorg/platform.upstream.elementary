@@ -29,6 +29,90 @@ EAPI const char                  *elm_object_part_text_get(const Evas_Object *ob
 #define elm_object_text_get(obj) elm_object_part_text_get((obj), NULL)
 
 /**
+ * Set the text for an object's part, marking it as translatable.
+ *
+ * The string to set as @p text must be the original one. Do not pass the
+ * return of @c gettext() here. Elementary will translate the string
+ * internally and set it on the object using elm_object_part_text_set(),
+ * also storing the original string so that it can be automatically
+ * translated when the language is changed with elm_language_set().
+ *
+ * The @p domain will be stored along to find the translation in the
+ * correct catalog. It can be NULL, in which case it will use whatever
+ * domain was set by the application with @c textdomain(). This is useful
+ * in case you are building a library on top of Elementary that will have
+ * its own translatable strings, that should not be mixed with those of
+ * programs using the library.
+ *
+ * @param obj The object containing the text part
+ * @param part The name of the part to set
+ * @param domain The translation domain to use
+ * @param text The original, non-translated text to set
+ *
+ * @since 1.8
+ *
+ * @ingroup General
+ */
+EAPI void      elm_object_domain_translatable_part_text_set(Evas_Object *obj, const char *part, const char *domain, const char *text);
+
+#define elm_object_domain_translatable_text_set(obj, domain, text) elm_object_domain_translatable_part_text_set((obj), NULL, (domain), (text))
+
+#define elm_object_translatable_text_set(obj, text)                elm_object_domain_translatable_part_text_set((obj), NULL, NULL, (text))
+
+#define elm_object_translatable_part_text_set(obj, part, text)     elm_object_domain_translatable_part_text_set((obj), (part), NULL, (text))
+
+/**
+ * Get the original string set as translatable for an object
+ *
+ * When setting translated strings, the function elm_object_part_text_get()
+ * will return the translation returned by @c gettext(). To get the
+ * original string use this function.
+ *
+ * @param obj The object
+ * @param part The name of the part that was set
+ *
+ * @return The original, untranslated string
+ *
+ * @see elm_object_translatable_part_text_set()
+ *
+ * @since 1.8
+ *
+ * @ingroup General
+ */
+EAPI const char *elm_object_translatable_part_text_get(const Evas_Object *obj, const char *part);
+
+#define elm_object_translatable_text_get(obj) elm_object_translatable_part_text_get((obj), NULL)
+
+/**
+ * Mark the part text to be translatable or not.
+ *
+ * Once you mark the part text to be translatable, the text will be translated
+ * internally regardless of elm_object_part_text_set() and
+ * elm_object_domain_translatable_part_text_set(). In other case, if you set the
+ * Elementary policy that all text will be translatable in default, you can set
+ * the part text to not be translated by calling this API.
+ *
+ * @param obj The object containing the text part
+ * @param part The part name of the translatable text
+ * @param domain The translation domain to use
+ * @param translatable @c EINA_TRUE, the part text will be translated
+ *        internally. @c EINA_FALSE, otherwise.
+ *
+ * @see elm_object_domain_translatable_part_text_set()
+ * @see elm_object_part_text_set()
+ * @see elm_policy()
+ *
+ * @since 1.8
+ *
+ * @ingroup General
+ */
+EAPI void elm_object_domain_part_text_translatable_set(Evas_Object *obj, const char *part, const char *domain, Eina_Bool translatable);
+
+#define elm_object_part_text_translatable_set(obj, part, translatable) elm_object_domain_part_text_translatable_set((obj), (part), NULL, (translatable))
+
+#define elm_object_domain_text_translatable_set(obj, domain, translatable) elm_object_domain_part_text_translatable_set((obj), NULL, (domain), (translatable))
+
+/**
  * Set the content on part of a given container widget
  *
  * @param obj The Elementary container widget
@@ -37,13 +121,14 @@ EAPI const char                  *elm_object_part_text_get(const Evas_Object *ob
  * @param content The new content for that part
  *
  * All widgets deriving from the @ref elm-container-class may hold
- * child objects as content at given parts.  This sets new content to
+ * child objects as content at given parts. This sets new content to
  * a given part. If any object was already set as a content object in
  * the same part, the previous object will be deleted automatically
- * with this call. If you wish to preserve it, issue
+ * with this call. If the @content is NULL, this call will just delete the
+ * previous object. If the If you wish to preserve it, issue
  * elm_object_part_content_unset() on it first.
  *
- * @see elm_object_part_content_set()
+ * @see elm_object_part_content_get()
  *
  * @ingroup General
  */
@@ -180,7 +265,7 @@ EAPI const char  *elm_object_style_get(const Evas_Object *obj);
  * This sets the state for the widget, either disabling it or
  * enabling it back.
  *
- * @ingroup Styles
+ * @ingroup General 
  */
 EAPI void         elm_object_disabled_set(Evas_Object *obj, Eina_Bool disabled);
 
@@ -193,7 +278,7 @@ EAPI void         elm_object_disabled_set(Evas_Object *obj, Eina_Bool disabled);
  *
  * This gets the state of the widget, which might be enabled or disabled.
  *
- * @ingroup Styles
+ * @ingroup General
  */
 EAPI Eina_Bool    elm_object_disabled_get(const Evas_Object *obj);
 
@@ -287,7 +372,7 @@ EAPI void         elm_object_signal_emit(Evas_Object *obj, const char *emission,
  * @param source The signal's source.
  * @param func The callback function to be executed when the signal is
  * emitted.
- * @param data A pointer to data to pass in to the callback function.
+ * @param data A pointer to data to pass to the callback function.
  * @ingroup General
  */
 EAPI void         elm_object_signal_callback_add(Evas_Object *obj, const char *emission, const char *source, Edje_Signal_Cb func, void *data);
@@ -304,7 +389,7 @@ EAPI void         elm_object_signal_callback_add(Evas_Object *obj, const char *e
  * errors.
  *
  * This function removes the @b last callback, previously attached to
- * a signal emitted by an undelying Edje object of @a obj, whose
+ * a signal emitted by an underlying Edje object of @a obj, whose
  * parameters @a emission, @a source and @c func match exactly with
  * those passed to a previous call to
  * elm_object_signal_callback_add(). The data pointer that was passed
@@ -383,3 +468,38 @@ EAPI void         elm_object_event_callback_add(Evas_Object *obj, Elm_Event_Cb f
  * @ingroup General
  */
 EAPI void        *elm_object_event_callback_del(Evas_Object *obj, Elm_Event_Cb func, const void *data);
+
+/**
+ * Disable the orientation mode of a given widget.
+ *
+ * Orientation Mode is used for widgets to change it's styles or to send signals
+ * whenever it's window degree is changed. If the orientation mode is enabled
+ * and the widget has different looks and styles for the window degree(0, 90,
+ * 180, 270), it will apply a style that is readied for the current degree,
+ * otherwise, it will send signals to it's own edje to change it's states if
+ * the style doesn't be readied.
+ *
+ * @param obj The Elementary object to operate on orientation mode.
+ * @param disabled The state to put in in: @c EINA_TRUE for disabled,
+ *        @c EINA_FALSE for enabled.
+ *
+ * @since 1.8
+ *
+ * @ingroup General
+ */
+EAPI void        elm_object_orientation_mode_disabled_set(Evas_Object *obj, Eina_Bool disabled);
+
+/**
+ * Get the orientation mode of a given widget.
+ *
+ * @param obj The Elementary widget to query for its orientation mode.
+ * @return @c EINA_TRUE, if the orientation mode is disabled, @c EINA_FALSE
+ *            if the orientation mode is enabled (or on errors)
+ * @see elm_object_orientation_mode_disabled_set()
+ *
+ * @since 1.8
+ *
+ * @ingroup General
+ */
+EAPI Eina_Bool   elm_object_orientation_mode_disabled_get(const Evas_Object *obj);
+

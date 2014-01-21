@@ -3,10 +3,10 @@
 # include "elementary_config.h"
 #endif
 #include <Elementary.h>
-#ifndef ELM_LIB_QUICKLAUNCH
+
 
 static Eina_Bool
-_event(void *data __UNUSED__, Evas_Object *obj __UNUSED__, Evas_Object *src __UNUSED__, Evas_Callback_Type type, void *event_info)
+_event(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, Evas_Object *src EINA_UNUSED, Evas_Callback_Type type, void *event_info)
 {
    if (type == EVAS_CALLBACK_KEY_DOWN)
      printf ("Key Down:");
@@ -22,22 +22,22 @@ _event(void *data __UNUSED__, Evas_Object *obj __UNUSED__, Evas_Object *src __UN
 }
 
 static void
-_on_key_down(void *data __UNUSED__, Evas *e __UNUSED__, Evas_Object *obj __UNUSED__, void *einfo __UNUSED__)
+_on_key_down(void *data EINA_UNUSED, Evas *e EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *einfo EINA_UNUSED)
 {
    //Evas_Event_Key_Down *event = einfo;
    //printf("%s %p Key %s Parent %p\n", evas_object_type_get(obj),
-   //       obj, event->keyname, evas_object_smart_parent_get(obj));
+   //       obj, event->key, evas_object_smart_parent_get(obj));
 }
 
 static void
-my_disable(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+my_disable(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *bt = data;
    elm_object_disabled_set(bt, EINA_TRUE);
 }
 
 static void
-my_enable(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+my_enable(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *bt = data;
    elm_object_disabled_set(bt, EINA_FALSE);
@@ -51,10 +51,18 @@ my_show(Evas_Object *obj)
    evas_object_show(obj);
 }
 
-void
-test_focus(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+static void
+_tb_sel(void *data EINA_UNUSED, Evas_Object *obj, void *event_info EINA_UNUSED)
 {
-   Evas_Object *win;
+   printf("tb sel %p\n", obj);
+}
+
+void
+test_focus(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
+{
+   Evas_Object *win, *tbx, *tbar, *menu;
+   Elm_Object_Item *tb_it;
+   Elm_Object_Item *menu_it;
    unsigned int i, j;
 
    win = elm_win_util_standard_add("focus", "Focus");
@@ -64,11 +72,49 @@ test_focus(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info 
    elm_win_autodel_set(win, EINA_TRUE);
    my_show(win);
 
+   tbx = elm_box_add(win);
+   evas_object_size_hint_weight_set(tbx, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   elm_win_resize_object_add(win, tbx);
+   evas_object_show(tbx);
+
+   tbar = elm_toolbar_add(win);
+   elm_toolbar_shrink_mode_set(tbar, ELM_TOOLBAR_SHRINK_MENU);
+   evas_object_size_hint_weight_set(tbar, 0.0, 0.0);
+   evas_object_size_hint_align_set(tbar, EVAS_HINT_FILL, 0.0);
+   tb_it = elm_toolbar_item_append(tbar, "document-print", "Hello", _tb_sel, NULL);
+   elm_object_item_disabled_set(tb_it, EINA_TRUE);
+   elm_toolbar_item_priority_set(tb_it, 100);
+
+   tb_it = elm_toolbar_item_append(tbar, "folder-new", "World", _tb_sel, NULL);
+   elm_toolbar_item_priority_set(tb_it, -100);
+
+   tb_it = elm_toolbar_item_append(tbar, "object-rotate-right", "H", _tb_sel, NULL);
+   elm_toolbar_item_priority_set(tb_it, 150);
+
+   tb_it = elm_toolbar_item_append(tbar, "mail-send", "Comes", _tb_sel, NULL);
+   elm_toolbar_item_priority_set(tb_it, 0);
+
+   tb_it = elm_toolbar_item_append(tbar, "clock", "Elementary", _tb_sel, NULL);
+   elm_toolbar_item_priority_set(tb_it, -200);
+
+   tb_it = elm_toolbar_item_append(tbar, "refresh", "Menu", NULL, NULL);
+   elm_toolbar_item_menu_set(tb_it, EINA_TRUE);
+   elm_toolbar_item_priority_set(tb_it, -9999);
+   elm_toolbar_menu_parent_set(tbar, win);
+   menu = elm_toolbar_item_menu_get(tb_it);
+
+   elm_menu_item_add(menu, NULL, "edit-cut", "Shrink", _tb_sel, NULL);
+   menu_it = elm_menu_item_add(menu, NULL, "edit-copy", "Mode", _tb_sel, NULL);
+   elm_menu_item_add(menu, menu_it, "edit-paste", "is set to", _tb_sel, NULL);
+   elm_menu_item_add(menu, NULL, "edit-delete", "Menu", _tb_sel, NULL);
+
+   elm_box_pack_end(tbx, tbar);
+   evas_object_show(tbar);
+
    Evas_Object *mainbx = elm_box_add(win);
    elm_box_horizontal_set(mainbx, EINA_TRUE);
-   elm_win_resize_object_add(win, mainbx);
-   evas_object_size_hint_weight_set(mainbx, EVAS_HINT_EXPAND,
-                                    EVAS_HINT_EXPAND);
+   evas_object_size_hint_weight_set(mainbx, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   elm_box_pack_end(tbx, mainbx);
    my_show(mainbx);
 
      { //First Col
@@ -364,4 +410,3 @@ test_focus(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info 
           }
      }
 }
-#endif

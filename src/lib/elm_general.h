@@ -77,9 +77,18 @@ typedef enum
                      * should quit automatically. @see
                      * Elm_Policy_Quit.
                      */
+   ELM_POLICY_EXIT, /**< defines elm_exit() behaviour. @see Elm_Policy_Exit.
+                     * @since 1.8
+                     */
+   ELM_POLICY_THROTTLE, /**< defines how throttling should work @see Elm_Policy_Throttle
+                         * @since 1.8
+                         */
    ELM_POLICY_LAST
 } Elm_Policy; /**< Elementary policy identifiers/groups enumeration.  @see elm_policy_set() */
 
+/**
+ * Possible values for the #ELM_POLICY_QUIT policy
+ */
 typedef enum
 {
    ELM_POLICY_QUIT_NONE = 0, /**< never quit the application
@@ -87,13 +96,29 @@ typedef enum
    ELM_POLICY_QUIT_LAST_WINDOW_CLOSED /**< quit when the
                                        * application's last
                                        * window is closed */
-} Elm_Policy_Quit; /**< Possible values for the #ELM_POLICY_QUIT policy */
+} Elm_Policy_Quit;
 
+/**
+ * Possible values for the #ELM_POLICY_EXIT policy.
+ * @since 1.8
+ */
 typedef enum
 {
-   ELM_FOCUS_PREVIOUS,
-   ELM_FOCUS_NEXT
-} Elm_Focus_Direction;
+   ELM_POLICY_EXIT_NONE = 0, /**< just quit the main loop on elm_exit() */
+   ELM_POLICY_EXIT_WINDOWS_DEL /**< delete all the windows after quitting
+                                * the main loop */
+} Elm_Policy_Exit;
+
+/**
+ * Possible values for the #ELM_POLICY_THROTTLE policy.
+ * @since 1.8
+ */
+typedef enum
+{
+   ELM_POLICY_THROTTLE_CONFIG = 0, /**< do whatever elementary config is configured to do */
+   ELM_POLICY_THROTTLE_HIDDEN_ALWAYS, /**< always throttle when all windows are no longer visible */
+   ELM_POLICY_THROTTLE_NEVER /**< never throttle when windows are all hidden, regardless of config settings */
+} Elm_Policy_Throttle;
 
 typedef enum
 {
@@ -104,19 +129,25 @@ typedef enum
    ELM_OBJECT_SELECT_MODE_MAX
 } Elm_Object_Select_Mode;
 
-/**
- * @typedef Elm_Object_Item
- * An Elementary Object item handle.
- * @ingroup General
- */
-typedef struct _Elm_Object_Item Elm_Object_Item;
+typedef enum
+{
+   ELM_OBJECT_MULTI_SELECT_MODE_DEFAULT = 0, /**< default multiple select mode */
+   ELM_OBJECT_MULTI_SELECT_MODE_WITH_CONTROL, /**< disallow mutiple selection when clicked without control key pressed */
+   ELM_OBJECT_MULTI_SELECT_MODE_MAX
+} Elm_Object_Multi_Select_Mode;
 
 typedef Eina_Bool             (*Elm_Event_Cb)(void *data, Evas_Object *obj, Evas_Object *src, Evas_Callback_Type type, void *event_info); /**< Function prototype definition for callbacks on input events happening on Elementary widgets. @a data will receive the user data pointer passed to elm_object_event_callback_add(). @a src will be a pointer to the widget on which the input event took place. @a type will get the type of this event and @a event_info, the struct with details on this event. */
 
+extern EAPI double _elm_startup_time;
+
 #ifndef ELM_LIB_QUICKLAUNCH
-#define ELM_MAIN() int main(int argc, char **argv) {elm_init(argc, argv); return elm_main(argc, argv); } /**< macro to be used after the elm_main() function */
+#define ELM_MAIN() int main(int argc, char **argv) { int ret; _elm_startup_time = ecore_time_unix_get(); elm_init(argc, argv); ret = elm_main(argc, argv); return ret; } /**< macro to be used after the elm_main() function */
 #else
-#define ELM_MAIN() int main(int argc, char **argv) {return elm_quicklaunch_fallback(argc, argv); } /**< macro to be used after the elm_main() function */
+/** @deprecated macro to be used after the elm_main() function.
+ * Do not define ELM_LIB_QUICKLAUNCH
+ * Compile your programs with -fpie and -pie -rdynamic instead, to generate a single binary (linkable executable).
+ */
+#define ELM_MAIN() int main(int argc, char **argv) { _elm_startup_time = ecore_time_unix_get(); return elm_quicklaunch_fallback(argc, argv); }
 #endif
 
 /**************************************************************************/
@@ -243,7 +274,7 @@ EAPI void      elm_quicklaunch_seed(void);
 /**
  * Exposed symbol used only by macros and should not be used by apps
  */
-EAPI Eina_Bool elm_quicklaunch_prepare(int argc, char **argv);
+EAPI Eina_Bool elm_quicklaunch_prepare(int argc, char **argv, const char *cwd);
 
 /**
  * Exposed symbol used only by macros and should not be used by apps
@@ -263,7 +294,7 @@ EAPI int       elm_quicklaunch_fallback(int argc, char **argv);
 /**
  * Exposed symbol used only by macros and should not be used by apps
  */
-EAPI char     *elm_quicklaunch_exe_path_get(const char *exe);
+EAPI char     *elm_quicklaunch_exe_path_get(const char *exe, const char *cwd);
 
 /**
  * Set a new policy's value (for a given policy group/identifier).
@@ -288,7 +319,7 @@ EAPI char     *elm_quicklaunch_exe_path_get(const char *exe);
 EAPI Eina_Bool elm_policy_set(unsigned int policy, int value);
 
 /**
- * Gets the policy value for given policy identifier.
+ * Get the policy value for given policy identifier.
  *
  * @param policy policy identifier, as in #Elm_Policy.
  * @return The currently set policy value, for that
@@ -306,65 +337,18 @@ EAPI int       elm_policy_get(unsigned int policy);
  *
  * Changing language with this function will make Elementary run through
  * all its widgets, translating strings set with
- * elm_object_domain_translatable_text_part_set(). This way, an entire
+ * elm_object_domain_translatable_part_text_set(). This way, an entire
  * UI can have its language changed without having to restart the program.
  *
  * For more complex cases, like having formatted strings that need
  * translation, widgets will also emit a "language,changed" signal that
- * the user can listen to to manually translate the text.
+ * the user can listen to and manually translate the text.
  *
  * @param lang Language to set, must be the full name of the locale
  *
  * @ingroup General
  */
 EAPI void      elm_language_set(const char *lang);
-
-/**
- * Set the text for an objects' part, marking it as translatable.
- *
- * The string to set as @p text must be the original one. Do not pass the
- * return of @c gettext() here. Elementary will translate the string
- * internally and set it on the object using elm_object_part_text_set(),
- * also storing the original string so that it can be automatically
- * translated when the language is changed with elm_language_set().
- *
- * The @p domain will be stored along to find the translation in the
- * correct catalog. It can be NULL, in which case it will use whatever
- * domain was set by the application with @c textdomain(). This is useful
- * in case you are building a library on top of Elementary that will have
- * its own translatable strings, that should not be mixed with those of
- * programs using the library.
- *
- * @param obj The object containing the text part
- * @param part The name of the part to set
- * @param domain The translation domain to use
- * @param text The original, non-translated text to set
- *
- * @ingroup General
- */
-EAPI void      elm_object_domain_translatable_text_part_set(Evas_Object *obj, const char *part, const char *domain, const char *text);
-
-#define elm_object_domain_translatable_text_set(obj, domain, text) elm_object_domain_translatable_text_part_set((obj), NULL, (domain), (text))
-
-#define elm_object_translatable_text_set(obj, text)                elm_object_domain_translatable_text_part_set((obj), NULL, NULL, (text))
-
-/**
- * Gets the original string set as translatable for an object
- *
- * When setting translated strings, the function elm_object_part_text_get()
- * will return the translation returned by @c gettext(). To get the
- * original string use this function.
- *
- * @param obj The object
- * @param part The name of the part that was set
- *
- * @return The original, untranslated string
- *
- * @ingroup General
- */
-EAPI const char *elm_object_translatable_text_part_get(const Evas_Object *obj, const char *part);
-
-#define elm_object_translatable_text_get(obj) elm_object_translatable_text_part_get((obj), NULL)
 
 /**
  * @}

@@ -2,16 +2,16 @@
 # include "elementary_config.h"
 #endif
 #include <Elementary.h>
-#ifndef ELM_LIB_QUICKLAUNCH
+
 static void
-my_entry_bt_1(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+my_entry_bt_1(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *en = data;
    elm_object_text_set(en, "");
 }
 
 static void
-my_entry_bt_2(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+my_entry_bt_2(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *en = data;
    const char *s = elm_object_text_get(en);
@@ -30,7 +30,7 @@ my_entry_bt_2(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED
 }
 
 static void
-my_entry_bt_3(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+my_entry_bt_3(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *en = data;
    const char *s = elm_entry_selection_get(en);
@@ -49,21 +49,21 @@ my_entry_bt_3(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED
 }
 
 static void
-my_entry_bt_4(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+my_entry_bt_4(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *en = data;
    elm_entry_entry_insert(en, "Insert some <b>BOLD</> text");
 }
 
 static void
-my_entry_bt_5(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+my_entry_bt_5(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *en = data;
    elm_entry_scrollable_set(en, !elm_entry_scrollable_get(en));
 }
 
 static void
-my_entry_bt_6(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+my_entry_bt_6(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *en = data;
    static Elm_Wrap_Type wr = ELM_WRAP_NONE;
@@ -75,7 +75,7 @@ my_entry_bt_6(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED
 }
 
 void
-test_entry(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+test_entry(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *win, *bx, *bx2, *bt, *en;
    char buf[4096];
@@ -200,14 +200,14 @@ test_entry(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info 
 }
 
 static void
-my_scrolled_entry_bt_1(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+my_scrolled_entry_bt_1(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *en = data;
    elm_object_text_set(en, "");
 }
 
 static void
-my_scrolled_entry_bt_2(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+my_scrolled_entry_bt_2(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *en = data;
    const char *s = elm_object_text_get(en);
@@ -226,7 +226,7 @@ my_scrolled_entry_bt_2(void *data, Evas_Object *obj __UNUSED__, void *event_info
 }
 
 static void
-my_scrolled_entry_bt_3(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+my_scrolled_entry_bt_3(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *en = data;
    const char *s = elm_entry_selection_get(en);
@@ -245,14 +245,14 @@ my_scrolled_entry_bt_3(void *data, Evas_Object *obj __UNUSED__, void *event_info
 }
 
 static void
-my_scrolled_entry_bt_4(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+my_scrolled_entry_bt_4(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *en = data;
    elm_entry_entry_insert(en, "Insert some <b>BOLD</> text");
 }
 
 static void
-my_scrolled_entry_bt_5(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+my_scrolled_entry_bt_5(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *en = data;
    const char *s = elm_object_text_get(en);
@@ -260,14 +260,21 @@ my_scrolled_entry_bt_5(void *data, Evas_Object *obj __UNUSED__, void *event_info
 }
 
 static void
-scrolled_anchor_test(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+scrolled_anchor_test(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *en = data;
    elm_entry_entry_insert(en, "ANCHOR CLICKED");
 }
 
+static void
+_item_cb(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info)
+{
+   Elm_Entry_Context_Menu_Item *item = (Elm_Entry_Context_Menu_Item *)event_info;
+   printf("\ncurrent selected text = %s\n", elm_entry_context_menu_item_label_get(item));
+}
+
 void
-test_entry_scrolled(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+test_entry_scrolled(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *win, *bx, *bx2, *bt, *en, *en_p, *sp;
    static Elm_Entry_Filter_Accept_Set digits_filter_data, digits_filter_data2;
@@ -286,10 +293,21 @@ test_entry_scrolled(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *ev
    elm_entry_scrollable_set(en, EINA_TRUE);
    evas_object_size_hint_weight_set(en, EVAS_HINT_EXPAND, 0.0);
    evas_object_size_hint_align_set(en, EVAS_HINT_FILL, 0.5);
-   elm_entry_scrollbar_policy_set(en, ELM_SCROLLER_POLICY_OFF, ELM_SCROLLER_POLICY_OFF);
+   elm_scroller_policy_set(en, ELM_SCROLLER_POLICY_OFF, ELM_SCROLLER_POLICY_OFF);
    elm_object_text_set(en, "Disabled entry");
    elm_entry_single_line_set(en, EINA_TRUE);
    elm_object_disabled_set(en, EINA_TRUE);
+   evas_object_show(en);
+   elm_box_pack_end(bx, en);
+
+   /* entry with guide */
+   en = elm_entry_add(win);
+   elm_entry_scrollable_set(en, EINA_TRUE);
+   evas_object_size_hint_weight_set(en, EVAS_HINT_EXPAND, 0.0);
+   evas_object_size_hint_align_set(en, EVAS_HINT_FILL, 0.5);
+   elm_scroller_policy_set(en, ELM_SCROLLER_POLICY_OFF, ELM_SCROLLER_POLICY_OFF);
+   elm_object_part_text_set(en, "guide", "This string is guide");
+   elm_entry_single_line_set(en, EINA_TRUE);
    evas_object_show(en);
    elm_box_pack_end(bx, en);
 
@@ -298,7 +316,7 @@ test_entry_scrolled(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *ev
    elm_entry_scrollable_set(en, EINA_TRUE);
    evas_object_size_hint_weight_set(en, EVAS_HINT_EXPAND, 0.0);
    evas_object_size_hint_align_set(en, EVAS_HINT_FILL, 0.5);
-   elm_entry_scrollbar_policy_set(en, ELM_SCROLLER_POLICY_OFF, ELM_SCROLLER_POLICY_OFF);
+   elm_scroller_policy_set(en, ELM_SCROLLER_POLICY_OFF, ELM_SCROLLER_POLICY_OFF);
    elm_entry_password_set(en, EINA_TRUE);
    elm_entry_single_line_set(en, EINA_TRUE);
    elm_object_text_set(en, "Access denied, give up!");
@@ -311,7 +329,7 @@ test_entry_scrolled(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *ev
    elm_entry_scrollable_set(en, EINA_TRUE);
    evas_object_size_hint_weight_set(en, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    evas_object_size_hint_align_set(en, EVAS_HINT_FILL, EVAS_HINT_FILL);
-   elm_entry_scrollbar_policy_set(en, ELM_SCROLLER_POLICY_ON, ELM_SCROLLER_POLICY_ON);
+   elm_scroller_policy_set(en, ELM_SCROLLER_POLICY_ON, ELM_SCROLLER_POLICY_ON);
    elm_object_disabled_set(en, EINA_TRUE);
    elm_entry_context_menu_item_add(en, "Hello", NULL, ELM_ICON_NONE, NULL, NULL);
    elm_entry_context_menu_item_add(en, "World", NULL, ELM_ICON_NONE, NULL, NULL);
@@ -335,9 +353,11 @@ test_entry_scrolled(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *ev
    evas_object_size_hint_weight_set(en, EVAS_HINT_EXPAND, 0.0);
    evas_object_size_hint_align_set(en, EVAS_HINT_FILL, 0.5);
    elm_object_text_set(en, "This is a single line");
-   elm_entry_scrollbar_policy_set(en, ELM_SCROLLER_POLICY_OFF, ELM_SCROLLER_POLICY_OFF);
+   elm_scroller_policy_set(en, ELM_SCROLLER_POLICY_OFF, ELM_SCROLLER_POLICY_OFF);
    elm_entry_single_line_set(en, EINA_TRUE);
    elm_entry_select_all(en);
+   elm_entry_context_menu_item_add(en, "Menu1", NULL, ELM_ICON_NONE, _item_cb, NULL);
+   elm_entry_context_menu_item_add(en, "Menu2", NULL, ELM_ICON_NONE, _item_cb, NULL);
    evas_object_show(en);
    elm_box_pack_end(bx, en);
 
@@ -347,7 +367,7 @@ test_entry_scrolled(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *ev
    evas_object_size_hint_weight_set(en, EVAS_HINT_EXPAND, 0.0);
    evas_object_size_hint_align_set(en, EVAS_HINT_FILL, 0.5);
    elm_object_text_set(en, "01234");
-   elm_entry_scrollbar_policy_set(en, ELM_SCROLLER_POLICY_OFF, ELM_SCROLLER_POLICY_OFF);
+   elm_scroller_policy_set(en, ELM_SCROLLER_POLICY_OFF, ELM_SCROLLER_POLICY_OFF);
    elm_entry_single_line_set(en, EINA_TRUE);
    evas_object_show(en);
    elm_box_pack_end(bx, en);
@@ -362,7 +382,7 @@ test_entry_scrolled(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *ev
    evas_object_size_hint_weight_set(en, EVAS_HINT_EXPAND, 0.0);
    evas_object_size_hint_align_set(en, EVAS_HINT_FILL, 0.5);
    elm_object_text_set(en, "No numbers here");
-   elm_entry_scrollbar_policy_set(en, ELM_SCROLLER_POLICY_OFF, ELM_SCROLLER_POLICY_OFF);
+   elm_scroller_policy_set(en, ELM_SCROLLER_POLICY_OFF, ELM_SCROLLER_POLICY_OFF);
    elm_entry_single_line_set(en, EINA_TRUE);
    evas_object_show(en);
    elm_box_pack_end(bx, en);
@@ -377,7 +397,7 @@ test_entry_scrolled(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *ev
    evas_object_size_hint_weight_set(en, EVAS_HINT_EXPAND, 0.0);
    evas_object_size_hint_align_set(en, EVAS_HINT_FILL, 0.5);
    elm_object_text_set(en, "Just 20 chars");
-   elm_entry_scrollbar_policy_set(en, ELM_SCROLLER_POLICY_OFF, ELM_SCROLLER_POLICY_OFF);
+   elm_scroller_policy_set(en, ELM_SCROLLER_POLICY_OFF, ELM_SCROLLER_POLICY_OFF);
    elm_entry_single_line_set(en, EINA_TRUE);
    evas_object_show(en);
    elm_box_pack_end(bx, en);
@@ -392,7 +412,7 @@ test_entry_scrolled(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *ev
    evas_object_size_hint_weight_set(en, EVAS_HINT_EXPAND, 0.0);
    evas_object_size_hint_align_set(en, EVAS_HINT_FILL, 0.5);
    elm_object_text_set(en, "And now only 30 bytes");
-   elm_entry_scrollbar_policy_set(en, ELM_SCROLLER_POLICY_OFF, ELM_SCROLLER_POLICY_OFF);
+   elm_scroller_policy_set(en, ELM_SCROLLER_POLICY_OFF, ELM_SCROLLER_POLICY_OFF);
    elm_entry_single_line_set(en, EINA_TRUE);
    evas_object_show(en);
    elm_box_pack_end(bx, en);
@@ -406,7 +426,7 @@ test_entry_scrolled(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *ev
    elm_entry_scrollable_set(en_p, EINA_TRUE);
    evas_object_size_hint_weight_set(en_p, EVAS_HINT_EXPAND, 0.0);
    evas_object_size_hint_align_set(en_p, EVAS_HINT_FILL, 0.5);
-   elm_entry_scrollbar_policy_set(en_p, ELM_SCROLLER_POLICY_OFF, ELM_SCROLLER_POLICY_OFF);
+   elm_scroller_policy_set(en_p, ELM_SCROLLER_POLICY_OFF, ELM_SCROLLER_POLICY_OFF);
    elm_object_text_set(en_p, "Password here");
    elm_entry_single_line_set(en_p, EINA_TRUE);
    elm_entry_password_set(en_p, EINA_TRUE);
@@ -416,7 +436,7 @@ test_entry_scrolled(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *ev
    /* entry with icon/end widgets*/
    en = elm_entry_add(win);
    elm_entry_scrollable_set(en, EINA_TRUE);
-   elm_entry_scrollbar_policy_set(en, ELM_SCROLLER_POLICY_OFF, ELM_SCROLLER_POLICY_OFF);
+   elm_scroller_policy_set(en, ELM_SCROLLER_POLICY_OFF, ELM_SCROLLER_POLICY_OFF);
    elm_entry_single_line_set(en, EINA_TRUE);
    evas_object_size_hint_weight_set(en, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    evas_object_size_hint_align_set(en, EVAS_HINT_FILL, EVAS_HINT_FILL);
@@ -441,7 +461,7 @@ test_entry_scrolled(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *ev
    elm_entry_scrollable_set(en, EINA_TRUE);
    evas_object_size_hint_weight_set(en, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    evas_object_size_hint_align_set(en, EVAS_HINT_FILL, EVAS_HINT_FILL);
-   elm_entry_scrollbar_policy_set(en, ELM_SCROLLER_POLICY_ON, ELM_SCROLLER_POLICY_ON);
+   elm_scroller_policy_set(en, ELM_SCROLLER_POLICY_ON, ELM_SCROLLER_POLICY_ON);
    elm_object_text_set(en,
                        "This is an entry widget in this window that<br/>"
                        "uses markup <b>like this</> for styling and<br/>"
@@ -523,14 +543,14 @@ test_entry_scrolled(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *ev
 }
 
 static void
-my_ent_bt_clr(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+my_ent_bt_clr(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *en = data;
    elm_object_text_set(en, "");
 }
 
 static void
-my_ent_bt_pri(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+my_ent_bt_pri(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *en = data;
    const char *s = elm_object_text_get(en);
@@ -549,7 +569,7 @@ my_ent_bt_pri(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED
 }
 
 static void
-my_ent_bt_sel(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+my_ent_bt_sel(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *en = data;
    const char *s = elm_entry_selection_get(en);
@@ -568,98 +588,98 @@ my_ent_bt_sel(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED
 }
 
 static void
-my_ent_bt_all(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+my_ent_bt_all(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *en = data;
    elm_entry_select_all(en);
 }
 
 static void
-my_ent_bt_non(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+my_ent_bt_non(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *en = data;
    elm_entry_select_none(en);
 }
 
 static void
-my_ent_bt_ins(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+my_ent_bt_ins(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *en = data;
    elm_entry_entry_insert(en, "Insert text");
 }
 
 static void
-my_ent_bt_lef(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+my_ent_bt_lef(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *en = data;
    elm_entry_cursor_prev(en);
 }
 
 static void
-my_ent_bt_rig(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+my_ent_bt_rig(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *en = data;
    elm_entry_cursor_next(en);
 }
 
 static void
-my_ent_bt_up_(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+my_ent_bt_up_(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *en = data;
    elm_entry_cursor_up(en);
 }
 
 static void
-my_ent_bt_dow(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+my_ent_bt_dow(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *en = data;
    elm_entry_cursor_down(en);
 }
 
 static void
-my_ent_bt_beg(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+my_ent_bt_beg(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *en = data;
    elm_entry_cursor_begin_set(en);
 }
 
 static void
-my_ent_bt_end(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+my_ent_bt_end(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *en = data;
    elm_entry_cursor_end_set(en);
 }
 
 static void
-my_ent_bt_lbe(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+my_ent_bt_lbe(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *en = data;
    elm_entry_cursor_line_begin_set(en);
 }
 
 static void
-my_ent_bt_len(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+my_ent_bt_len(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *en = data;
    elm_entry_cursor_line_end_set(en);
 }
 
 static void
-my_ent_bt_sbe(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+my_ent_bt_sbe(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *en = data;
    elm_entry_cursor_selection_begin(en);
 }
 
 static void
-my_ent_bt_sen(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+my_ent_bt_sen(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *en = data;
    elm_entry_cursor_selection_end(en);
 }
 
 static void
-my_ent_bt_fmt(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+my_ent_bt_fmt(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *en = data;
    printf("IS FORMAT: %i\n",
@@ -667,7 +687,7 @@ my_ent_bt_fmt(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED
 }
 
 static void
-my_ent_bt_vfm(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+my_ent_bt_vfm(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *en = data;
    printf("IS VISIBLE FORMAT %i\n",
@@ -675,35 +695,35 @@ my_ent_bt_vfm(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED
 }
 
 static void
-my_ent_bt_chr(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+my_ent_bt_chr(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *en = data;
    printf("CHAR '%s'\n", elm_entry_cursor_content_get(en));
 }
 
 static void
-my_ent_bt_cut(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+my_ent_bt_cut(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *en = data;
    elm_entry_selection_cut(en);
 }
 
 static void
-my_ent_bt_cop(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+my_ent_bt_cop(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *en = data;
    elm_entry_selection_copy(en);
 }
 
 static void
-my_ent_bt_pas(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+my_ent_bt_pas(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *en = data;
    elm_entry_selection_paste(en);
 }
 
 static void
-ent_bt_style_user_peek(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+ent_bt_style_user_peek(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *en = data;
    const char* cur_style = elm_entry_text_style_user_peek(en);
@@ -714,7 +734,7 @@ ent_bt_style_user_peek(void *data, Evas_Object *obj __UNUSED__, void *event_info
 }
 
 static void
-ent_bt_style_user_pop(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+ent_bt_style_user_pop(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *en = data;
    elm_entry_text_style_user_pop(en);
@@ -722,7 +742,7 @@ ent_bt_style_user_pop(void *data, Evas_Object *obj __UNUSED__, void *event_info 
 }
 
 void
-test_entry_style_user(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+test_entry_style_user(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *win, *bx, *en, *bt, *bt2;
 
@@ -774,8 +794,15 @@ test_entry_style_user(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *
    evas_object_show(win);
 }
 
+static void
+_entry_activated_cb(void *data EINA_UNUSED, Evas_Object *obj,
+                    void *event_info EINA_UNUSED)
+{
+   printf("entry is activated: %s\n", elm_entry_entry_get(obj));
+}
+
 void
-test_entry3(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+test_entry3(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *win, *bx, *bx2, *bt, *en;
 
@@ -792,9 +819,10 @@ test_entry3(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info
    elm_entry_scrollable_set(en, EINA_TRUE);
    evas_object_size_hint_weight_set(en, EVAS_HINT_EXPAND, 0.0);
    evas_object_size_hint_align_set(en, EVAS_HINT_FILL, 0.5);
-   elm_entry_scrollbar_policy_set(en, ELM_SCROLLER_POLICY_OFF, ELM_SCROLLER_POLICY_OFF);
+   elm_scroller_policy_set(en, ELM_SCROLLER_POLICY_OFF, ELM_SCROLLER_POLICY_OFF);
    elm_object_text_set(en, "This is a single line");
    elm_entry_single_line_set(en, EINA_TRUE);
+   evas_object_smart_callback_add(en, "activated", _entry_activated_cb, NULL);
    elm_box_pack_end(bx, en);
    evas_object_show(en);
 
@@ -1331,7 +1359,7 @@ test_entry3(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info
 }
 
 void
-test_entry4(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+test_entry4(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *win, *ly, *en;
    char buf[PATH_MAX];
@@ -1350,7 +1378,7 @@ test_entry4(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info
    elm_entry_scrollable_set(en, EINA_TRUE);
    evas_object_size_hint_weight_set(en, EVAS_HINT_EXPAND, 0.0);
    evas_object_size_hint_align_set(en, EVAS_HINT_FILL, 0.5);
-   elm_entry_scrollbar_policy_set(en, ELM_SCROLLER_POLICY_OFF, ELM_SCROLLER_POLICY_OFF);
+   elm_scroller_policy_set(en, ELM_SCROLLER_POLICY_OFF, ELM_SCROLLER_POLICY_OFF);
    elm_object_text_set(en, "This is a single line");
    elm_entry_single_line_set(en, EINA_TRUE);
    elm_object_part_content_set(ly, "element1", en);
@@ -1394,7 +1422,7 @@ test_entry4(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info
 }
 
 void
-test_entry5(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+test_entry5(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *win, *bx, *bx2, *bt, *en;
 
@@ -1684,7 +1712,7 @@ test_entry5(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info
 }
 
 void
-test_entry6(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+test_entry6(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *win, *bx, *en;
 
@@ -1728,7 +1756,7 @@ test_entry6(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info
 }
 
 static void
-changed_cb(void *data, Evas_Object *obj, void *event_info __UNUSED__)
+changed_cb(void *data, Evas_Object *obj, void *event_info EINA_UNUSED)
 {
    Evas_Object *en;
    en = (Evas_Object*)data;
@@ -1737,7 +1765,7 @@ changed_cb(void *data, Evas_Object *obj, void *event_info __UNUSED__)
 }
 
 static void
-en_changed_cb(void *data, Evas_Object *obj, void *event_info __UNUSED__)
+en_changed_cb(void *data, Evas_Object *obj, void *event_info EINA_UNUSED)
 {
    Evas_Object *sp, *en;
    sp = (Evas_Object *)data;
@@ -1746,7 +1774,7 @@ en_changed_cb(void *data, Evas_Object *obj, void *event_info __UNUSED__)
 }
 
 static void
-sp_changed_cb(void *data, Evas_Object *obj, void *event_info __UNUSED__)
+sp_changed_cb(void *data, Evas_Object *obj, void *event_info EINA_UNUSED)
 {
    Evas_Object *en, *sp;
    en = (Evas_Object *)data;
@@ -1756,7 +1784,7 @@ sp_changed_cb(void *data, Evas_Object *obj, void *event_info __UNUSED__)
 }
 
 static void
-add_bt_clicked(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+add_bt_clicked(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *en;
    en = (Evas_Object *)data;
@@ -1765,7 +1793,7 @@ add_bt_clicked(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSE
 }
 
 static void
-clear_bt_clicked(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+clear_bt_clicked(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *en;
    en = (Evas_Object *)data;
@@ -1774,7 +1802,7 @@ clear_bt_clicked(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNU
 }
 
 static Evas_Object *
-item_provider(void *images __UNUSED__, Evas_Object *en, const char *item)
+item_provider(void *images EINA_UNUSED, Evas_Object *en, const char *item)
 {
    Evas_Object *o = NULL;;
    char buf[1024];
@@ -1791,7 +1819,7 @@ item_provider(void *images __UNUSED__, Evas_Object *en, const char *item)
 }
 
 static Evas_Object *
-prepend_item_provider(void *images __UNUSED__, Evas_Object *en, const char *item)
+prepend_item_provider(void *images EINA_UNUSED, Evas_Object *en, const char *item)
 {
    Evas_Object *o = NULL;;
    char buf[1024];
@@ -1808,7 +1836,7 @@ prepend_item_provider(void *images __UNUSED__, Evas_Object *en, const char *item
 }
 
 static void
-prepend_bt_clicked(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+prepend_bt_clicked(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *en;
    en = (Evas_Object *)data;
@@ -1821,7 +1849,7 @@ prepend_bt_clicked(void *data, Evas_Object *obj __UNUSED__, void *event_info __U
 }
 
 static void
-remove_bt_clicked(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+remove_bt_clicked(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *en;
    en = (Evas_Object *)data;
@@ -1835,7 +1863,7 @@ remove_bt_clicked(void *data, Evas_Object *obj __UNUSED__, void *event_info __UN
 }
 
 static void
-enable_changed_cb(void *data, Evas_Object *obj, void *event_info __UNUSED__)
+enable_changed_cb(void *data, Evas_Object *obj, void *event_info EINA_UNUSED)
 {
    Evas_Object *en;
    en = (Evas_Object*)data;
@@ -1844,7 +1872,7 @@ enable_changed_cb(void *data, Evas_Object *obj, void *event_info __UNUSED__)
 }
 
 void
-test_entry7(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+test_entry7(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *win, *gd, *bg, *en, *tg, *lb, *sp;
    Evas_Object *bt, *en2;
@@ -1868,7 +1896,7 @@ test_entry7(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info
    elm_entry_scrollable_set(en, EINA_TRUE);
    evas_object_size_hint_weight_set(en, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    evas_object_size_hint_align_set(en, EVAS_HINT_FILL, EVAS_HINT_FILL);
-   elm_object_text_set(en, "Editable, Cursor Positioin");
+   elm_object_text_set(en, "Editable, Cursor Position");
    evas_object_show(en);
    elm_grid_pack(gd, en, 10, 10, 60, 30);
 
@@ -1957,7 +1985,7 @@ test_entry7(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info
 }
 
 static void
-filter_prepend_bt_clicked(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+filter_prepend_bt_clicked(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *en, *en2;
    static Elm_Entry_Filter_Accept_Set digits_filter_data;
@@ -1973,7 +2001,7 @@ filter_prepend_bt_clicked(void *data, Evas_Object *obj __UNUSED__, void *event_i
 }
 
 static void
-filter_remove_bt_clicked(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+filter_remove_bt_clicked(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *en;
    en = (Evas_Object *)data;
@@ -1983,7 +2011,7 @@ filter_remove_bt_clicked(void *data, Evas_Object *obj __UNUSED__, void *event_in
 }
 
 static void
-icon_visible_changed_cb(void *data, Evas_Object *obj, void *event_info __UNUSED__)
+icon_visible_changed_cb(void *data, Evas_Object *obj, void *event_info EINA_UNUSED)
 {
    Evas_Object *en;
    en = (Evas_Object*)data;
@@ -1992,7 +2020,7 @@ icon_visible_changed_cb(void *data, Evas_Object *obj, void *event_info __UNUSED_
 }
 
 static void
-end_visible_changed_cb(void *data, Evas_Object *obj, void *event_info __UNUSED__)
+end_visible_changed_cb(void *data, Evas_Object *obj, void *event_info EINA_UNUSED)
 {
    Evas_Object *en;
    en = (Evas_Object*)data;
@@ -2001,31 +2029,31 @@ end_visible_changed_cb(void *data, Evas_Object *obj, void *event_info __UNUSED__
 }
 
 static void
-horizontal_bounce_changed_cb(void *data, Evas_Object *obj, void *event_info __UNUSED__)
+horizontal_bounce_changed_cb(void *data, Evas_Object *obj, void *event_info EINA_UNUSED)
 {
    Evas_Object *en;
    Eina_Bool vb;
    Eina_Bool bounce = elm_check_state_get(obj);
    en = (Evas_Object*)data;
 
-   elm_entry_bounce_get(en, NULL, &vb);
-   elm_entry_bounce_set(en, bounce, bounce);
+   elm_scroller_bounce_get(en, NULL, &vb);
+   elm_scroller_bounce_set(en, bounce, bounce);
 }
 
 static void
-vertical_bounce_changed_cb(void *data, Evas_Object *obj, void *event_info __UNUSED__)
+vertical_bounce_changed_cb(void *data, Evas_Object *obj, void *event_info EINA_UNUSED)
 {
    Evas_Object *en;
    Eina_Bool hb;
    Eina_Bool bounce = elm_check_state_get(obj);
    en = (Evas_Object*)data;
 
-   elm_entry_bounce_get(en, &hb, NULL);
-   elm_entry_bounce_set(en, hb, bounce);
+   elm_scroller_bounce_get(en, &hb, NULL);
+   elm_scroller_bounce_set(en, hb, bounce);
 }
 
 void
-test_entry8(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+test_entry8(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *win, *gd, *rect, *en, *lb;
    Evas_Object *bt, *en2;
@@ -2038,8 +2066,8 @@ test_entry8(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info
 
    gd = elm_grid_add(win);
    elm_grid_size_set(gd, 100, 100);
-   elm_win_resize_object_add(win, gd);
    evas_object_size_hint_weight_set(gd, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   elm_win_resize_object_add(win, gd);
    evas_object_show(gd);
 
    rect = evas_object_rectangle_add(evas_object_evas_get(win));
@@ -2049,7 +2077,7 @@ test_entry8(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info
 
    en = elm_entry_add(win);
    elm_entry_scrollable_set(en, EINA_TRUE);
-   elm_entry_scrollbar_policy_set(en, ELM_SCROLLER_POLICY_OFF, ELM_SCROLLER_POLICY_OFF);
+   elm_scroller_policy_set(en, ELM_SCROLLER_POLICY_OFF, ELM_SCROLLER_POLICY_OFF);
    evas_object_size_hint_weight_set(en, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    evas_object_size_hint_align_set(en, EVAS_HINT_FILL, EVAS_HINT_FILL);
    elm_object_text_set(en, "Markup Filter Prepend Test");
@@ -2070,7 +2098,7 @@ test_entry8(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info
 
    en2 = elm_entry_add(win);
    elm_entry_scrollable_set(en2, EINA_TRUE);
-   elm_entry_scrollbar_policy_set(en2, ELM_SCROLLER_POLICY_OFF, ELM_SCROLLER_POLICY_OFF);
+   elm_scroller_policy_set(en2, ELM_SCROLLER_POLICY_OFF, ELM_SCROLLER_POLICY_OFF);
    evas_object_size_hint_weight_set(en2, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    evas_object_size_hint_align_set(en2, EVAS_HINT_FILL, EVAS_HINT_FILL);
    limit_filter_data.max_char_count = 20;
@@ -2094,7 +2122,7 @@ test_entry8(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info
 
    en3 = elm_entry_add(win);
    elm_entry_scrollable_set(en3, EINA_TRUE);
-   elm_entry_scrollbar_policy_set(en3, ELM_SCROLLER_POLICY_OFF, ELM_SCROLLER_POLICY_OFF);
+   elm_scroller_policy_set(en3, ELM_SCROLLER_POLICY_OFF, ELM_SCROLLER_POLICY_OFF);
    elm_entry_single_line_set(en3, EINA_TRUE);
    evas_object_size_hint_weight_set(en3, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    evas_object_size_hint_align_set(en3, EVAS_HINT_FILL, EVAS_HINT_FILL);
@@ -2141,7 +2169,7 @@ test_entry8(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info
    en4 = elm_entry_add(win);
    elm_object_part_text_set(en4, "guide", "Type in here");
    elm_entry_scrollable_set(en4, EINA_TRUE);
-   elm_entry_bounce_set(en4, EINA_TRUE, EINA_TRUE);
+   elm_scroller_bounce_set(en4, EINA_TRUE, EINA_TRUE);
    elm_entry_autocapital_type_set(en4, EINA_TRUE);
    evas_object_size_hint_weight_set(en4, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    evas_object_size_hint_align_set(en4, EVAS_HINT_FILL, EVAS_HINT_FILL);
@@ -2171,21 +2199,21 @@ test_entry8(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info
 }
 
 static void
-_scrolled_entry_clear(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+_scrolled_entry_clear(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *en = data;
    elm_object_text_set(en, "");
 }
 
 static void
-_scrolled_entry_save(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+_scrolled_entry_save(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *en = data;
    elm_entry_file_save(en);
 }
 
 static void
-auto_save_changed_cb(void *data, Evas_Object *obj, void *event_info __UNUSED__)
+auto_save_changed_cb(void *data, Evas_Object *obj, void *event_info EINA_UNUSED)
 {
    Evas_Object *en;
    en = (Evas_Object*)data;
@@ -2194,7 +2222,7 @@ auto_save_changed_cb(void *data, Evas_Object *obj, void *event_info __UNUSED__)
 }
 
 void
-test_entry_notepad(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+test_entry_notepad(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *win, *bx, *bx2, *bt, *np, *ch;
 
@@ -2253,4 +2281,62 @@ test_entry_notepad(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *eve
    elm_object_focus_set(win, EINA_TRUE);
    evas_object_show(win);
 }
-#endif
+
+void
+test_entry_emoticon(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED,
+                    void *event_info EINA_UNUSED)
+{
+   Evas_Object *win, *en;
+
+   win = elm_win_util_standard_add("entry-emoticon", "Entry Emoticon");
+   elm_win_autodel_set(win, EINA_TRUE);
+   evas_object_resize(win, 400, 500);
+   evas_object_show(win);
+
+   en = elm_entry_add(win);
+   evas_object_size_hint_weight_set(en, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   elm_win_resize_object_add(win, en);
+   elm_entry_scrollable_set(en, EINA_TRUE);
+   elm_object_text_set(en,
+                       "angry <item absize=64x64 vsize=ascent href=emoticon/angry></item> <br>"
+                       "angry-shout <item absize=64x64 vsize=ascent href=emoticon/angry-shout></item> <br>"
+                       "crazy-laugh <item absize=64x64 vsize=ascent href=emoticon/crazy-laugh></item> <br>"
+                       "evil-laugh <item absize=64x64 vsize=ascent href=emoticon/evil-laugh></item> <br>"
+                       "evil <item absize=64x64 vsize=ascent href=emoticon/evil></item> <br>"
+                       "goggle-smile <item absize=64x64 vsize=ascent href=emoticon/goggle-smile></item> <br>"
+                       "grumpy <item absize=64x64 vsize=ascent href=emoticon/grumpy></item> <br>"
+                       "guilty <item absize=64x64 vsize=ascent href=emoticon/guilty></item> <br>"
+                       "haha <item absize=64x64 vsize=ascent href=emoticon/haha></item> <br>"
+                       "happy-panting <item absize=64x64 vsize=ascent href=emoticon/happy-panting></item> <br>"
+                       "happy <item absize=64x64 vsize=ascent href=emoticon/happy></item> <br>"
+                       "indifferent <item absize=64x64 vsize=ascent href=emoticon/indifferent></item> <br>"
+                       "kiss <item absize=64x64 vsize=ascent href=emoticon/kiss></item> <br>"
+                       "knowing-grin <item absize=64x64 vsize=ascent href=emoticon/knowing-grin></item> <br>"
+                       "laugh <item absize=64x64 vsize=ascent href=emoticon/laugh></item> <br>"
+                       "little-bit-sorry <item absize=64x64 vsize=ascent href=emoticon/little-bit-sorry></item> <br>"
+                       "love-lots <item absize=64x64 vsize=ascent href=emoticon/love-lots></item> <br>"
+                       "love <item absize=64x64 vsize=ascent href=emoticon/love></item> <br>"
+                       "minimal-smile <item absize=64x64 vsize=ascent href=emoticon/minimal-smile></item> <br>"
+                       "not-happy <item absize=64x64 vsize=ascent href=emoticon/not-happy></item> <br>"
+                       "not-impressed <item absize=64x64 vsize=ascent href=emoticon/not-impressed></item> <br>"
+                       "omg <item absize=64x64 vsize=ascent href=emoticon/omg></item> <br>"
+                       "opensmile <item absize=64x64 vsize=ascent href=emoticon/opensmile></item> <br>"
+                       "smile <item absize=64x64 vsize=ascent href=emoticon/smile></item> <br>"
+                       "sorry <item absize=64x64 vsize=ascent href=emoticon/sorry></item> <br>"
+                       "squint-laugh <item absize=64x64 vsize=ascent href=emoticon/squint-laugh></item> <br>"
+                       "surprised <item absize=64x64 vsize=ascent href=emoticon/surprised></item> <br>"
+                       "suspicious <item absize=64x64 vsize=ascent href=emoticon/suspicious></item> <br>"
+                       "tongue-dangling <item absize=64x64 vsize=ascent href=emoticon/tongue-dangling></item> <br>"
+                       "tongue-poke <item absize=64x64 vsize=ascent href=emoticon/tongue-poke></item> <br>"
+                       "uh <item absize=64x64 vsize=ascent href=emoticon/uh></item> <br>"
+                       "unhappy <item absize=64x64 vsize=ascent href=emoticon/unhappy></item> <br>"
+                       "very-sorry <item absize=64x64 vsize=ascent href=emoticon/very-sorry></item> <br>"
+                       "what <item absize=64x64 vsize=ascent href=emoticon/what></item> <br>"
+                       "wink <item absize=64x64 vsize=ascent href=emoticon/wink></item> <br>"
+                       "worried <item absize=64x64 vsize=ascent href=emoticon/worried></item> <br>"
+                       "wtf <item absize=64x64 vsize=ascent href=emoticon/wtf></item> <br>"
+                      );
+   evas_object_show(en);
+   elm_object_focus_set(en, EINA_TRUE);
+}
+

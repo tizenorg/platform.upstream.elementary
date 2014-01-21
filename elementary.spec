@@ -1,10 +1,9 @@
-%define _missing_doc_files_terminate_build 0
-
 %{!?_rel:%{expand:%%global _rel 0.enl%{?dist}}}
+%global _missing_doc_files_terminate_build 0
 
 Summary: EFL toolkit for small touchscreens
 Name: elementary
-Version: 1.7.10
+Version: 1.8.0
 Release: %{_rel}
 License: Lesser GPL
 Group: System Environment/Libraries
@@ -14,8 +13,7 @@ Packager: %{?_packager:%{_packager}}%{!?_packager:Rui Miguel Silva Seabra <rms@1
 Vendor: %{?_vendorinfo:%{_vendorinfo}}%{!?_vendorinfo:The Enlightenment Project (http://www.enlightenment.org/)}
 Distribution: %{?_distribution:%{_distribution}}%{!?_distribution:%{_vendor}}
 #BuildSuggests: xorg-x11-devel, vim-enhanced
-BuildRequires: evas-devel
-Requires:  evas
+BuildRequires: efl-devel
 BuildRoot: %{_tmppath}/%{name}-%{version}-root
 
 %description
@@ -29,75 +27,76 @@ fine-grained library splitting means all of this is shared, just a new
 widget "personality" is on top. And that is... Elementary, my dear watson.
 Elementary.
 
+
 %package devel
 Summary: Elementary headers, static libraries, documentation and test programs
 Group: System Environment/Libraries
 Requires: %{name} = %{version}, %{name}-bin = %{version}
-Requires: evas-devel
+Requires: efl-devel
 
 %description devel
 Headers, static libraries, test programs and documentation for Elementary
+
 
 %package bin
 Summary: Elementary file compiler/decompiler suite
 Group: System Environment/Libraries
 Requires: %{name} = %{version}
-Requires: elementary
 
 %description bin
 Elmementary programs
 
+
 %prep
 %setup -q
+
 
 %build
 %{configure} --prefix=%{_prefix}
 %{__make} %{?_smp_mflags} %{?mflags}
 
+
 %install
 %{__make} %{?mflags_install} DESTDIR=$RPM_BUILD_ROOT install
 test -x `which doxygen` && sh gendoc || :
 
+%{find_lang} %{name}
+
+
 %post
 /sbin/ldconfig || :
+
 
 %postun
 /sbin/ldconfig || :
 
+
 %clean
 test "x$RPM_BUILD_ROOT" != "x/" && rm -rf $RPM_BUILD_ROOT
 
-%files
+
+%files -f %{name}.lang
 %defattr(-, root, root)
 %doc AUTHORS COPYING README
 %{_libdir}/*.a
 %{_libdir}/*.la
 %{_libdir}/*.so
 %{_libdir}/libelementary*.so.*
-%{_libdir}/edje/modules/elm/*/module.la
-%{_libdir}/edje/modules/elm/*/module.so
-%{_datadir}/locale/*/LC_MESSAGES/elementary.mo
+%{_libdir}/edje/modules/elm/
 
 %files devel
 %defattr(-, root, root)
 %doc doc/html
-%{_libdir}/elementary/modules/*/*/module.*
-
+%{_includedir}/%{name}*/
+%{_libdir}/elementary/
 %{_libdir}/pkgconfig/*
-%{_includedir}/elementary-1/*.h
 
 %files bin
 %defattr(-, root, root)
 %{_bindir}/*
 %{_datadir}/applications/*.desktop
-%{_datadir}/elementary/config/*.cfg
-%{_datadir}/elementary/config/default/*
-%{_datadir}/elementary/config/mobile/*
-%{_datadir}/elementary/config/standard/*
-%{_datadir}/elementary/edje_externals/*
-%{_datadir}/elementary/images/*
-%{_datadir}/elementary/objects/*
-%{_datadir}/elementary/themes/*
+%{_datadir}/elementary/
 %{_datadir}/icons/elementary.png
+
 
 %changelog

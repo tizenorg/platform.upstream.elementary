@@ -2,7 +2,7 @@
 # include "elementary_config.h"
 #endif
 #include <Elementary.h>
-#ifndef ELM_LIB_QUICKLAUNCH
+
 
 #define LIST_ITEM_MAX 20
 
@@ -20,7 +20,7 @@ static Eina_Bool _dir_has_subs(const char *path);
 static Eina_List *dirs = NULL;
 
 static void
-_tstatus(void *data, Evas_Object *obj, void *event_info __UNUSED__)
+_tstatus(void *data, Evas_Object *obj, void *event_info EINA_UNUSED)
 {
    Elm_Object_Item *tb_it;
    const char *status;
@@ -35,7 +35,7 @@ _tstatus(void *data, Evas_Object *obj, void *event_info __UNUSED__)
 }
 
 static void
-_bstatus(void *data, Evas_Object *obj, void *event_info __UNUSED__)
+_bstatus(void *data, Evas_Object *obj, void *event_info EINA_UNUSED)
 {
    Elm_Object_Item *tb_it;
    const char *status;
@@ -50,7 +50,7 @@ _bstatus(void *data, Evas_Object *obj, void *event_info __UNUSED__)
 }
 
 static char *
-_text_get(void *data, Evas_Object *obj __UNUSED__, const char *source __UNUSED__)
+_text_get(void *data, Evas_Object *obj EINA_UNUSED, const char *source EINA_UNUSED)
 {
    return strdup(ecore_file_file_get(data));
 }
@@ -75,13 +75,13 @@ _content_get(void *data, Evas_Object *obj, const char *source)
 }
 
 static Eina_Bool
-_state_get(void *data __UNUSED__, Evas_Object *obj __UNUSED__, const char *source __UNUSED__)
+_state_get(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, const char *source EINA_UNUSED)
 {
    return EINA_FALSE;
 }
 
 static void
-_item_del(void *data, Evas_Object *obj __UNUSED__)
+_item_del(void *data, Evas_Object *obj EINA_UNUSED)
 {
    eina_stringshare_del(data);
 }
@@ -93,11 +93,14 @@ _fill_list(Evas_Object *obj)
    struct dirent *de;
    Eina_List *l;
    char *real;
+   char *home_env = NULL;
    unsigned int x = 0;
 
    if (!dirs)
      {
-        if (!(d = opendir(getenv("HOME")))) return;
+        home_env = getenv("HOME");
+        if (!home_env) return;
+        if (!(d = opendir(home_env))) return;
         while ((de = readdir(d)) && (x < LIST_ITEM_MAX))
           {
              char buff[PATH_MAX];
@@ -152,7 +155,7 @@ _dir_has_subs(const char *path)
 }
 
 void
-test_panel(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+test_panel(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *win, *panel, *bx, *vbx, *toolbar;
    Evas_Object *list;
@@ -161,9 +164,8 @@ test_panel(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info 
    elm_win_autodel_set(win, EINA_TRUE);
 
    vbx = elm_box_add(win);
-   elm_win_resize_object_add(win, vbx);
    evas_object_size_hint_weight_set(vbx, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-   evas_object_size_hint_align_set(vbx, EVAS_HINT_FILL, EVAS_HINT_FILL);
+   elm_win_resize_object_add(win, vbx);
    evas_object_show(vbx);
 
    bx = elm_box_add(win);
@@ -266,4 +268,3 @@ test_panel(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info 
 }
 
 
-#endif

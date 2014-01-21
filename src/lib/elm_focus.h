@@ -34,6 +34,21 @@
  */
 
 /**
+ * Focus directions.
+ *
+ * @ingroup Focus
+ */
+typedef enum
+{
+   ELM_FOCUS_PREVIOUS, /**< previous direction */
+   ELM_FOCUS_NEXT,     /**< next direction */
+   ELM_FOCUS_UP,       /**< up direction */
+   ELM_FOCUS_DOWN,     /**< down direction */
+   ELM_FOCUS_RIGHT,    /**< right direction */
+   ELM_FOCUS_LEFT      /**< left direction */
+} Elm_Focus_Direction;
+
+/**
  * Get the whether an Elementary object has the focus or not.
  *
  * @param obj The Elementary object to get the information from
@@ -58,6 +73,9 @@ EAPI Eina_Bool            elm_object_focus_get(const Evas_Object *obj);
  * now on, be the one receiving input events. Unsetting focus will remove
  * the focus from @p obj, passing it back to the previous element in the
  * focus chain list.
+ *
+ * @warning Only visible object can get a focus. Call evas_object_show(o) before
+ * calling this API, if you want to give a focus to the evas object.
  *
  * @see elm_object_focus_get(), elm_object_focus_custom_chain_get()
  *
@@ -173,9 +191,63 @@ EAPI void                 elm_object_focus_custom_chain_prepend(Evas_Object *obj
  * @param obj The object root of sub-tree
  * @param dir Direction to move the focus
  *
+ * @see elm_object_focus_next_object_get(), elm_object_focus_next_object_set()
+ *
  * @ingroup Focus
  */
 EAPI void                 elm_object_focus_next(Evas_Object *obj, Elm_Focus_Direction dir);
+
+/**
+ * Get next object which was set with specific focus direction.
+ *
+ * Get next object which was set by elm_object_focus_next_object_set
+ * with specific focus direction.
+ *
+ * @param obj The Elementary object
+ * @param dir Focus direction
+ * @return Focus next object or @c NULL, if there is no focus next object.
+ *
+ * @see elm_object_focus_next_object_set(), elm_object_focus_next()
+ *
+ * @since 1.8
+ *
+ * @ingroup Focus
+ */
+EAPI Evas_Object *        elm_object_focus_next_object_get(const Evas_Object *obj, Elm_Focus_Direction dir);
+
+/**
+ * Set next object with specific focus direction.
+ *
+ * When focus next object is set with specific focus direction, this object
+ * will be the first candidate when finding next focusable object.
+ * Focus next object can be registered with six directions that are previous,
+ * next, up, down, right, and left.
+ *
+ * @param obj The Elementary object
+ * @param next Focus next object
+ * @param dir Focus direction
+ *
+ * @see elm_object_focus_next_object_get(), elm_object_focus_next()
+ *
+ * @since 1.8
+ *
+ * @ingroup Focus
+ */
+EAPI void                 elm_object_focus_next_object_set(Evas_Object *obj, Evas_Object *next, Elm_Focus_Direction dir);
+
+/**
+ * Get focused object in object tree.
+ *
+ * This function returns current focused object in one object sub-tree.
+ *
+ * @param obj The object root of sub-tree
+ * @return Current focused or @c NULL, if there is no focused object.
+ *
+ * @since 1.8
+ *
+ * @ingroup Focus
+ */
+EAPI Evas_Object         *elm_object_focused_object_get(const Evas_Object *obj);
 
 /**
  * Make the elementary object and its children to be focusable

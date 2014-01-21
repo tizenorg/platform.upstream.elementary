@@ -1,4 +1,9 @@
+#ifdef HAVE_CONFIG_H
+# include "elementary_config.h"
+#endif
+
 #include <Elementary.h>
+
 #include "elm_priv.h"
 
 #ifdef ISCOMFITOR
@@ -215,9 +220,7 @@ _elm_tooltip_reconfigure_job(void *data)
 static void
 _elm_tooltip_reconfigure_job_stop(Elm_Tooltip *tt)
 {
-   if (!tt->reconfigure_job) return;
-   ecore_job_del(tt->reconfigure_job);
-   tt->reconfigure_job = NULL;
+   ELM_SAFE_FREE(tt->reconfigure_job, ecore_job_del);
 }
 
 static void
@@ -255,8 +258,8 @@ _elm_tooltip_hide_anim_stop(Elm_Tooltip *tt)
    if (!tt->hide_timer) return;
    if (tt->tooltip)
      edje_object_signal_emit(tt->tooltip, "elm,action,show", "elm");
-   ecore_timer_del(tt->hide_timer);
-   tt->hide_timer = NULL;
+
+   ELM_SAFE_FREE(tt->hide_timer, ecore_timer_del);
 }
 
 static void
@@ -275,7 +278,8 @@ _elm_tooltip_reconfigure(Elm_Tooltip *tt)
      {
         const char *style = tt->style ? tt->style : "default";
         const char *str;
-        if (!_elm_theme_object_set(tt->tt_win ? NULL : tt->owner, tt->tooltip, "tooltip", "base", style))
+        if (!_elm_theme_object_set(tt->tt_win ? NULL : tt->owner, tt->tooltip,
+                                  "tooltip", "base", style))
           {
              ERR("Could not apply the theme to the tooltip! style=%s", style);
              if (tt->tt_win) evas_object_del(tt->tt_win);
@@ -314,7 +318,6 @@ _elm_tooltip_reconfigure(Elm_Tooltip *tt)
              if (win)
                ecore_x_window_shape_input_rectangle_set(win, 0, 0, 0, 0);
 #endif
-             evas_object_show(tt->tt_win);
           }
 
         str = edje_object_data_get(tt->tooltip, "pad_x");
@@ -373,7 +376,7 @@ _elm_tooltip_reconfigure(Elm_Tooltip *tt)
    edje_object_size_min_get(tt->tooltip, &eminw, &eminh);
 
    if (eminw && (ominw < eminw)) ominw = eminw;
-   if (eminw && (ominh < eminh)) ominh = eminh;
+   if (eminh && (ominh < eminh)) ominh = eminh;
 
    if (ominw < 1) ominw = 10; /* at least it is noticeable */
    if (ominh < 1) ominh = 10; /* at least it is noticeable */
@@ -382,7 +385,7 @@ _elm_tooltip_reconfigure(Elm_Tooltip *tt)
    TTDBG("TTSIZE:  tw=%d,th=%d,ominw=%d,ominh=%d\n", tw, th, ominw, ominh);
 
    if (tt->tt_win)
-     elm_win_screen_size_get(elm_object_top_widget_get(tt->owner), NULL, NULL, &cw, &ch);
+     elm_win_screen_size_get(elm_widget_top_get(tt->owner), NULL, NULL, &cw, &ch);
    if (!cw)
      evas_output_size_get(tt->tt_evas ?: tt->evas, &cw, &ch);
    TTDBG("SCREEN:  cw=%d,ch=%d\n", cw, ch);
@@ -393,7 +396,7 @@ _elm_tooltip_reconfigure(Elm_Tooltip *tt)
    if (tt->tt_win)
      {
         int x, y;
-        Evas_Object *win = elm_object_top_widget_get(tt->owner);
+        Evas_Object *win = elm_widget_top_get(tt->owner);
 #ifdef HAVE_ELEMENTARY_X
         Ecore_X_Window xwin = elm_win_xwindow_get(win);
         if (xwin)
@@ -525,14 +528,14 @@ _elm_tooltip_reconfigure(Elm_Tooltip *tt)
         edje_object_message_send(tt->tooltip, EDJE_MESSAGE_FLOAT_SET, 1, msg);
      }
 #undef FDIF
+   if (tt->tt_win) evas_object_show(tt->tt_win);
 }
 
 static void
 _elm_tooltip_show_timer_stop(Elm_Tooltip *tt)
 {
    if (!tt->show_timer) return;
-   ecore_timer_del(tt->show_timer);
-   tt->show_timer = NULL;
+   ELM_SAFE_FREE(tt->show_timer, ecore_timer_del);
 }
 
 static Eina_Bool

@@ -306,6 +306,27 @@ EAPI unsigned int elm_config_scroll_thumbscroll_threshold_get(void);
 EAPI void         elm_config_scroll_thumbscroll_threshold_set(unsigned int threshold);
 
 /**
+ * Get the number of pixels the range which can be scrolled,
+ * while the scroller is holded.
+ *
+ * @return the thumb scroll hold threshold
+ *
+ * @ingroup Scrolling
+ */
+EAPI unsigned int elm_config_scroll_thumbscroll_hold_threshold_get(void);
+
+/**
+ * Set the number of pixels the range which can be scrolled,
+ * while the scroller is holded.
+ *
+ * @param threshold the thumb scroll hold threshold
+ *
+ * @see elm_config_thumbscroll_hold_threshold_get()
+ * @ingroup Scrolling
+ */
+EAPI void         elm_config_scroll_thumbscroll_hold_threshold_set(unsigned int threshold);
+
+/**
  * Get the minimum speed of mouse cursor movement which will trigger
  * list self scrolling animation after a mouse up event
  * (pixels/second).
@@ -329,6 +350,29 @@ EAPI double       elm_config_scroll_thumbscroll_momentum_threshold_get(void);
 EAPI void         elm_config_scroll_thumbscroll_momentum_threshold_set(double threshold);
 
 /**
+ * Get the number of pixels the maximum distance which can be flicked.
+ * If it is flicked more than this,
+ * the flick distance is same with maximum distance.
+ *
+ * @return the thumb scroll maximum flick distance
+ *
+ * @ingroup Scrolling
+ */
+EAPI unsigned int elm_config_scroll_thumbscroll_flick_distance_tolerance_get(void);
+
+/**
+ * Set the number of pixels the maximum distance which can be flicked.
+ * If it is flicked more than this,
+ * the flick distance is same with maximum distance.
+ *
+ * @param distance the thumb scroll maximum flick distance
+ *
+ * @see elm_config_thumbscroll_flick_distance_tolerance_get()
+ * @ingroup Scrolling
+ */
+EAPI void         elm_config_scroll_thumbscroll_flick_distance_tolerance_set(unsigned int distance);
+
+/**
  * Get the amount of inertia a scroller will impose at self scrolling
  * animations.
  *
@@ -348,6 +392,50 @@ EAPI double       elm_config_scroll_thumbscroll_friction_get(void);
  * @ingroup Scrolling
  */
 EAPI void         elm_config_scroll_thumbscroll_friction_set(double friction);
+
+/**
+ * Get the min amount of inertia a scroller will impose at self scrolling
+ * animations.
+ *
+ * @return the thumb scroll min friction
+ *
+ * @ingroup Scrolling
+ */
+EAPI double       elm_config_scroll_thumbscroll_min_friction_get(void);
+
+/**
+ * Set the min amount of inertia a scroller will impose at self scrolling
+ * animations.
+ *
+ * @param friction the thumb scroll min friction
+ *
+ * @see elm_config_thumbscroll_min_friction_get()
+ * @ingroup Scrolling
+ */
+EAPI void         elm_config_scroll_thumbscroll_min_friction_set(double friction);
+
+/**
+ * Get the standard velocity of the scroller. The scroll animation time is
+ * same with thumbscroll friction, if the velocity is same with standard
+ * velocity.
+ *
+ * @return the thumb scroll friction
+ *
+ * @ingroup Scrolling
+ */
+EAPI double       elm_config_scroll_thumbscroll_friction_standard_get(void);
+
+/**
+ * Set the standard velocity of the scroller. The scroll animation time is
+ * same with thumbscroll friction, if the velocity is same with standard
+ * velocity.
+ *
+ * @param friction the thumb scroll friction standard
+ *
+ * @see elm_config_thumbscroll_friction_standard_get()
+ * @ingroup Scrolling
+ */
+EAPI void         elm_config_scroll_thumbscroll_friction_standard_set(double standard);
 
 /**
  * Get the amount of lag between your actual mouse cursor dragging
@@ -402,6 +490,67 @@ EAPI double       elm_config_scroll_thumbscroll_sensitivity_friction_get(void);
 EAPI void         elm_config_scroll_thumbscroll_sensitivity_friction_set(double friction);
 
 /**
+ * Get the minimum speed of mouse cursor movement which will accelerate
+ * scrolling velocity after a mouse up event
+ * (pixels/second).
+ *
+ * @return the thumb scroll acceleration threshold
+ *
+ * @ingroup Scrolling
+ */
+EAPI double       elm_config_scroll_thumbscroll_acceleration_threshold_get(void);
+
+/**
+ * Set the minimum speed of mouse cursor movement which will accelerate
+ * scrolling velocity after a mouse up event
+ * (pixels/second).
+ *
+ * @param threshold the thumb scroll acceleration threshold
+ *
+ * @see elm_config_thumbscroll_acceleration_threshold_get()
+ * @ingroup Scrolling
+ */
+EAPI void         elm_config_scroll_thumbscroll_acceleration_threshold_set(double threshold);
+
+/**
+ * Get the time limit for accelerating velocity.
+ *
+ * @return the thumb scroll acceleration time limit
+ *
+ * @ingroup Scrolling
+ */
+EAPI double       elm_config_scroll_thumbscroll_acceleration_time_limit_get(void);
+
+/**
+ * Set the time limit for accelerating velocity.
+ *
+ * @param threshold the thumb scroll acceleration time limit
+ *
+ * @see elm_config_thumbscroll_acceleration_time_limit_get()
+ * @ingroup Scrolling
+ */
+EAPI void         elm_config_scroll_thumbscroll_acceleration_time_limit_set(double time_limit);
+
+/**
+ * Get the weight for the acceleration.
+ *
+ * @return the thumb scroll acceleration weight
+ *
+ * @ingroup Scrolling
+ */
+EAPI double       elm_config_scroll_thumbscroll_acceleration_weight_get(void);
+
+/**
+ * Set the weight for the acceleration.
+ *
+ * @param threshold the thumb scroll acceleration weight
+ *
+ * @see elm_config_thumbscroll_acceleration_weight_get()
+ * @ingroup Scrolling
+ */
+EAPI void         elm_config_scroll_thumbscroll_acceleration_weight_set(double weight);
+
+/**
  * @}
  */
 
@@ -431,14 +580,14 @@ typedef enum _Elm_Softcursor_Mode
 /**
  * Set the mode used for software provided mouse cursors inline in the window
  * canvas.
- * 
+ *
  * A software rendered cursor can be provided for rendering inline inside the
  * canvas windows in the event the native display system does not provide one
- * or the native oneis not wanted.
+ * or the native one is not wanted.
  *
  * @param lonpress_timeout Timeout for long press event
  * @ingroup Softcursor
- * 
+ *
  * @see elm_config_softcursor_mode_get()
  * @since 1.7
  */
@@ -449,12 +598,11 @@ EAPI void         elm_config_softcursor_mode_set(Elm_Softcursor_Mode mode);
  *
  * @return The mode used for software cursors
  * @ingroup Softcursor
- * 
+ *
  * @see elm_config_softcursor_mode_set()
  * @since 1.7
  */
 EAPI Elm_Softcursor_Mode elm_config_softcursor_mode_get(void);
-
 
 /**
  * Get the duration after which tooltip will be shown.
@@ -552,7 +700,7 @@ EAPI Eina_Bool elm_config_password_show_last_get(void);
 EAPI void      elm_config_password_show_last_set(Eina_Bool password_show_last);
 
 /**
- * Gets the timeout value in "show last" password mode.
+ * Get the timeout value in "show last" password mode.
  *
  * This gets the time out value for which the last input entered in password
  * mode will be visible.
@@ -712,7 +860,9 @@ EAPI const Eina_List *elm_config_font_overlay_list_get(void);
  *
  * @param text_class Text class name
  * @param font Font name and style string
- * @param size Font size
+ * @param size Font size.
+ *
+ * @note If the @p size is lower than zero, the value will be the amount of the size percentage. ex) -50: half of the current size, -100: current size, -10: 1/10 size.
  *
  * @ingroup Fonts
  *
@@ -730,7 +880,7 @@ EAPI void             elm_config_font_overlay_set(const char *text_class, const 
  *
  * @since 1.7
  *
- * @ingroup Access 
+ * @ingroup Access
  *
  * @see elm_config_access_set()
  */
@@ -747,11 +897,38 @@ EAPI Eina_Bool        elm_config_access_get(void);
  *
  * @since 1.7
  *
- * @ingroup Access 
+ * @ingroup Access
  *
  * @see elm_config_access_get()
  */
 EAPI void             elm_config_access_set(Eina_Bool is_access);
+
+/**
+ * Get whether selection should be cleared when entry widget is unfocused.
+ *
+ * @return if the selection would be cleared on unfocus.
+ *
+ * @since 1.7
+ *
+ * @ingroup Selection
+ *
+ * @see elm_config_selection_unfocused_clear_set()
+ */
+EAPI Eina_Bool        elm_config_selection_unfocused_clear_get(void);
+
+/**
+ * Set whether selection should be cleared when entry widget is unfocused.
+ *
+ * @param enabled If EINA_TRUE clear selection when unfocus,
+ * otherwise does not clear selection when unfocus.
+ *
+ * @since 1.7
+ *
+ * @ingroup Selection
+ *
+ * @see elm_config_selection_unfocused_clear_get()
+ */
+EAPI void             elm_config_selection_unfocused_clear_set(Eina_Bool enabled);
 
 /**
  * Unset a font overlay for a given Elementary text class.
@@ -795,7 +972,6 @@ EAPI Evas_Coord elm_config_finger_size_get(void);
  * @ingroup Fingers
  */
 EAPI void       elm_config_finger_size_set(Evas_Coord size);
-
 
 /**
  * Get the configured cache flush interval time
@@ -859,7 +1035,7 @@ EAPI void      elm_config_cache_flush_enabled_set(Eina_Bool enabled);
 /**
  * Get the configured font cache size
  *
- * This gets the globally configured font cache size, in bytes.
+ * This gets the globally configured font cache size, in kilo bytes.
  *
  * @return The font cache size
  * @ingroup Caches
@@ -869,7 +1045,7 @@ EAPI int       elm_config_cache_font_cache_size_get(void);
 /**
  * Set the configured font cache size
  *
- * This sets the globally configured font cache size, in bytes
+ * This sets the globally configured font cache size, in kilo bytes
  *
  * @param size The font cache size
  * @ingroup Caches
@@ -879,7 +1055,7 @@ EAPI void      elm_config_cache_font_cache_size_set(int size);
 /**
  * Get the configured image cache size
  *
- * This gets the globally configured image cache size, in bytes
+ * This gets the globally configured image cache size, in kilo bytes
  *
  * @return The image cache size
  * @ingroup Caches
@@ -889,13 +1065,12 @@ EAPI int       elm_config_cache_image_cache_size_get(void);
 /**
  * Set the configured image cache size
  *
- * This sets the globally configured image cache size, in bytes
+ * This sets the globally configured image cache size, in kilo bytes
  *
  * @param size The image cache size
  * @ingroup Caches
  */
 EAPI void       elm_config_cache_image_cache_size_set(int size);
-
 
 /**
  * Get the configured edje file cache size.
@@ -1011,6 +1186,67 @@ EAPI Eina_Bool elm_config_mirrored_get(void);
  * @param mirrored EINA_TRUE to set mirrored mode, EINA_FALSE to unset it.
  */
 EAPI void      elm_config_mirrored_set(Eina_Bool mirrored);
+
+/**
+ * Get the clouseau state. EINA_TRUE if clouseau was tried to be run.
+ *
+ * @since 1.8
+ * @return EINA_TRUE if clouseau was tried to run, EINA_FALSE otherwise
+ */
+EAPI Eina_Bool elm_config_clouseau_enabled_get(void);
+
+/**
+ * Get the clouseau state. EINA_TRUE if clouseau should be attempted to be run.
+ *
+ * @since 1.8
+ * @param enabled EINA_TRUE to try and run clouseau, EINA_FALSE otherwise.
+ */
+EAPI void      elm_config_clouseau_enabled_set(Eina_Bool enabled);
+
+/**
+ * Get the indicator service name according to the rotation degree.
+ *
+ * @param rotation The rotation which related with the indicator service name, in degrees (0-360),
+ *
+ * @return The indicator service name according to the rotation degree.
+ */
+EAPI const char *elm_config_indicator_service_get(int rotation);
+
+/**
+ * Get the duration for occurring long tap event of gesture layer.
+ *
+ * @return Timeout for long tap event of gesture layer.
+ * @ingroup Elm_Gesture_Layer
+ * @since 1.8
+ */
+EAPI double   elm_config_glayer_long_tap_start_timeout_get(void);
+
+/**
+ * Set the duration for occurring long tap event of gesture layer.
+ *
+ * @param long_tap_timeout Timeout for long tap event of gesture layer.
+ * @ingroup Elm_Gesture_Layer
+ * @since 1.8
+ */
+EAPI void   elm_config_glayer_long_tap_start_timeout_set(double long_tap_timeout);
+
+/**
+ * Get the duration for occurring double tap event of gesture layer.
+ *
+ * @return Timeout for double tap event of gesture layer.
+ * @ingroup Elm_Gesture_Layer
+ * @since 1.8
+ */
+EAPI double   elm_config_glayer_double_tap_timeout_get(void);
+
+/**
+ * Set the duration for occurring double tap event of gesture layer.
+ *
+ * @param long_tap_timeout Timeout for double tap event of gesture layer.
+ * @ingroup Elm_Gesture_Layer
+ * @since 1.8
+ */
+EAPI void   elm_config_glayer_double_tap_timeout_set(double double_tap_timeout);
 
 /**
  * @}

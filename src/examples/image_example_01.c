@@ -6,28 +6,22 @@
 int
 elm_main(int argc, char **argv)
 {
-   Evas_Object *win, *bg, *image;
+   Evas_Object *win, *image;
    char buf[PATH_MAX];
 
    elm_app_info_set(elm_main, "elementary", "images/plant_01.jpg");
-   win = elm_win_add(NULL, "image", ELM_WIN_BASIC);
-   elm_win_title_set(win, "Image");
    elm_policy_set(ELM_POLICY_QUIT, ELM_POLICY_QUIT_LAST_WINDOW_CLOSED);
-   elm_win_autodel_set(win, EINA_TRUE);
 
-   bg = elm_bg_add(win);
-   elm_bg_color_set(bg, 255,255 ,255);
-   evas_object_size_hint_weight_set(bg, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-   elm_win_resize_object_add(win, bg);
-   evas_object_show(bg);
+   win = elm_win_util_standard_add("image", "Image");
+   elm_win_autodel_set(win, EINA_TRUE);
 
    snprintf(buf, sizeof(buf), "%s/images/plant_01.jpg", elm_app_data_dir_get());
 
    image = elm_image_add(win);
    if (!elm_image_file_set(image, buf, NULL))
      {
-	printf("error: could not load image \"%s\"\n", buf);
-	return -1;
+        printf("error: could not load image \"%s\"\n", buf);
+        return -1;
      }
 
    elm_image_no_scale_set(image, EINA_TRUE);

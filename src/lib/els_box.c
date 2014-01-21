@@ -1,4 +1,9 @@
+#ifdef HAVE_CONFIG_H
+# include "elementary_config.h"
+#endif
+
 #include <Elementary.h>
+
 #include "elm_priv.h"
 #include "els_box.h"
 
@@ -8,6 +13,7 @@ _smart_extents_calculate(Evas_Object *box, Evas_Object_Box_Data *priv, int horiz
    Evas_Coord minw, minh, mnw, mnh, maxw, maxh;
    const Eina_List *l;
    Evas_Object_Box_Option *opt;
+   Eina_Bool max = EINA_TRUE;
    int c;
 
    minw = 0;
@@ -25,7 +31,7 @@ _smart_extents_calculate(Evas_Object *box, Evas_Object_Box_Data *priv, int horiz
              evas_object_size_hint_max_get(opt->obj, &mnw, &mnh);
              if (mnh >= 0)
                {
-                  if (maxw == -1) maxh = mnh;
+                  if (maxh == -1) maxh = mnh;
                   else if (maxh > mnh) maxh = mnh;
                }
              if (mnw >= 0)
@@ -67,24 +73,38 @@ _smart_extents_calculate(Evas_Object *box, Evas_Object_Box_Data *priv, int horiz
              evas_object_size_hint_max_get(opt->obj, &mnw, &mnh);
              if (horizontal)
                {
-                  if (mnw < 0) maxw = -1;
-                  if (maxw != -1)
+                  if (mnw < 0)
                     {
-                       if (maxw > mnw) maxw = mnw;
-                       maxw += mnw;
+                       maxw = -1;
+                       max = EINA_FALSE;
+                    }
+                  if (max) maxw += mnw;
+
+                  if (mnh >= 0)
+                    {
+                       if (maxh == -1) maxh = mnh;
+                       else if (maxh > mnh) maxh = mnh;
                     }
                }
              else
                {
-                  if (mnh < 0) maxh = -1;
-                  if (maxh != -1)
+                  if (mnh < 0)
                     {
-                       if (maxh > mnh) maxh = mnh;
-                       maxh += mnh;
+                       maxh = -1;
+                       max = EINA_FALSE;
+                    }
+                  if (max) maxh += mnh;
+
+                  if (mnw >= 0)
+                    {
+                       if (maxw == -1) maxw = mnw;
+                       else if (maxw > mnw) maxw = mnw;
                     }
                }
           }
      }
+   if ((maxw >= 0) && (minw > maxw)) maxw = minw;
+   if ((maxh >= 0) && (minh > maxh)) maxh = minh;
    c = eina_list_count(priv->children) - 1;
    if (c > 0)
      {

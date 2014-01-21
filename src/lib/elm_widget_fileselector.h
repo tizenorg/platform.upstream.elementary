@@ -1,7 +1,7 @@
 #ifndef ELM_WIDGET_FILESELECTOR_H
 #define ELM_WIDGET_FILESELECTOR_H
 
-#include "elm_widget_layout.h"
+#include "Elementary.h"
 
 /**
  * @addtogroup Widget
@@ -14,106 +14,7 @@
  * widgets which are a fileselector with some more logic on top.
  */
 
-/**
- * @def ELM_FILESELECTOR_CLASS
- *
- * Use this macro to cast whichever subclass of
- * #Elm_Fileselector_Smart_Class into it, so to access its fields.
- *
- * @ingroup Widget
- */
-#define ELM_FILESELECTOR_CLASS(x) ((Elm_Fileselector_Smart_Class *)x)
-
-/**
- * @def ELM_FILESELECTOR_DATA
- *
- * Use this macro to cast whichever subdata of
- * #Elm_Fileselector_Smart_Data into it, so to access its fields.
- *
- * @ingroup Widget
- */
-#define ELM_FILESELECTOR_DATA(x)  ((Elm_Fileselector_Smart_Data *)x)
-
-/**
- * @def ELM_FILESELECTOR_SMART_CLASS_VERSION
- *
- * Current version for Elementary fileselector @b base smart class, a value
- * which goes to _Elm_Fileselector_Smart_Class::version.
- *
- * @ingroup Widget
- */
-#define ELM_FILESELECTOR_SMART_CLASS_VERSION 1
-
-/**
- * @def ELM_FILESELECTOR_SMART_CLASS_INIT
- *
- * Initializer for a whole #Elm_Fileselector_Smart_Class structure, with
- * @c NULL values on its specific fields.
- *
- * @param smart_class_init initializer to use for the "base" field
- * (#Evas_Smart_Class).
- *
- * @see EVAS_SMART_CLASS_INIT_NULL
- * @see EVAS_SMART_CLASS_INIT_NAME_VERSION
- * @see ELM_FILESELECTOR_SMART_CLASS_INIT_NULL
- * @see ELM_FILESELECTOR_SMART_CLASS_INIT_NAME_VERSION
- *
- * @ingroup Widget
- */
-#define ELM_FILESELECTOR_SMART_CLASS_INIT(smart_class_init) \
-  {smart_class_init, ELM_FILESELECTOR_SMART_CLASS_VERSION}
-
-/**
- * @def ELM_FILESELECTOR_SMART_CLASS_INIT_NULL
- *
- * Initializer to zero out a whole #Elm_Fileselector_Smart_Class structure.
- *
- * @see ELM_FILESELECTOR_SMART_CLASS_INIT_NAME_VERSION
- * @see ELM_FILESELECTOR_SMART_CLASS_INIT
- *
- * @ingroup Widget
- */
-#define ELM_FILESELECTOR_SMART_CLASS_INIT_NULL \
-  ELM_FILESELECTOR_SMART_CLASS_INIT(EVAS_SMART_CLASS_INIT_NULL)
-
-/**
- * @def ELM_FILESELECTOR_SMART_CLASS_INIT_NAME_VERSION
- *
- * Initializer to zero out a whole #Elm_Fileselector_Smart_Class structure and
- * set its name and version.
- *
- * This is similar to #ELM_FILESELECTOR_SMART_CLASS_INIT_NULL, but it will
- * also set the version field of #Elm_Fileselector_Smart_Class (base field)
- * to the latest #ELM_FILESELECTOR_SMART_CLASS_VERSION and name it to the
- * specific value.
- *
- * It will keep a reference to the name field as a <c>"const char *"</c>,
- * i.e., the name must be available while the structure is
- * used (hint: static or global variable!) and must not be modified.
- *
- * @see ELM_FILESELECTOR_SMART_CLASS_INIT_NULL
- * @see ELM_FILESELECTOR_SMART_CLASS_INIT
- *
- * @ingroup Widget
- */
-#define ELM_FILESELECTOR_SMART_CLASS_INIT_NAME_VERSION(name) \
-  ELM_FILESELECTOR_SMART_CLASS_INIT                          \
-    (ELM_LAYOUT_SMART_CLASS_INIT_NAME_VERSION(name))
-
-/**
- * Elementary fileselector base smart class. This inherits directly from
- * #Elm_Layout_Smart_Class and is meant to build widgets extending the
- * behavior of a fileselector.
- *
- * All of the functions listed on @ref Fileselector namespace will work for
- * objects deriving from #Elm_Fileselector_Smart_Class.
- */
-typedef struct _Elm_Fileselector_Smart_Class
-{
-   Elm_Layout_Smart_Class base;
-
-   int                    version;    /**< Version of this smart class definition */
-} Elm_Fileselector_Smart_Class;
+typedef struct _Elm_Fileselector_Filter Elm_Fileselector_Filter;
 
 /**
  * Base layout smart data extended with fileselector instance data.
@@ -121,34 +22,49 @@ typedef struct _Elm_Fileselector_Smart_Class
 typedef struct _Elm_Fileselector_Smart_Data Elm_Fileselector_Smart_Data;
 struct _Elm_Fileselector_Smart_Data
 {
-   Elm_Layout_Smart_Data base;
-
    EINA_REFCOUNT;
 
-   Evas_Object          *filename_entry;
-   Evas_Object          *path_entry;
-   Evas_Object          *files_list;
-   Evas_Object          *files_grid;
-   Evas_Object          *up_button;
-   Evas_Object          *home_button;
-   Evas_Object          *spinner;
-   Evas_Object          *ok_button;
-   Evas_Object          *cancel_button;
+   Evas_Object             *obj;
+   Evas_Object             *path_entry;
+   Evas_Object             *name_entry;
+   Evas_Object             *files_view;
+   Evas_Object             *up_button;
+   Evas_Object             *home_button;
+   Evas_Object             *spinner;
+   Evas_Object             *filter_hoversel;
+   Evas_Object             *ok_button;
+   Evas_Object             *cancel_button;
 
-   const char           *path;
-   const char           *selection;
-   Ecore_Idler          *sel_idler;
+   Eina_List               *filter_list;
+   Elm_Fileselector_Filter *current_filter;
 
-   const char           *path_separator;
+   /* a list of selected paths. only for multi selection */
+   Eina_List               *paths;
 
-#ifdef HAVE_EIO
-   Eio_File             *current;
-#endif
+   const char              *path;
+   const char              *selection;
+   Ecore_Idler             *populate_idler;
+
+   const char              *path_separator;
+
+   Eio_File                *current;
+   Eio_Monitor             *monitor;
+   Eina_List               *handlers;
 
    Elm_Fileselector_Mode mode;
 
    Eina_Bool             only_folder : 1;
    Eina_Bool             expand : 1;
+   Eina_Bool             double_tap_navigation : 1;
+   Eina_Bool             multi : 1;
+
+   /* this flag is only for multi selection.
+    * If this flag is set to EINA_TRUE, it means directory is selected
+    * so that fileselector will clear current selection when user clicked
+    * another item. */
+   Eina_Bool             dir_selected : 1;
+
+   Eina_Bool             hidden_visible : 1;
 };
 
 struct sel_data
@@ -165,6 +81,7 @@ struct _Listing_Request
 
    Evas_Object                 *obj;
    const char                  *path;
+   const char                  *selected;
    Eina_Bool                    first : 1;
 };
 
@@ -175,15 +92,20 @@ typedef enum {
    ELM_FILE_LAST
 } Elm_Fileselector_Type;
 
+struct _Elm_Fileselector_Filter
+{
+   const char                   *filter_name;
+   Elm_Fileselector_Smart_Data  *sd;
+
+   char                        **mime_types;
+};
+
 /**
  * @}
  */
 
-EAPI extern const char ELM_FILESELECTOR_SMART_NAME[];
-EAPI const Elm_Fileselector_Smart_Class *elm_fileselector_smart_class_get(void);
-
 #define ELM_FILESELECTOR_DATA_GET(o, sd) \
-  Elm_Fileselector_Smart_Data * sd = evas_object_smart_data_get(o)
+  Elm_Fileselector_Smart_Data * sd = eo_data_scope_get(o, ELM_OBJ_FILESELECTOR_CLASS)
 
 #define ELM_FILESELECTOR_DATA_GET_OR_RETURN(o, ptr)  \
   ELM_FILESELECTOR_DATA_GET(o, ptr);                 \
@@ -204,8 +126,7 @@ EAPI const Elm_Fileselector_Smart_Class *elm_fileselector_smart_class_get(void);
     }
 
 #define ELM_FILESELECTOR_CHECK(obj)                     \
-  if (!obj || !elm_widget_type_check                    \
-        ((obj), ELM_FILESELECTOR_SMART_NAME, __func__)) \
+  if (!eo_isa((obj), ELM_OBJ_FILESELECTOR_CLASS)) \
     return
 
 #endif

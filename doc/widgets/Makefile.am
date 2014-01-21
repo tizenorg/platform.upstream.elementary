@@ -9,17 +9,24 @@ AM_CPPFLAGS = \
 -I$(top_srcdir)/src/bin \
 -DPACKAGE_BIN_DIR=\"$(bindir)\" \
 -DPACKAGE_DATA_DIR=\"$(datadir)/$(PACKAGE)\" \
+-DDOCW_DIR=\"$(abs_top_builddir)/doc/widgets\" \
 @ELEMENTARY_CFLAGS@ \
 @ELEMENTARY_X_CFLAGS@ \
 @ELEMENTARY_FB_CFLAGS@ \
 @ELEMENTARY_WIN32_CFLAGS@ \
 @ELEMENTARY_WINCE_CFLAGS@ \
-@ELEMENTARY_EDBUS_CFLAGS@ \
-@ELEMENTARY_EFREET_CFLAGS@ \
+@ELEMENTARY_ELOCATION_CFLAGS@ \
 @ELEMENTARY_EWEATHER_CFLAGS@ \
-@ELEMENTARY_ETHUMB_CFLAGS@ \
-@ELEMENTARY_EMAP_CFLAGS@ \
-@EIO_CFLAGS@
+@ELEMENTARY_EMAP_CFLAGS@
+
+ELM_PREFS_CC = $(top_builddir)/src/bin/@ELM_PREFS_CC_PRG@
+
+noinst_DATA = widget_preview_prefs.epb
+
+widget_preview_prefs.epb: Makefile widget_preview_prefs.epc
+	$(ELM_PREFS_CC) $(ELM_PREFS_FLAGS) \
+	$(top_srcdir)/doc/widgets/widget_preview_prefs.epc \
+	$(top_builddir)/doc/widgets/widget_preview_prefs.epb
 
 noinst_PROGRAMS = \
 widget_preview_actionslider \
@@ -81,6 +88,7 @@ widget_preview_panel \
 widget_preview_panes \
 widget_preview_photocam \
 widget_preview_popup \
+widget_preview_prefs \
 widget_preview_progressbar \
 widget_preview_radio \
 widget_preview_scroller \
@@ -95,7 +103,11 @@ widget_preview_toolbar \
 widget_preview_web \
 widget_preview_win
 
-LDADD = $(top_builddir)/src/lib/libelementary.la @ELEMENTARY_EWEATHER_LIBS@ @ELEMENTARY_EDBUS_LIBS@ @ELEMENTARY_EFREET_LIBS@ @ELEMENTARY_EMAP_LIBS@ @ELEMENTARY_LIBS@ @EIO_LIBS@ @my_libs@
+LDADD = $(top_builddir)/src/lib/libelementary.la \
+@ELEMENTARY_EWEATHER_LIBS@ \
+@ELEMENTARY_EMAP_LIBS@ \
+@ELEMENTARY_LIBS@ \
+@my_libs@
 
 endif
 
@@ -158,6 +170,8 @@ EXTRA_DIST = \
 	widget_preview_genlist3.c \
 	widget_preview_genlist4.c \
 	widget_preview_genlist5.c \
+	widget_preview_prefs.c \
+	widget_preview_prefs.epc \
 	widget_preview_progressbar.c \
 	widget_preview_box.c \
 	widget_preview_notify.c \
@@ -174,3 +188,6 @@ EXTRA_DIST = \
 	widget_preview_web.c \
 	widget_preview_tmpl_foot.c \
 	widget_preview_tmpl_head.c
+
+clean-local:
+	rm -f widget_preview_prefs.epb

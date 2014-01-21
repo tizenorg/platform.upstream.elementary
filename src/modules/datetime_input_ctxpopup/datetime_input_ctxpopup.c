@@ -1,8 +1,9 @@
-#include <Elementary.h>
-#include "elm_priv.h"
 #ifdef HAVE_CONFIG_H
 #include "elementary_config.h"
 #endif
+
+#include <Elementary.h>
+#include "elm_priv.h"
 
 #define DATETIME_FIELD_COUNT    6
 #define FIELD_FORMAT_LEN        3
@@ -83,13 +84,13 @@ _field_value_get(struct tm *tim, Elm_Datetime_Field_Type  field_type)
 }
 
 static void
-_diskselector_cb(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+_diskselector_cb(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info)
 {
    DiskItem_Data *disk_data;
    struct tm curr_time;
    const char *fmt;
 
-   disk_data = (DiskItem_Data *)data;
+   disk_data = (DiskItem_Data *)elm_object_item_data_get(event_info);
    if (!disk_data || !(disk_data->ctx_mod)) return;
 
    elm_datetime_value_get(disk_data->ctx_mod->mod_data.base, &curr_time);
@@ -136,6 +137,8 @@ _field_clicked_cb(void *data, Evas_Object *obj, void *event_info __UNUSED__)
    ctx_mod = (Ctxpopup_Module_Data *)data;
    if (!ctx_mod || !ctx_mod->ctxpopup) return;
 
+   elm_ctxpopup_hover_parent_set(ctx_mod->ctxpopup, elm_widget_top_get(obj));
+
    // because of the diskselector behaviour, it is being recreated
    diskselector = elm_diskselector_add(elm_widget_top_get(ctx_mod->mod_data.base));
    snprintf(buf, sizeof(buf), "datetime/%s", elm_object_style_get(obj));
@@ -176,7 +179,8 @@ _field_clicked_cb(void *data, Evas_Object *obj, void *event_info __UNUSED__)
              disk_data->ctx_mod = ctx_mod;
              disk_data->sel_field_type = field_type;
              disk_data->sel_field_value = idx;
-             item = elm_diskselector_item_append(diskselector, label, NULL, _diskselector_cb, disk_data);
+             item = elm_diskselector_item_append(diskselector, label, NULL, NULL, disk_data);
+             evas_object_smart_callback_add(diskselector, "clicked", _diskselector_cb, NULL);
              elm_object_item_del_cb_set(item, _diskselector_item_free_cb);
           }
      }
@@ -243,9 +247,9 @@ _access_set(Evas_Object *obj, Elm_Datetime_Field_Type field_type)
      }
 
    _elm_access_text_set
-     (_elm_access_object_get(obj), ELM_ACCESS_TYPE, type);
+     (_elm_access_info_get(obj), ELM_ACCESS_TYPE, type);
    _elm_access_callback_set
-     (_elm_access_object_get(obj), ELM_ACCESS_STATE, NULL, NULL);
+     (_elm_access_info_get(obj), ELM_ACCESS_STATE, NULL, NULL);
 }
 
 // module fucns for the specific module type
@@ -315,7 +319,7 @@ obj_hook(Evas_Object *obj)
    ctx_mod = ELM_NEW(Ctxpopup_Module_Data);
    if (!ctx_mod) return NULL;
 
-   ctx_mod->ctxpopup = elm_ctxpopup_add(elm_widget_top_get(obj));
+   ctx_mod->ctxpopup = elm_ctxpopup_add(obj);
    snprintf(buf, sizeof(buf), "datetime/%s", elm_object_style_get(obj));
    elm_object_style_set(ctx_mod->ctxpopup, buf);
    elm_ctxpopup_horizontal_set(ctx_mod->ctxpopup, EINA_TRUE);
@@ -349,6 +353,18 @@ obj_unhook(Elm_Datetime_Module_Data *module_data)
           free(ctx_mod);
           ctx_mod = NULL;
       }
+}
+
+EAPI void
+obj_hide(Elm_Datetime_Module_Data *module_data)
+{
+   Ctxpopup_Module_Data *ctx_mod;
+
+   ctx_mod = (Ctxpopup_Module_Data *)module_data;
+   if (!ctx_mod) return;
+
+   if (ctx_mod->ctxpopup)
+     evas_object_hide(ctx_mod->ctxpopup);
 }
 
 // module api funcs needed

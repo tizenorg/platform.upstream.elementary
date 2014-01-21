@@ -2,7 +2,7 @@ SUBDIRS = widgets
 
 MAINTAINERCLEANFILES = Makefile.in
 
-.PHONY: doc install-doc
+.PHONY: doc
 
 PACKAGE_DOCNAME = $(PACKAGE_TARNAME)-$(PACKAGE_VERSION)-doc
 
@@ -69,6 +69,8 @@ WGT_PREVIEW = \
 	panes:preview-00.png:widget_preview_panes:200:100 \
 	photocam:preview-00.png:widget_preview_photocam:243:162 \
 	popup:preview-00.png:widget_preview_popup:480:400 \
+	prefs:preview-00.png:widget_preview_prefs:200:160 \
+	prefs:preview-00.png:widget_preview_prefs:280:250 \
 	progressbar:preview-00.png:widget_preview_progressbar:150:50 \
 	radio:preview-00.png:widget_preview_radio:60:20 \
 	scroller:preview-00.png:widget_preview_scroller:100:30 \
@@ -99,11 +101,14 @@ WGT_TREE = \
 	colorselector \
 	conformant \
 	container \
+	ctxpopup \
 	datetime \
 	dayselector \
 	diskselector \
+	entry \
 	fileselector \
 	fileselector_button \
+	fileselector_entry \
 	flip \
 	flipselector \
 	frame \
@@ -124,13 +129,17 @@ WGT_TREE = \
 	map \
 	mapbuf \
 	menu \
+	multibuttonentry \
 	naviframe \
 	notify \
+	panel \
 	panes \
 	photo \
 	photocam \
 	player \
 	plug \
+	popup \
+	prefs \
 	progressbar \
 	radio \
 	route \
@@ -142,6 +151,7 @@ WGT_TREE = \
 	spinner \
 	table \
 	thumb \
+	toolbar \
 	video \
 	web \
 	win
@@ -181,19 +191,19 @@ widget-tree-figures: doc
 doc-clean:
 	rm -rf img/widget html/ latex/ man/ xml/ $(top_builddir)/$(PACKAGE_DOCNAME).tar*
 
-doc-build:
+gen-doc:
 	$(efl_doxygen)
 	cp -r $(srcdir)/img/* html/
 	cp -r $(srcdir)/img/* latex/
 
 #run the last rule whenever the elm widget tree changes
 #commit the changed pictures, then. depends on python and graphviz
-doc: all doc-clean widget-preview doc-build
+doc: all doc-clean widget-preview gen-doc
 	@echo "Entering src/examples/"
 	$(MAKE) -C $(top_builddir)/src/examples screenshots
 	rm -rf $(PACKAGE_DOCNAME).tar*
 	mkdir -p $(PACKAGE_DOCNAME)/doc
-	cp -R html/ latex/ man/ xml/ $(PACKAGE_DOCNAME)/doc
+	cp -R html/ latex/ man/ $(PACKAGE_DOCNAME)/doc
 	tar cf $(PACKAGE_DOCNAME).tar $(PACKAGE_DOCNAME)/
 	bzip2 -9 $(PACKAGE_DOCNAME).tar
 	rm -rf $(PACKAGE_DOCNAME)/
@@ -201,20 +211,10 @@ doc: all doc-clean widget-preview doc-build
 
 clean-local: doc-clean
 
-# what about examples screenshots ?
-install-doc: doc-build
-	install -d $(docdir)
-	cp -R html latex man xml $(docdir)
-
-uninstall-local:
-	rm -rf $(docdir)/html $(docdir)/latex $(docdir)/man $(docdir)/xml
-
 else
 
 doc:
 	@echo "Documentation not built. Run ./configure --help"
-
-install-doc: doc
 
 endif
 

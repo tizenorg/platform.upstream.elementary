@@ -1,6 +1,17 @@
+#ifdef HAVE_CONFIG_H
+# include "elementary_config.h"
+#endif
+
 #include <Elementary.h>
 #include "elm_priv.h"
 #include "elm_widget_datetime.h"
+
+EAPI Eo_Op ELM_OBJ_DATETIME_BASE_ID = EO_NOOP;
+
+#define MY_CLASS ELM_OBJ_DATETIME_CLASS
+
+#define MY_CLASS_NAME "Elm_Datetime"
+#define MY_CLASS_NAME_LEGACY "elm_datetime"
 
 #ifdef HAVE_LOCALE_H
 # include <locale.h>
@@ -9,8 +20,6 @@
 #ifdef HAVE_LANGINFO_H
 # include <langinfo.h>
 #endif
-
-EAPI const char ELM_DATETIME_SMART_NAME[] = "elm_datetime";
 
 #define MAX_SEPARATOR_LEN              6
 #define MIN_DAYS_IN_MONTH              28
@@ -54,16 +63,14 @@ static const char *ignore_separators = "()";
 static Datetime_Mod_Api *dt_mod = NULL;
 
 static const char SIG_CHANGED[] = "changed";
-static const char SIG_LANGUAGE_CHANGED[] = "language,changed";
+static const char SIG_LANG_CHANGED[] = "language,changed";
 static const Evas_Smart_Cb_Description _smart_callbacks[] = {
    {SIG_CHANGED, ""},
-   {SIG_LANGUAGE_CHANGED, ""},
+   {SIG_LANG_CHANGED, ""},
+   {"focused", ""}, /**< handled by elm_widget */
+   {"unfocused", ""}, /**< handled by elm_widget */
    {NULL, NULL}
 };
-
-EVAS_SMART_SUBCLASS_NEW
-  (ELM_DATETIME_SMART_NAME, _elm_datetime, Elm_Datetime_Smart_Class,
-  Elm_Layout_Smart_Class, elm_layout_smart_class_get, _smart_callbacks);
 
 static Datetime_Mod_Api *
 _dt_mod_init()
@@ -79,6 +86,8 @@ _dt_mod_init()
      _elm_module_symbol_get(mod, "obj_hook");
    ((Datetime_Mod_Api *)(mod->api))->obj_unhook =
      _elm_module_symbol_get(mod, "obj_unhook");
+   ((Datetime_Mod_Api *)(mod->api))->obj_hide =
+     _elm_module_symbol_get(mod, "obj_hide");
    ((Datetime_Mod_Api *)(mod->api))->field_create =
      _elm_module_symbol_get(mod, "field_create");
    ((Datetime_Mod_Api *)(mod->api))->field_value_display =
@@ -298,6 +307,7 @@ _reload_format(Evas_Object *obj)
    char *dt_fmt;
 
    ELM_DATETIME_DATA_GET(obj, sd);
+   ELM_WIDGET_DATA_GET_OR_RETURN(obj, wd);
 
    // FIXME: provide nl_langinfo on Windows if possible
    // fetch the default format from Libc.
@@ -307,6 +317,7 @@ _reload_format(Evas_Object *obj)
 #else
      strncpy(sd->format, "", ELM_DATETIME_MAX_FORMAT_LEN);
 #endif
+   sd->format[ELM_DATETIME_MAX_FORMAT_LEN - 1] = '\0';
 
    dt_fmt = (char *)malloc(ELM_DATETIME_MAX_FORMAT_LEN);
    if (!dt_fmt) return;
@@ -349,21 +360,22 @@ _reload_format(Evas_Object *obj)
         elm_layout_text_set(obj, buf, field->separator);
      }
 
-   edje_object_message_signal_process(ELM_WIDGET_DATA(sd)->resize_obj);
+   edje_object_message_signal_process(wd->resize_obj);
    _field_list_arrange(obj);
 }
 
-static Eina_Bool
-_elm_datetime_smart_translate(Evas_Object *obj)
+static void
+_elm_datetime_smart_translate(Eo *obj, void *_pd, va_list *list)
 {
-   ELM_DATETIME_DATA_GET(obj, sd);
+   Elm_Datetime_Smart_Data *sd = _pd;
+   Eina_Bool *ret = va_arg(*list, Eina_Bool *);
 
    if (!sd->user_format) _reload_format(obj);
    else _field_list_display(obj);
 
-   evas_object_smart_callback_call(obj, SIG_LANGUAGE_CHANGED, NULL);
+   evas_object_smart_callback_call(obj, SIG_LANG_CHANGED, NULL);
 
-   return EINA_TRUE;
+   if (ret) *ret = EINA_TRUE;
 }
 
 static Eina_List *
@@ -400,15 +412,25 @@ _datetime_items_get(const Evas_Object *obj)
    return items;
 }
 
-static Eina_Bool
-_elm_datetime_smart_focus_next(const Evas_Object *obj,
-                               Elm_Focus_Direction dir,
-                               Evas_Object **next)
+static void
+_elm_datetime_smart_focus_next_manager_is(Eo *obj EINA_UNUSED, void *_pd EINA_UNUSED, va_list *list)
 {
-   Eina_Bool ret;
+   Eina_Bool *ret = va_arg(*list, Eina_Bool *);
+   *ret = EINA_TRUE;
+}
+
+static void
+_elm_datetime_smart_focus_next(Eo *obj, void *_pd EINA_UNUSED, va_list *list)
+{
    const Eina_List *items;
    Eina_List *(*list_free)(Eina_List *list);
    void *(*list_data_get)(const Eina_List *list);
+
+   Elm_Focus_Direction dir = va_arg(*list, Elm_Focus_Direction);
+   Evas_Object **next = va_arg(*list, Evas_Object **);
+   Eina_Bool *ret = va_arg(*list, Eina_Bool *);
+   if (ret) *ret = EINA_FALSE;
+   Eina_Bool int_ret;
 
    if ((items = elm_widget_focus_custom_chain_get(obj)))
      {
@@ -420,23 +442,63 @@ _elm_datetime_smart_focus_next(const Evas_Object *obj,
         items = _datetime_items_get(obj);
         list_data_get = eina_list_data_get;
         list_free = eina_list_free;
-        if (!items) return EINA_FALSE;
+        if (!items) return;
      }
-printf("count = %d\n", eina_list_count(items));
-   ret = elm_widget_focus_list_next_get(obj, items, list_data_get, dir, next);
+
+   int_ret = elm_widget_focus_list_next_get(obj, items, list_data_get, dir, next);
    if (list_free) list_free((Eina_List *)items);
 
-   return ret;
+   if (ret) *ret = int_ret;
 }
 
 static void
-_elm_datetime_smart_sizing_eval(Evas_Object *obj)
+_elm_datetime_smart_on_focus(Eo *obj, void *_pd, va_list *list)
+{
+   Eina_Bool *ret = va_arg(*list, Eina_Bool *);
+   if (ret) *ret = EINA_FALSE;
+   Eina_Bool int_ret = EINA_FALSE;
+
+   eo_do_super(obj, MY_CLASS, elm_wdg_on_focus(&int_ret));
+   if (!int_ret) return;
+
+   if (!elm_widget_focus_get(obj))
+     {
+        Elm_Datetime_Smart_Data *sd = _pd;
+
+        if ((dt_mod) && (dt_mod->obj_hide))
+          dt_mod->obj_hide(sd->mod_data);
+     }
+
+   if (ret) *ret = EINA_TRUE;
+}
+
+static void
+_elm_datetime_smart_disable(Eo *obj, void *_pd, va_list *list)
+{
+   Eina_Bool *ret = va_arg(*list, Eina_Bool *);
+   Datetime_Field *field;
+   unsigned int idx = 0;
+   if (ret) *ret = EINA_FALSE;
+   Elm_Datetime_Smart_Data *sd = _pd;
+
+   eo_do_super(obj, MY_CLASS, elm_wdg_disable(ret));
+   for (idx = 0; idx < ELM_DATETIME_TYPE_COUNT; idx++)
+     {
+        field = sd->field_list + idx;
+        elm_object_disabled_set(field->item_obj, elm_object_disabled_get(obj));
+     }
+   if (ret) *ret = EINA_TRUE;
+}
+
+static void
+_elm_datetime_smart_sizing_eval(Eo *obj, void *_pd, va_list *list EINA_UNUSED)
 {
    Datetime_Field *field;
    Evas_Coord minw = -1, minh = -1;
    unsigned int idx, field_count = 0;
 
-   ELM_DATETIME_DATA_GET(obj, sd);
+   Elm_Datetime_Smart_Data *sd = _pd;
+   ELM_WIDGET_DATA_GET_OR_RETURN(obj, wd);
 
    for (idx = 0; idx < ELM_DATETIME_TYPE_COUNT; idx++)
      {
@@ -446,24 +508,33 @@ _elm_datetime_smart_sizing_eval(Evas_Object *obj)
    if (field_count)
      elm_coords_finger_size_adjust(field_count, &minw, 1, &minh);
    edje_object_size_min_restricted_calc
-     (ELM_WIDGET_DATA(sd)->resize_obj, &minw, &minh, minw, minh);
+     (wd->resize_obj, &minw, &minh, minw, minh);
    evas_object_size_hint_min_set(obj, minw, minh);
    evas_object_size_hint_max_set(obj, -1, -1);
 }
 
-static Eina_Bool
-_elm_datetime_smart_theme(Evas_Object *obj)
+static void
+_elm_datetime_smart_theme(Eo *obj, void *_pd, va_list *list)
 {
+   Eina_Bool *ret = va_arg(*list, Eina_Bool *);
+   if (ret) *ret = EINA_FALSE;
+   Eina_Bool int_ret = EINA_FALSE;
+
    Datetime_Field *field;
    char buf[BUFFER_SIZE];
    unsigned int idx;
 
-   ELM_DATETIME_DATA_GET(obj, sd);
+   Elm_Datetime_Smart_Data *sd = _pd;
+   ELM_WIDGET_DATA_GET_OR_RETURN(obj, wd);
 
-   if (!ELM_WIDGET_CLASS(_elm_datetime_parent_sc)->theme(obj))
-     return EINA_FALSE;
+   eo_do_super(obj, MY_CLASS, elm_wdg_theme(&int_ret));
+   if (!int_ret) return;
 
-   if ((!dt_mod) || (!dt_mod->field_value_display)) return EINA_TRUE;
+   if ((!dt_mod) || (!dt_mod->field_value_display))
+     {
+        if (ret) *ret = EINA_TRUE;
+        return;
+     }
 
    for (idx = 0; idx < ELM_DATETIME_TYPE_COUNT; idx++)
      {
@@ -488,10 +559,10 @@ _elm_datetime_smart_theme(Evas_Object *obj)
           }
      }
 
-   edje_object_message_signal_process(ELM_WIDGET_DATA(sd)->resize_obj);
+   edje_object_message_signal_process(wd->resize_obj);
    elm_layout_sizing_eval(obj);
 
-   return EINA_TRUE;
+   if (ret) *ret = EINA_TRUE;
 }
 
 static int
@@ -506,6 +577,9 @@ _max_days_get(int year,
    localtime_r(&t, &time1);
    time1.tm_year = year;
    time1.tm_mon = month;
+   /* To restrict month wrapping because of summer time in some locales,
+    * disable day light saving mode.*/
+   time1.tm_isdst = 0;
    for (day = MIN_DAYS_IN_MONTH; day <= mapping[ELM_DATETIME_DATE].def_max;
         day++)
      {
@@ -698,9 +772,7 @@ _field_list_init(Evas_Object *obj)
 }
 
 static char *
-_access_info_cb(void *data,
-                Evas_Object *obj __UNUSED__,
-                Elm_Widget_Item *item __UNUSED__)
+_access_info_cb(void *data, Evas_Object *obj __UNUSED__)
 {
    char *ret;
    Eina_Strbuf *buf;
@@ -719,16 +791,18 @@ _access_info_cb(void *data,
 }
 
 static void
-_elm_datetime_smart_add(Evas_Object *obj)
+_elm_datetime_smart_add(Eo *obj, void *_pd, va_list *list EINA_UNUSED)
 {
-   int idx;
+   Elm_Datetime_Smart_Data *priv = _pd;
    Datetime_Field *field;
+   int idx;
 
-   EVAS_SMART_DATA_ALLOC(obj, Elm_Datetime_Smart_Data);
+   eo_do_super(obj, MY_CLASS, evas_obj_smart_add());
+   elm_widget_sub_object_parent_add(obj);
 
-   ELM_WIDGET_CLASS(_elm_datetime_parent_sc)->base.add(obj);
-
-   elm_layout_theme_set(obj, "datetime", "base", elm_widget_style_get(obj));
+   if (!elm_layout_theme_set(obj, "datetime", "base",
+                             elm_widget_style_get(obj)))
+     CRITICAL("Failed to set layout!");
 
    // module - initialise module for datetime
    if (!dt_mod) dt_mod = _dt_mod_init();
@@ -763,22 +837,27 @@ _elm_datetime_smart_add(Evas_Object *obj)
    // ACCESS
    if (_elm_config->access_mode == ELM_ACCESS_MODE_ON)
      {
-        priv->access_obj = _elm_access_edje_object_part_object_register
-                             (obj, elm_layout_edje_get(obj), "access");
         Elm_Access_Info *ai;
-        ai = _elm_access_object_get(priv->access_obj);
+
+        priv->access_obj = _elm_access_edje_object_part_object_register
+          (obj, elm_layout_edje_get(obj), "elm.access");
+        if (!priv->access_obj)
+          priv->access_obj = _elm_access_edje_object_part_object_register
+          (obj, elm_layout_edje_get(obj), "access");
+
+        ai = _elm_access_info_get(priv->access_obj);
         _elm_access_text_set(ai, ELM_ACCESS_TYPE, "date time");
         _elm_access_callback_set(ai, ELM_ACCESS_INFO, _access_info_cb, obj);
      }
 }
 
 static void
-_elm_datetime_smart_del(Evas_Object *obj)
+_elm_datetime_smart_del(Eo *obj, void *_pd, va_list *list EINA_UNUSED)
 {
    Datetime_Field *tmp;
    unsigned int idx;
 
-   ELM_DATETIME_DATA_GET(obj, sd);
+   Elm_Datetime_Smart_Data *sd = _pd;
 
    for (idx = 0; idx < ELM_DATETIME_TYPE_COUNT; idx++)
      {
@@ -790,63 +869,42 @@ _elm_datetime_smart_del(Evas_Object *obj)
    if ((dt_mod) && (dt_mod->obj_unhook))
      dt_mod->obj_unhook(sd->mod_data);  // module - unhook
 
-   ELM_WIDGET_CLASS(_elm_datetime_parent_sc)->base.del(obj);
-}
-
-static void
-_elm_datetime_smart_set_user(Elm_Datetime_Smart_Class *sc)
-{
-   ELM_WIDGET_CLASS(sc)->base.add = _elm_datetime_smart_add;
-   ELM_WIDGET_CLASS(sc)->base.del = _elm_datetime_smart_del;
-
-   ELM_WIDGET_CLASS(sc)->translate = _elm_datetime_smart_translate;
-   ELM_WIDGET_CLASS(sc)->focus_next = _elm_datetime_smart_focus_next;
-   ELM_WIDGET_CLASS(sc)->theme = _elm_datetime_smart_theme;
-
-   ELM_LAYOUT_CLASS(sc)->sizing_eval = _elm_datetime_smart_sizing_eval;
-}
-
-EAPI const Elm_Datetime_Smart_Class *
-elm_datetime_smart_class_get(void)
-{
-   static Elm_Datetime_Smart_Class _sc =
-     ELM_DATETIME_SMART_CLASS_INIT_NAME_VERSION(ELM_DATETIME_SMART_NAME);
-   static const Elm_Datetime_Smart_Class *class = NULL;
-   Evas_Smart_Class *esc = (Evas_Smart_Class *)&_sc;
-
-   if (class)
-     return class;
-
-   _elm_datetime_smart_set(&_sc);
-   esc->callbacks = _smart_callbacks;
-   class = &_sc;
-
-   return class;
+   eo_do_super(obj, MY_CLASS, evas_obj_smart_del());
 }
 
 EAPI Evas_Object *
 elm_datetime_add(Evas_Object *parent)
 {
-   Evas_Object *obj;
-
    EINA_SAFETY_ON_NULL_RETURN_VAL(parent, NULL);
-
-   obj = elm_widget_add(_elm_datetime_smart_class_new(), parent);
-   if (!obj) return NULL;
-
-   if (!elm_widget_sub_object_add(parent, obj))
-     ERR("could not add %p as sub object of %p", obj, parent);
-
+   Evas_Object *obj = eo_add(MY_CLASS, parent);
+   eo_unref(obj);
    return obj;
+}
+
+static void
+_constructor(Eo *obj, void *_pd EINA_UNUSED, va_list *list EINA_UNUSED)
+{
+   eo_do_super(obj, MY_CLASS, eo_constructor());
+   eo_do(obj,
+         evas_obj_type_set(MY_CLASS_NAME_LEGACY),
+         evas_obj_smart_callbacks_descriptions_set(_smart_callbacks, NULL));
 }
 
 EAPI const char *
 elm_datetime_format_get(const Evas_Object *obj)
 {
    ELM_DATETIME_CHECK(obj) NULL;
-   ELM_DATETIME_DATA_GET(obj, sd);
+   const char *ret = NULL;
+   eo_do((Eo *) obj, elm_obj_datetime_format_get(&ret));
+   return ret;
+}
 
-   return sd->format;
+static void
+_format_get(Eo *obj EINA_UNUSED, void *_pd, va_list *list)
+{
+   const char **ret = va_arg(*list, const char **);
+   Elm_Datetime_Smart_Data *sd = _pd;
+   *ret = sd->format;
 }
 
 EAPI void
@@ -854,11 +912,19 @@ elm_datetime_format_set(Evas_Object *obj,
                         const char *fmt)
 {
    ELM_DATETIME_CHECK(obj);
-   ELM_DATETIME_DATA_GET(obj, sd);
+   eo_do(obj, elm_obj_datetime_format_set(fmt));
+}
+
+static void
+_format_set(Eo *obj, void *_pd, va_list *list)
+{
+   const char *fmt = va_arg(*list, const char *);
+   Elm_Datetime_Smart_Data *sd = _pd;
 
    if (fmt)
      {
         strncpy(sd->format, fmt, ELM_DATETIME_MAX_FORMAT_LEN);
+        sd->format[ELM_DATETIME_MAX_FORMAT_LEN - 1] = '\0';
         sd->user_format = EINA_TRUE;
      }
    else sd->user_format = EINA_FALSE;
@@ -870,15 +936,27 @@ EAPI Eina_Bool
 elm_datetime_field_visible_get(const Evas_Object *obj,
                                Elm_Datetime_Field_Type fieldtype)
 {
-   Datetime_Field *field;
    ELM_DATETIME_CHECK(obj) EINA_FALSE;
-   ELM_DATETIME_DATA_GET(obj, sd);
+   Eina_Bool ret = EINA_FALSE;
+   eo_do((Eo *) obj, elm_obj_datetime_field_visible_get(fieldtype, &ret));
+   return ret;
+}
 
-   if (fieldtype > ELM_DATETIME_AMPM) return EINA_FALSE;
+static void
+_field_visible_get(Eo *obj EINA_UNUSED, void *_pd, va_list *list)
+{
+   Elm_Datetime_Field_Type fieldtype = va_arg(*list, Elm_Datetime_Field_Type);
+   Eina_Bool *ret = va_arg(*list, Eina_Bool *);
+   *ret = EINA_FALSE;
+
+   Datetime_Field *field;
+   Elm_Datetime_Smart_Data *sd = _pd;
+
+   if (fieldtype > ELM_DATETIME_AMPM) return;
 
    field = sd->field_list + fieldtype;
 
-   return field->visible;
+   *ret = field->visible;
 }
 
 EAPI void
@@ -886,10 +964,18 @@ elm_datetime_field_visible_set(Evas_Object *obj,
                                Elm_Datetime_Field_Type fieldtype,
                                Eina_Bool visible)
 {
+   ELM_DATETIME_CHECK(obj);
+   eo_do(obj, elm_obj_datetime_field_visible_set(fieldtype, visible));
+}
+
+static void
+_field_visible_set(Eo *obj, void *_pd, va_list *list)
+{
+   Elm_Datetime_Field_Type fieldtype = va_arg(*list, Elm_Datetime_Field_Type);
+   Eina_Bool visible = va_arg(*list, int);
    Datetime_Field *field;
 
-   ELM_DATETIME_CHECK(obj);
-   ELM_DATETIME_DATA_GET(obj, sd);
+   Elm_Datetime_Smart_Data *sd = _pd;
 
    if (fieldtype > ELM_DATETIME_AMPM) return;
 
@@ -906,10 +992,20 @@ elm_datetime_field_limit_get(const Evas_Object *obj,
                              int *min,
                              int *max)
 {
+   ELM_DATETIME_CHECK(obj);
+   eo_do((Eo *) obj, elm_obj_datetime_field_limit_get(fieldtype, min, max));
+}
+
+static void
+_elm_datetime_field_limit_get(Eo *obj EINA_UNUSED, void *_pd, va_list *list)
+{
+   Elm_Datetime_Field_Type fieldtype = va_arg(*list, Elm_Datetime_Field_Type);
+   int *min = va_arg(*list, int *);
+   int *max = va_arg(*list, int *);
+
    Datetime_Field *field;
 
-   ELM_DATETIME_CHECK(obj);
-   ELM_DATETIME_DATA_GET(obj, sd);
+   Elm_Datetime_Smart_Data *sd = _pd;
 
    if (fieldtype >= ELM_DATETIME_AMPM) return;
 
@@ -924,21 +1020,31 @@ elm_datetime_field_limit_set(Evas_Object *obj,
                              int min,
                              int max)
 {
+   ELM_DATETIME_CHECK(obj);
+   eo_do(obj, elm_obj_datetime_field_limit_set(fieldtype, min, max));
+}
+
+static void
+_elm_datetime_field_limit_set(Eo *obj, void *_pd, va_list *list)
+{
+   Elm_Datetime_Field_Type fieldtype = va_arg(*list, Elm_Datetime_Field_Type);
+   int min = va_arg(*list, int);
+   int max = va_arg(*list, int);
+
    Datetime_Field *field;
 
-   ELM_DATETIME_CHECK(obj);
-   ELM_DATETIME_DATA_GET(obj, sd);
+   Elm_Datetime_Smart_Data *sd = _pd;
 
    if (fieldtype >= ELM_DATETIME_AMPM) return;
 
    if (min > max) return;
 
    field = sd->field_list + fieldtype;
-   if (((min >= mapping[fieldtype].def_min) && 
+   if (((min >= mapping[fieldtype].def_min) &&
         (min <= mapping[fieldtype].def_max)) ||
        (field->type == ELM_DATETIME_YEAR))
      field->min = min;
-   if (((max >= mapping[fieldtype].def_min) && 
+   if (((max >= mapping[fieldtype].def_min) &&
         (max <= mapping[fieldtype].def_max)) ||
        (field->type == ELM_DATETIME_YEAR))
      field->max = max;
@@ -951,22 +1057,45 @@ elm_datetime_value_get(const Evas_Object *obj,
                        struct tm *currtime)
 {
    ELM_DATETIME_CHECK(obj) EINA_FALSE;
-   EINA_SAFETY_ON_NULL_RETURN_VAL(currtime, EINA_FALSE);
-   ELM_DATETIME_DATA_GET(obj, sd);
+   Eina_Bool ret = EINA_FALSE;
+   eo_do((Eo *) obj, elm_obj_datetime_value_get(currtime, &ret));
+   return ret;
+}
+
+static void
+_value_get(Eo *obj EINA_UNUSED, void *_pd, va_list *list)
+{
+   struct tm *currtime = va_arg(*list, struct tm *);
+   Eina_Bool *ret = va_arg(*list, Eina_Bool *);
+   *ret = EINA_FALSE;
+   EINA_SAFETY_ON_NULL_RETURN(currtime);
+   Elm_Datetime_Smart_Data *sd = _pd;
 
    *currtime = sd->curr_time;
-   return EINA_TRUE;
+   *ret = EINA_TRUE;
 }
 
 EAPI Eina_Bool
 elm_datetime_value_set(Evas_Object *obj,
                        const struct tm *newtime)
 {
+   ELM_DATETIME_CHECK(obj) EINA_FALSE;
+   Eina_Bool ret = EINA_FALSE;
+   eo_do(obj, elm_obj_datetime_value_set(newtime, &ret));
+   return ret;
+}
+
+static void
+_value_set(Eo *obj, void *_pd, va_list *list)
+{
+   const struct tm *newtime = va_arg(*list, const struct tm *);
+   Eina_Bool *ret = va_arg(*list, Eina_Bool *);
+   if (ret) *ret = EINA_FALSE;
+
    struct tm old_time;
 
-   ELM_DATETIME_CHECK(obj) EINA_FALSE;
-   EINA_SAFETY_ON_NULL_RETURN_VAL(newtime, EINA_FALSE);
-   ELM_DATETIME_DATA_GET(obj, sd);
+   EINA_SAFETY_ON_NULL_RETURN(newtime);
+   Elm_Datetime_Smart_Data *sd = _pd;
 
    old_time = sd->curr_time;
    sd->curr_time = *newtime;
@@ -980,7 +1109,7 @@ elm_datetime_value_set(Evas_Object *obj,
    if (!_date_cmp(&old_time, &sd->curr_time))
      evas_object_smart_callback_call(obj, SIG_CHANGED, NULL);
 
-   return EINA_TRUE;
+   if (ret) *ret = EINA_TRUE;
 }
 
 EAPI Eina_Bool
@@ -988,22 +1117,46 @@ elm_datetime_value_min_get(const Evas_Object *obj,
                            struct tm *mintime)
 {
    ELM_DATETIME_CHECK(obj) EINA_FALSE;
-   EINA_SAFETY_ON_NULL_RETURN_VAL(mintime, EINA_FALSE);
-   ELM_DATETIME_DATA_GET(obj, sd);
+   Eina_Bool ret = EINA_FALSE;
+   eo_do((Eo *) obj, elm_obj_datetime_value_min_get(mintime, &ret));
+   return ret;
+}
+
+static void
+_value_min_get(Eo *obj EINA_UNUSED, void *_pd, va_list *list)
+{
+   struct tm *mintime = va_arg(*list, struct tm *);
+   Eina_Bool *ret = va_arg(*list, Eina_Bool *);
+   *ret = EINA_FALSE;
+
+   EINA_SAFETY_ON_NULL_RETURN(mintime);
+   Elm_Datetime_Smart_Data *sd = _pd;
 
    *mintime = sd->min_limit;
-   return EINA_TRUE;
+   *ret = EINA_TRUE;
 }
 
 EAPI Eina_Bool
 elm_datetime_value_min_set(Evas_Object *obj,
                            const struct tm *mintime)
 {
+   ELM_DATETIME_CHECK(obj) EINA_FALSE;
+   Eina_Bool ret = EINA_FALSE;
+   eo_do(obj, elm_obj_datetime_value_min_set(mintime, &ret));
+   return ret;
+}
+
+static void
+_value_min_set(Eo *obj, void *_pd, va_list *list)
+{
+   const struct tm *mintime = va_arg(*list, const struct tm *);
+   Eina_Bool *ret = va_arg(*list, Eina_Bool *);
+   if (ret) *ret = EINA_FALSE;
+
    struct tm old_time;
 
-   ELM_DATETIME_CHECK(obj) EINA_FALSE;
-   EINA_SAFETY_ON_NULL_RETURN_VAL(mintime, EINA_FALSE);
-   ELM_DATETIME_DATA_GET(obj, sd);
+   EINA_SAFETY_ON_NULL_RETURN(mintime);
+   Elm_Datetime_Smart_Data *sd = _pd;
 
    sd->min_limit = *mintime;
    old_time = sd->curr_time;
@@ -1017,7 +1170,7 @@ elm_datetime_value_min_set(Evas_Object *obj,
    if (!_date_cmp(&old_time, &sd->curr_time))
      evas_object_smart_callback_call(obj, SIG_CHANGED, NULL);
 
-   return EINA_TRUE;
+   if (ret) *ret = EINA_TRUE;
 }
 
 EAPI Eina_Bool
@@ -1025,22 +1178,46 @@ elm_datetime_value_max_get(const Evas_Object *obj,
                            struct tm *maxtime)
 {
    ELM_DATETIME_CHECK(obj) EINA_FALSE;
-   EINA_SAFETY_ON_NULL_RETURN_VAL(maxtime, EINA_FALSE);
-   ELM_DATETIME_DATA_GET(obj, sd);
+   Eina_Bool ret = EINA_FALSE;
+   eo_do((Eo *) obj, elm_obj_datetime_value_max_get(maxtime, &ret));
+   return ret;
+}
+
+static void
+_value_max_get(Eo *obj EINA_UNUSED, void *_pd, va_list *list)
+{
+   struct tm *maxtime = va_arg(*list, struct tm *);
+   Eina_Bool *ret = va_arg(*list, Eina_Bool *);
+   *ret = EINA_FALSE;
+
+   EINA_SAFETY_ON_NULL_RETURN(maxtime);
+   Elm_Datetime_Smart_Data *sd = _pd;
 
    *maxtime = sd->max_limit;
-   return EINA_TRUE;
+   *ret = EINA_TRUE;
 }
 
 EAPI Eina_Bool
 elm_datetime_value_max_set(Evas_Object *obj,
                            const struct tm *maxtime)
 {
+   ELM_DATETIME_CHECK(obj) EINA_FALSE;
+   Eina_Bool ret = EINA_FALSE;
+   eo_do(obj, elm_obj_datetime_value_max_set(maxtime, &ret));
+   return ret;
+}
+
+static void
+_value_max_set(Eo *obj, void *_pd, va_list *list)
+{
+   const struct tm *maxtime = va_arg(*list, const struct tm *);
+   Eina_Bool *ret = va_arg(*list, Eina_Bool *);
+   if (ret) *ret = EINA_FALSE;
+
    struct tm old_time;
 
-   ELM_DATETIME_CHECK(obj) EINA_FALSE;
-   EINA_SAFETY_ON_NULL_RETURN_VAL(maxtime, EINA_FALSE);
-   ELM_DATETIME_DATA_GET(obj, sd);
+   EINA_SAFETY_ON_NULL_RETURN(maxtime);
+   Elm_Datetime_Smart_Data *sd = _pd;
 
    sd->max_limit = *maxtime;
    old_time = sd->curr_time;
@@ -1054,5 +1231,68 @@ elm_datetime_value_max_set(Evas_Object *obj,
    if (!_date_cmp(&old_time, &sd->curr_time))
      evas_object_smart_callback_call(obj, SIG_CHANGED, NULL);
 
-   return EINA_TRUE;
+   if (ret) *ret = EINA_TRUE;
 }
+
+static void
+_class_constructor(Eo_Class *klass)
+{
+   const Eo_Op_Func_Description func_desc[] = {
+        EO_OP_FUNC(EO_BASE_ID(EO_BASE_SUB_ID_CONSTRUCTOR), _constructor),
+
+        EO_OP_FUNC(EVAS_OBJ_SMART_ID(EVAS_OBJ_SMART_SUB_ID_ADD), _elm_datetime_smart_add),
+        EO_OP_FUNC(EVAS_OBJ_SMART_ID(EVAS_OBJ_SMART_SUB_ID_DEL), _elm_datetime_smart_del),
+
+        EO_OP_FUNC(ELM_WIDGET_ID(ELM_WIDGET_SUB_ID_TRANSLATE), _elm_datetime_smart_translate),
+        EO_OP_FUNC(ELM_WIDGET_ID(ELM_WIDGET_SUB_ID_FOCUS_NEXT_MANAGER_IS), _elm_datetime_smart_focus_next_manager_is),
+        EO_OP_FUNC(ELM_WIDGET_ID(ELM_WIDGET_SUB_ID_FOCUS_NEXT), _elm_datetime_smart_focus_next),
+        EO_OP_FUNC(ELM_WIDGET_ID(ELM_WIDGET_SUB_ID_THEME), _elm_datetime_smart_theme),
+        EO_OP_FUNC(ELM_WIDGET_ID(ELM_WIDGET_SUB_ID_ON_FOCUS), _elm_datetime_smart_on_focus),
+        EO_OP_FUNC(ELM_WIDGET_ID(ELM_WIDGET_SUB_ID_DISABLE), _elm_datetime_smart_disable),
+
+        EO_OP_FUNC(ELM_OBJ_LAYOUT_ID(ELM_OBJ_LAYOUT_SUB_ID_SIZING_EVAL), _elm_datetime_smart_sizing_eval),
+
+        EO_OP_FUNC(ELM_OBJ_DATETIME_ID(ELM_OBJ_DATETIME_SUB_ID_FORMAT_GET), _format_get),
+        EO_OP_FUNC(ELM_OBJ_DATETIME_ID(ELM_OBJ_DATETIME_SUB_ID_FORMAT_SET), _format_set),
+        EO_OP_FUNC(ELM_OBJ_DATETIME_ID(ELM_OBJ_DATETIME_SUB_ID_FIELD_VISIBLE_GET), _field_visible_get),
+        EO_OP_FUNC(ELM_OBJ_DATETIME_ID(ELM_OBJ_DATETIME_SUB_ID_FIELD_VISIBLE_SET), _field_visible_set),
+        EO_OP_FUNC(ELM_OBJ_DATETIME_ID(ELM_OBJ_DATETIME_SUB_ID_FIELD_LIMIT_GET), _elm_datetime_field_limit_get),
+        EO_OP_FUNC(ELM_OBJ_DATETIME_ID(ELM_OBJ_DATETIME_SUB_ID_FIELD_LIMIT_SET), _elm_datetime_field_limit_set),
+        EO_OP_FUNC(ELM_OBJ_DATETIME_ID(ELM_OBJ_DATETIME_SUB_ID_VALUE_GET), _value_get),
+        EO_OP_FUNC(ELM_OBJ_DATETIME_ID(ELM_OBJ_DATETIME_SUB_ID_VALUE_SET), _value_set),
+        EO_OP_FUNC(ELM_OBJ_DATETIME_ID(ELM_OBJ_DATETIME_SUB_ID_VALUE_MIN_GET), _value_min_get),
+        EO_OP_FUNC(ELM_OBJ_DATETIME_ID(ELM_OBJ_DATETIME_SUB_ID_VALUE_MIN_SET), _value_min_set),
+        EO_OP_FUNC(ELM_OBJ_DATETIME_ID(ELM_OBJ_DATETIME_SUB_ID_VALUE_MAX_GET), _value_max_get),
+        EO_OP_FUNC(ELM_OBJ_DATETIME_ID(ELM_OBJ_DATETIME_SUB_ID_VALUE_MAX_SET), _value_max_set),
+        EO_OP_FUNC_SENTINEL
+   };
+   eo_class_funcs_set(klass, func_desc);
+
+   evas_smart_legacy_type_register(MY_CLASS_NAME_LEGACY, klass);
+}
+static const Eo_Op_Description op_desc[] = {
+     EO_OP_DESCRIPTION(ELM_OBJ_DATETIME_SUB_ID_FORMAT_GET, "Get the datetime format."),
+     EO_OP_DESCRIPTION(ELM_OBJ_DATETIME_SUB_ID_FORMAT_SET, "Set the datetime format."),
+     EO_OP_DESCRIPTION(ELM_OBJ_DATETIME_SUB_ID_FIELD_VISIBLE_GET, "Get whether a field can be visible/not."),
+     EO_OP_DESCRIPTION(ELM_OBJ_DATETIME_SUB_ID_FIELD_VISIBLE_SET, "Set a field to be visible or not."),
+     EO_OP_DESCRIPTION(ELM_OBJ_DATETIME_SUB_ID_FIELD_LIMIT_GET, "Get the field limits of a field."),
+     EO_OP_DESCRIPTION(ELM_OBJ_DATETIME_SUB_ID_FIELD_LIMIT_SET, "Set the field limits of a field."),
+     EO_OP_DESCRIPTION(ELM_OBJ_DATETIME_SUB_ID_VALUE_GET, "Get the current value of a field."),
+     EO_OP_DESCRIPTION(ELM_OBJ_DATETIME_SUB_ID_VALUE_SET, "Set the current value of a Datetime object."),
+     EO_OP_DESCRIPTION(ELM_OBJ_DATETIME_SUB_ID_VALUE_MIN_GET, "Get the lower boundary of a field."),
+     EO_OP_DESCRIPTION(ELM_OBJ_DATETIME_SUB_ID_VALUE_MIN_SET, "Set the lower boundary of a field."),
+     EO_OP_DESCRIPTION(ELM_OBJ_DATETIME_SUB_ID_VALUE_MAX_GET, "Get the upper boundary of a field."),
+     EO_OP_DESCRIPTION(ELM_OBJ_DATETIME_SUB_ID_VALUE_MAX_SET, "Set the upper boundary of a field."),
+     EO_OP_DESCRIPTION_SENTINEL
+};
+static const Eo_Class_Description class_desc = {
+     EO_VERSION,
+     MY_CLASS_NAME,
+     EO_CLASS_TYPE_REGULAR,
+     EO_CLASS_DESCRIPTION_OPS(&ELM_OBJ_DATETIME_BASE_ID, op_desc, ELM_OBJ_DATETIME_SUB_ID_LAST),
+     NULL,
+     sizeof(Elm_Datetime_Smart_Data),
+     _class_constructor,
+     NULL
+};
+EO_DEFINE_CLASS(elm_obj_datetime_class_get, &class_desc, ELM_OBJ_LAYOUT_CLASS, NULL);

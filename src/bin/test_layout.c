@@ -2,7 +2,7 @@
 # include "elementary_config.h"
 #endif
 #include <Elementary.h>
-#ifndef ELM_LIB_QUICKLAUNCH
+
 #include <Elementary_Cursor.h>
 
 struct _api_data
@@ -29,13 +29,13 @@ enum _api_state
 
 typedef enum _api_state api_state;
 static void
-_clicked_cb(void *data, Evas_Object *obj, void *event_info __UNUSED__)
+_clicked_cb(void *data, Evas_Object *obj, void *event_info EINA_UNUSED)
 {
    elm_object_part_text_set(data, "text", elm_object_text_get(obj));
 }
 
 void
-test_layout(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+test_layout(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *win, *box, *ly, *bt;
    char buf[PATH_MAX];
@@ -45,13 +45,16 @@ test_layout(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info
 
    box = elm_box_add(win);
    evas_object_size_hint_weight_set(box, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-   evas_object_size_hint_align_set(box, EVAS_HINT_FILL, EVAS_HINT_FILL);
    elm_win_resize_object_add(win, box);
    evas_object_show(box);
 
    ly = elm_layout_add(win);
-   elm_layout_theme_set(ly, "layout", "application", "titlebar");
-   elm_object_text_set(ly, "Some title");
+
+   if (!elm_layout_theme_set(
+         ly, "layout", "application", "titlebar"))
+     fprintf(stderr, "Failed to set layout");
+
+   elm_object_part_text_set(ly, "elm.text", "Some title");
    evas_object_size_hint_weight_set(ly, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    evas_object_size_hint_align_set(ly, EVAS_HINT_FILL, EVAS_HINT_FILL);
    elm_box_pack_end(box, ly);
@@ -173,7 +176,7 @@ set_api_state(api_data *api)
 }
 
 static void
-_api_bt_clicked(void *data, Evas_Object *obj, void *event_info __UNUSED__)
+_api_bt_clicked(void *data, Evas_Object *obj, void *event_info EINA_UNUSED)
 {  /* Will add here a SWITCH command containing code to modify test-object */
    /* in accordance a->state value. */
    api_data *a = data;
@@ -188,13 +191,13 @@ _api_bt_clicked(void *data, Evas_Object *obj, void *event_info __UNUSED__)
 }
 
 static void
-_cleanup_cb(void *data, Evas *e __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+_cleanup_cb(void *data, Evas *e EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    free(data);
 }
 
 void
-test_layout2(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+test_layout2(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *win, *box, *bt, *ly, *lb;
    api_data *api = calloc(1, sizeof(api_data));
@@ -218,7 +221,11 @@ test_layout2(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_inf
 
    /* Layout Box Test */
    api->box_layout = ly = elm_layout_add(win);
-   elm_layout_theme_set(ly, "layout", "application", "toolbar-vbox");
+
+   if (!elm_layout_theme_set(
+         ly, "layout", "application", "toolbar-vbox"))
+     fprintf(stderr, "Failed to set layout");
+
    evas_object_size_hint_weight_set(ly, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    evas_object_size_hint_align_set(ly, EVAS_HINT_FILL, EVAS_HINT_FILL);
    elm_box_pack_end(box, ly);
@@ -233,7 +240,11 @@ test_layout2(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_inf
 
    /* Layout Table Test */
    api->table_layout = ly = elm_layout_add(win);
-   elm_layout_theme_set(ly, "layout", "application", "toolbar-table");
+
+   if (!elm_layout_theme_set(
+         ly, "layout", "application", "toolbar-table"))
+     fprintf(stderr, "Failed to set layout");
+
    evas_object_size_hint_weight_set(ly, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    evas_object_size_hint_align_set(ly, EVAS_HINT_FILL, EVAS_HINT_FILL);
    elm_box_pack_end(box, ly);
@@ -254,4 +265,3 @@ test_layout2(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_inf
    evas_object_resize(win, 320, 320);
    evas_object_show(win);
 }
-#endif

@@ -2,80 +2,79 @@
 # include "elementary_config.h"
 #endif
 #include <Elementary.h>
-#ifndef ELM_LIB_QUICKLAUNCH
 
 void
-my_fl_1(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+my_fl_1(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *fl = data;
    elm_flip_go(fl, ELM_FLIP_ROTATE_Y_CENTER_AXIS);
 }
 
 void
-my_fl_2(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+my_fl_2(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *fl = data;
    elm_flip_go(fl, ELM_FLIP_ROTATE_X_CENTER_AXIS);
 }
 
 void
-my_fl_3(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+my_fl_3(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *fl = data;
    elm_flip_go(fl, ELM_FLIP_ROTATE_XZ_CENTER_AXIS);
 }
 
 void
-my_fl_4(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+my_fl_4(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *fl = data;
    elm_flip_go(fl, ELM_FLIP_ROTATE_YZ_CENTER_AXIS);
 }
 
 void
-my_fl_5(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+my_fl_5(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *fl = data;
    elm_flip_go(fl, ELM_FLIP_CUBE_LEFT);
 }
 
 void
-my_fl_6(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+my_fl_6(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *fl = data;
    elm_flip_go(fl, ELM_FLIP_CUBE_RIGHT);
 }
 
 void
-my_fl_7(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+my_fl_7(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *fl = data;
    elm_flip_go(fl, ELM_FLIP_CUBE_UP);
 }
 
 void
-my_fl_8(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+my_fl_8(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *fl = data;
    elm_flip_go(fl, ELM_FLIP_CUBE_DOWN);
 }
 
 void
-my_fl_front(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+my_fl_front(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *fl = data;
    elm_flip_go_to(fl, EINA_TRUE, ELM_FLIP_ROTATE_X_CENTER_AXIS);
 }
 
 void
-my_fl_back(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+my_fl_back(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *fl = data;
    elm_flip_go_to(fl, EINA_FALSE, ELM_FLIP_ROTATE_X_CENTER_AXIS);
 }
 
 void
-test_flip(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+test_flip(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *win, *bx, *bx2, *fl, *o, *bt, *ly;
    char buf[PATH_MAX];
@@ -209,7 +208,7 @@ test_flip(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info _
 }
 
 void
-test_flip2(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+test_flip2(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *win, *bg, *bx, *bx2, *fl, *o, *bt, *tb, *li, *en;
    char buf[PATH_MAX];
@@ -221,8 +220,8 @@ test_flip2(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info 
    bg = elm_bg_add(win);
    snprintf(buf, sizeof(buf), "%s/images/%s", elm_app_data_dir_get(), "sky_01.jpg");
    elm_bg_file_set(bg, buf, NULL);
-   elm_win_resize_object_add(win, bg);
    evas_object_size_hint_weight_set(bg, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   elm_win_resize_object_add(win, bg);
    evas_object_show(bg);
 
    bx = elm_box_add(win);
@@ -240,7 +239,7 @@ test_flip2(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info 
    evas_object_size_hint_weight_set(o, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
 
    tb = elm_toolbar_add(win);
-   elm_toolbar_homogeneous_set(tb, 0);
+   elm_toolbar_homogeneous_set(tb, EINA_FALSE);
    evas_object_size_hint_weight_set(tb, 0.0, 0.0);
    evas_object_size_hint_align_set(tb, EVAS_HINT_FILL, 0.0);
 
@@ -379,7 +378,7 @@ test_flip2(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info 
 }
 
 void
-test_flip3(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+test_flip3(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *win, *bx, *bx2, *fl, *fl_f, *fl_b, *o, *bt, *fr;
    char buf[PATH_MAX];
@@ -492,17 +491,28 @@ test_flip3(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info 
    evas_object_show(win);
 }
 
-
 static void
-my_fl_go(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+my_fl_go(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *win = data;
+
+   Evas_Object *rdg = evas_object_data_get(win, "rdg");
+   Evas_Object *rd = elm_radio_selected_object_get(rdg);
    Evas_Object *fl = evas_object_data_get(win, "fl");
-   elm_flip_go(fl, ELM_FLIP_PAGE_LEFT);
+
+   const char *text = elm_object_text_get(rd);
+   if (!text) return;
+
+   if (!strcmp(text, "Rotate"))
+     elm_flip_go(fl, ELM_FLIP_ROTATE_Y_CENTER_AXIS);
+   else if (!strcmp(text, "Cube"))
+     elm_flip_go(fl, ELM_FLIP_CUBE_RIGHT);
+   else if (!strcmp(text, "Page"))
+     elm_flip_go(fl, ELM_FLIP_PAGE_RIGHT);
 }
 
 static void
-my_fl_ch(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+my_fl_ch(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *win = data;
    Evas_Object *fl = evas_object_data_get(win, "fl");
@@ -511,7 +521,7 @@ my_fl_ch(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
 }
 
 void
-test_flip4(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+test_flip4(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *win, *bx, *fl, *im, *li, *bt, *rd, *rdg;
    char buf[PATH_MAX];
@@ -611,7 +621,7 @@ test_flip4(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info 
    evas_object_smart_callback_add(rd, "changed", my_fl_ch, win);
 
    bt = elm_button_add(win);
-   elm_object_text_set(bt, "Flip page");
+   elm_object_text_set(bt, "Flip Go");
    evas_object_smart_callback_add(bt, "clicked", my_fl_go, win);
    evas_object_size_hint_align_set(bt, EVAS_HINT_FILL, EVAS_HINT_FILL);
    evas_object_size_hint_weight_set(bt, EVAS_HINT_EXPAND, 0.0);
@@ -623,7 +633,7 @@ test_flip4(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info 
 }
 
 void
-test_flip5(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+test_flip5(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *win, *bx, *bx2, *fl, *o, *bt, *ly;
    char buf[PATH_MAX];
@@ -698,4 +708,3 @@ test_flip5(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info 
    evas_object_resize(win, 320, 480);
    evas_object_show(win);
 }
-#endif

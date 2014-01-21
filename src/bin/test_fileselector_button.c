@@ -4,7 +4,7 @@
 #endif
 
 #include <Elementary.h>
-#ifndef ELM_LIB_QUICKLAUNCH
+
 struct _api_data
 {
    unsigned int state;  /* What state we are testing       */
@@ -50,7 +50,7 @@ set_api_state(api_data *api)
 }
 
 static void
-_api_bt_clicked(void *data, Evas_Object *obj, void *event_info __UNUSED__)
+_api_bt_clicked(void *data, Evas_Object *obj, void *event_info EINA_UNUSED)
 {  /* Will add here a SWITCH command containing code to modify test-object */
    /* in accordance a->state value. */
    api_data *a = data;
@@ -85,7 +85,7 @@ create_dir_struct(void)
 
 static void
 _file_chosen(void            *data,
-             Evas_Object *obj __UNUSED__,
+             Evas_Object *obj EINA_UNUSED,
              void            *event_info)
 {
    Evas_Object *entry = data;
@@ -101,8 +101,8 @@ _file_chosen(void            *data,
 
 static void
 _inwin_mode_toggle(void            *data,
-                   Evas_Object *obj __UNUSED__,
-                   void *event_info __UNUSED__)
+                   Evas_Object *obj EINA_UNUSED,
+                   void *event_info EINA_UNUSED)
 {
    Evas_Object *fs_bt = data;
    Eina_Bool value = elm_fileselector_button_inwin_mode_get(fs_bt);
@@ -112,48 +112,48 @@ _inwin_mode_toggle(void            *data,
 
 static void
 _current_sel_toggle(void            *data,
-                    Evas_Object *obj __UNUSED__,
-                    void *event_info __UNUSED__)
+                    Evas_Object *obj,
+                    void *event_info EINA_UNUSED)
 {
    Evas_Object *fs_bt = data;
-   Eina_Bool value = elm_fileselector_button_is_save_get(fs_bt);
-   elm_fileselector_button_is_save_set(fs_bt, !value);
+   Eina_Bool value = elm_check_state_get(obj);
+   elm_fileselector_button_is_save_set(fs_bt, value);
    printf("Current selection editable entry set to: %s\n",
-          value ? "false" : "true");
+          value ? "true" : "false");
 }
 
 static void
 _folder_only_toggle(void            *data,
-                    Evas_Object *obj __UNUSED__,
-                    void *event_info __UNUSED__)
+                    Evas_Object *obj,
+                    void *event_info EINA_UNUSED)
 {
    Evas_Object *fs_bt = data;
-   Eina_Bool value = elm_fileselector_button_folder_only_get(fs_bt);
-   elm_fileselector_button_folder_only_set(fs_bt, !value);
-   printf("Folder only flag set to: %s\n", value ? "false" : "true");
+   Eina_Bool value = elm_check_state_get(obj);
+   elm_fileselector_button_folder_only_set(fs_bt, value);
+   printf("Folder only flag set to: %s\n", value ? "true" : "false");
 }
 
 static void
 _expandable_toggle(void            *data,
-                   Evas_Object *obj __UNUSED__,
-                   void *event_info __UNUSED__)
+                   Evas_Object *obj,
+                   void *event_info EINA_UNUSED)
 {
    Evas_Object *fs_bt = data;
-   Eina_Bool value = elm_fileselector_button_expandable_get(fs_bt);
-   elm_fileselector_button_expandable_set(fs_bt, !value);
-   printf("Expandable flag set to: %s\n", value ? "false" : "true");
+   Eina_Bool value = elm_check_state_get(obj);
+   elm_fileselector_button_expandable_set(fs_bt, value);
+   printf("Expandable flag set to: %s\n", value ? "true" : "false");
 }
 
 static void
-_cleanup_cb(void *data, Evas *e __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+_cleanup_cb(void *data, Evas *e EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    free(data);
 }
 
 void
-test_fileselector_button(void *data       __UNUSED__,
-                         Evas_Object *obj __UNUSED__,
-                         void *event_info __UNUSED__)
+test_fileselector_button(void *data       EINA_UNUSED,
+                         Evas_Object *obj EINA_UNUSED,
+                         void *event_info EINA_UNUSED)
 {
    Evas_Object *win, *vbox, *hbox, *ic, *bt, *fs_bt, *en, *lb, *bxx;
    api_data *api = calloc(1, sizeof(api_data));
@@ -163,8 +163,8 @@ test_fileselector_button(void *data       __UNUSED__,
    evas_object_event_callback_add(win, EVAS_CALLBACK_FREE, _cleanup_cb, api);
 
    bxx = elm_box_add(win);
-   elm_win_resize_object_add(win, bxx);
    evas_object_size_hint_weight_set(bxx, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   elm_win_resize_object_add(win, bxx);
    evas_object_show(bxx);
 
    vbox = elm_box_add(win);
@@ -244,4 +244,3 @@ test_fileselector_button(void *data       __UNUSED__,
    evas_object_resize(win, 400, 400);
    evas_object_show(win);
 }
-#endif

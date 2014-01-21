@@ -2,16 +2,16 @@
 # include "elementary_config.h"
 #endif
 #include <Elementary.h>
-#ifndef ELM_LIB_QUICKLAUNCH
+
 
 static void
-_print_clicked(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+_print_clicked(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    printf("bubble clicked\n");
 }
 
 static void
-my_entry_anchor_bt(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+my_entry_anchor_bt(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *av = data;
    elm_entry_anchor_hover_end(av);
@@ -78,31 +78,31 @@ my_entry_anchor(void *data, Evas_Object *obj, void *event_info)
 }
 
 static void
-my_entry_anchor_edge_left(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+my_entry_anchor_edge_left(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    printf("left\n");
 }
 
 static void
-my_entry_anchor_edge_right(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+my_entry_anchor_edge_right(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    printf("right\n");
 }
 
 static void
-my_entry_anchor_edge_top(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+my_entry_anchor_edge_top(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    printf("top\n");
 }
 
 static void
-my_entry_anchor_edge_bottom(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+my_entry_anchor_edge_bottom(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    printf("bottom\n");
 }
 
 static void
-my_entry_anchor_scroll(void *data __UNUSED__, Evas_Object *obj, void *event_info __UNUSED__)
+my_entry_anchor_scroll(void *data EINA_UNUSED, Evas_Object *obj, void *event_info EINA_UNUSED)
 {
    Evas_Coord x, y, w, h, vw, vh;
 
@@ -112,12 +112,12 @@ my_entry_anchor_scroll(void *data __UNUSED__, Evas_Object *obj, void *event_info
 }
 
 void
-test_entry_anchor(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+test_entry_anchor(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
-   Evas_Object *win, *av, *sc, *bx, *bb, *ic;
+   Evas_Object *win, *en, *sc, *bx, *bb, *ic;
    char buf[PATH_MAX];
 
-   win = elm_win_util_standard_add("entry_anchor", "Anchorblock");
+   win = elm_win_util_standard_add("entry_anchor", "Entry Anchor");
    elm_win_autodel_set(win, EINA_TRUE);
 
    sc = elm_scroller_add(win);
@@ -148,17 +148,18 @@ test_entry_anchor(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *even
    evas_object_show(ic);
    evas_object_size_hint_weight_set(bb, EVAS_HINT_EXPAND, 0.0);
    evas_object_size_hint_align_set(bb, EVAS_HINT_FILL, EVAS_HINT_FILL);
-   av = elm_entry_add(win);
-   elm_entry_anchor_hover_style_set(av, "popout");
-   elm_entry_anchor_hover_parent_set(av, win);
-   elm_object_text_set(av,
+
+   en = elm_entry_add(win);
+   elm_entry_anchor_hover_style_set(en, "popout");
+   elm_entry_anchor_hover_parent_set(en, win);
+   elm_object_text_set(en,
                        "Hi there. This is the most recent message in the "
                        "list of messages. It has one <a href=tel:+614321234>+61 432 1234</a> "
                        "(phone number) to click on.");
-   evas_object_smart_callback_add(av, "anchor,hover,opened",
-                                  my_entry_anchor, av);
-   elm_object_content_set(bb, av);
-   evas_object_show(av);
+   evas_object_smart_callback_add(en, "anchor,hover,opened",
+                                  my_entry_anchor, en);
+   elm_object_content_set(bb, en);
+   evas_object_show(en);
    elm_box_pack_end(bx, bb);
    evas_object_show(bb);
 
@@ -175,10 +176,11 @@ test_entry_anchor(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *even
    evas_object_show(ic);
    evas_object_size_hint_weight_set(bb, EVAS_HINT_EXPAND, 0.0);
    evas_object_size_hint_align_set(bb, EVAS_HINT_FILL, EVAS_HINT_FILL);
-   av = elm_entry_add(win);
-   elm_entry_anchor_hover_style_set(av, "popout");
-   elm_entry_anchor_hover_parent_set(av, win);
-   elm_object_text_set(av,
+
+   en = elm_entry_add(win);
+   elm_entry_anchor_hover_style_set(en, "popout");
+   elm_entry_anchor_hover_parent_set(en, win);
+   elm_object_text_set(en,
                        "Hey what are you doing? This is the second last message "
                        "Hi there. This is the most recent message in the "
                        "list. It's a longer one so it can wrap more and "
@@ -192,9 +194,9 @@ test_entry_anchor(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *even
                        "done by links maybe running local apps or even being "
                        "web URL's too that launch the web browser and point it "
                        "to that URL. <item relsize=16x16 vsize=full href=emoticon/omg></item>");
-   evas_object_smart_callback_add(av, "anchor,hover,opened", my_entry_anchor, av);
-   elm_object_content_set(bb, av);
-   evas_object_show(av);
+   evas_object_smart_callback_add(en, "anchor,hover,opened", my_entry_anchor, en);
+   elm_object_content_set(bb, en);
+   evas_object_show(en);
    elm_box_pack_end(bx, bb);
    evas_object_show(bb);
 
@@ -213,14 +215,14 @@ test_entry_anchor(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *even
    evas_object_size_hint_weight_set(bb, EVAS_HINT_EXPAND, 0.0);
    evas_object_size_hint_align_set(bb, EVAS_HINT_FILL, EVAS_HINT_FILL);
 
-   av = elm_entry_add(win);
-   elm_entry_anchor_hover_style_set(av, "popout");
-   elm_entry_anchor_hover_parent_set(av, win);
-   elm_object_text_set(av, "This is a short message. <item relsize=16x16 vsize=full href=emoticon/haha></item>");
-   evas_object_smart_callback_add(av, "anchor,hover,opened",
-                                  my_entry_anchor, av);
-   elm_object_content_set(bb, av);
-   evas_object_show(av);
+   en = elm_entry_add(win);
+   elm_entry_anchor_hover_style_set(en, "popout");
+   elm_entry_anchor_hover_parent_set(en, win);
+   elm_object_text_set(en, "This is a short message. <item relsize=16x16 vsize=full href=emoticon/haha></item>");
+   evas_object_smart_callback_add(en, "anchor,hover,opened",
+                                  my_entry_anchor, en);
+   elm_object_content_set(bb, en);
+   evas_object_show(en);
    elm_box_pack_end(bx, bb);
    evas_object_show(bb);
 
@@ -234,4 +236,3 @@ test_entry_anchor(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *even
    elm_object_focus_set(win, EINA_TRUE);
    evas_object_show(win);
 }
-#endif

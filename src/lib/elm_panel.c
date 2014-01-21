@@ -1,390 +1,593 @@
-#include <Elementary.h>
-#include "elm_priv.h"
-#include "els_scroller.h"
-#include "els_box.h"
+#ifdef HAVE_CONFIG_H
+# include "elementary_config.h"
+#endif
 
-typedef struct _Widget_Data Widget_Data;
-struct _Widget_Data
-{
-   Evas_Object *scr, *bx, *content;
-   Elm_Panel_Orient orient;
-   Eina_Bool hidden : 1;
+#include <Elementary.h>
+
+#include "elm_priv.h"
+#include "elm_widget_panel.h"
+
+EAPI Eo_Op ELM_OBJ_PANEL_BASE_ID = EO_NOOP;
+
+#define MY_CLASS ELM_OBJ_PANEL_CLASS
+
+#define MY_CLASS_NAME "Elm_Panel"
+#define MY_CLASS_NAME_LEGACY "elm_panel"
+
+static const Evas_Smart_Cb_Description _smart_callbacks[] = {
+   {"focused", ""}, /**< handled by elm_widget */
+   {"unfocused", ""}, /**< handled by elm_widget */
+   {NULL, NULL}
 };
 
-static const char *widtype = NULL;
-static void _del_hook(Evas_Object *obj);
-static void _theme_hook(Evas_Object *obj);
-static void _on_focus_hook(void *data, Evas_Object *obj);
-static void _sizing_eval(Evas_Object *obj);
-static void _layout(Evas_Object *o, Evas_Object_Box_Data *priv, void *data);
-static void _toggle_panel(void *data, Evas_Object *obj, const char *emission, const char *source);
-
 static void
-_del_hook(Evas_Object *obj)
+_mirrored_set(Evas_Object *obj,
+              Eina_Bool rtl)
 {
-   Widget_Data *wd = elm_widget_data_get(obj);
-   if (!wd) return;
-   free(wd);
+   ELM_PANEL_DATA_GET(obj, sd);
+
+   elm_widget_mirrored_set(sd->bx, rtl);
+   elm_panel_orient_set(obj, elm_panel_orient_get(obj));
 }
 
 static void
-_mirrored_set(Evas_Object *obj, Eina_Bool rtl)
+_elm_panel_smart_sizing_eval(Eo *obj, void *_pd, va_list *list EINA_UNUSED)
 {
-   Widget_Data *wd = elm_widget_data_get(obj);
-   if (!wd) return;
-
-   if (wd->scr)
-     {
-        elm_widget_mirrored_set(wd->bx, rtl);
-        elm_panel_orient_set(obj, elm_panel_orient_get(obj));
-     }
-}
-
-static void
-_theme_hook(Evas_Object *obj)
-{
-   Widget_Data *wd = elm_widget_data_get(obj);
-   if (!wd) return;
-   _elm_widget_mirrored_reload(obj);
-   if (wd->scr)
-     {
-        const char *str;
-        double scale;
-
-        switch (wd->orient)
-          {
-           case ELM_PANEL_ORIENT_TOP:
-             elm_widget_theme_object_set(obj, wd->scr, "panel", "top",
-                                         elm_widget_style_get(obj));
-             break;
-           case ELM_PANEL_ORIENT_BOTTOM:
-             elm_widget_theme_object_set(obj, wd->scr, "panel", "bottom",
-                                         elm_widget_style_get(obj));
-             break;
-           case ELM_PANEL_ORIENT_LEFT:
-             if (!elm_widget_mirrored_get(obj))
-               elm_widget_theme_object_set(obj, wd->scr, "panel", "left",
-                                           elm_widget_style_get(obj));
-             else
-               elm_widget_theme_object_set(obj, wd->scr, "panel", "right",
-                                           elm_widget_style_get(obj));
-             break;
-           case ELM_PANEL_ORIENT_RIGHT:
-             if (!elm_widget_mirrored_get(obj))
-               elm_widget_theme_object_set(obj, wd->scr, "panel", "right",
-                                           elm_widget_style_get(obj));
-             else
-               elm_widget_theme_object_set(obj, wd->scr, "panel", "left",
-                                           elm_widget_style_get(obj));
-             break;
-           default:
-             break;
-          }
-        scale = (elm_widget_scale_get(obj) * _elm_config->scale);
-        edje_object_scale_set(wd->scr, scale);
-        _mirrored_set(obj, elm_widget_mirrored_get(obj));
-        str = edje_object_data_get(wd->scr, "focus_highlight");
-        if ((str) && (!strcmp(str, "on")))
-          elm_widget_highlight_in_theme_set(wd->scr, EINA_TRUE);
-        else
-          elm_widget_highlight_in_theme_set(wd->scr, EINA_FALSE);
-     }
-
-   _sizing_eval(obj);
-}
-
-static void
-_on_focus_hook(void *data __UNUSED__, Evas_Object *obj)
-{
-   Widget_Data *wd = elm_widget_data_get(obj);
-   if (!wd) return;
-   if (elm_widget_focus_get(obj))
-     evas_object_focus_set(obj, EINA_TRUE);
-   else
-     evas_object_focus_set(obj, EINA_FALSE);
-}
-
-static Eina_Bool
-_elm_panel_focus_next_hook(const Evas_Object *obj, Elm_Focus_Direction dir, Evas_Object **next)
-{
-   Widget_Data *wd = elm_widget_data_get(obj);
-   Evas_Object *cur;
-
-   if ((!wd) || (!wd->content))
-     return EINA_FALSE;
-
-   cur = wd->content;
-
-   /* Try Focus cycle in subitem */
-   if (!wd->hidden)
-     return elm_widget_focus_next_get(cur, dir, next);
-
-   /* Return */
-   *next = (Evas_Object *)obj;
-   return !elm_widget_focus_get(obj);
-}
-
-static void
-_signal_emit_hook(Evas_Object *obj, const char *emission, const char *source)
-{
-   Widget_Data *wd = elm_widget_data_get(obj);
-   if (!wd) return;
-   edje_object_signal_emit(wd->scr, emission, source);
-}
-
-static void
-_signal_callback_add_hook(Evas_Object *obj, const char *emission, const char *source, Edje_Signal_Cb func_cb, void *data)
-{
-   Widget_Data *wd = elm_widget_data_get(obj);
-   if (!wd) return;
-   edje_object_signal_callback_add(wd->scr, emission, source, func_cb, data);
-}
-
-static void
-_signal_callback_del_hook(Evas_Object *obj, const char *emission, const char *source, Edje_Signal_Cb func_cb, void *data)
-{
-   Widget_Data *wd = elm_widget_data_get(obj);
-   edje_object_signal_callback_del_full(wd->scr, emission, source, func_cb, data);
-}
-
-static void
-_sizing_eval(Evas_Object *obj)
-{
-   Widget_Data *wd = elm_widget_data_get(obj);
    Evas_Coord mw = -1, mh = -1;
-   if (!wd) return;
-   evas_object_smart_calculate(wd->bx);
-   edje_object_part_swallow(wd->scr, "elm.swallow.content", wd->bx);
-   edje_object_size_min_calc(wd->scr, &mw, &mh);
+
+   Elm_Panel_Smart_Data *sd = _pd;
+   ELM_WIDGET_DATA_GET_OR_RETURN(obj, wd);
+
+   if (sd->delete_me) return;
+
+   evas_object_smart_calculate(sd->bx);
+   edje_object_size_min_calc(wd->resize_obj, &mw, &mh);
    evas_object_size_hint_min_set(obj, mw, mh);
    evas_object_size_hint_max_set(obj, -1, -1);
 }
 
-static void
-_layout(Evas_Object *o, Evas_Object_Box_Data *priv, void *data)
+static char *
+_access_state_cb(void *data, Evas_Object *obj __UNUSED__)
 {
-   Widget_Data *wd = data;
-   if (!wd) return;
+   ELM_PANEL_DATA_GET(data, sd);
+
+   if (!sd->hidden) return strdup(E_("state: opened"));
+   else return strdup(E_("state: closed"));
+
+   return NULL;
+}
+
+static void
+_orient_set_do(Evas_Object *obj)
+{
+   ELM_PANEL_DATA_GET(obj, sd);
+   ELM_WIDGET_DATA_GET_OR_RETURN(obj, wd);
+
+   switch (sd->orient)
+     {
+      case ELM_PANEL_ORIENT_TOP:
+        if (!elm_layout_theme_set
+              (obj, "panel", "top", elm_widget_style_get(obj)))
+          CRITICAL("Failed to set layout!");
+        break;
+
+      case ELM_PANEL_ORIENT_BOTTOM:
+        if (!elm_layout_theme_set
+              (obj, "panel", "bottom", elm_widget_style_get(obj)))
+          CRITICAL("Failed to set layout!");
+        break;
+
+      case ELM_PANEL_ORIENT_LEFT:
+        if (!elm_widget_mirrored_get(obj))
+          {
+             if (!elm_layout_theme_set
+                   (obj, "panel", "left", elm_widget_style_get(obj)))
+               CRITICAL("Failed to set layout!");
+          }
+        else
+          {
+             if (!elm_layout_theme_set
+                   (obj, "panel", "right", elm_widget_style_get(obj)))
+               CRITICAL("Failed to set layout!");
+          }
+        break;
+
+      case ELM_PANEL_ORIENT_RIGHT:
+        if (!elm_widget_mirrored_get(obj))
+          {
+             if (!elm_layout_theme_set
+                   (obj, "panel", "right", elm_widget_style_get(obj)))
+               CRITICAL("Failed to set layout!");
+          }
+        else
+          {
+             if (!elm_layout_theme_set
+                   (obj, "panel", "left", elm_widget_style_get(obj)))
+               CRITICAL("Failed to set layout!");
+          }
+        break;
+     }
+
+   /* access */
+   if (_elm_config->access_mode == ELM_ACCESS_MODE_ON)
+     {
+        Evas_Object *ao;
+        ao = _elm_access_edje_object_part_object_register
+            (obj, wd->resize_obj, "btn_icon");
+        _elm_access_text_set(_elm_access_info_get(ao),
+                             ELM_ACCESS_TYPE, E_("panel button"));
+        _elm_access_callback_set
+          (_elm_access_info_get(ao), ELM_ACCESS_STATE, _access_state_cb, obj);
+     }
+}
+
+static void
+_elm_panel_smart_theme(Eo *obj, void *_pd, va_list *list)
+{
+   const char *str;
+   Evas_Coord minw = 0, minh = 0;
+   Elm_Panel_Smart_Data *sd = _pd;
+
+   Eina_Bool int_ret = EINA_FALSE;
+   Eina_Bool *ret = va_arg(*list, Eina_Bool *);
+   if (ret) *ret = EINA_FALSE;
+
+   ELM_WIDGET_DATA_GET_OR_RETURN(obj, wd);
+
+   eo_do_super(obj, MY_CLASS, elm_wdg_theme(&int_ret));
+   if (!int_ret) return;
+
+   _mirrored_set(obj, elm_widget_mirrored_get(obj));
+
+   str = edje_object_data_get
+       (wd->resize_obj, "focus_highlight");
+   if ((str) && (!strcmp(str, "on")))
+     elm_widget_highlight_in_theme_set(obj, EINA_TRUE);
+   else
+     elm_widget_highlight_in_theme_set(obj, EINA_FALSE);
+
+   _orient_set_do(obj);
+
+   evas_object_hide(sd->event);
+   elm_coords_finger_size_adjust(1, &minw, 1, &minh);
+   evas_object_size_hint_min_set(sd->event, minw, minh);
+
+   if (edje_object_part_exists
+       (wd->resize_obj, "elm.swallow.event"))
+     elm_layout_content_set(obj, "elm.swallow.event", sd->event);
+
+   elm_layout_sizing_eval(obj);
+
+   if (ret) *ret = EINA_TRUE;
+}
+
+static void
+_elm_panel_smart_focus_next_manager_is(Eo *obj EINA_UNUSED, void *_pd EINA_UNUSED, va_list *list)
+{
+   Eina_Bool *ret = va_arg(*list, Eina_Bool *);
+   *ret = EINA_TRUE;
+}
+
+static void
+_elm_panel_smart_focus_next(Eo *obj, void *_pd, va_list *list)
+{
+   Evas_Object *cur;
+   Elm_Focus_Direction dir = va_arg(*list, Elm_Focus_Direction);
+   Evas_Object **next =  va_arg(*list, Evas_Object **);
+   Eina_Bool *ret = va_arg(*list, Eina_Bool *);
+   Eina_Bool int_ret = EINA_FALSE;
+
+   Elm_Panel_Smart_Data *sd = _pd;
+   ELM_WIDGET_DATA_GET_OR_RETURN(obj, wd);
+
+   if (!sd->content) goto end;
+
+   cur = sd->content;
+
+   /* Try to Focus cycle in subitem */
+   if (!sd->hidden)
+     {
+        int_ret = elm_widget_focus_next_get(cur, dir, next);
+        goto end;
+     }
+
+   /* access */
+   if (_elm_config->access_mode != ELM_ACCESS_MODE_OFF)
+     {
+        Evas_Object *ao, *po;
+        po = (Evas_Object *)edje_object_part_object_get
+               (wd->resize_obj, "btn_icon");
+        ao = evas_object_data_get(po, "_part_access_obj");
+        _elm_access_highlight_set(ao);
+     }
+
+   /* Return */
+   *next = (Evas_Object *)obj;
+   int_ret = !elm_widget_focus_get(obj);
+
+end:
+   if (ret) *ret = int_ret;
+}
+
+static void
+_box_layout_cb(Evas_Object *o,
+               Evas_Object_Box_Data *priv,
+               void *data __UNUSED__)
+{
    _els_box_layout(o, priv, EINA_TRUE, EINA_FALSE, EINA_FALSE);
 }
 
 static void
-_toggle_panel(void *data, Evas_Object *obj, const char *emission __UNUSED__, const char *source __UNUSED__)
+_panel_toggle(void *data __UNUSED__,
+              Evas_Object *obj,
+              const char *emission __UNUSED__,
+              const char *source __UNUSED__)
 {
-   Widget_Data *wd = elm_widget_data_get(data);
-   if (!wd) return;
-   if (wd->hidden)
+   ELM_PANEL_DATA_GET(obj, sd);
+   ELM_WIDGET_DATA_GET_OR_RETURN(obj, wd);
+
+   if (sd->hidden)
      {
-        edje_object_signal_emit(wd->scr, "elm,action,show", "elm");
-        wd->hidden = EINA_FALSE;
+        elm_layout_signal_emit(obj, "elm,action,show", "elm");
+        sd->hidden = EINA_FALSE;
         evas_object_repeat_events_set(obj, EINA_FALSE);
      }
    else
      {
-        edje_object_signal_emit(wd->scr, "elm,action,hide", "elm");
-        wd->hidden = EINA_TRUE;
+        elm_layout_signal_emit(obj, "elm,action,hide", "elm");
+        sd->hidden = EINA_TRUE;
         evas_object_repeat_events_set(obj, EINA_TRUE);
-        if (elm_widget_focus_get(wd->content))
+        if (elm_widget_focus_get(sd->content))
           {
              elm_widget_focused_object_clear(obj);
              elm_widget_focus_steal(obj);
           }
      }
-}
 
-static Eina_Bool
-_event_hook(Evas_Object *obj, Evas_Object *src __UNUSED__, Evas_Callback_Type type, void *event_info)
-{
-   if ((src != obj) || (type != EVAS_CALLBACK_KEY_DOWN)) return EINA_FALSE;
-
-   Evas_Event_Key_Down *ev = event_info;
-   Widget_Data *wd = elm_widget_data_get(obj);
-   if (!wd) return EINA_FALSE;
-
-   if (ev->event_flags & EVAS_EVENT_FLAG_ON_HOLD) return EINA_FALSE;
-
-   if ((strcmp(ev->keyname, "Return")) &&
-       (strcmp(ev->keyname, "KP_Enter")) &&
-       (strcmp(ev->keyname, "space")))
-     return EINA_FALSE;
-
-   _toggle_panel(obj, NULL, "elm,action,panel,toggle", "*");
-
-   ev->event_flags |= EVAS_EVENT_FLAG_ON_HOLD;
-   return EINA_TRUE;
+   edje_object_message_signal_process(wd->resize_obj);
 }
 
 static void
-_content_set_hook(Evas_Object *obj, const char *part, Evas_Object *content)
+_elm_panel_smart_event(Eo *obj, void *_pd EINA_UNUSED, va_list *list)
 {
-   ELM_CHECK_WIDTYPE(obj, widtype);
-   Widget_Data *wd;
 
-   if (part && strcmp(part, "default")) return;
-   wd = elm_widget_data_get(obj);
-   if (!wd) return;
-   if (wd->content == content) return;
-   if (wd->content)
-     evas_object_box_remove_all(wd->bx, EINA_TRUE);
-   wd->content = content;
+   Evas_Object *src = va_arg(*list, Evas_Object *);
+   Evas_Callback_Type type = va_arg(*list, Evas_Callback_Type);
+   Evas_Event_Key_Down *ev = va_arg(*list, void *);
+   Eina_Bool *ret = va_arg(*list, Eina_Bool *);
+
+   if (ret) *ret = EINA_FALSE;
+
+   if (elm_widget_disabled_get(obj)) return;
+   if (type != EVAS_CALLBACK_KEY_DOWN) return;
+   if (ev->event_flags & EVAS_EVENT_FLAG_ON_HOLD) return;
+   if (src != obj) return;
+
+   if ((strcmp(ev->key, "Return")) &&
+       (strcmp(ev->key, "KP_Enter")) &&
+       (strcmp(ev->key, "space")))
+     return;
+
+   _panel_toggle(NULL, obj, NULL, NULL);
+
+   ev->event_flags |= EVAS_EVENT_FLAG_ON_HOLD;
+   if (ret) *ret = EINA_TRUE;
+}
+
+static void
+_elm_panel_smart_content_set(Eo *obj, void *_pd, va_list *list)
+{
+   const char *part = va_arg(*list, const char *);
+   Evas_Object *content = va_arg(*list, Evas_Object *);
+   Eina_Bool *ret = va_arg(*list, Eina_Bool *);
+   Eina_Bool int_ret = EINA_TRUE;
+
+   Elm_Panel_Smart_Data *sd = _pd;
+
+   if (part && strcmp(part, "default"))
+     {
+        eo_do_super(obj, MY_CLASS, elm_obj_container_content_set(part, content, &int_ret));
+        goto end;
+     }
+
+   if (sd->content == content) goto end;
+   if (sd->content)
+     evas_object_box_remove_all(sd->bx, EINA_TRUE);
+   sd->content = content;
    if (content)
      {
-        elm_widget_sub_object_add(obj, wd->content);
-        evas_object_box_append(wd->bx, wd->content);
-        evas_object_show(wd->content);
+        evas_object_box_append(sd->bx, sd->content);
+        evas_object_show(sd->content);
      }
-   _sizing_eval(obj);
+
+   elm_layout_sizing_eval(obj);
+
+end:
+   if (ret) *ret = int_ret;
+
 }
 
-static Evas_Object *
-_content_get_hook(const Evas_Object *obj, const char *part)
+static void
+_elm_panel_smart_content_get(Eo *obj, void *_pd, va_list *list)
 {
-   ELM_CHECK_WIDTYPE(obj, widtype) NULL;
-   Widget_Data *wd;
+   Elm_Panel_Smart_Data *sd = _pd;
+   const char *part = va_arg(*list, const char *);
+   Evas_Object **ret = va_arg(*list, Evas_Object **);
+   *ret = NULL;
 
-   if (part && strcmp(part, "default")) return NULL;
-   wd = elm_widget_data_get(obj);
-   if (!wd) return NULL;
-   return wd->content;
+   if (part && strcmp(part, "default"))
+     {
+        eo_do_super(obj, MY_CLASS, elm_obj_container_content_get(part, ret));
+        return;
+     }
+
+   *ret = sd->content;
 }
 
-static Evas_Object *
-_content_unset_hook(Evas_Object *obj, const char *part)
+static void
+_elm_panel_smart_content_unset(Eo *obj, void *_pd, va_list *list)
 {
-   ELM_CHECK_WIDTYPE(obj, widtype) NULL;
-   Widget_Data *wd;
-   Evas_Object *content;
-   if (part && strcmp(part, "default")) return NULL;
-   wd = elm_widget_data_get(obj);
-   if (!wd) return NULL;
-   if (!wd->content) return NULL;
-   content = wd->content;
-   evas_object_box_remove_all(wd->bx, EINA_FALSE);
-   wd->content = NULL;
-   return content;
+   Evas_Object *content = NULL;
+
+   Elm_Panel_Smart_Data *sd = _pd;
+   const char *part = va_arg(*list, const char *);
+   Evas_Object **ret = va_arg(*list, Evas_Object **);
+
+   if (part && strcmp(part, "default"))
+     {
+        eo_do_super(obj, MY_CLASS, elm_obj_container_content_unset(part, &content));
+        goto end;
+     }
+
+   if (!sd->content) goto end;
+   content = sd->content;
+
+   evas_object_box_remove_all(sd->bx, EINA_FALSE);
+   sd->content = NULL;
+
+end:
+   if (ret) *ret = content;
+}
+
+static void
+_elm_panel_smart_add(Eo *obj, void *_pd, va_list *list EINA_UNUSED)
+{
+   Elm_Panel_Smart_Data *priv = _pd;
+   ELM_WIDGET_DATA_GET_OR_RETURN(obj, wd);
+
+   eo_do_super(obj, MY_CLASS, evas_obj_smart_add());
+   elm_widget_sub_object_parent_add(obj);
+   elm_widget_can_focus_set(obj, EINA_TRUE);
+
+   /* just to bootstrap and have theme hook to work */
+   if (!elm_layout_theme_set(obj, "panel", "top", elm_widget_style_get(obj)))
+     CRITICAL("Failed to set layout!");
+
+   eo_do(obj, elm_wdg_theme(NULL));
+
+   priv->bx = evas_object_box_add(evas_object_evas_get(obj));
+   evas_object_size_hint_align_set(priv->bx, 0.5, 0.5);
+   evas_object_box_layout_set(priv->bx, _box_layout_cb, priv, NULL);
+   elm_layout_content_set(obj, "elm.swallow.content", priv->bx);
+   evas_object_show(priv->bx);
+
+   elm_layout_signal_callback_add
+     (obj, "elm,action,panel,toggle", "*", _panel_toggle, obj);
+
+   _mirrored_set(obj, elm_widget_mirrored_get(obj));
+
+   priv->event = evas_object_rectangle_add(evas_object_evas_get(obj));
+   evas_object_color_set(priv->event, 0, 0, 0, 0);
+   evas_object_pass_events_set(priv->event, EINA_TRUE);
+   if (edje_object_part_exists
+       (wd->resize_obj, "elm.swallow.event"))
+     {
+        Evas_Coord minw = 0, minh = 0;
+
+        elm_coords_finger_size_adjust(1, &minw, 1, &minh);
+        evas_object_size_hint_min_set(priv->event, minw, minh);
+        elm_layout_content_set(obj, "elm.swallow.event", priv->event);
+     }
+   elm_widget_sub_object_add(obj, priv->event);
+
+   elm_layout_sizing_eval(obj);
+}
+
+static void
+_elm_panel_smart_del(Eo *obj, void *_pd, va_list *list EINA_UNUSED)
+{
+   Evas_Object *child;
+   Eina_List *l;
+
+   Elm_Panel_Smart_Data *sd = _pd;
+   ELM_WIDGET_DATA_GET_OR_RETURN(obj, wd);
+
+   sd->delete_me = EINA_TRUE;
+
+   /* let's make our box object the *last* to be processed, since it
+    * may (smart) parent other sub objects here */
+   EINA_LIST_FOREACH(wd->subobjs, l, child)
+     {
+        if (child == sd->bx)
+          {
+             wd->subobjs =
+               eina_list_demote_list(wd->subobjs, l);
+             break;
+          }
+     }
+
+   eo_do_super(obj, MY_CLASS, evas_obj_smart_del());
+}
+
+static void
+_elm_panel_smart_access(Eo *obj, void *_pd EINA_UNUSED, va_list *list)
+{
+   ELM_WIDGET_DATA_GET_OR_RETURN(obj, wd);
+
+   Eina_Bool is_access = va_arg(*list, int);
+   if (is_access)
+     _elm_access_edje_object_part_object_register
+       (obj, wd->resize_obj, "btn_icon");
+   else
+     _elm_access_edje_object_part_object_unregister
+       (obj, wd->resize_obj, "btn_icon");
 }
 
 EAPI Evas_Object *
 elm_panel_add(Evas_Object *parent)
 {
-   Evas_Object *obj;
-   Evas *e;
-   Widget_Data *wd;
-
-   ELM_WIDGET_STANDARD_SETUP(wd, Widget_Data, parent, e, obj, NULL);
-
-   ELM_SET_WIDTYPE(widtype, "panel");
-   elm_widget_type_set(obj, "panel");
-   elm_widget_sub_object_add(parent, obj);
-   elm_widget_data_set(obj, wd);
-   elm_widget_del_hook_set(obj, _del_hook);
-   elm_widget_theme_hook_set(obj, _theme_hook);
-   elm_widget_on_focus_hook_set(obj, _on_focus_hook, NULL);
-   elm_widget_signal_emit_hook_set(obj, _signal_emit_hook);
-   elm_widget_signal_callback_add_hook_set(obj, _signal_callback_add_hook);
-   elm_widget_signal_callback_del_hook_set(obj, _signal_callback_del_hook);
-   elm_widget_focus_next_hook_set(obj, _elm_panel_focus_next_hook);
-   elm_widget_can_focus_set(obj, EINA_TRUE);
-   elm_widget_event_hook_set(obj, _event_hook);
-   elm_widget_content_set_hook_set(obj, _content_set_hook);
-   elm_widget_content_get_hook_set(obj, _content_get_hook);
-   elm_widget_content_unset_hook_set(obj, _content_unset_hook);
-
-   wd->scr = edje_object_add(e);
-   _theme_hook(obj);
-   elm_widget_resize_object_set(obj, wd->scr);
-   wd->hidden = EINA_FALSE;
-   wd->orient = ELM_PANEL_ORIENT_LEFT;
-
-   wd->bx = evas_object_box_add(e);
-   evas_object_size_hint_align_set(wd->bx, 0.5, 0.5);
-   evas_object_box_layout_set(wd->bx, _layout, wd, NULL);
-   elm_widget_sub_object_add(obj, wd->bx);
-   edje_object_part_swallow(wd->scr, "elm.swallow.content", wd->bx);
-   evas_object_show(wd->bx);
-
-   edje_object_signal_callback_add(wd->scr, "elm,action,panel,toggle", "*",
-                                   _toggle_panel, obj);
-
-   _mirrored_set(obj, elm_widget_mirrored_get(obj));
-   _sizing_eval(obj);
+   EINA_SAFETY_ON_NULL_RETURN_VAL(parent, NULL);
+   Evas_Object *obj = eo_add(MY_CLASS, parent);
+   eo_unref(obj);
    return obj;
 }
 
-EAPI void
-elm_panel_orient_set(Evas_Object *obj, Elm_Panel_Orient orient)
+static void
+_constructor(Eo *obj, void *_pd EINA_UNUSED, va_list *list EINA_UNUSED)
 {
-   ELM_CHECK_WIDTYPE(obj, widtype);
-   Widget_Data *wd = elm_widget_data_get(obj);
-   if (!wd) return;
-   if (wd->orient == orient) return;
-   wd->orient = orient;
-   switch (wd->orient)
-     {
-      case ELM_PANEL_ORIENT_TOP:
-        elm_widget_theme_object_set(obj, wd->scr, "panel", "top",
-                                    elm_widget_style_get(obj));
-        break;
-      case ELM_PANEL_ORIENT_BOTTOM:
-        elm_widget_theme_object_set(obj, wd->scr, "panel", "bottom",
-                                    elm_widget_style_get(obj));
-        break;
-      case ELM_PANEL_ORIENT_LEFT:
-        if (!elm_widget_mirrored_get(obj))
-          elm_widget_theme_object_set(obj, wd->scr, "panel", "left",
-                                      elm_widget_style_get(obj));
-        else
-          elm_widget_theme_object_set(obj, wd->scr, "panel", "right",
-                                      elm_widget_style_get(obj));
-        break;
-      case ELM_PANEL_ORIENT_RIGHT:
-        if (!elm_widget_mirrored_get(obj))
-          elm_widget_theme_object_set(obj, wd->scr, "panel", "right",
-                                      elm_widget_style_get(obj));
-        else
-          elm_widget_theme_object_set(obj, wd->scr, "panel", "left",
-                                      elm_widget_style_get(obj));
-        break;
-      default:
-        break;
-     }
+   eo_do_super(obj, MY_CLASS, eo_constructor());
+   eo_do(obj,
+         evas_obj_type_set(MY_CLASS_NAME_LEGACY),
+         evas_obj_smart_callbacks_descriptions_set(_smart_callbacks, NULL));
+}
 
-   _sizing_eval(obj);
+EAPI void
+elm_panel_orient_set(Evas_Object *obj,
+                     Elm_Panel_Orient orient)
+{
+   ELM_PANEL_CHECK(obj);
+   eo_do(obj, elm_obj_panel_orient_set(orient));
+}
+
+static void
+_orient_set(Eo *obj, void *_pd, va_list *list)
+{
+   Elm_Panel_Orient orient = va_arg(*list, Elm_Panel_Orient);
+   Elm_Panel_Smart_Data *sd = _pd;
+
+   if (sd->orient == orient) return;
+   sd->orient = orient;
+
+   _orient_set_do(obj);
+
+   elm_layout_sizing_eval(obj);
 }
 
 EAPI Elm_Panel_Orient
 elm_panel_orient_get(const Evas_Object *obj)
 {
-   ELM_CHECK_WIDTYPE(obj, widtype) ELM_PANEL_ORIENT_LEFT;
-   Widget_Data *wd = elm_widget_data_get(obj);
-   if (!wd) return ELM_PANEL_ORIENT_LEFT;
-   return wd->orient;
+   ELM_PANEL_CHECK(obj) ELM_PANEL_ORIENT_LEFT;
+   Elm_Panel_Orient ret = ELM_PANEL_ORIENT_LEFT;
+   eo_do((Eo *) obj, elm_obj_panel_orient_get(&ret));
+   return ret;
+}
+
+static void
+_orient_get(Eo *obj EINA_UNUSED, void *_pd, va_list *list)
+{
+   Elm_Panel_Orient *ret = va_arg(*list, Elm_Panel_Orient *);
+   Elm_Panel_Smart_Data *sd = _pd;
+
+   *ret = sd->orient;
 }
 
 EAPI void
-elm_panel_hidden_set(Evas_Object *obj, Eina_Bool hidden)
+elm_panel_hidden_set(Evas_Object *obj,
+                     Eina_Bool hidden)
 {
-   ELM_CHECK_WIDTYPE(obj, widtype);
-   Widget_Data *wd = elm_widget_data_get(obj);
-   if (!wd) return;
-   if (wd->hidden == hidden) return;
-   _toggle_panel(obj, NULL, "elm,action,panel,toggle", "*");
+   ELM_PANEL_CHECK(obj);
+   eo_do(obj, elm_obj_panel_hidden_set(hidden));
+}
+
+static void
+_hidden_set(Eo *obj, void *_pd, va_list *list)
+{
+   Eina_Bool hidden = va_arg(*list, int);
+   Elm_Panel_Smart_Data *sd = _pd;
+
+   if (sd->hidden == hidden) return;
+
+   _panel_toggle(NULL, obj, NULL, NULL);
 }
 
 EAPI Eina_Bool
 elm_panel_hidden_get(const Evas_Object *obj)
 {
-   ELM_CHECK_WIDTYPE(obj, widtype) EINA_FALSE;
-   Widget_Data *wd = elm_widget_data_get(obj);
-   if (!wd) return EINA_FALSE;
-   return wd->hidden;
+   ELM_PANEL_CHECK(obj) EINA_FALSE;
+   Eina_Bool ret = EINA_FALSE;
+   eo_do((Eo *) obj, elm_obj_panel_hidden_get(&ret));
+   return ret;
+}
+
+static void
+_hidden_get(Eo *obj EINA_UNUSED, void *_pd, va_list *list)
+{
+   Eina_Bool *ret = va_arg(*list, Eina_Bool *);
+   Elm_Panel_Smart_Data *sd = _pd;
+
+   *ret = sd->hidden;
 }
 
 EAPI void
 elm_panel_toggle(Evas_Object *obj)
 {
-   ELM_CHECK_WIDTYPE(obj, widtype);
-   Widget_Data *wd = elm_widget_data_get(obj);
-   if (!wd) return;
-   _toggle_panel(obj, NULL, "elm,action,panel,toggle", "*");
+   ELM_PANEL_CHECK(obj);
+   eo_do(obj, elm_obj_panel_toggle());
 }
+
+static void
+_toggle(Eo *obj, void *_pd EINA_UNUSED, va_list *list EINA_UNUSED)
+{
+   _panel_toggle(NULL, obj, NULL, NULL);
+}
+
+static void
+_class_constructor(Eo_Class *klass)
+{
+   const Eo_Op_Func_Description func_desc[] = {
+        EO_OP_FUNC(EO_BASE_ID(EO_BASE_SUB_ID_CONSTRUCTOR), _constructor),
+        EO_OP_FUNC(EVAS_OBJ_SMART_ID(EVAS_OBJ_SMART_SUB_ID_ADD), _elm_panel_smart_add),
+        EO_OP_FUNC(EVAS_OBJ_SMART_ID(EVAS_OBJ_SMART_SUB_ID_DEL), _elm_panel_smart_del),
+
+        EO_OP_FUNC(ELM_WIDGET_ID(ELM_WIDGET_SUB_ID_FOCUS_NEXT_MANAGER_IS), _elm_panel_smart_focus_next_manager_is),
+        EO_OP_FUNC(ELM_WIDGET_ID(ELM_WIDGET_SUB_ID_FOCUS_NEXT), _elm_panel_smart_focus_next),
+        EO_OP_FUNC(ELM_WIDGET_ID(ELM_WIDGET_SUB_ID_THEME), _elm_panel_smart_theme),
+        EO_OP_FUNC(ELM_WIDGET_ID(ELM_WIDGET_SUB_ID_EVENT), _elm_panel_smart_event),
+        EO_OP_FUNC(ELM_WIDGET_ID(ELM_WIDGET_SUB_ID_ACCESS), _elm_panel_smart_access),
+
+        EO_OP_FUNC(ELM_OBJ_CONTAINER_ID(ELM_OBJ_CONTAINER_SUB_ID_CONTENT_SET), _elm_panel_smart_content_set),
+        EO_OP_FUNC(ELM_OBJ_CONTAINER_ID(ELM_OBJ_CONTAINER_SUB_ID_CONTENT_GET), _elm_panel_smart_content_get),
+        EO_OP_FUNC(ELM_OBJ_CONTAINER_ID(ELM_OBJ_CONTAINER_SUB_ID_CONTENT_UNSET), _elm_panel_smart_content_unset),
+
+        EO_OP_FUNC(ELM_OBJ_LAYOUT_ID(ELM_OBJ_LAYOUT_SUB_ID_SIZING_EVAL), _elm_panel_smart_sizing_eval),
+
+        EO_OP_FUNC(ELM_OBJ_PANEL_ID(ELM_OBJ_PANEL_SUB_ID_ORIENT_SET), _orient_set),
+        EO_OP_FUNC(ELM_OBJ_PANEL_ID(ELM_OBJ_PANEL_SUB_ID_ORIENT_GET), _orient_get),
+        EO_OP_FUNC(ELM_OBJ_PANEL_ID(ELM_OBJ_PANEL_SUB_ID_HIDDEN_SET), _hidden_set),
+        EO_OP_FUNC(ELM_OBJ_PANEL_ID(ELM_OBJ_PANEL_SUB_ID_HIDDEN_GET), _hidden_get),
+        EO_OP_FUNC(ELM_OBJ_PANEL_ID(ELM_OBJ_PANEL_SUB_ID_TOGGLE), _toggle),
+        EO_OP_FUNC_SENTINEL
+   };
+   eo_class_funcs_set(klass, func_desc);
+
+   evas_smart_legacy_type_register(MY_CLASS_NAME_LEGACY, klass);
+}
+static const Eo_Op_Description op_desc[] = {
+     EO_OP_DESCRIPTION(ELM_OBJ_PANEL_SUB_ID_ORIENT_SET, "Sets the orientation of the panel."),
+     EO_OP_DESCRIPTION(ELM_OBJ_PANEL_SUB_ID_ORIENT_GET, "Get the orientation of the panel."),
+     EO_OP_DESCRIPTION(ELM_OBJ_PANEL_SUB_ID_HIDDEN_SET, "Set the state of the panel."),
+     EO_OP_DESCRIPTION(ELM_OBJ_PANEL_SUB_ID_HIDDEN_GET, "Get the state of the panel."),
+     EO_OP_DESCRIPTION(ELM_OBJ_PANEL_SUB_ID_TOGGLE, "Toggle the hidden state of the panel from code."),
+     EO_OP_DESCRIPTION_SENTINEL
+};
+static const Eo_Class_Description class_desc = {
+     EO_VERSION,
+     MY_CLASS_NAME,
+     EO_CLASS_TYPE_REGULAR,
+     EO_CLASS_DESCRIPTION_OPS(&ELM_OBJ_PANEL_BASE_ID, op_desc, ELM_OBJ_PANEL_SUB_ID_LAST),
+     NULL,
+     sizeof(Elm_Panel_Smart_Data),
+     _class_constructor,
+     NULL
+};
+EO_DEFINE_CLASS(elm_obj_panel_class_get, &class_desc, ELM_OBJ_LAYOUT_CLASS, NULL);

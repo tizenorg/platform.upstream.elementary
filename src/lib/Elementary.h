@@ -1,4 +1,4 @@
-/* This is the primary Elementary header file that includes all other useful
+/* This is the prmary Elementary header file that includes all other useful
  * headers.
  *
  * Elementary is distributed under the LGPLv2 license. Please see the COPYING
@@ -7,12 +7,14 @@
 #ifndef ELEMENTARY_H
 #define ELEMENTARY_H
 
+#define ELM_ELDBUS
+#define ELM_EFREET
+#define ELM_ETHUMB
+
 #define ELM_UNIX
 #undef ELM_WIN32
 #undef ELM_WINCE
-#undef ELM_EDBUS
-#define ELM_EFREET
-#define ELM_ETHUMB
+#undef ELM_ELOCATION
 #undef ELM_WEB
 #undef ELM_EMAP
 #undef ELM_DEBUG
@@ -62,6 +64,8 @@
 #endif
 
 /* EFL headers */
+#include "Efl_Config.h"
+
 #include <Eina.h>
 #include <Eet.h>
 #include <Evas.h>
@@ -69,22 +73,19 @@
 #include <Ecore.h>
 #include <Ecore_Evas.h>
 #include <Ecore_File.h>
+#include <Ecore_Input.h>
+#include <Ecore_Input.h>
 #include <Ecore_IMF.h>
 #include <Ecore_Con.h>
 #include <Edje.h>
-
-#ifdef ELM_EDBUS
-#include <E_DBus.h>
-#endif
-
-#ifdef ELM_EFREET
+#include <Eldbus.h>
 #include <Efreet.h>
 #include <Efreet_Mime.h>
 #include <Efreet_Trash.h>
-#endif
-
-#ifdef ELM_ETHUMB
 #include <Ethumb_Client.h>
+
+#ifdef ELM_ELOCATION
+#include <Elocation.h>
 #endif
 
 #ifdef ELM_EMAP
@@ -135,7 +136,7 @@ extern "C"
 #include <elm_authors.h>
 
 #define ELM_VERSION_MAJOR 1
-#define ELM_VERSION_MINOR 7
+#define ELM_VERSION_MINOR 8
 
 typedef struct _Elm_Version
 {
@@ -152,7 +153,13 @@ EAPI extern Elm_Version *elm_version;
 #include <elm_tooltip.h>
 #include <elm_object_item.h>
 
+#include <elm_prefs_data.h>
+#include <elm_prefs.h>
+#include <elm_systray.h>
+#include <elm_sys_notify.h>
+
 /* special widgets - types used elsewhere */
+#include <elm_access.h>
 #include <elm_icon.h>
 #include <elm_scroller.h>
 #include <elm_entry.h>
@@ -169,6 +176,11 @@ EAPI extern Elm_Version *elm_version;
 #include <elc_naviframe.h>
 #include <elc_popup.h>
 #include <elm_actionslider.h>
+#include <elm_app_common.h>
+#include <elm_app_server.h>
+#include <elm_app_server_view.h>
+#include <elm_app_client.h>
+#include <elm_app_client_view.h>
 #include <elm_app.h>
 #include <elm_bg.h>
 #include <elm_box.h>

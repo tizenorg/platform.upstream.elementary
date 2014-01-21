@@ -1,7 +1,8 @@
-#include <Elementary.h>
 #ifdef HAVE_CONFIG_H
 # include "elementary_config.h"
 #endif
+
+#include <Elementary.h>
 
 /* to enable this module
 export ELM_MODULES="access_output>access/api"
@@ -63,9 +64,12 @@ out_read(const char *txt)
    if (!tmpf)
      {
         char buf[PATH_MAX];
+        mode_t cur_umask;
 
         snprintf(buf, sizeof(buf), "/tmp/.elm-speak-XXXXXX");
+        cur_umask = umask(S_IRWXO | S_IRWXG);
         tmpfd = mkstemp(buf);
+        umask(cur_umask);
         if (tmpfd >= 0) tmpf = strdup(buf);
         else return;
      }

@@ -44,10 +44,10 @@ _name_loaded(void *data, Evas_Object *obj, void *ev)
                            &(exam_data->dest_lat));
 
    exam_data->route = elm_map_route_add(map, ELM_MAP_ROUTE_TYPE_FOOT,
-                     ELM_MAP_ROUTE_METHOD_SHORTEST,
-                     exam_data->start_lon, exam_data->start_lat,
-                     exam_data->dest_lon, exam_data->dest_lat,
-                     NULL, NULL);
+                                        ELM_MAP_ROUTE_METHOD_SHORTEST,
+                                        exam_data->start_lon, exam_data->start_lat,
+                                        exam_data->dest_lon, exam_data->dest_lat,
+                                        NULL, NULL);
 }
 
 static void
@@ -96,12 +96,6 @@ _bt_zoom_fill(void *data, Evas_Object *obj, void *event_info)
    elm_map_zoom_mode_set(data, ELM_MAP_ZOOM_MODE_AUTO_FILL);
 }
 
-static void
-_on_done(void *data, Evas_Object *obj, void *event_info)
-{
-   elm_exit();
-}
-
 /* FIXME: it shouldn't be required. For unknown reason map won't call
  * pan_calculate until shot delay time, but then it will take a screenshot
  * when the map isn't loaded yet (actually it won't be downloaded, because
@@ -118,23 +112,22 @@ _nasty_hack(void *data)
 EAPI_MAIN int
 elm_main(int argc, char **argv)
 {
-   Evas_Object *win, *bg, *map, *box, *bt, *entry;
+   Evas_Object *win, *map, *box, *bt, *entry;
 
-   win = elm_win_add(NULL, "map", ELM_WIN_BASIC);
-   elm_win_title_set(win, "Map Route Example");
-   evas_object_smart_callback_add(win, "delete,request", _on_done, NULL);
+   elm_policy_set(ELM_POLICY_QUIT, ELM_POLICY_QUIT_LAST_WINDOW_CLOSED);
 
-   bg = elm_bg_add(win);
-   elm_win_resize_object_add(win, bg);
-   evas_object_size_hint_weight_set(bg, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-   evas_object_show(bg);
+   win = elm_win_util_standard_add("map", "Map Route Example");
+   elm_win_autodel_set(win, EINA_TRUE);
 
    map = elm_map_add(win);
-   elm_win_resize_object_add(win, map);
    evas_object_size_hint_weight_set(map, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   elm_win_resize_object_add(win, map);
    evas_object_show(map);
 
    box = elm_box_add(win);
+   elm_box_horizontal_set(box, EINA_TRUE);
+   evas_object_size_hint_weight_set(box, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   elm_win_resize_object_add(win, box);
    evas_object_show(box);
 
    bt = elm_button_add(win);
@@ -164,11 +157,6 @@ elm_main(int argc, char **argv)
    evas_object_show(bt);
    evas_object_smart_callback_add(bt, "clicked", _bt_zoom_fill, map);
    evas_object_size_hint_align_set(bt, EVAS_HINT_FILL, 0);
-
-   elm_box_horizontal_set(box, EINA_TRUE);
-   elm_win_resize_object_add(win, box);
-   evas_object_size_hint_weight_set(box, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-   evas_object_size_hint_align_set(box, EVAS_HINT_FILL, 0);
 
    entry = elm_entry_add(win);
    elm_entry_scrollable_set(entry, EINA_TRUE);

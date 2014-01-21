@@ -1,14 +1,13 @@
 ##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##
 ##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##
 m4_define([v_maj], [1])
-m4_define([v_min], [7])
-m4_define([v_mic], [10])
-m4_define([v_rev], m4_esyscmd([(svnversion "${SVN_REPO_PATH:-.}" | grep -v '\(export\|Unversioned directory\)' || echo 0) | awk -F : '{printf("%s\n", $1);}' | tr -d ' :MSP\n']))
-m4_if(v_rev, [0], [m4_define([v_rev], m4_esyscmd([git log 2> /dev/null | (grep -m1 git-svn-id || echo 0) | sed -e 's/.*@\([0-9]*\).*/\1/' | tr -d '\n']))])
+m4_define([v_min], [8])
+m4_define([v_mic], [0])
+dnl m4_define([v_rev], m4_esyscmd([(git rev-list --count HEAD 2>/dev/null || echo 0) | tr -d '\n']))
 ##--   When released, remove the dnl on the below line
-m4_undefine([v_rev])
+dnl m4_undefine([v_rev])
 ##--   When doing snapshots - change soname. remove dnl on below line
-dnl m4_define([relname], [ver-pre-svn-09])
+dnl m4_define([relname], [dev])
 dnl m4_define([v_rel], [-release relname])
 ##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##
 m4_ifdef([v_rev], [m4_define([v_ver], [v_maj.v_min.v_mic.v_rev])],
@@ -72,26 +71,41 @@ VMAJ=v_maj
 VMIN=v_min
 AC_SUBST(VMAJ)
 AC_SUBST(VMIN)
+ELM_VERSION_MAJOR=v_maj
+ELM_VERSION_MINOR=v_min
+AC_SUBST(ELM_VERSION_MAJOR)
+AC_SUBST(ELM_VERSION_MINOR)
 
 # pkg-config
 PKG_PROG_PKG_CONFIG
-EDJE_VERSION=`$PKG_CONFIG edje --modversion | awk -F . '{printf("%s.0.0", $1);}'`
+
+MODULE_EDJE=`pkg-config --variable=module_arch edje`
+if test -z "$MODULE_EDJE"; then
+   # Backward compatibility -- TODO: remove when EFL 1.8 is released.
+   EDJE_VERSION=`$PKG_CONFIG edje --modversion | awk -F . '{printf("%s.%s.%s", $1, $2, $3);}'`
+   case "$host_os" in
+     mingw32ce* | cegcc*)
+       MODULE_EDJE="$host_os-$host_cpu"
+       ;;
+     *)
+       MODULE_EDJE="$host_os-$host_cpu-${EDJE_VERSION}"
+       ;;
+   esac
+fi
+AC_SUBST(MODULE_EDJE)
+AC_DEFINE_UNQUOTED(MODULE_EDJE, "$MODULE_EDJE", "Edje module architecture")
 
 case "$host_os" in
   mingw32ce* | cegcc*)
     MODULE_ARCH="$host_os-$host_cpu"
-    MODULE_EDJE="$host_os-$host_cpu"
     ;;
   *)
     MODULE_ARCH="$host_os-$host_cpu-v_maj.v_min.v_mic"
-    MODULE_EDJE="$host_os-$host_cpu-${EDJE_VERSION}"
     ;;
 esac
 AC_SUBST(release_info)
 AC_SUBST(MODULE_ARCH)
 AC_DEFINE_UNQUOTED(MODULE_ARCH, "$MODULE_ARCH", "Module architecture")
-AC_SUBST(MODULE_EDJE)
-AC_DEFINE_UNQUOTED(MODULE_EDJE, "$MODULE_EDJE", "Edje module architecture")
 
 EFL_SHARED_EXTENSION="${shrext_cmds}"
 AC_DEFINE_UNQUOTED(EFL_SHARED_EXTENSION, "${EFL_SHARED_EXTENSION}", "Shared extension")
@@ -116,6 +130,8 @@ else
 fi
 AC_SUBST(LOCALE_DIR)
 #================================================
+elementary_icon_dir="${datadir}/icons"
+AC_SUBST(elementary_icon_dir)
 
 lt_enable_auto_import=""
 ELM_UNIX_DEF="#undef"
@@ -171,6 +187,7 @@ dnl managed by evil
         have_dlopen="yes"
       else
         AC_CHECK_LIB(dl, dlopen, res=yes, res=no)
+        AC_CHECK_LIB(m, sincos)
         if test "x$res" = "xyes"; then
           AC_CHECK_LIB(dl, dladdr, AC_DEFINE(HAVE_DLADDR))
           dlopen_libs=-ldl
@@ -196,11 +213,15 @@ AC_ARG_ENABLE([quick-launch],
         [AC_HELP_STRING([--disable-quick-launch], [disable quick-launch support, @<:@default=detect@:>@])],
         [want_quicklaunch=$enableval], [])
 
+# Check if we can build binary with quicklaunch support
+ELM_QUICKLAUNCH
+
 if test "x$want_quicklaunch" != "xno"; then
    AC_CHECK_FUNCS(fork, [
         have_fork="yes"
         AC_DEFINE(HAVE_FORK)
    ])
+   AC_CHECK_FUNCS([clearenv])
 fi
 AM_CONDITIONAL([BUILD_QUICKLAUNCH], [test "x$have_fork" = "xyes" && test "x$have_dlopen" = "xyes"])
 
@@ -212,75 +233,54 @@ AC_SUBST(ELM_WINCE_DEF)
 
 AM_CONDITIONAL([ELEMENTARY_WINDOWS_BUILD], [test "x${have_windows}" = "xyes"])
 
+efl_version="1.8.0"
+
 PKG_CHECK_MODULES([ELEMENTARY],
    [
-    eina >= 1.7.10
-    eet >= 1.7.10
-    evas >= 1.7.10
-    ecore >= 1.7.10
-    ecore-evas >= 1.7.10
-    ecore-file >= 1.7.10
-    edje >= 1.7.10
+    eina >= ${efl_version}
+    eet >= ${efl_version}
+    evas >= ${efl_version}
+    ecore >= ${efl_version}
+    ecore-evas >= ${efl_version}
+    ecore-file >= ${efl_version}
+    ecore-input >= ${efl_version}
+    edje >= ${efl_version}
+    eo >= ${efl_version}
+    ethumb_client >= ${efl_version}
+    emotion >= ${efl_version}
+    ecore-imf >= ${efl_version}
+    ecore-con >= ${efl_version}
+    eio >= ${efl_version}
+    eldbus >= ${efl_version}
+    efreet >= ${efl_version}
+    efreet-mime >= ${efl_version}
+    efreet-trash >= ${efl_version}
    ]
 )
 
-requirement_elm="edje >= 1.7.10 ecore-file >= 1.7.10 ecore-evas >= 1.7.10 ecore >= 1.7.10 evas >= 1.7.10 eet >= 1.7.10 eina >= 1.7.10 ${requirement_elm}"
+EFL_ENABLE_EO_API_SUPPORT
+EFL_ENABLE_BETA_API_SUPPORT
 
-PKG_CHECK_MODULES([ELEMENTARY_ECORE_IMF],
-   [ecore-imf >= 1.7.10],
-   [
-    ELEMENTARY_ECORE_IMF_INC="#include <Ecore_IMF.h>"
-    AC_DEFINE(HAVE_ELEMENTARY_ECORE_IMF, 1, [Have Ecore_IMF support])
-    have_ecore_imf="yes"
-    requirement_elm="ecore-imf >= 1.7.10 ${requirement_elm}"
-   ],
-   [have_ecore_imf="no"])
-AC_SUBST(ELEMENTARY_ECORE_IMF_INC)
-
-AM_CONDITIONAL([HAVE_ECORE_IMF], [test "x${have_ecore_imf}" = "xyes"])
-
-PKG_CHECK_MODULES([ELEMENTARY_ECORE_CON],
-   [ecore-con >= 1.7.10],
-   [
-    ELEMENTARY_ECORE_CON_INC="#include <Ecore_Con.h>"
-    AC_DEFINE(HAVE_ELEMENTARY_ECORE_CON, 1, [Have Ecore_Con support])
-    have_ecore_con="yes"
-    requirement_elm="ecore-con >= 1.7.10 ${requirement_elm}"
-   ],
-   [have_ecore_con="no"])
-AC_SUBST(ELEMENTARY_ECORE_CON_INC)
-
-AM_CONDITIONAL([HAVE_ECORE_CON], [test "x${have_ecore_con}" = "xyes"])
-
-PKG_CHECK_MODULES([EIO],
-        [eio],
-        [
-         have_eio="yes"
-         AC_DEFINE(HAVE_EIO, 1, [Use EIO for asynchronous file access])
-         requirement_elm="eio ${requirement_elm}"
-        ],
-        [have_eio="no"])
-
-AM_CONDITIONAL([HAVE_EIO], [test "x${have_eio}" = "xyes"])
-
-have_emotion="no"
-want_elementary_emotion="yes"
-AC_ARG_ENABLE([emotion],
-   [AC_HELP_STRING([--disable-emotion], [disable emotion support. @<:@default=enabled@:>@])],
-   [want_elementary_emotion=$enableval], [])
-
-if test "x$want_elementary_emotion" != "xno"; then
-   PKG_CHECK_MODULES([EMOTION],
-        [emotion],
-        [
-         have_emotion="yes"
-         AC_DEFINE(HAVE_EMOTION, 1, [Use Emotion for asynchronous file access])
-         requirement_elm="emotion ${requirement_elm}"
-        ],
-        [have_emotion="no"])
-fi
-
-AM_CONDITIONAL([HAVE_EMOTION], [test "x${have_emotion}" = "xyes"])
+requirement_elm="\
+    eina >= ${efl_version} \
+    eet >= ${efl_version} \
+    evas >= ${efl_version} \
+    ecore >= ${efl_version} \
+    ecore-evas >= ${efl_version} \
+    ecore-file >= ${efl_version} \
+    ecore-input >= ${efl_version} \
+    edje >= ${efl_version} \
+    eo >= ${efl_version} \
+    ethumb_client >= ${efl_version} \
+    emotion >= ${efl_version} \
+    ecore-imf >= ${efl_version} \
+    ecore-con >= ${efl_version} \
+    eio >= ${efl_version} \
+    eldbus >= ${efl_version} \
+    efreet >= ${efl_version} \
+    efreet-mime >= ${efl_version} \
+    efreet-trash >= ${efl_version} \
+    "
 
 have_elementary_x="no"
 want_elementary_x="auto"
@@ -290,11 +290,11 @@ AC_ARG_ENABLE([ecore-x],
 
 if test "x$want_elementary_x" != "xno"; then
    PKG_CHECK_MODULES([ELEMENTARY_X],
-      [ecore-x >= 1.7.10],
+      [ecore-x >= ${efl_version}],
       [
        AC_DEFINE(HAVE_ELEMENTARY_X, 1, [X11 support for Elementary])
        have_elementary_x="yes"
-       requirement_elm="ecore-x >= 1.7.10 ${requirement_elm}"
+       requirement_elm="ecore-x >= ${efl_version} ${requirement_elm}"
       ],
       [have_elementary_x="no"]
    )
@@ -302,7 +302,7 @@ else
     have_elementary_x="no"
 fi
 if test "x$want_elementary_x" = "xyes" -a "x$have_elementary_x" = "xno"; then
-    AC_MSG_ERROR([ecore-x support requested, but not found by pkg-config.])
+    AC_MSG_ERROR([ecore-x support requested, but ecore-x was not found by pkg-config.])
 fi
 
 
@@ -314,11 +314,11 @@ AC_ARG_ENABLE([ecore-fb],
 
 if test "x$want_elementary_fb" != "xno"; then
    PKG_CHECK_MODULES([ELEMENTARY_FB],
-      [ecore-fb >= 1.7.10],
+      [ecore-fb >= ${efl_version}],
       [
        AC_DEFINE(HAVE_ELEMENTARY_FB, 1, [FB support for Elementary])
        have_elementary_fb="yes"
-       requirement_elm="ecore-fb >= 1.7.10 ${requirement_elm}"
+       requirement_elm="ecore-fb >= ${efl_version} ${requirement_elm}"
       ],
       [have_elementary_fb="no"]
    )
@@ -326,7 +326,7 @@ else
     have_elementary_fb="no"
 fi
 if test "x$want_elementary_fb" = "xyes" -a "x$have_elementary_fb" = "xno"; then
-    AC_MSG_ERROR([ecore-fb support requested, but not found by pkg-config.])
+    AC_MSG_ERROR([ecore-fb support requested, but ecore-fb was not found by pkg-config.])
 fi
 
 have_elementary_psl1ght="no"
@@ -337,11 +337,11 @@ AC_ARG_ENABLE([ecore-psl1ght],
 
 if test "x$want_elementary_psl1ght" != "xno"; then
    PKG_CHECK_MODULES([ELEMENTARY_PSL1GHT],
-      [ecore-psl1ght >= 1.7.10],
+      [ecore-psl1ght >= ${efl_version}],
       [
        AC_DEFINE(HAVE_ELEMENTARY_PSL1GHT, 1, [PSL1GHT support for Elementary])
        have_elementary_psl1ght="yes"
-       requirement_elm="ecore-psl1ght >= 1.7.10 ${requirement_elm}"
+       requirement_elm="ecore-psl1ght >= ${efl_version} ${requirement_elm}"
       ],
       [have_elementary_psl1ght="no"]
    )
@@ -349,7 +349,7 @@ else
     have_elementary_psl1ght="no"
 fi
 if test "x$want_elementary_psl1ght" = "xyes" -a "x$have_elementary_psl1ght" = "xno"; then
-    AC_MSG_ERROR([ecore-psl1ght support requested, but not found by pkg-config.])
+    AC_MSG_ERROR([ecore-psl1ght support requested, but ecore-psl1ght was not found by pkg-config.])
 fi
 
 have_elementary_sdl="no"
@@ -360,11 +360,11 @@ AC_ARG_ENABLE([ecore-sdl],
 
 if test "x$want_elementary_sdl" != "xno"; then
    PKG_CHECK_MODULES([ELEMENTARY_SDL],
-      [ecore-sdl >= 1.7.10],
+      [ecore-sdl >= ${efl_version}],
       [
        AC_DEFINE(HAVE_ELEMENTARY_SDL, 1, [SDL support for Elementary])
        have_elementary_sdl="yes"
-       requirement_elm="ecore-sdl >= 1.7.10 ${requirement_elm}"
+       requirement_elm="ecore-sdl >= ${efl_version} ${requirement_elm}"
       ],
       [have_elementary_sdl="no"]
    )
@@ -372,7 +372,7 @@ else
     have_elementary_sdl="no"
 fi
 if test "x$want_elementary_sdl" = "xyes" -a "x$have_elementary_sdl" = "xno"; then
-    AC_MSG_ERROR([ecore-sdl support requested, but not found by pkg-config.])
+    AC_MSG_ERROR([ecore-sdl support requested, but ecore-sdl was not found by pkg-config.])
 fi
 
 have_elementary_cocoa="no"
@@ -383,11 +383,11 @@ AC_ARG_ENABLE([ecore-cocoa],
 
 if test "x$want_elementary_cocoa" != "xno"; then
    PKG_CHECK_MODULES([ELEMENTARY_COCOA],
-      [ecore-cocoa >= 1.7.10],
+      [ecore-cocoa >= ${efl_version}],
       [
        AC_DEFINE(HAVE_ELEMENTARY_COCOA, 1, [COCOA support for Elementary])
        have_elementary_cocoa="yes"
-       requirement_elm="ecore-cocoa >= 1.7.10 ${requirement_elm}"
+       requirement_elm="ecore-cocoa >= ${efl_version} ${requirement_elm}"
       ],
       [have_elementary_cocoa="no"]
    )
@@ -395,7 +395,7 @@ else
     have_elementary_cocoa="no"
 fi
 if test "x$want_elementary_cocoa" = "xyes" -a "x$have_elementary_cocoa" = "xno"; then
-    AC_MSG_ERROR([ecore-cocoa support requested, but not found by pkg-config.])
+    AC_MSG_ERROR([ecore-cocoa support requested, but ecore-cocoa was not found by pkg-config.])
 fi
 
 have_elementary_win32="no"
@@ -406,11 +406,11 @@ AC_ARG_ENABLE([ecore-win32],
 
 if test "x$want_elementary_win32" != "xno"; then
    PKG_CHECK_MODULES([ELEMENTARY_WIN32],
-      [ecore-win32 >= 1.7.10],
+      [ecore-win32 >= ${efl_version}],
       [
        AC_DEFINE(HAVE_ELEMENTARY_WIN32, 1, [Windows XP support for Elementary])
        have_elementary_win32="yes"
-       requirement_elm="ecore-win32 >= 1.7.10 ${requirement_elm}"
+       requirement_elm="ecore-win32 >= ${efl_version} ${requirement_elm}"
       ],
       [have_elementary_win32="no"]
    )
@@ -418,7 +418,7 @@ else
     have_elementary_win32="no"
 fi
 if test "x$want_elementary_win32" = "xyes" -a "x$have_elementary_win32" = "xno"; then
-    AC_MSG_ERROR([ecore-win32 support requested, but not found by pkg-config.])
+    AC_MSG_ERROR([ecore-win32 support requested, but ecore-win32 was not found by pkg-config.])
 fi
 
 have_elementary_wince="no"
@@ -429,11 +429,11 @@ AC_ARG_ENABLE([ecore-wince],
 
 if test "x$want_elementary_wince" != "xno"; then
    PKG_CHECK_MODULES([ELEMENTARY_WINCE],
-      [ecore-wince >= 1.7.10],
+      [ecore-wince >= ${efl_version}],
       [
        AC_DEFINE(HAVE_ELEMENTARY_WINCE, 1, [Windows CE support for Elementary])
        have_elementary_wince="yes"
-       requirement_elm="ecore-wince >= 1.7.10 ${requirement_elm}"
+       requirement_elm="ecore-wince >= ${efl_version} ${requirement_elm}"
       ],
       [have_elementary_wince="no"]
    )
@@ -441,7 +441,7 @@ else
     have_elementary_wince="no"
 fi
 if test "x$want_elementary_wince" = "xyes" -a "x$have_elementary_wince" = "xno"; then
-    AC_MSG_ERROR([ecore-wince support requested, but not found by pkg-config.])
+    AC_MSG_ERROR([ecore-wince support requested, but ecore-wince was not found by pkg-config.])
 fi
 
 have_elementary_wayland="no"
@@ -464,66 +464,36 @@ else
     have_elementary_wayland="no"
 fi
 if test "x$want_elementary_wayland" = "xyes" -a "x$have_elementary_wayland" = "xno"; then
-    AC_MSG_ERROR([ecore-wayland support requested, but not found by pkg-config.])
+    AC_MSG_ERROR([ecore-wayland support requested, but ecore-wayland was not found by pkg-config.])
 fi
 
-ELM_EDBUS_DEF="#undef"
-have_elementary_edbus="no"
-want_elementary_edbus="auto"
-AC_ARG_ENABLE([edbus],
-   [AC_HELP_STRING([--disable-edbus], [disable edbus support. @<:@default=detect@:>@])],
-   [want_elementary_edbus=$enableval], [])
+ELM_ELOCATION_DEF="#undef"
+have_elementary_elocation="no"
+want_elementary_elocation="auto"
+AC_ARG_ENABLE([elocation],
+   [AC_HELP_STRING([--disable-elocation], [disable elocation support. @<:@default=detect@:>@])],
+   [want_elementary_elocation=$enableval], [])
 
-if test "x$want_elementary_edbus" != "xno"; then
-    PKG_CHECK_MODULES([ELEMENTARY_EDBUS],
+if test "x$want_elementary_elocation" != "xno"; then
+    PKG_CHECK_MODULES([ELEMENTARY_ELOCATION],
        [
-        edbus >= 1.7.10
+        elocation >= 0.1.0
        ],
        [
-        AC_DEFINE(HAVE_ELEMENTARY_EDBUS, 1, [EDBus support for Elementary])
-        have_elementary_edbus="yes"
-        ELM_EDBUS_DEF="#define"
-        requirement_elm="edbus >= 1.7.10 ${requirement_elm}"
+        AC_DEFINE(HAVE_ELEMENTARY_ELOCATION, 1, [Elocation support for Elementary])
+        have_elementary_elocation="yes"
+        ELM_ELOCATION_DEF="#define"
+        requirement_elm="elocation >= 0.1.0 ${requirement_elm}"
        ],
-       [have_elementary_edbus="no"]
+       [have_elementary_elocation="no"]
     )
 else
-    have_elementary_edbus="no"
+    have_elementary_elocation="no"
 fi
-if test "x$want_elementary_edbus" = "xyes" -a "x$have_elementary_edbus" = "xno"; then
-    AC_MSG_ERROR([E_DBus support requested, but no e_dbus found by pkg-config.])
+if test "x$want_elementary_elocation" = "xyes" -a "x$have_elementary_elocation" = "xno"; then
+    AC_MSG_ERROR([elocation support requested, but elocation was not found by pkg-config.])
 fi
-AC_SUBST(ELM_EDBUS_DEF)
-
-ELM_EFREET_DEF="#undef"
-have_elementary_efreet="no"
-want_elementary_efreet="auto"
-AC_ARG_ENABLE([efreet],
-   [AC_HELP_STRING([--disable-efreet], [disable efreet support. @<:@default=detect@:>@])],
-   [want_elementary_efreet=$enableval], [])
-
-if test "x$want_elementary_efreet" != "xno"; then
-    PKG_CHECK_MODULES([ELEMENTARY_EFREET],
-       [
-        efreet >= 1.7.10
-        efreet-mime >= 1.7.10
-        efreet-trash >= 1.7.10
-       ],
-       [
-        AC_DEFINE(HAVE_ELEMENTARY_EFREET, 1, [Efreet support for Elementary])
-        have_elementary_efreet="yes"
-        ELM_EFREET_DEF="#define"
-        requirement_elm="efreet >= 1.7.10 efreet-mime >= 1.7.10 efreet-trash >= 1.7.10 ${requirement_elm}"
-       ],
-       [have_elementary_efreet="no"]
-    )
-else
-    have_elementary_efreet="no"
-fi
-if test "x$want_elementary_efreet" = "xyes" -a "x$have_elementary_efreet" = "xno"; then
-    AC_MSG_ERROR([Efreet support requested, but no efreet/efreet-mime/efreet-trash found by pkg-config.])
-fi
-AC_SUBST(ELM_EFREET_DEF)
+AC_SUBST(ELM_ELOCATION_DEF)
 
 ELM_EWEATHER_DEF="#undef"
 have_elementary_eweather="no"
@@ -549,7 +519,7 @@ else
     have_elementary_eweather="no"
 fi
 if test "x$want_elementary_eweather" = "xyes" -a "x$have_elementary_eweather" = "xno"; then
-    AC_MSG_ERROR([Eweather support requested, but no eweather found by pkg-config.])
+    AC_MSG_ERROR([Eweather support requested, but eweather was not found by pkg-config.])
 fi
 AC_SUBST(ELM_EWEATHER_DEF)
 
@@ -577,72 +547,61 @@ else
     have_elementary_emap="no"
 fi
 if test "x$want_elementary_emap" = "xyes" -a "x$have_elementary_emap" = "xno"; then
-    AC_MSG_ERROR([Emap support requested, but no emap found by pkg-config.])
+    AC_MSG_ERROR([Emap support requested, but emap was not found by pkg-config.])
 fi
 AC_SUBST(ELM_EMAP_DEF)
 
-
-
-ELM_ETHUMB_DEF="#undef"
-have_elementary_ethumb="no"
-want_elementary_ethumb="auto"
-AC_ARG_ENABLE([ethumb],
-   [AC_HELP_STRING([--disable-ethumb], [disable ethumb support. @<:@default=detect@:>@])],
-   [want_elementary_ethumb=$enableval], [])
-
-if test "x$want_elementary_ethumb" != "xno"; then
-    PKG_CHECK_MODULES([ELEMENTARY_ETHUMB],
-       [
-        ethumb_client
-       ],
-       [
-        AC_DEFINE(HAVE_ELEMENTARY_ETHUMB, 1, [Ethumb support for Elementary])
-        have_elementary_ethumb="yes"
-        ELM_ETHUMB_DEF="#define"
-        requirement_elm="ethumb_client ${requirement_elm}"
-       ],
-       [have_elementary_ethumb="no"]
-    )
-else
-    have_elementary_ethumb="no"
-fi
-if test "x$want_elementary_ethumb" = "xyes" -a "x$have_elementary_ethumb" = "xno"; then
-    AC_MSG_ERROR([Ethumb support requested, but no ethumb found by pkg-config.])
-fi
-AC_SUBST(ELM_ETHUMB_DEF)
-
 ELM_WEB_DEF="#undef"
-have_elementary_web="no"
-want_elementary_web="auto"
-AC_ARG_ENABLE([web],
-   [AC_HELP_STRING([--disable-web], [disable web (WebKit) support. @<:@default=detect@:>@])],
-   [want_elementary_web=$enableval], [])
 
-if test "x$want_elementary_web" != "xno"; then
+elementary_web_backend="detect"
+elementary_web="no"
+want_elementary_web=""
+AC_ARG_WITH([elementary-web-backend],
+   [AC_HELP_STRING([--with-elementary-web-backend=@<:@ewebkit/ewebkit2/detect/none@:>@], [Select the WebKit backend for Elementary to support web @<:@default=detect@:>@])],
+   [
+    elementary_web_backend=${withval}
+   ],
+   [elementary_web_backend="detect"])
+
+case "$elementary_web_backend" in
+    ewebkit|ewebkit2|detect|none) ;;
+    *) AC_MSG_ERROR([Invalid web backend: must be ewebkit, ewebkit2, detect or none]) ;;
+esac
+
+if test "x$elementary_web_backend" = "xdetect"; then
+    # FIXME : detect option should check both ewebkit and ewebkit2.
+    want_elementary_web="ewebkit"
+else
+    want_elementary_web=$elementary_web_backend
+fi
+
+if test "x$want_elementary_web" != "xnone"; then
     PKG_CHECK_MODULES([ELEMENTARY_WEB],
-       [
-        ewebkit
-       ],
+       [$want_elementary_web],
        [
         AC_DEFINE(HAVE_ELEMENTARY_WEB, 1, [Web support for Elementary])
-        webkit_datadir=$($PKG_CONFIG ewebkit --variable=datadir)
+        webkit_datadir=$($PKG_CONFIG $want_elementary_web --variable=datadir)
         AC_DEFINE_UNQUOTED(WEBKIT_DATADIR,
                            "$webkit_datadir",
                            "WebKit's data dir")
-        have_elementary_web="yes"
+        if test "x$elementary_web_backend" = "xewebkit2"; then
+            AC_DEFINE(USE_WEBKIT2, 1, [Use ewebkit2 as Elementary web backend])
+        fi
+
+        elementary_web=$want_elementary_web
         ELM_WEB_DEF="#define"
-## web_client? how about ewebkit? at least in current upstreak webkit
-## there is no web_client.pc        
-#        requirement_elm="web_client ${requirement_elm}"
-        requirement_elm="ewebkit ${requirement_elm}"
+        requirement_elm="${want_elementary_web} ${requirement_elm}"
        ],
-       [have_elementary_web="no"]
+       [elementary_web="no"]
     )
 else
-    have_elementary_web="no"
+    elementary_web="no"
 fi
-if test "x$want_elementary_web" = "xyes" -a "x$have_elementary_web" = "xno"; then
-    AC_MSG_ERROR([Web support requested, but no ewebkit found by pkg-config.])
+
+if test "x$elementary_web_backend" = "xewebkit" -o "x$elementary_web_backend" = "xewebkit2"; then
+    if test "x$elementary_web" = "xnone"; then
+        AC_MSG_ERROR([Web support requested, but no $elementary_web_backend found by pkg-config.])
+    fi
 fi
 AC_SUBST(ELM_WEB_DEF)
 
@@ -657,6 +616,17 @@ if test "x$want_elementary_debug" = "xyes"; then
         ELM_DEBUG_DEF="#define"
 fi
 AC_SUBST(ELM_DEBUG_DEF)
+
+AC_ARG_WITH([tests],
+   [AC_HELP_STRING([--with-tests=none|regular],
+                   [choose elementary testing method: regular or none.(coverage will be supported)@<:@default=none@:>@])],
+   [build_tests=${withval}],
+   [build_tests=none])
+
+if test "${build_tests}" = "regular"; then
+   PKG_CHECK_MODULES([CHECK], [check >= 0.9.5])
+fi
+AM_CONDITIONAL([ENABLE_ELEMENTARY_TESTS], [test "${build_tests}" = "regular"])
 
 ELM_ALLOCA_H_DEF="#undef"
 AC_CHECK_HEADER(alloca.h, [ELM_ALLOCA_H_DEF="#define"])
@@ -683,10 +653,14 @@ AC_SUBST(requirement_elm)
 
 EFL_WITH_BIN([eet], [eet-eet], [eet])
 EFL_WITH_BIN([edje], [edje-cc], [edje_cc])
+EFL_WITH_BIN([elementary], [elementary-codegen], [elementary_codegen])
+EFL_WITH_BIN([elementary], [elm-prefs-cc], [elm_prefs_cc])
 
 EFL_CHECK_DOXYGEN([build_doc="yes"], [build_doc="no"])
 
 EFL_ENABLE_BIN([elementary-test])
+EFL_ENABLE_BIN([elementary-codegen])
+EFL_ENABLE_BIN([elm-prefs-cc])
 EFL_ENABLE_BIN([elementary-config])
 
 m4_ifdef([AM_GNU_GETTEXT_VERSION], [
@@ -732,15 +706,7 @@ extern char **environ;
   AC_DEFINE(HAVE_ENVIRON, 1, [extern environ exists])
 ])
 
-AC_TRY_COMPILE([
-#include <stdlib.h>
-], [
-clearenv();
-], [
-  AC_DEFINE(HAVE_CLEARENV, 1, [extern environ exists])
-])
-
-AC_OUTPUT([
+AC_CONFIG_FILES([
 Makefile
 elementary.spec
 elementary.pc
@@ -752,12 +718,14 @@ src/lib/Makefile
 src/lib/Elementary.h
 src/bin/Makefile
 src/modules/Makefile
+src/modules/prefs/Makefile
 src/modules/access_output/Makefile
 src/modules/datetime_input_ctxpopup/Makefile
 src/modules/test_entry/Makefile
 src/modules/test_map/Makefile
 src/edje_externals/Makefile
 src/examples/Makefile
+src/tests/Makefile
 data/Makefile
 data/themes/Makefile
 data/images/Makefile
@@ -769,7 +737,12 @@ config/default/Makefile
 config/standard/Makefile
 config/mobile/Makefile
 $po_makefile_in
+cmakeconfig/ElementaryConfig.cmake
+cmakeconfig/ElementaryConfigVersion.cmake
+pkgbuild/PKGBUILD
 ])
+
+AC_OUTPUT
 
 #####################################################################
 ## Info
@@ -791,37 +764,36 @@ echo "    SDL....................: ${have_elementary_sdl}"
 echo "    Cocoa..................: ${have_elementary_cocoa}"
 echo "    Windows XP.............: ${have_elementary_win32}"
 echo "    Windows CE.............: ${have_elementary_wince}"
-echo "    Wayland...............:. ${have_elementary_wayland}"
+echo "    Wayland................: ${have_elementary_wayland}"
 echo
 echo "  Features:"
-echo "    Ecore_IMF..............: ${have_ecore_imf}"
-echo "    Ecore_Con..............: ${have_ecore_con}"
-echo "    EDBus..................: ${have_elementary_edbus}"
-echo "    EFreet.................: ${have_elementary_efreet}"
 echo "    EWeather...............: ${have_elementary_eweather}"
 echo "    EMap...................: ${have_elementary_emap}"
-echo "    Ethumb.................: ${have_elementary_ethumb}"
-echo "    Web (WebKit)...........: ${have_elementary_web}"
+echo "    Web (WebKit)...........: ${elementary_web}"
 echo "    Quick Launch...........: ${have_fork}"
-echo "    EIO....................: ${have_eio}"
-echo "    Emotion................: ${have_emotion}"
+echo "    Elocation..............: ${have_elementary_elocation}"
 echo
 echo "  eet......................: ${eet_eet}"
 echo "  edje_cc..................: ${edje_cc}"
 echo
 echo "  Build elementary_test....: ${have_elementary_test}"
+echo "  Build elementary_codegen.: ${have_elementary_codegen}"
+echo "  Build elm_prefs_cc.......: ${have_elm_prefs_cc}"
 echo "  Examples.................: ${enable_build_examples}"
 echo "  Examples installed.......: ${enable_install_examples}"
 echo "  Build elementary_config..: ${have_elementary_config}"
-echo "  Documentation............: ${build_doc}"
-if test "x${build_doc}" = "xyes" ; then
-echo "    Installation...........: make install-doc"
-fi
+echo "  Enable debug.............: ${want_elementary_debug}"
 echo
 echo "Compilation................: make (or gmake)"
 echo "  CPPFLAGS.................: $CPPFLAGS"
 echo "  CFLAGS...................: $CFLAGS"
 echo "  LDFLAGS..................: $LDFLAGS"
+echo
+if test "${build_tests}" = "none"; then
+echo "Tests......................: no"
+else
+echo "Tests......................: make check"
+fi
 echo
 echo "Installation...............: make install (as root if needed, with 'su' or 'sudo')"
 echo "  prefix...................: $prefix"

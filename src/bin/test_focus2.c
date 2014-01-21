@@ -2,10 +2,10 @@
 # include "elementary_config.h"
 #endif
 #include <Elementary.h>
-#ifndef ELM_LIB_QUICKLAUNCH
+
 
 static void
-_focus_in(void *data __UNUSED__, Evas *e __UNUSED__, void *event_info)
+_focus_in(void *data EINA_UNUSED, Evas *e EINA_UNUSED, void *event_info)
 {
    const char *type = evas_object_type_get(event_info);
    if ((type) && (!strcmp(type, "elm_widget")))
@@ -14,7 +14,7 @@ _focus_in(void *data __UNUSED__, Evas *e __UNUSED__, void *event_info)
 }
 
 static void
-_focus_out(void *data __UNUSED__, Evas *e __UNUSED__, void *event_info)
+_focus_out(void *data EINA_UNUSED, Evas *e EINA_UNUSED, void *event_info)
 {
    const char *type = evas_object_type_get(event_info);
    if ((type) && (!strcmp(type, "elm_widget")))
@@ -23,7 +23,7 @@ _focus_out(void *data __UNUSED__, Evas *e __UNUSED__, void *event_info)
 }
 
 static void
-_focus_obj(void *data, Evas_Object *o __UNUSED__, void *event_info __UNUSED__)
+_focus_obj(void *data, Evas_Object *o EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *newfocus = data;
    const char *type = evas_object_type_get(newfocus);
@@ -34,7 +34,7 @@ _focus_obj(void *data, Evas_Object *o __UNUSED__, void *event_info __UNUSED__)
 }
 
 static void
-_focus_layout_part(void *data, Evas_Object *o __UNUSED__, void *event_info __UNUSED__)
+_focus_layout_part(void *data, Evas_Object *o EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *ed = elm_layout_edje_get(data);
 
@@ -46,9 +46,9 @@ _focus_layout_part(void *data, Evas_Object *o __UNUSED__, void *event_info __UNU
 
 
 void
-test_focus2(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+test_focus2(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
-   Evas_Object *win, *bx, *ly, *bt, *en, *bt1;
+   Evas_Object *win, *bx, *ly, *bt, *en, *en1, *bt1, *bt2;
    char buf[PATH_MAX];
 
    win = elm_win_util_standard_add("focus2", "Focus 2");
@@ -63,8 +63,8 @@ test_focus2(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info
       _focus_out, NULL);
 
    bx = elm_box_add(win);
-   elm_win_resize_object_add(win, bx);
    evas_object_size_hint_weight_set(bx, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   elm_win_resize_object_add(win, bx);
    evas_object_show(bx);
 
 #define PARENT bx /* this is broken, but should work */
@@ -74,7 +74,7 @@ test_focus2(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info
    elm_entry_scrollable_set(en, EINA_TRUE);
    evas_object_size_hint_weight_set(en, EVAS_HINT_EXPAND, 0.0);
    evas_object_size_hint_align_set(en, EVAS_HINT_FILL, 0.5);
-   elm_entry_scrollbar_policy_set(en, ELM_SCROLLER_POLICY_OFF, ELM_SCROLLER_POLICY_OFF);
+   elm_scroller_policy_set(en, ELM_SCROLLER_POLICY_OFF, ELM_SCROLLER_POLICY_OFF);
    elm_object_text_set(en, "Entry that should get focus");
    elm_entry_single_line_set(en, EINA_TRUE);
    evas_object_show(en);
@@ -98,14 +98,14 @@ test_focus2(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info
    elm_object_text_set(bt, "Button 1");
    elm_object_part_content_set(ly, "element1", bt);
 
-   en = elm_entry_add(ly);
-   elm_entry_scrollable_set(en, EINA_TRUE);
-   evas_object_size_hint_weight_set(en, EVAS_HINT_EXPAND, 0.0);
-   evas_object_size_hint_align_set(en, EVAS_HINT_FILL, 0.5);
-   elm_entry_scrollbar_policy_set(en, ELM_SCROLLER_POLICY_OFF, ELM_SCROLLER_POLICY_OFF);
-   elm_object_text_set(en, "Scrolled Entry that should get focus");
-   elm_entry_single_line_set(en, EINA_TRUE);
-   elm_object_part_content_set(ly, "element2", en);
+   en1 = elm_entry_add(ly);
+   elm_entry_scrollable_set(en1, EINA_TRUE);
+   evas_object_size_hint_weight_set(en1, EVAS_HINT_EXPAND, 0.0);
+   evas_object_size_hint_align_set(en1, EVAS_HINT_FILL, 0.5);
+   elm_scroller_policy_set(en1, ELM_SCROLLER_POLICY_OFF, ELM_SCROLLER_POLICY_OFF);
+   elm_object_text_set(en1, "Scrolled Entry that should get focus");
+   elm_entry_single_line_set(en1, EINA_TRUE);
+   elm_object_part_content_set(ly, "element2", en1);
 
    bt = elm_button_add(ly);
    elm_object_text_set(bt, "Button 2");
@@ -114,36 +114,37 @@ test_focus2(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info
    bt = elm_button_add(PARENT);
    elm_object_text_set(bt, "Give focus to layout");
    evas_object_smart_callback_add(bt, "clicked", _focus_obj, ly);
-   evas_object_size_hint_weight_set(en, EVAS_HINT_EXPAND, 0.0);
-   evas_object_size_hint_align_set(en, EVAS_HINT_FILL, 0.5);
+   evas_object_size_hint_weight_set(bt, EVAS_HINT_EXPAND, 0.0);
+   evas_object_size_hint_align_set(bt, EVAS_HINT_FILL, 0.5);
    elm_box_pack_end(bx, bt);
    evas_object_show(bt);
 
    bt = elm_button_add(PARENT);
    elm_object_text_set(bt, "Give focus to layout part");
    evas_object_smart_callback_add(bt, "clicked", _focus_layout_part, ly);
-   evas_object_size_hint_weight_set(en, EVAS_HINT_EXPAND, 0.0);
-   evas_object_size_hint_align_set(en, EVAS_HINT_FILL, 0.5);
+   evas_object_size_hint_weight_set(bt, EVAS_HINT_EXPAND, 0.0);
+   evas_object_size_hint_align_set(bt, EVAS_HINT_FILL, 0.5);
    elm_box_pack_end(bx, bt);
    evas_object_show(bt);
 
    bt = elm_button_add(PARENT);
    elm_object_text_set(bt, "Give focus to layout 'Button 1'");
    evas_object_smart_callback_add(bt, "clicked", _focus_obj, bt1);
-   evas_object_size_hint_weight_set(en, EVAS_HINT_EXPAND, 0.0);
-   evas_object_size_hint_align_set(en, EVAS_HINT_FILL, 0.5);
+   evas_object_size_hint_weight_set(bt, EVAS_HINT_EXPAND, 0.0);
+   evas_object_size_hint_align_set(bt, EVAS_HINT_FILL, 0.5);
    elm_box_pack_end(bx, bt);
    evas_object_show(bt);
 
-   bt = elm_button_add(PARENT);
-   elm_object_text_set(bt, "Give focus to layout 'Entry'");
-   evas_object_smart_callback_add(bt, "clicked", _focus_obj, en);
-   evas_object_size_hint_weight_set(en, EVAS_HINT_EXPAND, 0.0);
-   evas_object_size_hint_align_set(en, EVAS_HINT_FILL, 0.5);
-   elm_box_pack_end(bx, bt);
-   evas_object_show(bt);
+   bt2 = elm_button_add(PARENT);
+   elm_object_text_set(bt2, "Give focus to layout 'Entry'");
+   evas_object_smart_callback_add(bt2, "clicked", _focus_obj, en);
+   evas_object_size_hint_weight_set(bt2, EVAS_HINT_EXPAND, 0.0);
+   evas_object_size_hint_align_set(bt2, EVAS_HINT_FILL, 0.5);
+   elm_box_pack_end(bx, bt2);
+   evas_object_show(bt2);
+
+   elm_object_focus_next_object_set(bt2, en, ELM_FOCUS_DOWN);
 
    evas_object_resize(win, 400, 400);
    evas_object_show(win);
 }
-#endif

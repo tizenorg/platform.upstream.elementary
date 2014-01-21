@@ -12,39 +12,32 @@
 #include <Elementary.h>
 
 static void
-_on_done(void *data,
-        Evas_Object *obj,
-        void *event_info)
-{
-   elm_exit();
-}
-
-static double size = 0.0;
-
-static void
 _press(void *data, Evas_Object *obj, void *event_info)
 {
-    printf("Pressed\n");
+   printf("Pressed\n");
 }
 
 static void
 _unpress(void *data, Evas_Object *obj, void *event_info)
 {
-    printf("Unpressed, size : %f\n", elm_panes_content_left_size_get(obj));
+   printf("Unpressed, size : %f\n", elm_panes_content_left_size_get(obj));
 }
 
 static void
 _clicked(void *data, Evas_Object *obj, void *event_info)
 {
-    printf("Clicked\n");
+   printf("Clicked\n");
 }
 
 static void
 _clicked_double(void *data, Evas_Object *obj, void *event_info)
 {
-   if (elm_panes_content_left_size_get(obj) > 0)
+   static double size = 0.0;
+   double tmp_size = 0.0;
+
+   tmp_size = elm_panes_content_left_size_get(obj);
+   if (tmp_size > 0)
      {
-        size = elm_panes_content_left_size_get(obj);
         elm_panes_content_left_size_set(obj, 0.0);
         printf("Double clicked, hidding.\n");
      }
@@ -53,27 +46,23 @@ _clicked_double(void *data, Evas_Object *obj, void *event_info)
         elm_panes_content_left_size_set(obj, size);
         printf("Double clicked, restoring size.\n");
      }
+   size = tmp_size;
 }
 
 EAPI_MAIN int
 elm_main(int argc, char **argv)
 {
-   Evas_Object *win, *bg, *panes, *panes_h, *bt;
+   Evas_Object *win, *panes, *panes_h, *bt;
 
-   win = elm_win_add(NULL, "panes", ELM_WIN_BASIC);
-   elm_win_title_set(win, "Panes Example");
-   evas_object_smart_callback_add(win, "delete,request", _on_done, NULL);
+   elm_policy_set(ELM_POLICY_QUIT, ELM_POLICY_QUIT_LAST_WINDOW_CLOSED);
 
-   bg = elm_bg_add(win);
-   elm_win_resize_object_add(win, bg);
-   evas_object_size_hint_weight_set(bg, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   win = elm_win_util_standard_add("panes", "Panes Example");
+   elm_win_autodel_set(win, EINA_TRUE);
    elm_win_focus_highlight_enabled_set(win, EINA_TRUE);
-   evas_object_show(bg);
 
    panes = elm_panes_add(win);
-   elm_win_resize_object_add(win, panes);
    evas_object_size_hint_weight_set(panes, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-   evas_object_size_hint_align_set(panes, EVAS_HINT_FILL, EVAS_HINT_FILL);
+   elm_win_resize_object_add(win, panes);
    evas_object_show(panes);
 
    bt = elm_button_add(win);

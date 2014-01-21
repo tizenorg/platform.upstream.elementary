@@ -2,7 +2,7 @@
 #include "elementary_config.h"
 #endif
 #include <Elementary.h>
-#ifndef ELM_LIB_QUICKLAUNCH
+
 
 /* We zoom out to this value so we'll be able to use map and have a nice
  * resolution when zooming in. */
@@ -132,7 +132,7 @@ apply_changes(Photo_Object *po)
 
 /* Zoom momentum animation */
 static void
-zoom_momentum_animation_operation(void *_po, Elm_Transit *transit __UNUSED__,
+zoom_momentum_animation_operation(void *_po, Elm_Transit *transit EINA_UNUSED,
       double progress)
 {
    Photo_Object *po = (Photo_Object *) _po;
@@ -157,7 +157,7 @@ zoom_momentum_animation_operation(void *_po, Elm_Transit *transit __UNUSED__,
 }
 
 static void
-zoom_momentum_animation_end(void *_po, Elm_Transit *transit __UNUSED__)
+zoom_momentum_animation_end(void *_po, Elm_Transit *transit EINA_UNUSED)
 {
    Photo_Object *po = (Photo_Object *) _po;
    po->base_zoom = po->zoom;
@@ -452,8 +452,8 @@ momentum_abort(void *_po, void *event_info)
 }
 
 static void
-_win_del_req(void *data, Evas_Object *obj __UNUSED__,
-      void *event_info __UNUSED__)
+_win_del_req(void *data, Evas_Object *obj EINA_UNUSED,
+      void *event_info EINA_UNUSED)
 {
    Photo_Object **photo_array = (Photo_Object **) data;
 
@@ -553,8 +553,8 @@ photo_object_add(Evas_Object *parent, Evas_Object *ic, const char *icon,
 }
 
 void
-test_gesture_layer3(void *data __UNUSED__, Evas_Object *obj __UNUSED__,
-      void *event_info __UNUSED__)
+test_gesture_layer3(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED,
+      void *event_info EINA_UNUSED)
 {
    Evas_Coord w, h;
    Evas_Object *win, *bg;
@@ -586,4 +586,3 @@ test_gesture_layer3(void *data __UNUSED__, Evas_Object *obj __UNUSED__,
          photo_array);
    evas_object_show(win);
 }
-#endif

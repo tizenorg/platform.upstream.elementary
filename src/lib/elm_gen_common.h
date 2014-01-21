@@ -36,10 +36,10 @@ struct Elm_Gen_Item
    Elm_Gen_Item             *parent;
    Eina_List                *texts, *contents, *states, *content_objs;
    Ecore_Timer              *long_timer;
-   int                       relcount;
    int                       walking;
    int                       generation; /**< a generation of an item. when the item is created, this value is set to the value of genlist generation. this value will be decreased when the item is going to be deleted */
    const char               *mouse_cursor;
+   Eina_List                *item_focus_chain;
 
    struct
    {
@@ -48,8 +48,9 @@ struct Elm_Gen_Item
    } func;
 
    Elm_Gen_Item_Tooltip      tooltip;
-   Ecore_Cb                  del_cb, sel_cb, highlight_cb;
-   Ecore_Cb                  unsel_cb, unhighlight_cb, unrealize_cb;
+   Ecore_Cb                  del_cb, unrealize_cb;
+   Ecore_Cb                  sel_cb, unsel_cb;
+   Ecore_Cb                  highlight_cb, unhighlight_cb;
 
    int                       position;
    Elm_Object_Select_Mode    select_mode;

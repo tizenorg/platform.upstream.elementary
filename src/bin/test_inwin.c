@@ -3,7 +3,7 @@
 # include "elementary_config.h"
 #endif
 #include <Elementary.h>
-#ifndef ELM_LIB_QUICKLAUNCH
+
 struct _api_data
 {
    unsigned int state;  /* What state we are testing       */
@@ -38,7 +38,7 @@ set_api_state(api_data *api)
 }
 
 static void
-_api_bt_clicked(void *data, Evas_Object *obj, void *event_info __UNUSED__)
+_api_bt_clicked(void *data, Evas_Object *obj, void *event_info EINA_UNUSED)
 {  /* Will add here a SWITCH command containing code to modify test-object */
    /* in accordance a->state value. */
    api_data *a = data;
@@ -53,13 +53,13 @@ _api_bt_clicked(void *data, Evas_Object *obj, void *event_info __UNUSED__)
 }
 
 static void
-_cleanup_cb(void *data, Evas *e __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+_cleanup_cb(void *data, Evas *e EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    free(data);
 }
 
 void
-test_inwin(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+test_inwin(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *win, *inwin, *lb, *bxx, *bt;
    api_data *api = calloc(1, sizeof(api_data));
@@ -85,11 +85,11 @@ test_inwin(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info 
 
    lb = elm_label_add(win);
    elm_object_text_set(lb,
-		       "This is an \"inwin\" - a window in a<br/>"
-		       "window. This is handy for quick popups<br/>"
-		       "you want centered, taking over the window<br/>"
-		       "until dismissed somehow. Unlike hovers they<br/>"
-		       "don't hover over their target.");
+                       "This is an \"inwin\" - a window in a<br/>"
+                       "window. This is handy for quick popups<br/>"
+                       "you want centered, taking over the window<br/>"
+                       "until dismissed somehow. Unlike hovers they<br/>"
+                       "don't hover over their target.");
    elm_box_pack_end(bxx, lb);
    elm_win_inwin_content_set(inwin, bxx);
    evas_object_show(lb);
@@ -99,7 +99,7 @@ test_inwin(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info 
 }
 
 void
-test_inwin2(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+test_inwin2(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *win, *inwin, *lb;
 
@@ -112,18 +112,18 @@ test_inwin2(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info
 
    lb = elm_label_add(win);
    elm_object_text_set(lb,
-		       "This is an \"inwin\" - a window in a<br/>"
-		       "window. This is handy for quick popups<br/>"
-		       "you want centered, taking over the window<br/>"
-		       "until dismissed somehow. Unlike hovers they<br/>"
-		       "don't hover over their target.<br/>"
-		       "<br/>"
-		       "This inwin style compacts itself vertically<br/>"
-		       "to the size of its contents minimum size.");
+                       "This is an \"inwin\" - a window in a<br/>"
+                       "window. This is handy for quick popups<br/>"
+                       "you want centered, taking over the window<br/>"
+                       "until dismissed somehow. Unlike hovers they<br/>"
+                       "don't hover over their target.<br/>"
+                       "<br/>"
+                       "This \"minimal_vertical\" inwin style compacts<br/>"
+                       "itself vertically to the size of its contents<br/> "
+                       "minimum size.");
    elm_win_inwin_content_set(inwin, lb);
    evas_object_show(lb);
 
    evas_object_resize(win, 320, 240);
    evas_object_show(win);
 }
-#endif

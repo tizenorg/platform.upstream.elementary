@@ -12,25 +12,17 @@
 #include <Elementary.h>
 
 static void
-_on_done(void *data,
-        Evas_Object *obj,
-        void *event_info)
-{
-   elm_exit();
-}
-
-static void
 _changed_cb(void *data, Evas_Object *obj, void *event_info)
 {
-    double val = elm_slider_value_get(obj);
-    printf("Changed to %1.2f\n", val);
+   double val = elm_slider_value_get(obj);
+   printf("Changed to %1.2f\n", val);
 }
 
 static void
 _delay_changed_cb(void *data, Evas_Object *obj, void *event_info)
 {
-    double val = elm_slider_value_get(obj);
-    printf("Delay changed to %1.2f\n", val);
+   double val = elm_slider_value_get(obj);
+   printf("Delay changed to %1.2f\n", val);
 }
 
 static char*
@@ -50,16 +42,12 @@ _indicator_free(char *str)
 EAPI_MAIN int
 elm_main(int argc, char **argv)
 {
-   Evas_Object *win, *bg, *bx, *sl, *ic;
+   Evas_Object *win, *bx, *sl, *ic;
 
-   win = elm_win_add(NULL, "slider", ELM_WIN_BASIC);
-   elm_win_title_set(win, "Slider Example");
-   evas_object_smart_callback_add(win, "delete,request", _on_done, NULL);
+   elm_policy_set(ELM_POLICY_QUIT, ELM_POLICY_QUIT_LAST_WINDOW_CLOSED);
 
-   bg = elm_bg_add(win);
-   elm_win_resize_object_add(win, bg);
-   evas_object_size_hint_weight_set(bg, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-   evas_object_show(bg);
+   win = elm_win_util_standard_add("slider", "Slider Example");
+   elm_win_autodel_set(win, EINA_TRUE);
 
    bx = elm_box_add(win);
    evas_object_size_hint_weight_set(bx, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);

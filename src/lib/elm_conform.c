@@ -1,6 +1,18 @@
+#ifdef HAVE_CONFIG_H
+# include "elementary_config.h"
+#endif
+
 #include <Elementary.h>
 #include "elm_priv.h"
 #include "elm_widget_conform.h"
+#include "elm_widget_layout.h"
+
+EAPI Eo_Op ELM_OBJ_CONFORMANT_BASE_ID = EO_NOOP;
+
+#define MY_CLASS ELM_OBJ_CONFORMANT_CLASS
+
+#define MY_CLASS_NAME "Elm_Conformant"
+#define MY_CLASS_NAME_LEGACY "elm_conformant"
 
 #ifndef MIN
 # define MIN(a, b) ((a) < (b)) ? (a) : (b)
@@ -10,23 +22,37 @@
 # define MAX(a, b) ((a) < (b)) ? (b) : (a)
 #endif
 
-EAPI const char ELM_CONFORMANT_SMART_NAME[] = "elm_conformant";
+static char CONFORMANT_KEY[] = "_elm_conform_key";
 
 #ifdef HAVE_ELEMENTARY_X
 #define SUB_TYPE_COUNT 2
-/* FIXME: change the smart names once those two are ported to new classes */
-static char *sub_type[SUB_TYPE_COUNT] = { "scroller", "genlist" };
+static char *sub_type[SUB_TYPE_COUNT] = { "elm_scroller", "elm_genlist" };
 #endif
+
+
+static const char INDICATOR_PART[] = "elm.swallow.indicator";
+static const char VIRTUALKEYPAD_PART[] = "elm.swallow.virtualkeypad";
+static const char CLIPBOARD_PART[] = "elm.swallow.clipboard";
+static const char SOFTKEY_PART[] = "elm.swallow.softkey";
+
+static const char SIG_VIRTUALKEYPAD_STATE_ON[] = "virtualkeypad,state,on";
+static const char SIG_VIRTUALKEYPAD_STATE_OFF[] = "virtualkeypad,state,off";
+static const char SIG_CLIPBOARD_STATE_ON[] = "clipboard,state,on";
+static const char SIG_CLIPBOARD_STATE_OFF[] = "clipboard,state,off";
+
+static const Evas_Smart_Cb_Description _smart_callbacks[] = {
+   {SIG_VIRTUALKEYPAD_STATE_ON, ""},
+   {SIG_VIRTUALKEYPAD_STATE_OFF, ""},
+   {SIG_CLIPBOARD_STATE_ON, ""},
+   {SIG_CLIPBOARD_STATE_OFF, ""},
+   {NULL, NULL}
+};
 
 static const Elm_Layout_Part_Alias_Description _content_aliases[] =
 {
    {"icon", "elm.swallow.content"},
    {NULL, NULL}
 };
-
-EVAS_SMART_SUBCLASS_NEW
-  (ELM_CONFORMANT_SMART_NAME, _elm_conformant, Elm_Conformant_Smart_Class,
-  Elm_Layout_Smart_Class, elm_layout_smart_class_get, NULL);
 
 /* Example of env vars:
  * ILLUME_KBD="0, 0, 800, 301"
@@ -106,9 +132,9 @@ _conformant_part_sizing_eval(Evas_Object *obj,
 #ifdef HAVE_ELEMENTARY_X
    Ecore_X_Window zone = 0;
    Evas_Object *top;
+   Ecore_X_Window xwin;
 #endif
    int sx = -1, sy = -1, sw = -1, sh = -1;
-   Ecore_X_Window xwin;
 
    ELM_CONFORMANT_DATA_GET(obj, sd);
 
@@ -122,69 +148,78 @@ _conformant_part_sizing_eval(Evas_Object *obj,
 
    if (part_type & ELM_CONFORMANT_INDICATOR_PART)
      {
+#ifdef HAVE_ELEMENTARY_X
         if ((!_conformant_part_geometry_get_from_env
                ("ILLUME_IND", &sx, &sy, &sw, &sh)) && (xwin))
           {
-#ifdef HAVE_ELEMENTARY_X
              //No information of the indicator geometry, reset the geometry.
-             if (!ecore_x_e_illume_indicator_geometry_get
-                   (zone, &sx, &sy, &sw, &sh))
+             if ((!zone) ||
+                 (!ecore_x_e_illume_indicator_geometry_get
+                   (zone, &sx, &sy, &sw, &sh)))
                sx = sy = sw = sh = 0;
-#else
-             ;
-#endif
           }
-        _conformant_part_size_hints_set(obj, sd->indicator, sx, sy, sw, sh);
+#endif
+        if (((sd->rot == 90) || (sd->rot == 270)) && sd->landscape_indicator)
+          _conformant_part_size_hints_set(obj, sd->landscape_indicator, sx, sy, sw, sh);
+        else if (((sd->rot == 0) || (sd->rot == 180)) && sd->portrait_indicator)
+          _conformant_part_size_hints_set(obj, sd->portrait_indicator, sx, sy, sw, sh);
      }
 
    if (part_type & ELM_CONFORMANT_VIRTUAL_KEYPAD_PART)
      {
+#ifdef HAVE_ELEMENTARY_X
         if ((!_conformant_part_geometry_get_from_env
                ("ILLUME_KBD", &sx, &sy, &sw, &sh)) && (xwin))
           {
-#ifdef HAVE_ELEMENTARY_X
              //No information of the keyboard geometry, reset the geometry.
-             if (!ecore_x_e_illume_keyboard_geometry_get
-                   (zone, &sx, &sy, &sw, &sh))
-               sx = sy = sw = sh = 0;
-#else
-             ;
+#ifdef __linux__
+             DBG("[KEYPAD]:pid=%d, xwin=0x%x, zone=0x%x: no env value and check window property.", getpid(), xwin, zone);
 #endif
+             if (!ecore_x_e_illume_keyboard_geometry_get(xwin, &sx, &sy, &sw, &sh))
+               {
+                  DBG("[KEYPAD]:no window property, check zone property.");
+                  if ((!zone) ||
+                      (!ecore_x_e_illume_keyboard_geometry_get(zone, &sx, &sy, &sw, &sh)))
+                    {
+                       DBG("[KEYPAD]:no zone property, reset value.");
+                       sx = sy = sw = sh = 0;
+                    }
+               }
           }
+#endif
+        DBG("[KEYPAD]: size(%d,%d, %dx%d).", sx, sy, sw, sh);
         _conformant_part_size_hints_set
           (obj, sd->virtualkeypad, sx, sy, sw, sh);
      }
 
    if (part_type & ELM_CONFORMANT_SOFTKEY_PART)
      {
+#ifdef HAVE_ELEMENTARY_X
         if ((!_conformant_part_geometry_get_from_env
                ("ILLUME_STK", &sx, &sy, &sw, &sh)) && (xwin))
           {
-#ifdef HAVE_ELEMENTARY_X
              //No information of the softkey geometry, reset the geometry.
-             if (!ecore_x_e_illume_softkey_geometry_get
-                   (zone, &sx, &sy, &sw, &sh))
+             if ((!zone) ||
+                 (!ecore_x_e_illume_softkey_geometry_get
+                     (zone, &sx, &sy, &sw, &sh)))
                sx = sy = sw = sh = 0;
-#else
-             ;
-#endif
           }
+#endif
         _conformant_part_size_hints_set(obj, sd->softkey, sx, sy, sw, sh);
      }
    if (part_type & ELM_CONFORMANT_CLIPBOARD_PART)
      {
+#ifdef HAVE_ELEMENTARY_X
         if ((!_conformant_part_geometry_get_from_env
                ("ILLUME_CB", &sx, &sy, &sw, &sh)) && (xwin))
           {
-#ifdef HAVE_ELEMENTARY_X
              //No information of the clipboard geometry, reset the geometry.
-             if (!ecore_x_e_illume_clipboard_geometry_get
-                   (zone, &sx, &sy, &sw, &sh))
+             if ((!zone) ||
+                 (!ecore_x_e_illume_clipboard_geometry_get
+                   (zone, &sx, &sy, &sw, &sh)))
                sx = sy = sw = sh = 0;
-#else
-             ;
-#endif
           }
+#endif
         _conformant_part_size_hints_set(obj, sd->clipboard, sx, sy, sw, sh);
      }
 }
@@ -193,77 +228,370 @@ static void
 _conformant_parts_swallow(Evas_Object *obj)
 {
    Evas *e;
-
    ELM_CONFORMANT_DATA_GET(obj, sd);
-
+   ELM_WIDGET_DATA_GET_OR_RETURN(obj, wd);
    e = evas_object_evas_get(obj);
 
    sd->scroller = NULL;
 
-   //Indicator
-   if (!sd->indicator)
-     {
-        sd->indicator = evas_object_rectangle_add(e);
-        evas_object_size_hint_min_set(sd->indicator, -1, 0);
-        evas_object_size_hint_max_set(sd->indicator, -1, 0);
-     }
-   else
-     _conformant_part_sizing_eval(obj, ELM_CONFORMANT_INDICATOR_PART);
-
-   evas_object_color_set(sd->indicator, 0, 0, 0, 0);
-   elm_layout_content_set(obj, "elm.swallow.indicator", sd->indicator);
-
    //Virtual Keyboard
-   if (!sd->virtualkeypad)
+   if (edje_object_part_exists(wd->resize_obj, VIRTUALKEYPAD_PART))
      {
-        sd->virtualkeypad = evas_object_rectangle_add(e);
-        elm_widget_sub_object_add(obj, sd->virtualkeypad);
-        evas_object_size_hint_max_set(sd->virtualkeypad, -1, 0);
+        if (!sd->virtualkeypad)
+          {
+             sd->virtualkeypad = evas_object_rectangle_add(e);
+             elm_widget_sub_object_add(obj, sd->virtualkeypad);
+             evas_object_size_hint_max_set(sd->virtualkeypad, -1, 0);
+          }
+        else
+          _conformant_part_sizing_eval(obj, ELM_CONFORMANT_VIRTUAL_KEYPAD_PART);
+
+        evas_object_color_set(sd->virtualkeypad, 0, 0, 0, 0);
+        elm_layout_content_set(obj, VIRTUALKEYPAD_PART, sd->virtualkeypad);
      }
    else
-     _conformant_part_sizing_eval(obj, ELM_CONFORMANT_VIRTUAL_KEYPAD_PART);
-
-   evas_object_color_set(sd->virtualkeypad, 0, 0, 0, 0);
-   elm_layout_content_set(obj, "elm.swallow.virtualkeypad", sd->virtualkeypad);
+     ELM_SAFE_FREE(sd->virtualkeypad, evas_object_del);
 
    //Clipboard
-   if (!sd->clipboard)
+   if (edje_object_part_exists(wd->resize_obj, CLIPBOARD_PART))
      {
-        sd->clipboard = evas_object_rectangle_add(e);
-        evas_object_size_hint_min_set(sd->clipboard, -1, 0);
-        evas_object_size_hint_max_set(sd->clipboard, -1, 0);
+        if (!sd->clipboard)
+          {
+             sd->clipboard = evas_object_rectangle_add(e);
+             evas_object_size_hint_min_set(sd->clipboard, -1, 0);
+             evas_object_size_hint_max_set(sd->clipboard, -1, 0);
+          }
+        else
+          _conformant_part_sizing_eval(obj, ELM_CONFORMANT_CLIPBOARD_PART);
+
+        evas_object_color_set(sd->clipboard, 0, 0, 0, 0);
+        elm_layout_content_set(obj, CLIPBOARD_PART, sd->clipboard);
      }
    else
-     _conformant_part_sizing_eval(obj, ELM_CONFORMANT_CLIPBOARD_PART);
-
-   evas_object_color_set(sd->clipboard, 0, 0, 0, 0);
-   elm_layout_content_set(obj, "elm.swallow.clipboard", sd->clipboard);
+     ELM_SAFE_FREE(sd->clipboard, evas_object_del);
 
    //Softkey
-   if (!sd->softkey)
+   if (edje_object_part_exists(wd->resize_obj, SOFTKEY_PART))
      {
-        sd->softkey = evas_object_rectangle_add(e);
-        evas_object_size_hint_min_set(sd->softkey, -1, 0);
-        evas_object_size_hint_max_set(sd->softkey, -1, 0);
+        if (!sd->softkey)
+          {
+             sd->softkey = evas_object_rectangle_add(e);
+             evas_object_size_hint_min_set(sd->softkey, -1, 0);
+             evas_object_size_hint_max_set(sd->softkey, -1, 0);
+          }
+        else
+          _conformant_part_sizing_eval(obj, ELM_CONFORMANT_SOFTKEY_PART);
+
+        evas_object_color_set(sd->softkey, 0, 0, 0, 0);
+        elm_layout_content_set(obj, SOFTKEY_PART, sd->softkey);
      }
    else
-     _conformant_part_sizing_eval(obj, ELM_CONFORMANT_SOFTKEY_PART);
-
-   evas_object_color_set(sd->softkey, 0, 0, 0, 0);
-   elm_layout_content_set(obj, "elm.swallow.softkey", sd->softkey);
+     ELM_SAFE_FREE(sd->softkey, evas_object_del);
 }
 
 static Eina_Bool
-_elm_conformant_smart_theme(Evas_Object *obj)
+_port_indicator_connect_cb(void *data)
 {
-   if (!ELM_WIDGET_CLASS(_elm_conformant_parent_sc)->theme(obj))
-     return EINA_FALSE;
+   const char   *indicator_serv_name;
+   ELM_CONFORMANT_DATA_GET(data, sd);
+   int rot;
+
+   if (!sd) return ECORE_CALLBACK_CANCEL;
+   if (sd->indmode != ELM_WIN_INDICATOR_SHOW)
+     {
+        sd->port_indi_timer = NULL;
+        return ECORE_CALLBACK_CANCEL;
+     }
+   rot = (intptr_t) evas_object_data_get(sd->portrait_indicator, CONFORMANT_KEY);
+   indicator_serv_name = elm_config_indicator_service_get(rot);
+   if (!indicator_serv_name)
+     {
+        DBG("Conformant cannot find indicator service name: Rotation=%d\n",rot);
+        sd->port_indi_timer = NULL;
+        return ECORE_CALLBACK_CANCEL;
+     }
+   if (elm_plug_connect(sd->portrait_indicator, indicator_serv_name, 0, EINA_FALSE))
+     {
+        DBG("Conformant connect to server[%s]\n", indicator_serv_name);
+        sd->port_indi_timer = NULL;
+        return ECORE_CALLBACK_CANCEL;
+     }
+   return ECORE_CALLBACK_RENEW;
+}
+
+
+static Eina_Bool
+_land_indicator_connect_cb(void *data)
+{
+   const char   *indicator_serv_name;
+   ELM_CONFORMANT_DATA_GET(data, sd);
+   int rot;
+
+   if (!sd) return ECORE_CALLBACK_CANCEL;
+   if (sd->indmode != ELM_WIN_INDICATOR_SHOW)
+     {
+        sd->land_indi_timer = NULL;
+        return ECORE_CALLBACK_CANCEL;
+     }
+   rot = (intptr_t) evas_object_data_get(sd->landscape_indicator, CONFORMANT_KEY);
+   indicator_serv_name = elm_config_indicator_service_get(rot);
+   if (!indicator_serv_name)
+     {
+        DBG("Conformant cannot find indicator service name: Rotation=%d\n",rot);
+        sd->land_indi_timer = NULL;
+        return ECORE_CALLBACK_CANCEL;
+     }
+   if (elm_plug_connect(sd->landscape_indicator, indicator_serv_name, 0, EINA_FALSE))
+     {
+        DBG("Conformant connect to server[%s]\n", indicator_serv_name);
+        sd->land_indi_timer = NULL;
+        return ECORE_CALLBACK_CANCEL;
+     }
+   return ECORE_CALLBACK_RENEW;
+}
+
+static void
+_land_indicator_disconnected(void *data,
+                             Evas_Object *obj __UNUSED__,
+                             void *event_info __UNUSED__)
+{
+   Evas_Object *conform = data;
+
+   ELM_CONFORMANT_DATA_GET(conform, sd);
+
+   sd->land_indi_timer = ecore_timer_add(1, _land_indicator_connect_cb, conform);
+}
+
+static void
+_port_indicator_disconnected(void *data,
+                             Evas_Object *obj __UNUSED__,
+                             void *event_info __UNUSED__)
+{
+   Evas_Object *conform = data;
+
+   ELM_CONFORMANT_DATA_GET(conform, sd);
+
+   sd->port_indi_timer = ecore_timer_add(1, _port_indicator_connect_cb, conform);
+}
+
+
+static Evas_Object *
+_create_portrait_indicator(Evas_Object *obj)
+{
+   Evas_Object *port_indicator = NULL;
+   const char *port_indicator_serv_name;
+
+   ELM_CONFORMANT_DATA_GET(obj, sd);
+
+   port_indicator_serv_name = elm_config_indicator_service_get(sd->rot);
+   if (!port_indicator_serv_name)
+     {
+        DBG("Conformant cannot get portrait indicator service name\n");
+        return NULL;
+     }
+
+   port_indicator = elm_plug_add(obj);
+   if (!port_indicator)
+     {
+        DBG("Conformant cannot create plug to server[%s]\n", port_indicator_serv_name);
+        return NULL;
+     }
+
+   if (!elm_plug_connect(port_indicator, port_indicator_serv_name, 0, EINA_FALSE))
+     {
+        DBG("Conformant cannot connect to server[%s]\n", port_indicator_serv_name);
+        return NULL;
+     }
+
+   elm_widget_sub_object_add(obj, port_indicator);
+   evas_object_smart_callback_add(port_indicator, "image.deleted", _port_indicator_disconnected, obj);
+
+   evas_object_size_hint_min_set(port_indicator, -1, 0);
+   evas_object_size_hint_max_set(port_indicator, -1, 0);
+
+   return port_indicator;
+}
+
+static Evas_Object *
+_create_landscape_indicator(Evas_Object *obj)
+{
+   Evas_Object *land_indicator = NULL;
+   const char *land_indicator_serv_name;
+
+   ELM_CONFORMANT_DATA_GET(obj, sd);
+
+   land_indicator_serv_name = elm_config_indicator_service_get(sd->rot);
+   if (!land_indicator_serv_name)
+     {
+        DBG("Conformant cannot get portrait indicator service name\n");
+        return NULL;
+     }
+
+   land_indicator = elm_plug_add(obj);
+   if (!land_indicator)
+     {
+        DBG("Conformant cannot create plug to server[%s]\n", land_indicator_serv_name);
+        return NULL;
+     }
+
+   if (!elm_plug_connect(land_indicator, land_indicator_serv_name, 0, EINA_FALSE))
+     {
+        DBG("Conformant cannot connect to server[%s]\n", land_indicator_serv_name);
+        return NULL;
+     }
+
+   elm_widget_sub_object_add(obj, land_indicator);
+   evas_object_smart_callback_add(land_indicator, "image.deleted",_land_indicator_disconnected, obj);
+
+   evas_object_size_hint_min_set(land_indicator, -1, 0);
+   evas_object_size_hint_max_set(land_indicator, -1, 0);
+   return land_indicator;
+}
+
+static void
+_indicator_mode_set(Evas_Object *conformant, Elm_Win_Indicator_Mode indmode)
+{
+   Evas_Object *old_indi = NULL;
+   ELM_CONFORMANT_DATA_GET(conformant, sd);
+   ELM_WIDGET_DATA_GET_OR_RETURN(conformant, wd);
+
+   sd->indmode = indmode;
+
+   if (!edje_object_part_exists(wd->resize_obj, INDICATOR_PART))
+     return;
+
+   if (indmode == ELM_WIN_INDICATOR_SHOW)
+     {
+        old_indi = elm_layout_content_get(conformant, INDICATOR_PART);
+
+        //create new indicator
+        if (!old_indi)
+          {
+             if ((sd->rot == 90)||(sd->rot == 270))
+               {
+                  if (!sd->landscape_indicator)
+                    sd->landscape_indicator = _create_landscape_indicator(conformant);
+
+                  if (!sd->landscape_indicator) return;
+
+                  evas_object_show(sd->landscape_indicator);
+                  elm_layout_content_set(conformant, INDICATOR_PART, sd->landscape_indicator);
+               }
+             else
+               {
+                  if (!sd->portrait_indicator)
+                    sd->portrait_indicator = _create_portrait_indicator(conformant);
+
+                  if (!sd->portrait_indicator) return;
+
+                  evas_object_show(sd->portrait_indicator);
+                  elm_layout_content_set(conformant, INDICATOR_PART, sd->portrait_indicator);
+               }
+
+          }
+        elm_object_signal_emit(conformant, "elm,state,indicator,show", "elm");
+     }
+   else
+     {
+        old_indi = elm_layout_content_get(conformant, INDICATOR_PART);
+        if (old_indi)
+          {
+             evas_object_hide(old_indi);
+          }
+        elm_object_signal_emit(conformant, "elm,state,indicator,hide", "elm");
+     }
+}
+
+static void
+_indicator_opacity_set(Evas_Object *conformant, Elm_Win_Indicator_Opacity_Mode ind_o_mode)
+{
+   ELM_CONFORMANT_DATA_GET(conformant, sd);
+   sd->ind_o_mode = ind_o_mode;
+   //TODO: opacity change
+}
+
+static void
+_on_indicator_mode_changed(void *data,
+                           Evas_Object *obj,
+                           void *event_info __UNUSED__)
+{
+   Evas_Object *conformant = data;
+   Evas_Object *win = obj;
+
+   Elm_Win_Indicator_Mode indmode;
+   Elm_Win_Indicator_Opacity_Mode ind_o_mode;
+
+   ELM_CONFORMANT_DATA_GET(conformant, sd);
+
+   indmode = elm_win_indicator_mode_get(win);
+   ind_o_mode = elm_win_indicator_opacity_get(win);
+   if (indmode != sd->indmode)
+     _indicator_mode_set(conformant, indmode);
+   if (ind_o_mode != sd->ind_o_mode)
+     _indicator_opacity_set(conformant, ind_o_mode);
+}
+
+static void
+_on_rotation_changed(void *data,
+                     Evas_Object *obj,
+                     void *event_info __UNUSED__)
+{
+   int rot = 0;
+   Evas_Object *win = obj;
+   Evas_Object *conformant = data;
+   Evas_Object *old_indi = NULL;
+
+   ELM_CONFORMANT_DATA_GET(data, sd);
+
+   rot = elm_win_rotation_get(win);
+
+   if (rot == sd->rot) return;
+
+   sd->rot = rot;
+   old_indi = elm_layout_content_unset(conformant, INDICATOR_PART);
+   /* this means ELM_WIN_INDICATOR_SHOW never be set.we don't need to change indicator type*/
+   if (!old_indi) return;
+   evas_object_hide(old_indi);
+
+   if ((rot == 90) || (rot == 270))
+     {
+        if (!sd->landscape_indicator)
+          sd->landscape_indicator = _create_landscape_indicator(conformant);
+
+        if (!sd->landscape_indicator) return;
+
+        evas_object_show(sd->landscape_indicator);
+        evas_object_data_set(sd->landscape_indicator, CONFORMANT_KEY, (void *) (intptr_t) rot);
+        elm_layout_content_set(conformant, INDICATOR_PART, sd->landscape_indicator);
+     }
+   else
+     {
+        if (!sd->portrait_indicator)
+          sd->portrait_indicator = _create_portrait_indicator(conformant);
+
+        if (!sd->portrait_indicator) return;
+
+        evas_object_show(sd->portrait_indicator);
+        evas_object_data_set(sd->portrait_indicator, CONFORMANT_KEY, (void *) (intptr_t) rot);
+        elm_layout_content_set(conformant, INDICATOR_PART, sd->portrait_indicator);
+     }
+}
+
+static void
+_elm_conformant_smart_theme(Eo *obj, void *_pd EINA_UNUSED, va_list *list)
+{
+   Eina_Bool *ret = va_arg(*list, Eina_Bool *);
+   if (ret) *ret = EINA_FALSE;
+   Eina_Bool int_ret = EINA_FALSE;
+
+   eo_do_super(obj, MY_CLASS, elm_wdg_theme(&int_ret));
+   if (!int_ret) return;
 
    _conformant_parts_swallow(obj);
 
    elm_layout_sizing_eval(obj);
 
-   return EINA_TRUE;
+   if (ret) *ret = EINA_TRUE;
 }
 
 // unused now - but meant to be for making sure the focused widget is always
@@ -348,6 +676,7 @@ _show_region_job(void *data)
 
         elm_widget_show_region_get(focus_obj, &x, &y, &w, &h);
 
+
         if (h < _elm_config->finger_size)
           h = _elm_config->finger_size;
 
@@ -367,7 +696,9 @@ _on_content_resize(void *data,
 {
    ELM_CONFORMANT_DATA_GET(data, sd);
 
-   if (sd->vkb_state == ECORE_X_VIRTUAL_KEYBOARD_STATE_OFF) return;
+   if ((sd->vkb_state == ECORE_X_VIRTUAL_KEYBOARD_STATE_OFF) &&
+       (sd->clipboard_state == ECORE_X_ILLUME_CLIPBOARD_STATE_OFF))
+     return;
 
    if (sd->show_region_job) ecore_job_del(sd->show_region_job);
    sd->show_region_job = ecore_job_add(_show_region_job, data);
@@ -392,7 +723,7 @@ _autoscroll_objects_update(void *data)
    while (sub)
      {
         type = elm_widget_type_get(sub);
-        if (!strcmp(type, ELM_CONFORMANT_SMART_NAME)) break;
+        if (!strcmp(type, MY_CLASS_NAME_LEGACY)) break;
 
         for (i = 0; i < SUB_TYPE_COUNT; i++)
           if (!strcmp(type, sub_type[i]))
@@ -417,6 +748,79 @@ _autoscroll_objects_update(void *data)
      }
 }
 
+static void
+_virtualkeypad_state_change(Evas_Object *obj, Ecore_X_Event_Window_Property *ev)
+{
+   ELM_CONFORMANT_DATA_GET(obj, sd);
+
+   Ecore_X_Window zone = ecore_x_e_illume_zone_get(ev->win);
+   Ecore_X_Virtual_Keyboard_State state =
+      ecore_x_e_virtual_keyboard_state_get(ev->win);
+
+   DBG("[KEYPAD]:window's state win=0x%x, state=%d.", ev->win, state);
+   if (state == ECORE_X_VIRTUAL_KEYBOARD_STATE_UNKNOWN)
+     {
+        if (zone) state = ecore_x_e_virtual_keyboard_state_get(zone);
+        DBG("[KEYPAD]:zone's state zone=0x%x, state=%d.", zone, state);
+     }
+
+   if (sd->vkb_state == state) return;
+   sd->vkb_state = state;
+
+   if (state == ECORE_X_VIRTUAL_KEYBOARD_STATE_OFF)
+     {
+        DBG("[KEYPAD]:ECORE_X_VIRTUAL_KEYBOARD_STATE_OFF");
+        evas_object_size_hint_min_set(sd->virtualkeypad, -1, 0);
+        evas_object_size_hint_max_set(sd->virtualkeypad, -1, 0);
+        _conformant_part_sizing_eval(obj, ELM_CONFORMANT_VIRTUAL_KEYPAD_PART);
+        elm_widget_display_mode_set(obj, EVAS_DISPLAY_MODE_NONE);
+        evas_object_smart_callback_call(obj, SIG_VIRTUALKEYPAD_STATE_OFF, NULL);
+     }
+   else if (state == ECORE_X_VIRTUAL_KEYBOARD_STATE_ON)
+     {
+        DBG("[KEYPAD]:ECORE_X_VIRTUAL_KEYBOARD_STATE_ON");
+        _conformant_part_sizing_eval(obj, ELM_CONFORMANT_VIRTUAL_KEYPAD_PART);
+        elm_widget_display_mode_set(obj, EVAS_DISPLAY_MODE_COMPRESS);
+        _autoscroll_objects_update(obj);
+        evas_object_smart_callback_call(obj, SIG_VIRTUALKEYPAD_STATE_ON, NULL);
+     }
+}
+
+static void
+_clipboard_state_change(Evas_Object *obj, Ecore_X_Event_Window_Property *ev)
+{
+   ELM_CONFORMANT_DATA_GET(obj, sd);
+
+   Ecore_X_Window zone = ecore_x_e_illume_zone_get(ev->win);
+   Ecore_X_Illume_Clipboard_State state =
+      ecore_x_e_illume_clipboard_state_get(ev->win);
+
+   DBG("[CLIPBOARD]:window's state win=0x%x, state=%d.", ev->win, state);
+
+   if (state == ECORE_X_ILLUME_CLIPBOARD_STATE_UNKNOWN)
+     {
+        state = ecore_x_e_illume_clipboard_state_get(ev->win);
+        DBG("[CLIPBOARD]:zone's state zone=0x%x, state=%d.", zone, state);
+     }
+
+   if (sd->clipboard_state == state) return;
+   sd->clipboard_state = state;
+
+   if (state == ECORE_X_ILLUME_CLIPBOARD_STATE_OFF)
+     {
+        evas_object_size_hint_min_set(sd->clipboard, -1, 0);
+        evas_object_size_hint_max_set(sd->clipboard, -1, 0);
+        elm_widget_display_mode_set(obj, EVAS_DISPLAY_MODE_NONE);
+        evas_object_smart_callback_call(obj, SIG_CLIPBOARD_STATE_OFF, NULL);
+     }
+   else if(state == ECORE_X_ILLUME_CLIPBOARD_STATE_ON)
+     {
+        elm_widget_display_mode_set(obj, EVAS_DISPLAY_MODE_COMPRESS);
+        _autoscroll_objects_update(obj);
+        evas_object_smart_callback_call(obj, SIG_CLIPBOARD_STATE_ON, NULL);
+     }
+}
+
 static Eina_Bool
 _on_prop_change(void *data,
                 int type __UNUSED__,
@@ -424,10 +828,15 @@ _on_prop_change(void *data,
 {
    Ecore_X_Event_Window_Property *ev = event;
 
-   ELM_CONFORMANT_DATA_GET(data, sd);
+   int pid = 0;
+
+#ifdef __linux__
+   pid = (int)getpid();
+#endif
 
    if (ev->atom == ECORE_X_ATOM_E_ILLUME_ZONE)
      {
+        DBG("pid=%d, win=0x%x, ECORE_X_ATOM_E_ILLUME_ZONE.\n", pid, ev->win);
         Conformant_Part_Type part_type;
 
         part_type = (ELM_CONFORMANT_INDICATOR_PART |
@@ -438,41 +847,34 @@ _on_prop_change(void *data,
         _conformant_part_sizing_eval(data, part_type);
      }
    else if (ev->atom == ECORE_X_ATOM_E_ILLUME_INDICATOR_GEOMETRY)
-     _conformant_part_sizing_eval(data, ELM_CONFORMANT_INDICATOR_PART);
+     {
+        DBG("pid=%d, win=0x%x, ECORE_X_ATOM_E_ILLUME_INDICATOR_GEOMETRY.", pid, ev->win);
+        _conformant_part_sizing_eval(data, ELM_CONFORMANT_INDICATOR_PART);
+     }
    else if (ev->atom == ECORE_X_ATOM_E_ILLUME_SOFTKEY_GEOMETRY)
-     _conformant_part_sizing_eval(data, ELM_CONFORMANT_SOFTKEY_PART);
+     {
+        DBG("pid=%d, win=0x%x, ECORE_X_ATOM_E_ILLUME_SOFTKEY_GEOMETRY.", pid, ev->win);
+        _conformant_part_sizing_eval(data, ELM_CONFORMANT_SOFTKEY_PART);
+     }
    else if (ev->atom == ECORE_X_ATOM_E_ILLUME_KEYBOARD_GEOMETRY)
-     _conformant_part_sizing_eval(data, ELM_CONFORMANT_VIRTUAL_KEYPAD_PART);
+     {
+        DBG("[KEYPAD]:pid=%d, win=0x%x, ECORE_X_ATOM_E_ILLUME_KEYBOARD_GEOMETRY.", pid, ev->win);
+        _conformant_part_sizing_eval(data, ELM_CONFORMANT_VIRTUAL_KEYPAD_PART);
+     }
    else if (ev->atom == ECORE_X_ATOM_E_ILLUME_CLIPBOARD_GEOMETRY)
-     _conformant_part_sizing_eval(data, ELM_CONFORMANT_CLIPBOARD_PART);
+     {
+        DBG("pid=%d, win=0x%x, ECORE_X_ATOM_E_ILLUME_CLIPBOARD_GEOMETRY.", pid, ev->win);
+        _conformant_part_sizing_eval(data, ELM_CONFORMANT_CLIPBOARD_PART);
+     }
    else if (ev->atom == ECORE_X_ATOM_E_VIRTUAL_KEYBOARD_STATE)
      {
-        Ecore_X_Window zone;
-
-        DBG("Keyboard Geometry Changed\n");
-        zone = ecore_x_e_illume_zone_get(ev->win);
-        sd->vkb_state = ecore_x_e_virtual_keyboard_state_get(zone);
-        if (sd->vkb_state == ECORE_X_VIRTUAL_KEYBOARD_STATE_OFF)
-          {
-             evas_object_size_hint_min_set(sd->virtualkeypad, -1, 0);
-             evas_object_size_hint_max_set(sd->virtualkeypad, -1, 0);
-          }
-        else _autoscroll_objects_update(data);
+        DBG("[KEYPAD]:pid=%d, win=0x%x, ECORE_X_ATOM_E_VIRTUAL_KEYBOARD_STATE.", pid, ev->win);
+        _virtualkeypad_state_change(data, ev);
      }
    else if (ev->atom == ECORE_X_ATOM_E_ILLUME_CLIPBOARD_STATE)
      {
-        Ecore_X_Window zone;
-        Ecore_X_Illume_Clipboard_State state;
-
-        zone = ecore_x_e_illume_zone_get(ev->win);
-        state = ecore_x_e_illume_clipboard_state_get(zone);
-
-        if (state != ECORE_X_ILLUME_CLIPBOARD_STATE_ON)
-          {
-             evas_object_size_hint_min_set(sd->clipboard, -1, 0);
-             evas_object_size_hint_max_set(sd->clipboard, -1, 0);
-          }
-        else _autoscroll_objects_update(data);
+        DBG("pid=%d, win=0x%x, ECORE_X_ATOM_E_ILLUME_CLIPBOARD_STATE.", pid, ev->win);
+        _clipboard_state_change(data, ev);
      }
 
    return ECORE_CALLBACK_PASS_ON;
@@ -481,15 +883,15 @@ _on_prop_change(void *data,
 #endif
 
 static void
-_elm_conformant_smart_add(Evas_Object *obj)
+_elm_conformant_smart_add(Eo *obj, void *_pd EINA_UNUSED, va_list *list EINA_UNUSED)
 {
-   EVAS_SMART_DATA_ALLOC(obj, Elm_Conformant_Smart_Data);
-
-   ELM_WIDGET_CLASS(_elm_conformant_parent_sc)->base.add(obj);
-
+   eo_do_super(obj, MY_CLASS, evas_obj_smart_add());
+   elm_widget_sub_object_parent_add(obj);
    elm_widget_can_focus_set(obj, EINA_FALSE);
 
-   elm_layout_theme_set(obj, "conformant", "base", elm_widget_style_get(obj));
+   if (!elm_layout_theme_set
+       (obj, "conformant", "base", elm_widget_style_get(obj)))
+     CRITICAL("Failed to set layout!");
 
    _conformant_parts_swallow(obj);
 
@@ -502,79 +904,122 @@ _elm_conformant_smart_add(Evas_Object *obj)
 }
 
 static void
-_elm_conformant_smart_del(Evas_Object *obj)
+_elm_conformant_smart_del(Eo *obj, void *_pd, va_list *list EINA_UNUSED)
 {
-   ELM_CONFORMANT_DATA_GET(obj, sd);
+   Evas_Object *top;
+   Elm_Conformant_Smart_Data *sd = _pd;
 
 #ifdef HAVE_ELEMENTARY_X
    if (sd->prop_hdl) ecore_event_handler_del(sd->prop_hdl);
 #endif
 
    if (sd->show_region_job) ecore_job_del(sd->show_region_job);
+   if (sd->port_indi_timer) ecore_timer_del(sd->port_indi_timer);
+   if (sd->land_indi_timer) ecore_timer_del(sd->land_indi_timer);
+   if (sd->portrait_indicator) evas_object_del(sd->portrait_indicator);
+   if (sd->landscape_indicator) evas_object_del(sd->landscape_indicator);
 
-   ELM_WIDGET_CLASS(_elm_conformant_parent_sc)->base.del(obj);
+   top = elm_widget_top_get(obj);
+   evas_object_data_set(top, "\377 elm,conformant", NULL);
+
+   eo_do_super(obj, MY_CLASS, evas_obj_smart_del());
 }
 
 static void
-_elm_conformant_smart_parent_set(Evas_Object *obj,
-                                 Evas_Object *parent)
+_elm_conformant_smart_parent_set(Eo *obj, void *_pd, va_list *list)
 {
 #ifdef HAVE_ELEMENTARY_X
+   Evas_Object *parent = va_arg(*list, Evas_Object *);
    Evas_Object *top = elm_widget_top_get(parent);
    Ecore_X_Window xwin = elm_win_xwindow_get(parent);
 
    if ((xwin) && (!elm_win_inlined_image_object_get(top)))
      {
-        ELM_CONFORMANT_DATA_GET(obj, sd);
+        Elm_Conformant_Smart_Data *sd = _pd;
 
         sd->prop_hdl = ecore_event_handler_add
             (ECORE_X_EVENT_WINDOW_PROPERTY, _on_prop_change, obj);
         sd->vkb_state = ECORE_X_VIRTUAL_KEYBOARD_STATE_OFF;
+        sd->clipboard_state = ECORE_X_ILLUME_CLIPBOARD_STATE_OFF;
      }
    // FIXME: get kbd region prop
 #endif
 }
 
 static void
-_elm_conformant_smart_set_user(Elm_Conformant_Smart_Class *sc)
+_elm_conformant_smart_content_aliases_get(Eo *obj EINA_UNUSED, void *_pd EINA_UNUSED, va_list *list)
 {
-   ELM_WIDGET_CLASS(sc)->base.add = _elm_conformant_smart_add;
-   ELM_WIDGET_CLASS(sc)->base.del = _elm_conformant_smart_del;
-
-   ELM_WIDGET_CLASS(sc)->parent_set = _elm_conformant_smart_parent_set;
-   ELM_WIDGET_CLASS(sc)->theme = _elm_conformant_smart_theme;
-
-   ELM_LAYOUT_CLASS(sc)->content_aliases = _content_aliases;
-}
-
-EAPI const Elm_Conformant_Smart_Class *
-elm_conformant_smart_class_get(void)
-{
-   static Elm_Conformant_Smart_Class _sc =
-     ELM_CONFORMANT_SMART_CLASS_INIT_NAME_VERSION(ELM_CONFORMANT_SMART_NAME);
-   static const Elm_Conformant_Smart_Class *class = NULL;
-
-   if (class)
-     return class;
-
-   _elm_conformant_smart_set(&_sc);
-   class = &_sc;
-
-   return class;
+   const Elm_Layout_Part_Alias_Description **aliases = va_arg(*list, const Elm_Layout_Part_Alias_Description **);
+   *aliases = _content_aliases;
 }
 
 EAPI Evas_Object *
 elm_conformant_add(Evas_Object *parent)
 {
-   Evas_Object *obj;
-
    EINA_SAFETY_ON_NULL_RETURN_VAL(parent, NULL);
-
-   obj = elm_widget_add(_elm_conformant_smart_class_new(), parent);
-   if (!obj) return NULL;
-
-   if (!elm_widget_sub_object_add(parent, obj))
-     ERR("could not add %p as sub object of %p", obj, parent);
-
+   Evas_Object *obj = eo_add(MY_CLASS, parent);
+   eo_unref(obj);
    return obj;
 }
+
+static void
+_constructor(Eo *obj, void *_pd, va_list *list EINA_UNUSED)
+{
+   Evas_Object *top;
+
+   eo_do_super(obj, MY_CLASS, eo_constructor());
+   eo_do(obj,
+         evas_obj_type_set(MY_CLASS_NAME_LEGACY),
+         evas_obj_smart_callbacks_descriptions_set(_smart_callbacks, NULL));
+   Elm_Conformant_Smart_Data *sd = _pd;
+
+   top = elm_widget_top_get(obj);
+   _on_indicator_mode_changed(obj, top, NULL);
+   _on_rotation_changed(obj, top, NULL);
+
+   sd->indmode = elm_win_indicator_mode_get(top);
+   sd->ind_o_mode = elm_win_indicator_opacity_get(top);
+   sd->rot = elm_win_rotation_get(top);
+   evas_object_data_set(top, "\377 elm,conformant", obj);
+
+   evas_object_smart_callback_add
+     (top, "indicator,prop,changed", _on_indicator_mode_changed, obj);
+   evas_object_smart_callback_add
+     (top, "rotation,changed", _on_rotation_changed, obj);
+}
+
+static void
+_class_constructor(Eo_Class *klass)
+{
+   const Eo_Op_Func_Description func_desc[] = {
+        EO_OP_FUNC(EO_BASE_ID(EO_BASE_SUB_ID_CONSTRUCTOR), _constructor),
+
+        EO_OP_FUNC(EVAS_OBJ_SMART_ID(EVAS_OBJ_SMART_SUB_ID_ADD), _elm_conformant_smart_add),
+        EO_OP_FUNC(EVAS_OBJ_SMART_ID(EVAS_OBJ_SMART_SUB_ID_DEL), _elm_conformant_smart_del),
+
+        EO_OP_FUNC(ELM_WIDGET_ID(ELM_WIDGET_SUB_ID_PARENT_SET), _elm_conformant_smart_parent_set),
+        EO_OP_FUNC(ELM_WIDGET_ID(ELM_WIDGET_SUB_ID_THEME), _elm_conformant_smart_theme),
+
+        EO_OP_FUNC(ELM_OBJ_LAYOUT_ID(ELM_OBJ_LAYOUT_SUB_ID_CONTENT_ALIASES_GET), _elm_conformant_smart_content_aliases_get),
+        EO_OP_FUNC_SENTINEL
+   };
+   eo_class_funcs_set(klass, func_desc);
+
+   evas_smart_legacy_type_register(MY_CLASS_NAME_LEGACY, klass);
+}
+
+static const Eo_Op_Description op_desc[] = {
+     EO_OP_DESCRIPTION_SENTINEL
+};
+
+static const Eo_Class_Description class_desc = {
+     EO_VERSION,
+     MY_CLASS_NAME,
+     EO_CLASS_TYPE_REGULAR,
+     EO_CLASS_DESCRIPTION_OPS(&ELM_OBJ_CONFORMANT_BASE_ID, op_desc, ELM_OBJ_CONFORMANT_SUB_ID_LAST),
+     NULL,
+     sizeof(Elm_Conformant_Smart_Data),
+     _class_constructor,
+     NULL
+};
+EO_DEFINE_CLASS(elm_obj_conformant_class_get, &class_desc, ELM_OBJ_LAYOUT_CLASS, NULL);

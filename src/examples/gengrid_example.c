@@ -32,14 +32,6 @@ static const char *imgs[9] =
 static Elm_Gengrid_Item_Class *gic = NULL;
 static Evas_Object *before_bt, *after_bt;
 
-static void
-_on_done(void        *data,
-         Evas_Object *obj,
-         void        *event_info)
-{
-   elm_exit();
-}
-
 /* change layouting mode */
 static void
 _horizontal_grid(void        *data,
@@ -78,7 +70,7 @@ _bouncing_change(void        *data,
    Evas_Object *grid = data;
    Eina_Bool bounce = elm_check_state_get(obj);
 
-   elm_gengrid_bounce_set(grid, bounce, bounce);
+   elm_scroller_bounce_set(grid, bounce, bounce);
 
    fprintf(stdout, "Bouncing effect for gengrid is now %s\n",
            bounce ? "on" : "off");
@@ -106,7 +98,7 @@ _multi_change(void        *data,
         Elm_Object_Item *gg_it;
         const Eina_List *selected = elm_gengrid_selected_items_get(grid), *l;
         EINA_LIST_FOREACH(selected, l, gg_it)
-          elm_gengrid_item_selected_set(gg_it, EINA_FALSE);
+           elm_gengrid_item_selected_set(gg_it, EINA_FALSE);
      }
 }
 
@@ -140,7 +132,7 @@ _grid_sel(void        *data,
    elm_gengrid_item_pos_get(event_info, &x, &y);
 
    fprintf(stdout, "Item [%p], with data [%p], path %s, at position (%d, %d),"
-                   " has been selected\n", event_info, data, it->path, x, y);
+           " has been selected\n", event_info, data, it->path, x, y);
 }
 
 /* new item with random path */
@@ -314,8 +306,8 @@ _grid_label_get(void        *data,
 /* icon fetching callback */
 static Evas_Object *
 _grid_content_get(void        *data,
-               Evas_Object *obj,
-               const char  *part)
+                  Evas_Object *obj,
+                  const char  *part)
 {
    const Example_Item *it = data;
 
@@ -371,10 +363,10 @@ _grid_scroll_stopped_cb(void        *data,
                         Evas_Object *obj,
                         void        *event_info)
 {
-  int h_pagenumber = 0, v_pagenumber = 0;
-  elm_gengrid_current_page_get(obj, &h_pagenumber, &v_pagenumber);
-  fprintf(stdout, "Grid current horiz page is %d, vert page is %d\n",
-          h_pagenumber, v_pagenumber);
+   int h_pagenumber = 0, v_pagenumber = 0;
+   elm_scroller_current_page_get(obj, &h_pagenumber, &v_pagenumber);
+   fprintf(stdout, "Grid current horiz page is %d, vert page is %d\n",
+           h_pagenumber, v_pagenumber);
 }
 
 /* items grid horizontal alignment change */
@@ -414,7 +406,7 @@ _page_change_cb(void        *data,
 {
    double val = elm_slider_value_get(obj);
 
-   elm_gengrid_page_relative_set(data, val, val);
+   elm_scroller_page_relative_set(data, val, val);
 
    fprintf(stdout, "Setting grid page's relative size to %f\n", val);
 }
@@ -423,22 +415,17 @@ EAPI_MAIN int
 elm_main(int    argc,
          char **argv)
 {
-   Evas_Object *win, *bg, *grid, *bx, *hbx_1, *hbx_2, *hbx_3, *bt, *ck, *sl,
-   *sp;
+   Evas_Object *win, *grid, *bx, *hbx_1, *hbx_2, *hbx_3, *bt, *ck, *sl, *sp;
    Eina_Bool bounce;
    double h, v;
 
    srand(time(NULL));
 
+   elm_policy_set(ELM_POLICY_QUIT, ELM_POLICY_QUIT_LAST_WINDOW_CLOSED);
    elm_app_info_set(elm_main, "elementary", "images");
-   win = elm_win_add(NULL, "gengrid", ELM_WIN_BASIC);
-   elm_win_title_set(win, "Generic Grid Example");
-   evas_object_smart_callback_add(win, "delete,request", _on_done, NULL);
 
-   bg = elm_bg_add(win);
-   evas_object_size_hint_weight_set(bg, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-   elm_win_resize_object_add(win, bg);
-   evas_object_show(bg);
+   win = elm_win_util_standard_add("gengrid", "Generic Grid Example");
+   elm_win_autodel_set(win, EINA_TRUE);
 
    bx = elm_box_add(win);
    evas_object_size_hint_weight_set(bx, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
@@ -448,13 +435,14 @@ elm_main(int    argc,
    grid = elm_gengrid_add(win);
    elm_gengrid_item_size_set(grid, 150, 150);
    evas_object_size_hint_weight_set(grid, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   evas_object_size_hint_align_set(grid, EVAS_HINT_FILL, EVAS_HINT_FILL);
    elm_box_pack_end(bx, grid);
    evas_object_smart_callback_add(grid, "clicked,double", _double_click, NULL);
    evas_object_smart_callback_add(grid, "longpressed", _long_pressed, NULL);
    evas_object_show(grid);
 
    hbx_1 = elm_box_add(win);
-   evas_object_size_hint_weight_set(hbx_1, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   evas_object_size_hint_weight_set(hbx_1, EVAS_HINT_EXPAND, 0.0);
    elm_box_horizontal_set(hbx_1, EINA_TRUE);
    elm_box_pack_end(bx, hbx_1);
    evas_object_show(hbx_1);
@@ -512,7 +500,7 @@ elm_main(int    argc,
    evas_object_show(sp);
 
    hbx_2 = elm_box_add(win);
-   evas_object_size_hint_weight_set(hbx_2, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   evas_object_size_hint_weight_set(hbx_2, EVAS_HINT_EXPAND, 0.0);
    elm_box_horizontal_set(hbx_2, EINA_TRUE);
    elm_box_pack_end(bx, hbx_2);
    evas_object_show(hbx_2);
@@ -536,7 +524,7 @@ elm_main(int    argc,
    evas_object_show(ck);
 
    ck = elm_check_add(win);
-   elm_gengrid_bounce_get(grid, &bounce, NULL);
+   elm_scroller_bounce_get(grid, &bounce, NULL);
    elm_object_text_set(ck, "Bouncing");
    elm_check_state_set(ck, bounce);
    evas_object_smart_callback_add(ck, "changed", _bouncing_change, grid);
@@ -557,7 +545,7 @@ elm_main(int    argc,
    evas_object_show(ck);
 
    hbx_3 = elm_box_add(win);
-   evas_object_size_hint_weight_set(hbx_3, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   evas_object_size_hint_weight_set(hbx_3, EVAS_HINT_EXPAND, 0.0);
    elm_box_horizontal_set(hbx_3, EINA_TRUE);
    elm_box_pack_end(bx, hbx_3);
    evas_object_show(hbx_3);

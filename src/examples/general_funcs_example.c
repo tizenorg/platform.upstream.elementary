@@ -40,8 +40,8 @@ _btn_focus_cb(void        *data,
 static void
 /* unfocus callback */
 _btn_unfocus_cb(void        *data,
-              Evas_Object *obj,
-              void        *event)
+                Evas_Object *obj,
+                void        *event)
 {
    elm_object_focus_set(d.btn, EINA_FALSE);
 }
@@ -67,7 +67,7 @@ EAPI_MAIN int
 elm_main(int    argc,
          char **argv)
 {
-   Evas_Object *win, *bg, *box, *frame, *check, *b, *slider;
+   Evas_Object *win, *box, *frame, *check, *b, *slider;
 
    /* tell elm about our app so it can figure out where to get files */
    elm_app_compile_bin_dir_set(BIN_DIR);
@@ -80,8 +80,8 @@ elm_main(int    argc,
    fprintf(stdout, "library directory is: %s\n", elm_app_lib_dir_get());
    fprintf(stdout, "locale directory is: %s\n", elm_app_locale_dir_get());
 
-   win = elm_win_add(NULL, "top-level-funcs-example", ELM_WIN_BASIC);
-   elm_win_title_set(win, "Elementary Top-level Functions Example");
+   win = elm_win_util_standard_add("top-level-funcs-example",
+                                   "Elementary Top-level Functions Example");
 
    /* by using this policy value, we avoid having to
     * evas_object_smart_callback_add(win, "delete,request", _on_exit, NULL),
@@ -90,15 +90,9 @@ elm_main(int    argc,
    elm_policy_set(ELM_POLICY_QUIT, ELM_POLICY_QUIT_LAST_WINDOW_CLOSED);
    elm_win_autodel_set(win, EINA_TRUE);
 
-   bg = elm_bg_add(win);
-   evas_object_size_hint_weight_set(bg, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-   elm_win_resize_object_add(win, bg);
-   evas_object_show(bg);
-
    /* outer box */
    box = elm_box_add(win);
    evas_object_size_hint_weight_set(box, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-   evas_object_size_hint_align_set(box, EVAS_HINT_FILL, EVAS_HINT_FILL);
    elm_win_resize_object_add(win, box);
    evas_object_show(box);
 
@@ -118,8 +112,6 @@ elm_main(int    argc,
    b = elm_box_add(win);
    elm_box_horizontal_set(b, EINA_FALSE);
    evas_object_size_hint_weight_set(b, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-   evas_object_size_hint_align_set(b, EVAS_HINT_FILL, EVAS_HINT_FILL);
-   elm_win_resize_object_add(win, b);
    elm_box_pack_end(box, b);
    evas_object_show(b);
 
@@ -162,7 +154,7 @@ elm_main(int    argc,
    elm_slider_unit_format_set(slider, "%1.1f");
    elm_slider_indicator_format_set(slider, "%1.1f");
    evas_object_size_hint_weight_set(
-     slider, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+      slider, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    evas_object_size_hint_align_set(slider, EVAS_HINT_FILL, EVAS_HINT_FILL);
    evas_object_smart_callback_add(slider, "changed", _btn_scale_cb, NULL);
    elm_box_pack_end(box, slider);

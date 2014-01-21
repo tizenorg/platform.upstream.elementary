@@ -3,6 +3,14 @@
 
 #include <Elementary.h>
 
+static int list_mouse_down = 0;
+
+static void
+_dismissed_cb(void *data, Evas_Object *obj, void *event_info)
+{
+   evas_object_del(obj);
+}
+
 static void
 _ctxpopup_item_cb(void *data, Evas_Object *obj, void *event_info)
 {
@@ -24,7 +32,10 @@ _list_item_cb(void *data, Evas_Object *obj, void *event_info)
    Elm_Object_Item *it;
    Evas_Coord x,y;
 
+   if (list_mouse_down > 0) return;
+
    ctxpopup = elm_ctxpopup_add(obj);
+   evas_object_smart_callback_add(ctxpopup, "dismissed", _dismissed_cb, NULL);
 
    item_new(ctxpopup, "Go to home folder", "home");
    item_new(ctxpopup, "Save file", "file");
@@ -49,7 +60,10 @@ _list_item_cb2(void *data, Evas_Object *obj, void *event_info)
    Elm_Object_Item *it;
    Evas_Coord x,y;
 
+   if (list_mouse_down > 0) return;
+
    ctxpopup = elm_ctxpopup_add(obj);
+   evas_object_smart_callback_add(ctxpopup, "dismissed", _dismissed_cb, NULL);
    elm_ctxpopup_horizontal_set(ctxpopup, EINA_TRUE);
 
    item_new(ctxpopup, NULL, "home");
@@ -67,24 +81,42 @@ _list_item_cb2(void *data, Evas_Object *obj, void *event_info)
    elm_list_item_selected_set(event_info, EINA_FALSE);
 }
 
+static void
+_list_mouse_down(void *data EINA_UNUSED, Evas *e EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
+{
+   list_mouse_down++;
+}
+
+static void
+_list_mouse_up(void *data EINA_UNUSED, Evas *e EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
+{
+   list_mouse_down--;
+}
+
+static void
+_win_del(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
+{
+   list_mouse_down = 0;
+}
+
 EAPI_MAIN int
 elm_main(int argc, char **argv)
 {
-   Evas_Object *win, *bg, *list;
+   Evas_Object *win, *list;
 
-   win = elm_win_add(NULL, "Contextual Popup", ELM_WIN_BASIC);
-   elm_win_title_set(win, "Contextual Popup");
-   elm_win_autodel_set(win, EINA_TRUE);
    elm_policy_set(ELM_POLICY_QUIT, ELM_POLICY_QUIT_LAST_WINDOW_CLOSED);
+
+   win = elm_win_util_standard_add("Contextual Popup", "Contextual Popup");
+   evas_object_smart_callback_add(win, "delete,request", _win_del, NULL);
+   elm_win_autodel_set(win, EINA_TRUE);
    evas_object_resize(win, 400, 400);
    evas_object_show(win);
 
-   bg = elm_bg_add(win);
-   evas_object_size_hint_weight_set(bg, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-   elm_win_resize_object_add(win, bg);
-   evas_object_show(bg);
-
    list = elm_list_add(win);
+   evas_object_event_callback_add(list, EVAS_CALLBACK_MOUSE_DOWN,
+                                  _list_mouse_down, NULL);
+   evas_object_event_callback_add(list, EVAS_CALLBACK_MOUSE_UP,
+                                  _list_mouse_up, NULL);
    evas_object_size_hint_weight_set(list, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    elm_win_resize_object_add(win, list);
    elm_list_mode_set(list, ELM_LIST_COMPRESS);

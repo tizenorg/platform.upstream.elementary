@@ -57,7 +57,11 @@ _emo_content_get(void *data, Evas_Object *obj, const char *part)
    if (strcmp(part, "elm.swallow.icon"))
      return NULL;
    o = elm_layout_add(obj);
-   elm_layout_theme_set(o, "entry/emoticon", data, "default");
+   if (!elm_layout_theme_set(o, "entry/emoticon", data, "default"))
+     {
+        fprintf(stderr, "Failed to set layout");
+        return NULL;
+     }
    return o;
 }
 
@@ -244,9 +248,9 @@ _page_settings_add(Evas_Object *parent, App_Inwin_Data *aid)
    ewidth = elm_entry_add(parent);
    elm_entry_single_line_set(ewidth, EINA_TRUE);
    elm_entry_markup_filter_append(ewidth, elm_entry_filter_accept_set,
-                                &accept_set);
+                                  &accept_set);
    elm_entry_markup_filter_append(ewidth, elm_entry_filter_limit_size,
-                                &limit_size);
+                                  &limit_size);
    elm_object_text_set(ewidth, buf);
    evas_object_size_hint_weight_set(ewidth, EVAS_HINT_EXPAND, 0.0);
    evas_object_size_hint_align_set(ewidth, EVAS_HINT_FILL, EVAS_HINT_FILL);
@@ -266,9 +270,9 @@ _page_settings_add(Evas_Object *parent, App_Inwin_Data *aid)
    eheight = elm_entry_add(parent);
    elm_entry_single_line_set(eheight, EINA_TRUE);
    elm_entry_markup_filter_append(eheight, elm_entry_filter_accept_set,
-                                &accept_set);
+                                  &accept_set);
    elm_entry_markup_filter_append(eheight, elm_entry_filter_limit_size,
-                                &limit_size);
+                                  &limit_size);
    elm_object_text_set(eheight, buf);
    evas_object_size_hint_weight_set(eheight, EVAS_HINT_EXPAND, 0.0);
    evas_object_size_hint_align_set(eheight, EVAS_HINT_FILL, EVAS_HINT_FILL);
@@ -482,29 +486,19 @@ _edit_tplclick_cb(void *data, Evas_Object *obj, void *event)
    elm_entry_cursor_selection_end(obj);
 }
 
-static void
-_win_del_cb(void *data, Evas_Object *obj, void *event)
-{
-   evas_object_del(obj);
-   elm_exit();
-}
-
 EAPI_MAIN int
 elm_main(int argc, char *argv[])
 {
-   Evas_Object *win, *bg, *box, *tb, *en, *o, *icon;
+   Evas_Object *win, *box, *tb, *en, *o, *icon;
    App_Data app;
 
    memset(&app, 0, sizeof(app));
 
-   win = elm_win_add(NULL, "entry-example", ELM_WIN_BASIC);
-   elm_win_title_set(win, "Emacs Lite");
-   evas_object_show(win);
+   elm_policy_set(ELM_POLICY_QUIT, ELM_POLICY_QUIT_LAST_WINDOW_CLOSED);
 
-   bg = elm_bg_add(win);
-   evas_object_size_hint_weight_set(bg, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-   elm_win_resize_object_add(win, bg);
-   evas_object_show(bg);
+   win = elm_win_util_standard_add("entry-example", "Emacs Lite");
+   elm_win_autodel_set(win, EINA_TRUE);
+   evas_object_show(win);
 
    box = elm_box_add(win);
    evas_object_size_hint_weight_set(box, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
@@ -545,7 +539,11 @@ elm_main(int argc, char *argv[])
    evas_object_show(o);
 
    icon = elm_layout_add(win);
-   elm_layout_theme_set(icon, "entry", "emoticon/haha", "default");
+
+   if (!elm_layout_theme_set(
+         icon, "entry", "emoticon/haha", "default"))
+     fprintf(stderr, "Failed to set layout");
+
    elm_object_part_content_set(o, "icon", icon);
 
    evas_object_smart_callback_add(o, "clicked", _image_insert_cb, &app);
@@ -565,8 +563,6 @@ elm_main(int argc, char *argv[])
                                   NULL);
    evas_object_smart_callback_add(en, "clicked,triple", _edit_tplclick_cb,
                                   NULL);
-
-   evas_object_smart_callback_add(win, "delete,request", _win_del_cb, &app);
 
    elm_object_focus_set(app.edit_buffer, EINA_TRUE);
 

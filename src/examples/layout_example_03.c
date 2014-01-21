@@ -15,15 +15,15 @@ _swallow_btn_cb(void *data, Evas_Object *btn, void *event_info)
 
    if (_btn_large == EINA_FALSE)
      {
-	_btn_large = EINA_TRUE;
-	elm_object_signal_emit(layout, "button,enlarge", "");
-	elm_object_text_set(btn, "Reduce me!");
+        _btn_large = EINA_TRUE;
+        elm_object_signal_emit(layout, "button,enlarge", "");
+        elm_object_text_set(btn, "Reduce me!");
      }
    else
      {
-	_btn_large = EINA_FALSE;
-	elm_object_signal_emit(layout, "button,reduce", "");
-	elm_object_text_set(btn, "Enlarge me!");
+        _btn_large = EINA_FALSE;
+        elm_object_signal_emit(layout, "button,reduce", "");
+        elm_object_text_set(btn, "Enlarge me!");
      }
 }
 
@@ -42,19 +42,14 @@ _size_changed_cb(void *data, Evas_Object *layout, const char *emission, const ch
 EAPI_MAIN int
 elm_main(int argc, char **argv)
 {
-   Evas_Object *win, *bg, *btn, *layout;
+   Evas_Object *win, *btn, *layout;
    char buf[PATH_MAX];
 
    elm_app_info_set(elm_main, "elementary", "examples/layout_example.edj");
-   win = elm_win_add(NULL, "layout", ELM_WIN_BASIC);
    elm_policy_set(ELM_POLICY_QUIT, ELM_POLICY_QUIT_LAST_WINDOW_CLOSED);
-   elm_win_autodel_set(win, EINA_TRUE);
 
-   bg = elm_bg_add(win);
-   elm_bg_color_set(bg, 255,255 ,255);
-   evas_object_size_hint_weight_set(bg, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-   elm_win_resize_object_add(win, bg);
-   evas_object_show(bg);
+   win = elm_win_util_standard_add("layout", "Layout Example");
+   elm_win_autodel_set(win, EINA_TRUE);
 
    // Adding layout
    layout = elm_layout_add(win);
@@ -70,8 +65,8 @@ elm_main(int argc, char **argv)
    const char *title = elm_layout_data_get(layout, "title");
    if (title)
      {
-	elm_win_title_set(win, title);
-	elm_object_part_text_set(layout, TITLE, title);
+        elm_win_title_set(win, title);
+        elm_object_part_text_set(layout, TITLE, title);
      }
 
    btn = elm_button_add(win);

@@ -2,7 +2,7 @@
 # include "elementary_config.h"
 #endif
 #include <Elementary.h>
-#ifndef ELM_LIB_QUICKLAUNCH
+
 
 enum _slide_style
 {
@@ -13,7 +13,7 @@ enum _slide_style
 };
 
 void
-test_label(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+test_label(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *win, *bx, *lb;
 
@@ -22,7 +22,6 @@ test_label(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info 
 
    bx = elm_box_add(win);
    evas_object_size_hint_weight_set(bx, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-   evas_object_size_hint_align_set(bx, EVAS_HINT_FILL, EVAS_HINT_FILL);
 
    lb = elm_label_add(win);
    elm_object_text_set(lb,
@@ -79,7 +78,7 @@ test_label(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info 
 }
 
 static void
-_cb_size_radio_changed(void *data, Evas_Object *obj, void *event __UNUSED__)
+_cb_size_radio_changed(void *data, Evas_Object *obj, void *event EINA_UNUSED)
 {
    Evas_Object *lb = (Evas_Object *)data;
    int style =  elm_radio_value_get((Evas_Object *)obj);
@@ -103,17 +102,17 @@ _cb_size_radio_changed(void *data, Evas_Object *obj, void *event __UNUSED__)
 }
 
 static void
-_change_cb(void *data, Evas_Object *obj, void *event_info __UNUSED__)
+_change_cb(void *data, Evas_Object *obj, void *event_info EINA_UNUSED)
 {
    Evas_Object *lb = (Evas_Object *)data;
    double val = elm_slider_value_get(obj);
-   elm_label_slide_set(lb, EINA_FALSE);
    elm_label_slide_duration_set(lb, val);
-   elm_label_slide_set(lb, EINA_TRUE);
+   elm_label_slide_mode_set(lb, ELM_LABEL_SLIDE_MODE_ALWAYS);
+   elm_label_slide_go(lb);
 }
 
 void
-test_label2(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+test_label2(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *win, *gd, *rect, *lb, *rd, *rdg, *sl;
 
@@ -129,7 +128,8 @@ test_label2(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info
    /* Test Label Ellipsis */
    lb = elm_label_add(win);
    elm_object_text_set(lb, "Test Label Ellipsis:");
-   elm_label_slide_set(lb, EINA_TRUE);
+   elm_label_slide_mode_set(lb, ELM_LABEL_SLIDE_MODE_ALWAYS);
+   elm_label_slide_go(lb);
    elm_grid_pack(gd, lb, 5, 5, 90, 10);
    evas_object_show(lb);
 
@@ -152,7 +152,8 @@ test_label2(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info
    /* Test Label Slide */
    lb = elm_label_add(win);
    elm_object_text_set(lb, "Test Label Slide:");
-   elm_label_slide_set(lb, EINA_TRUE);
+   elm_label_slide_mode_set(lb, ELM_LABEL_SLIDE_MODE_ALWAYS);
+   elm_label_slide_go(lb);
    elm_grid_pack(gd, lb, 5, 30, 90, 10);
    evas_object_show(lb);
 
@@ -170,7 +171,8 @@ test_label2(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info
                        "This only works with the themes \"slide_short\", "
                        "\"slide_long\" and \"slide_bounce\"."
                        );
-   elm_label_slide_set(lb, EINA_TRUE);
+   elm_label_slide_mode_set(lb, ELM_LABEL_SLIDE_MODE_ALWAYS);
+   elm_label_slide_go(lb);
    elm_grid_pack(gd, lb, 5, 40, 90, 10);
    evas_object_show(lb);
 
@@ -215,4 +217,3 @@ test_label2(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info
    evas_object_resize(win, 320, 320);
    evas_object_show(win);
 }
-#endif

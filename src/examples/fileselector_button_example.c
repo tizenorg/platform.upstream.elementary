@@ -11,14 +11,6 @@
 
 #include <Elementary.h>
 
-static void
-_on_done(void        *data,
-         Evas_Object *obj,
-         void        *event_info)
-{
-   elm_exit();
-}
-
 static void /* hook on the sole smart callback */
 _file_chosen(void            *data,
              Evas_Object *obj,
@@ -89,20 +81,16 @@ EAPI_MAIN int
 elm_main(int    argc,
          char **argv)
 {
-   Evas_Object *win, *bg, *vbox, *hbox, *ic, *ck, *fs_bt, *en, *lb, *sep;
+   Evas_Object *win, *vbox, *hbox, *ic, *ck, *fs_bt, *en, *lb, *sep;
 
-   win = elm_win_add(NULL, "fileselector-button", ELM_WIN_BASIC);
-   elm_win_title_set(win, "File Selector Button Example");
-   evas_object_smart_callback_add(win, "delete,request", _on_done, NULL);
+   elm_policy_set(ELM_POLICY_QUIT, ELM_POLICY_QUIT_LAST_WINDOW_CLOSED);
 
-   bg = elm_bg_add(win);
-   elm_win_resize_object_add(win, bg);
-   evas_object_size_hint_weight_set(bg, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-   evas_object_show(bg);
+   win = elm_win_util_standard_add("fileselector-button", "File Selector Button Example");
+   elm_win_autodel_set(win, EINA_TRUE);
 
    vbox = elm_box_add(win);
-   elm_win_resize_object_add(win, vbox);
    evas_object_size_hint_weight_set(vbox, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   elm_win_resize_object_add(win, vbox);
    evas_object_show(vbox);
 
    ic = elm_icon_add(win);

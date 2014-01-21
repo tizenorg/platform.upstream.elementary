@@ -5,13 +5,14 @@
 #include <Elementary.h>
 
 /* structure to hold context for many callbacks */
-struct Context {
-     Eina_Bool events_enabled;
-     Eina_Bool auto_reverse;
-     Eina_Bool final_state_keep;
-     int repeat_times;
-     Elm_Transit_Tween_Mode tween_mode;
-     Evas_Object *obj;
+struct Context
+{
+   Eina_Bool events_enabled;
+   Eina_Bool auto_reverse;
+   Eina_Bool final_state_keep;
+   int repeat_times;
+   Elm_Transit_Tween_Mode tween_mode;
+   Evas_Object *obj;
 };
 
 static void
@@ -26,8 +27,8 @@ static void
 _transit_color(Elm_Transit *trans)
 {
    /* changes the object color from 100, 255, 100, 255 to
-    * 200, 50, 200, 50 */
-   elm_transit_effect_color_add(trans, 100, 255, 100, 255, 200, 50, 200, 50);
+    * 40, 10, 40, 50 */
+   elm_transit_effect_color_add(trans, 100, 255, 100, 255, 40, 10, 40, 50);
 }
 
 static void
@@ -76,13 +77,6 @@ static struct {
        { "Resizing", _transit_resizing, EINA_FALSE },
        { NULL, NULL, EINA_FALSE }
 };
-
-static void
-on_done(void *data, Evas_Object *obj, void *event_info)
-{
-   /* quit the mainloop (elm_run) */
-   elm_exit();
-}
 
 /* add a checkbox to the box with the given label, and uses the checked
  * pointer as state_pointer to this checkbox */
@@ -172,7 +166,7 @@ _cb_tween_changed(void *data, Evas_Object *obj, void *event)
 EAPI_MAIN int
 elm_main(int argc, char **argv)
 {
-   Evas_Object *win, *bg, *obj, *icon, *box, *vbox, *vbox2, *hbox, *btn;
+   Evas_Object *win, *obj, *icon, *box, *vbox, *vbox2, *hbox, *btn;
    Evas_Object *cbox, *dummy, *spinner;
    char buf[PATH_MAX];
    int i;
@@ -186,24 +180,15 @@ elm_main(int argc, char **argv)
    context.tween_mode = ELM_TRANSIT_TWEEN_MODE_LINEAR;
 
    elm_app_info_set(elm_main, "elementary", "images/icon_07.png");
+   elm_policy_set(ELM_POLICY_QUIT, ELM_POLICY_QUIT_LAST_WINDOW_CLOSED);
 
    /* add a window */
-   win = elm_win_add(NULL, "transit", ELM_WIN_BASIC);
-   elm_win_title_set(win, "Transit Example");
-   evas_object_smart_callback_add(win, "delete,request", on_done, NULL);
+   win = elm_win_util_standard_add("transit", "Transit Example");
    elm_win_autodel_set(win, EINA_TRUE);
-
-   /* add a scalable white background to this window */
-   bg = elm_bg_add(win);
-   elm_bg_color_set(bg, 255, 255, 255);
-   evas_object_size_hint_weight_set(bg, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-   elm_win_resize_object_add(win, bg);
-   evas_object_show(bg);
 
    /* add a vertical box that will hold everything */
    box = elm_box_add(win);
    evas_object_size_hint_weight_set(box, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-   evas_object_size_hint_align_set(box, EVAS_HINT_FILL, EVAS_HINT_FILL);
    elm_win_resize_object_add(win, box);
    evas_object_show(box);
 

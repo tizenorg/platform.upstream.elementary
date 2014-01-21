@@ -3,30 +3,17 @@
 
 #include <Elementary.h>
 
-static void
-on_done(void *data, Evas_Object *obj, void *event_info)
-{
-   /* quit the mainloop (elm_run) */
-   elm_exit();
-}
-
 EAPI_MAIN int
 elm_main(int argc, char **argv)
 {
-   Evas_Object *win, *bg, *bt;
+   Evas_Object *win, *bt;
    Elm_Transit *trans;
 
-   win = elm_win_add(NULL, "transit-basic", ELM_WIN_BASIC);
-   elm_win_title_set(win, "Transit - Basic");
-   evas_object_smart_callback_add(win, "delete,request", on_done, NULL);
-   elm_win_autodel_set(win, EINA_TRUE);
    elm_policy_set(ELM_POLICY_QUIT, ELM_POLICY_QUIT_LAST_WINDOW_CLOSED);
-   evas_object_resize(win, 400, 400);
 
-   bg = elm_bg_add(win);
-   evas_object_size_hint_weight_set(bg, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-   elm_win_resize_object_add(win, bg);
-   evas_object_show(bg);
+   win = elm_win_util_standard_add("transit-basic", "Transit - Basic");
+   elm_win_autodel_set(win, EINA_TRUE);
+   evas_object_resize(win, 400, 400);
 
    bt = elm_button_add(win);
    elm_object_text_set(bt, "Resizing Effect");

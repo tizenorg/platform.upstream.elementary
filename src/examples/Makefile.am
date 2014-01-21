@@ -14,16 +14,15 @@ AM_CPPFLAGS = \
 -DPACKAGE_DATA_DIR="\"$(pkgdatadir)\"" \
 -DPACKAGE_BIN_DIR=\"$(bindir)\" \
 -DPACKAGE_LIB_DIR=\"$(libdir)\" \
-@ELEMENTARY_EDBUS_CFLAGS@ \
-@ELEMENTARY_EFREET_CFLAGS@ \
-@ELEMENTARY_ETHUMB_CFLAGS@ \
+@ELEMENTARY_ELOCATION_CFLAGS@ \
+@ELEMENTARY_EWEATHER_CFLAGS@ \
 @ELEMENTARY_EMAP_CFLAGS@ \
 @ELEMENTARY_X_CFLAGS@ \
 @ELEMENTARY_CFLAGS@
 
 LDADD = \
 @ELEMENTARY_LIBS@ \
-@ELEMENTARY_ETHUMB_LIBS@ \
+@ELEMENTARY_ELOCATION_LIBS@ \
 @ELEMENTARY_EMAP_LIBS@ \
 @ELEMENTARY_X_LIBS@ \
 $(top_builddir)/src/lib/libelementary.la
@@ -32,7 +31,12 @@ EDJE_CC = @edje_cc@
 EDJE_FLAGS_VERBOSE_ =
 EDJE_FLAGS_VERBOSE_0 =
 EDJE_FLAGS_VERBOSE_1 = -v
-EDJE_FLAGS = $(EDJE_FLAGS_$(V))
+EDJE_FLAGS = $(EDJE_FLAGS_VERBOSE_$(V))
+
+ELM_PREFS_CC = $(top_builddir)/src/bin/@ELM_PREFS_CC_PRG@
+
+ELEMENTARY_CODEGEN = $(top_builddir)/src/bin/@ELEMENTARY_CODEGEN_PRG@
+ELEMENTARY_CODEGEN_FLAGS = --prefix=codegen_example
 
 SRCS = \
 actionslider_example_01.c \
@@ -51,6 +55,7 @@ calendar_example_05.c \
 calendar_example_06.c \
 check_example_01.c \
 clock_example.c \
+codegen_example.edc \
 colorselector_example_01.c \
 conformant_example_01.c \
 conformant_example_02.c \
@@ -99,15 +104,20 @@ layout_example_03.c \
 list_example_01.c \
 list_example_02.c \
 list_example_03.c \
+location_example_01.c \
 map_example_01.c \
 map_example_02.c \
 map_example_03.c \
 mapbuf_example.c \
 menu_example_01.c \
+naviframe_example.c \
 notify_example_01.c \
 panes_example.c \
 panel_example_01.c \
 photocam_example_01.c \
+prefs_example_01.c \
+prefs_example_02.c \
+prefs_example_03.c \
 popup_example_01.c \
 popup_example_02.c \
 popup_example_03.c \
@@ -134,10 +144,14 @@ transit_example_03.c \
 transit_example_04.c \
 web_example_01.c \
 web_example_02.c \
-win_example.c
+win_example.c \
+track_example_01.c
 
 .edc.edj:
 	$(EDJE_CC) $(EDJE_FLAGS) $< $@
+
+.epc.epb:
+	$(ELM_PREFS_CC) $< $@
 
 if EFL_INSTALL_EXAMPLES
 files_DATA += $(SRCS) \
@@ -146,11 +160,28 @@ endif
 
 if EFL_BUILD_EXAMPLES
 files_DATA += \
+	prefs_example_01.epb \
+	prefs_example_02.epb \
+	prefs_example_03.epb \
+	prefs_example_03.edj \
 	theme_example.edj \
-	layout_example.edj
+	layout_example.edj\
+	codegen_example.edj
 
 clean-local:
-	rm -f *.edj
+	rm -f *.edj *.epb *.cfg *.cfg.bkp
+
+codegen_example_generated.c codegen_example_generated.h: codegen_example.edj
+	$(ELEMENTARY_CODEGEN) $(ELEMENTARY_CODEGEN_FLAGS) codegen_example.edj \
+	elm/example/mylayout/default codegen_example_generated.c codegen_example_generated.h
+
+BUILT_SOURCES = codegen_example_generated.c codegen_example_generated.h
+
+codegen_example_SOURCES = \
+	codegen_example.c
+nodist_codegen_example_SOURCES = \
+codegen_example_generated.c \
+codegen_example_generated.h
 
 examples_PROGRAMS = \
 actionslider_example_01 \
@@ -169,6 +200,7 @@ calendar_example_05 \
 calendar_example_06 \
 check_example_01 \
 clock_example \
+codegen_example \
 colorselector_example_01 \
 conformant_example_01 \
 conformant_example_02 \
@@ -212,15 +244,20 @@ layout_example_03 \
 list_example_01 \
 list_example_02 \
 list_example_03 \
+location_example_01 \
 map_example_01 \
 map_example_02 \
 map_example_03 \
 mapbuf_example \
 menu_example_01 \
+naviframe_example \
 notify_example_01 \
 panes_example \
 panel_example_01 \
 photocam_example_01 \
+prefs_example_01 \
+prefs_example_02 \
+prefs_example_03 \
 popup_example_01 \
 popup_example_02 \
 popup_example_03 \
@@ -246,7 +283,8 @@ transit_example_03 \
 transit_example_04 \
 web_example_01 \
 web_example_02 \
-win_example
+win_example \
+track_example_01
 
 if ELEMENTARY_WINDOWS_BUILD
 efl_thread_1_SOURCES = efl_thread_win32_1.c
@@ -365,4 +403,4 @@ screenshots:
 
 endif
 
-EXTRA_DIST = dict.txt layout_example.edc theme_example.edc
+EXTRA_DIST = dict.txt layout_example.edc theme_example.edc codegen_example.edc

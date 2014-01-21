@@ -1,4 +1,27 @@
 /**
+ * @typedef Elm_Object_Item
+ * An Elementary Object item handle.
+ * @ingroup General
+ */
+typedef struct _Elm_Object_Item Elm_Object_Item;
+
+/**
+ * @typedef Elm_Object_Item_Signal_Cb
+ *
+ * Elm_Object_Item Signal Callback functions' prototype definition. @c data
+ * will have the auxiliary data pointer at the time the callback registration.
+ * @c it will be a pointer the Elm_Object_Item that have the edje object where
+ * the signal comes from. @c emission will identify the exact signal's emission
+ * string and @c source the exact signal's source one.
+ *
+ * @see elm_object_item_signal_callback_add()
+ * @since 1.8
+ *
+ * @ingroup General
+ */
+typedef void                  (*Elm_Object_Item_Signal_Cb)(void *data, Elm_Object_Item *it, const char *emission, const char *source);
+
+/**
  * Get the widget object's handle which contains a given item
  *
  * @param it The Elementary object item
@@ -99,6 +122,85 @@ EAPI const char                  *elm_object_item_part_text_get(const Elm_Object
 #define elm_object_item_text_get(it) elm_object_item_part_text_get((it), NULL)
 
 /**
+ * Set the text for an object item's part, marking it as translatable.
+ *
+ * The string to set as @p text must be the original one. Do not pass the
+ * return of @c gettext() here. Elementary will translate the string
+ * internally and set it on the object item using
+ * elm_object_item_part_text_set(), also storing the original string so that it
+ * can be automatically translated when the language is changed with
+ * elm_language_set(). The @p domain will be stored along to find the
+ * translation in the correct catalog. It can be NULL, in which case it will use
+ * whatever domain was set by the application with @c textdomain(). This is
+ * useful in case you are building a library on top of Elementary that will have
+ * its own translatable strings, that should not be mixed with those of programs
+ * using the library.
+ *
+ * @param it The object item containing the text part
+ * @param part The name of the part to set
+ * @param domain The translation domain to use
+ * @param text The original, non-translated text to set
+ *
+ * @ingroup General
+ * @since 1.8
+ */
+EAPI void      elm_object_item_domain_translatable_part_text_set(Elm_Object_Item *it, const char *part, const char *domain, const char *text);
+
+#define elm_object_item_domain_translatable_text_set(it, domain, text) elm_object_item_domain_translatable_part_text_set((it), NULL, (domain), (text))
+
+#define elm_object_item_translatable_text_set(it, text) elm_object_item_domain_translatable_part_text_set((it), NULL, NULL, (text))
+
+#define elm_object_item_translatable_part_text_set(it, part, text) elm_object_item_domain_translatable_part_text_set((it), (part), NULL, (text))
+
+/**
+ * Get the original string set as translatable for an object item.
+ *
+ * When setting translated strings, the function elm_object_item_part_text_get()
+ * will return the translation returned by @c gettext(). To get the original
+ * string use this function.
+ *
+ * @param it The object item.
+ * @param part The name of the part that was set
+ *
+ * @return The original, untranslated string
+ *
+ * @ingroup General
+ * @since 1.8
+ */
+EAPI const char *elm_object_item_translatable_part_text_get(const Elm_Object_Item *it, const char *part);
+
+#define elm_object_item_translatable_text_get(it) elm_object_item_translatable_part_text_get((it), NULL)
+
+/**
+ * Mark the part text to be translatable or not.
+ *
+ * Once you mark the part text to be translatable, the text will be translated
+ * internally regardless of elm_object_item_part_text_set() and
+ * elm_object_item_domain_translatable_part_text_set(). In other case, if you
+ * set the Elementary policy that all text will be translatable in default, you
+ * can set the part text to not be translated by calling this API.
+ *
+ * @param it The object item containing the text part
+ * @param part The part name of the translatable text
+ * @param domain The translation domain to use
+ * @param translatable @c EINA_TRUE, the part text will be translated
+ *        internally. @c EINA_FALSE, otherwise.
+ *
+ * @see elm_object_item_domain_translatable_part_text_set()
+ * @see elm_object_item_part_text_set()
+ * @see elm_policy()
+ *
+ * @since 1.8
+ *
+ * @ingroup General
+ */
+EAPI void elm_object_item_domain_part_text_translatable_set(Elm_Object_Item *it, const char *part, const char *domain, Eina_Bool translatable);
+
+#define elm_object_item_part_text_translatable_set(it, part, translatable) elm_object_item_domain_part_text_translatable_set((it), (part), NULL, (translatable))
+
+#define elm_object_item_domain_text_translatable_set(it, domain, translatable) elm_object_item_domain_part_text_translatable_set((it), NULL, (domain), (translatable))
+
+/**
  * Set the text to read out when in accessibility mode
  *
  * @param it The object item which is to be described
@@ -107,6 +209,70 @@ EAPI const char                  *elm_object_item_part_text_get(const Elm_Object
  * @ingroup General
  */
 EAPI void                         elm_object_item_access_info_set(Elm_Object_Item *it, const char *txt);
+
+/**
+ * @brief Register object item as an accessible object.
+ * @since 1.8
+ *
+ * @param item The elementary object item
+ * @return Accessible object of the object item or NULL for any error
+ *
+ * @ingroup General
+ */
+EAPI Evas_Object                 *elm_object_item_access_register(Elm_Object_Item *item);
+
+/**
+ * @brief Unregister accessible object of the object item.
+ * @since 1.8
+ *
+ * @param item The elementary object item
+ *
+ * @ingroup General
+ */
+EAPI void                         elm_object_item_access_unregister(Elm_Object_Item *item);
+
+/**
+ * @brief Get an accessible object of the object item.
+ * @since 1.8
+ *
+ * @param item The elementary object item
+ * @return Accessible object of the object item or NULL for any error
+ *
+ * @ingroup General
+ */
+EAPI Evas_Object                 *elm_object_item_access_object_get(const Elm_Object_Item *item);
+
+/**
+ * @brief Set highlight order
+ * @since 1.8
+ *
+ * @param item The container object item
+ * @param objs Order of objects to pass highlight
+ *
+ * @ingroup General
+ */
+EAPI void                         elm_object_item_access_order_set(Elm_Object_Item *item, Eina_List *objs);
+
+/**
+ * @brief Get highlight order
+ * @since 1.8
+ *
+ * @param item The container object item
+ * @return Order of objects to pass highlight
+ *
+ * @ingroup General
+ */
+EAPI const Eina_List              *elm_object_item_access_order_get(const Elm_Object_Item *item);
+
+/**
+ * @brief Unset highlight order
+ * @since 1.8
+ *
+ * @param item The container object item
+ *
+ * @ingroup General
+ */
+EAPI void                         elm_object_item_access_order_unset(Elm_Object_Item *item);
 
 /**
  * Get the data associated with an object item
@@ -141,6 +307,50 @@ EAPI void                         elm_object_item_data_set(Elm_Object_Item *it, 
  * @ingroup General
  */
 EAPI void                         elm_object_item_signal_emit(Elm_Object_Item *it, const char *emission, const char *source);
+
+/**
+ * Add a callback for a signal emitted by object item edje.
+ *
+ * This function connects a callback function to a signal emitted by the
+ * edje object of the object item.
+ * Globs can occur in either the emission or source name.
+ *
+ * @param it The elementary object item
+ * @param emission The signal's name.
+ * @param source The signal's source.
+ * @param func The callback function to be executed when the signal is
+ * emitted.
+ * @param data A pointer to data to pass to the callback function.
+ * @since 1.8
+ *
+ * @ingroup General
+ */
+EAPI void                         elm_object_item_signal_callback_add(Elm_Object_Item *it, const char *emission, const char *source, Elm_Object_Item_Signal_Cb func, void *data);
+
+/**
+ * Remove a signal-triggered callback from a object item edje object.
+ *
+ * @param it The elementary object item
+ * @param emission The signal's name.
+ * @param source The signal's source.
+ * @param func The callback function to be executed when the signal is
+ * emitted.
+ * @return The data pointer of the signal callback or @c NULL, on
+ * errors.
+ *
+ * This function removes the @b last callback, previously attached to
+ * a signal emitted by an underlying Edje object of @a it, whose
+ * parameters @a emission, @a source and @c func match exactly with
+ * those passed to a previous call to
+ * elm_object_item_signal_callback_add(). The data pointer that was passed
+ * to this call will be returned.
+ *
+ * @see elm_object_item_signal_callback_add()
+ * @since 1.8
+ *
+ * @ingroup General
+ */
+EAPI void                        *elm_object_item_signal_callback_del(Elm_Object_Item *it, const char *emission, const char *source, Elm_Object_Item_Signal_Cb func);
 
 /**
  * Set the disabled state of an widget item.
@@ -442,3 +652,76 @@ EAPI void                         elm_object_item_cursor_engine_only_set(Elm_Obj
  * @ingroup General
  */
 EAPI Eina_Bool                    elm_object_item_cursor_engine_only_get(const Elm_Object_Item *it);
+
+/**
+ * This returns track object of the item.
+ *
+ * @param it The Elementary Object Item to be tracked.
+ * @return The track object.
+ *
+ * @note This gets a rectangle object that represents the object item's internal
+ *       object. If you wanna check the geometry, visibility of the item, you
+ *       can call the evas apis such as evas_object_geometry_get(),
+ *       evas_object_visible_get() to the track object. Note that all of the
+ *       widget items may/may not have the internal object so this api may
+ *       return @c NULL if the widget item doesn't have it. Additionally, the
+ *       widget item is managed/controlled by the widget, the widget item could
+ *       be changed(moved, resized even deleted) anytime by it's own widget's
+ *       decision. So please dont' change the track object as well as don't
+ *       keep the track object in your side as possible but get the track object
+ *       at the moment you need to refer. Otherwise, you need to add some
+ *       callbacks to the track object to track it's attributes changes.
+ *
+ * @warning After use the track object, please call the
+ *          elm_object_item_untrack() paired to elm_object_item_track()
+ *          definitely to free the track object properly. Don't delete the
+ *          track object.
+ *
+ * @see elm_object_item_untrack()
+ * @see elm_object_item_track_get()
+ *
+ * @since 1.8
+ *
+ * @ingroup General
+ */
+EAPI Evas_Object                 *elm_object_item_track(Elm_Object_Item *it);
+
+/**
+ * This retrieve the track object of the item.
+ *
+ * @param it The Elementary Object Item that returned track object.
+ *
+ * @note This retrieves the track object that was returned from
+ *       elm_object_item_track().
+ *
+ * @see elm_object_item_track()
+ * @see elm_object_item_track_get()
+ *
+ * @since 1.8
+ *
+ * @ingroup General
+ */
+EAPI void                         elm_object_item_untrack(Elm_Object_Item *it);
+
+/**
+ * Get the track object reference count.
+ *
+ * @param it The Elementary Object Item that returned track object.
+ *
+ * @note This gets the reference count for the track object. Whenever you call
+ *       the elm_object_item_track(), the reference count will be increased by
+ *       one. Likely the referece count will be decreased again when you call
+ *       the elm_object_item_untrack(). Unless the reference count reaches to
+ *       zero, the track object won't be deleted. So please be sure to call
+ *       elm_object_item_untrack() paired to the elm_object_item_track() call
+ *        count.
+ *
+ * @see elm_object_item_track()
+ * @see elm_object_item_track_get()
+ *
+ * @since 1.8
+ *
+ * @ingroup General
+ */
+EAPI int                          elm_object_item_track_get(const Elm_Object_Item *it);
+

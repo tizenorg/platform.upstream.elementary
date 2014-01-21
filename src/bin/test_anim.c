@@ -2,7 +2,7 @@
 # include "elementary_config.h"
 #endif
 #include <Elementary.h>
-#ifndef ELM_LIB_QUICKLAUNCH
+
 
 static const char *names[] =
 {
@@ -12,7 +12,7 @@ static const char *names[] =
 };
 
 static void
-_del(void *data, Evas *evas __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+_del(void *data, Evas *evas EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *win = data;
    Ecore_Animator *ani = evas_object_data_get(win, "animator");
@@ -64,7 +64,7 @@ anim(void *data)
 }
 
 void
-test_anim(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+test_anim(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *win, *bg, *bub, *sh;
    Ecore_Animator *ani;
@@ -78,8 +78,8 @@ test_anim(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info _
    bg = elm_bg_add(win);
    snprintf(buf, sizeof(buf), "%s/images/rock_01.jpg", elm_app_data_dir_get());
    elm_bg_file_set(bg, buf, NULL);
-   elm_win_resize_object_add(win, bg);
    evas_object_size_hint_weight_set(bg, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   elm_win_resize_object_add(win, bg);
    evas_object_show(bg);
 
    snprintf(buf, sizeof(buf), "%s/images/bubble_sh.png", elm_app_data_dir_get());
@@ -110,4 +110,3 @@ test_anim(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info _
 
    evas_object_event_callback_add(win, EVAS_CALLBACK_DEL, _del, win);
 }
-#endif

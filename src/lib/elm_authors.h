@@ -60,6 +60,31 @@
  * @author Jérôme Pinot <ngc891@@gmail.com>
  * @author Davide Andreoli (davemds) <dave@@gurumeditation.it>
  * @author Michal Pakula vel Rutka <m.pakula@@samsung.com>
+ * @author Thiep Ha <thiep.ha@@samsung.com>
+ * @author Artem Popov <artem.popov@@samsung.com>
+ * @author Minseok Kim <minseok3.kim@@samsung.com>
+ * @author Jean-Philippe André <jpeg@@videolan.org>
+ * @author JiHyeon Seol <jihyeon.seol@@samsung.com>
+ * @author Flavio Ceolin <flavio.ceolin@@profusion.mobi>
+ * @author Igor Murzov <e-mail@@date.by>
+ * @author Jiyoun Park <jy0703.park@@samsung.com>
+ * @author KoziarekBeata <b.koziarek@@samsung.com>
+ * @author Daniel Zaoui <daniel.zaoui@@samsung.com>
+ * @author Yakov Goldberg <yakov.g@@samsung.com>
+ * @author Murilo Belluzzo <murilo.belluzzo@@profusion.mobi>
+ * @author Ricardo de Almeida Gonzaga <ricardo@@profusion.mobi>
+ * @author Gwanglim Lee <gl77.lee@@samsung.com> <gwanglim@@gmail.com>
+ * @author JaeHyun Jo <jae_hyun_cho@@naver.com>
+ * @author Bora Hwang <bora1.hwang@@samsung.com>
+ * @author Jiyoung Choi <jychoi7.choi@@samsung.com>
+ * @author Arvind R <arvino55@@gmail.com>
+ * @author Paulo Cavalcanti <paulo.cavalcanti@@linux.intel.com>
+ * @author Stefan Schmidt <stefan@@datenfreihafen.org>
+ * @author Ryuan Choi (ryuan) <ryuan.choi@@samsung.com> <ryuan.choi@@gmail.com>
+ * @author Hosang Kim <hosang12.kim@@samsung.com>
+ * @author Youngbok Shin <youngb.shin@@samsung.com>
+ * @author Niraj Kumar <niraj.kr@@samsung.com> <niraj.kumar.ait@@gmail.com>
+ * @author Amitesh Singh <singh.amitesh@@gmail.com>
  *
  * Please contact <enlightenment-devel@lists.sourceforge.net> to get in
  * contact with the developers and maintainers.

@@ -1,3 +1,7 @@
+#ifdef HAVE_CONFIG_H
+# include "elementary_config.h"
+#endif
+
 #include <Elementary.h>
 #include "elm_priv.h"
 
@@ -59,7 +63,7 @@ _del_hook(Evas_Object *obj)
         wd->content = NULL;
         evas_object_del(o);
         fac--;
-//        printf("FAC-- = %i\n", fac);
+//        DBG("FAC-- = %i", fac);
      }
    free(wd);
 }
@@ -96,7 +100,7 @@ _sizing_eval(Evas_Object *obj)
         evas_object_size_hint_min_set(obj, minw, minh);
      }
    evas_object_size_hint_max_set(obj, maxw, maxh);
-//   printf("FAC SZ: %i %i | %i %i\n", minw, minh, maxw, maxh);
+//   DBG("FAC SZ: %i %i | %i %i", minw, minh, maxw, maxh);
 }
 
 static void
@@ -125,7 +129,7 @@ _eval(Evas_Object *obj)
      {
         if (!wd->content)
           {
-//             printf("                 + %i %i %ix%i <> %i %i %ix%i\n", x, y, w, h, cvx, cvy, cvw, cvh);
+//             DBG("                 + %i %i %ix%i <> %i %i %ix%i", x, y, w, h, cvx, cvy, cvw, cvh);
              evas_object_smart_callback_call(obj, SIG_REALIZE, NULL);
              if (wd->content)
                {
@@ -209,7 +213,7 @@ _child_del(void *data, Evas *e __UNUSED__, Evas_Object *obj, void *event_info __
                                        _child_del, obj);
    wd->content = NULL;
    fac--;
-//   printf("FAC-- = %i\n", fac);
+//   DBG("FAC-- = %i", fac);
 }
 
 static Evas_Object *
@@ -232,7 +236,7 @@ _content_unset_hook(Evas_Object *obj, const char *part)
                                        _child_del, obj);
    wd->content = NULL;
    fac--;
-//         printf("FAC-- = %i\n", fac);
+//         DBG("FAC-- = %i", fac);
    return content;
 }
 
@@ -254,7 +258,7 @@ _content_set_hook(Evas_Object *obj, const char *part, Evas_Object *content)
    wd->content = content;
    if (!content) return;
 
-   elm_widget_resize_object_set(obj, content);
+   elm_widget_resize_object_set(obj, content, EINA_TRUE);
    evas_object_event_callback_add(content, EVAS_CALLBACK_DEL, _child_del, obj);
    evas_object_event_callback_add(content, EVAS_CALLBACK_CHANGED_SIZE_HINTS,
                                   _child_change, obj);

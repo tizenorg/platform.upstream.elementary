@@ -5,19 +5,11 @@
  * See stdout/stderr for output. Compile with:
  *
  * @verbatim
- * gcc -g file selector_example.c -o file selector_example `pkg-config --cflags --libs elementary`
+ * gcc -g fileselector_example.c -o fileselector_example `pkg-config --cflags --libs elementary`
  * @endverbatim
  */
 
 #include <Elementary.h>
-
-static void
-_on_done(void        *data,
-         Evas_Object *obj,
-         void        *event_info)
-{
-   elm_exit();
-}
 
 /* 'done' cb */
 static void
@@ -32,7 +24,7 @@ _fs_done(void        *data,
    printf("We're done! Selected file is: %s\n",
           selected ? selected : "*none!*");
 
-   _on_done(NULL, NULL, NULL);
+   elm_exit();
 }
 
 /* 'selected' cb */
@@ -112,7 +104,7 @@ EAPI_MAIN int
 elm_main(int    argc,
          char **argv)
 {
-    Evas_Object *win, *fs, *bg, *vbox, *buttons_bx, *bt, *sep, *bx;
+   Evas_Object *win, *fs, *vbox, *buttons_bx, *bt, *sep, *bx;
 
    /* Set the locale according to the system pref. If you dont do so
     * the file selector will order the files list in a case sensitive
@@ -121,21 +113,15 @@ elm_main(int    argc,
    setlocale(LC_ALL, "");
 
    elm_need_ethumb(); /* let's have thumbnails of images on grid view */
+   elm_policy_set(ELM_POLICY_QUIT, ELM_POLICY_QUIT_LAST_WINDOW_CLOSED);
 
-   win = elm_win_add(NULL, "fileselector", ELM_WIN_BASIC);
-   elm_win_title_set(win, "File Selector Example");
-   evas_object_smart_callback_add(win, "delete,request", _on_done, NULL);
-
-   bg = elm_bg_add(win);
-   elm_win_resize_object_add(win, bg);
-   evas_object_size_hint_weight_set(bg, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-   evas_object_show(bg);
+   win = elm_win_util_standard_add("fileselector", "File Selector Example");
+   elm_win_autodel_set(win, EINA_TRUE);
 
    bx = elm_box_add(win);
-   elm_win_resize_object_add(win, bx);
    elm_box_horizontal_set(bx, EINA_TRUE);
    evas_object_size_hint_weight_set(bx, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-   /* evas_object_size_hint_align_set(fs, EVAS_HINT_FILL, EVAS_HINT_FILL); */
+   elm_win_resize_object_add(win, bx);
    evas_object_show(bx);
 
    vbox = elm_box_add(win);

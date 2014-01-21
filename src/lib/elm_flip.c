@@ -1,8 +1,18 @@
+#ifdef HAVE_CONFIG_H
+# include "elementary_config.h"
+#endif
+
 #include <Elementary.h>
 #include "elm_priv.h"
 #include "elm_widget_flip.h"
+#include "elm_widget_container.h"
 
-EAPI const char ELM_FLIP_SMART_NAME[] = "elm_flip";
+EAPI Eo_Op ELM_OBJ_FLIP_BASE_ID = EO_NOOP;
+
+#define MY_CLASS ELM_OBJ_FLIP_CLASS
+
+#define MY_CLASS_NAME "Elm_Flip"
+#define MY_CLASS_NAME_LEGACY "elm_flip"
 
 static const char SIG_ANIMATE_BEGIN[] = "animate,begin";
 static const char SIG_ANIMATE_DONE[] = "animate,done";
@@ -13,10 +23,6 @@ static const Evas_Smart_Cb_Description _smart_callbacks[] = {
 };
 
 static Eina_Bool _flip(Evas_Object *obj);
-
-EVAS_SMART_SUBCLASS_NEW
-  (ELM_FLIP_SMART_NAME, _elm_flip, Elm_Flip_Smart_Class,
-  Elm_Container_Smart_Class, elm_container_smart_class_get, _smart_callbacks);
 
 static void
 _slice_free(Slice *sl)
@@ -76,10 +82,10 @@ _sizing_eval(Evas_Object *obj)
    if ((maxw2 >= 0) && (maxw2 < maxw)) maxw = maxw2;
    if ((maxh2 >= 0) && (maxh2 < maxh)) maxh = maxh2;
 
-   if (sd->dir_enabled[0]) fingy++;
-   if (sd->dir_enabled[1]) fingy++;
-   if (sd->dir_enabled[2]) fingx++;
-   if (sd->dir_enabled[3]) fingx++;
+   if (sd->dir_enabled[ELM_FLIP_DIRECTION_UP]) fingy++;
+   if (sd->dir_enabled[ELM_FLIP_DIRECTION_DOWN]) fingy++;
+   if (sd->dir_enabled[ELM_FLIP_DIRECTION_LEFT]) fingx++;
+   if (sd->dir_enabled[ELM_FLIP_DIRECTION_RIGHT]) fingx++;
 
    elm_coords_finger_size_adjust(fingx, &minw, fingy, &minh);
 
@@ -87,28 +93,82 @@ _sizing_eval(Evas_Object *obj)
    evas_object_size_hint_max_set(obj, maxw, maxh);
 }
 
-static Eina_Bool
-_elm_flip_smart_theme(Evas_Object *obj)
+static void
+_elm_flip_smart_theme(Eo *obj, void *_pd EINA_UNUSED, va_list *list)
 {
-   if (!ELM_WIDGET_CLASS(_elm_flip_parent_sc)->theme(obj)) return EINA_FALSE;
+   Eina_Bool *ret = va_arg(*list, Eina_Bool *);
+   Eina_Bool int_ret;
+   if (ret) *ret = EINA_FALSE;
+
+   eo_do_super(obj, MY_CLASS, elm_wdg_theme(&int_ret));
+   if (!int_ret) return;
 
    _sizing_eval(obj);
 
-   return EINA_TRUE;
+   if (ret) *ret = EINA_TRUE;
 }
 
-static Eina_Bool
-_elm_flip_smart_focus_next(const Evas_Object *obj,
-                           Elm_Focus_Direction dir,
-                           Evas_Object **next)
+static void
+_elm_flip_smart_focus_next_manager_is(Eo *obj EINA_UNUSED, void *_pd EINA_UNUSED, va_list *list)
 {
-   ELM_FLIP_DATA_GET(obj, sd);
+   Eina_Bool *ret = va_arg(*list, Eina_Bool *);
+   *ret = EINA_TRUE;
+}
+
+static void
+_elm_flip_smart_focus_next(Eo *obj EINA_UNUSED, void *_pd EINA_UNUSED, va_list *list)
+{
+   Elm_Focus_Direction dir = va_arg(*list, Elm_Focus_Direction);
+   Evas_Object **next = va_arg(*list, Evas_Object **);
+   Eina_Bool *ret = va_arg(*list, Eina_Bool *);
+   Eina_Bool int_ret;
+   Elm_Flip_Smart_Data *sd = _pd;
 
    /* attempt to cycle focus on in sub-items */
    if (sd->state)
-     return elm_widget_focus_next_get(sd->front.content, dir, next);
+     int_ret = elm_widget_focus_next_get(sd->front.content, dir, next);
    else
-     return elm_widget_focus_next_get(sd->back.content, dir, next);
+     int_ret = elm_widget_focus_next_get(sd->back.content, dir, next);
+   if (ret) *ret = int_ret;
+}
+
+static void
+_elm_flip_smart_focus_direction_manager_is(Eo *obj EINA_UNUSED, void *_pd EINA_UNUSED, va_list *list)
+{
+   Eina_Bool *ret = va_arg(*list, Eina_Bool *);
+   if (!elm_widget_can_focus_get(obj))
+     *ret = EINA_TRUE;
+   else
+     *ret = EINA_FALSE;
+}
+
+static void
+_elm_flip_smart_focus_direction(Eo *obj, void *_pd, va_list *list)
+{
+   Evas_Object *base = va_arg(*list, Evas_Object *);
+   double degree = va_arg(*list, double);
+   Evas_Object **direction = va_arg(*list, Evas_Object **);
+   double *weight = va_arg(*list, double *);
+   Eina_Bool *ret = va_arg(*list, Eina_Bool *);
+   if (ret) *ret = EINA_FALSE;
+   Eina_Bool int_ret;
+   Elm_Flip_Smart_Data *sd = _pd;
+
+   Eina_List *l = NULL;
+   void *(*list_data_get)(const Eina_List *list);
+
+   list_data_get = eina_list_data_get;
+
+   if (sd->front.content)
+     l = eina_list_append(l, sd->front.content);
+   if (sd->back.content)
+     l = eina_list_append(l, sd->back.content);
+
+   int_ret = elm_widget_focus_list_direction_get
+            (obj, base, l, list_data_get, degree, direction, weight);
+
+   if (ret) *ret = int_ret;
+   eina_list_free(l);
 }
 
 static void
@@ -120,32 +180,41 @@ _changed_size_hints_cb(void *data,
    _sizing_eval(data);
 }
 
-static Eina_Bool
-_elm_flip_smart_sub_object_add(Evas_Object *obj,
-                               Evas_Object *sobj)
+static void
+_elm_flip_smart_sub_object_add(Eo *obj, void *_pd EINA_UNUSED, va_list *list)
 {
-   if (evas_object_data_get(sobj, "elm-parent") == obj)
-     return EINA_TRUE;
+   Evas_Object *sobj = va_arg(*list, Evas_Object *);
+   Eina_Bool *ret = va_arg(*list, Eina_Bool *);
+   Eina_Bool int_ret;
+   if (ret) *ret = EINA_FALSE;
 
-   if (!ELM_WIDGET_CLASS(_elm_flip_parent_sc)->sub_object_add(obj, sobj))
-     return EINA_FALSE;
+   if (evas_object_data_get(sobj, "elm-parent") == obj)
+     goto end;
+
+   eo_do_super(obj, MY_CLASS, elm_wdg_sub_object_add(sobj, &int_ret));
+   if (!int_ret) return;
 
    evas_object_data_set(sobj, "_elm_leaveme", sobj);
    evas_object_smart_member_add(sobj, obj);
    evas_object_event_callback_add
      (sobj, EVAS_CALLBACK_CHANGED_SIZE_HINTS, _changed_size_hints_cb, obj);
 
-   return EINA_TRUE;
+end:
+   if (ret) *ret = EINA_TRUE;
 }
 
-static Eina_Bool
-_elm_flip_smart_sub_object_del(Evas_Object *obj,
-                               Evas_Object *sobj)
+static void
+_elm_flip_smart_sub_object_del(Eo *obj, void *_pd, va_list *list)
 {
-   ELM_FLIP_DATA_GET(obj, sd);
+   Evas_Object *sobj = va_arg(*list, Evas_Object *);
+   Eina_Bool *ret = va_arg(*list, Eina_Bool *);
+   Eina_Bool int_ret;
+   if (ret) *ret = EINA_FALSE;
 
-   if (!ELM_WIDGET_CLASS(_elm_flip_parent_sc)->sub_object_del(obj, sobj))
-     return EINA_FALSE;
+   Elm_Flip_Smart_Data *sd = _pd;
+
+   eo_do_super(obj, MY_CLASS, elm_wdg_sub_object_del(sobj, &int_ret));
+   if (!int_ret) return;
 
    if (sobj == sd->front.content)
      {
@@ -167,11 +236,11 @@ _elm_flip_smart_sub_object_del(Evas_Object *obj,
      (sobj, EVAS_CALLBACK_CHANGED_SIZE_HINTS, _changed_size_hints_cb, obj);
    _sizing_eval(obj);
 
-   return EINA_TRUE;
+   if (ret) *ret = EINA_TRUE;
 }
 
 static Slice *
-_slice_new(Elm_Flip_Smart_Data *sd,
+_slice_new(Evas_Object *container_obj,
            Evas_Object *obj)
 {
    Slice *sl;
@@ -181,7 +250,7 @@ _slice_new(Elm_Flip_Smart_Data *sd,
 
    sl->obj = evas_object_image_add(evas_object_evas_get(obj));
 
-   evas_object_smart_member_add(sl->obj, ELM_WIDGET_DATA(sd)->obj);
+   evas_object_smart_member_add(sl->obj, container_obj);
 
    evas_object_image_smooth_scale_set(sl->obj, EINA_FALSE);
    evas_object_pass_events_set(sl->obj, EINA_TRUE);
@@ -212,21 +281,21 @@ _slice_apply(Elm_Flip_Smart_Data *sd,
    for (i = 0; i < 4; i++)
      {
         evas_map_point_color_set(m, i, 255, 255, 255, 255);
-        if (sd->dir == 0)
+        if (sd->dir == ELM_FLIP_DIRECTION_LEFT)
           {
              int p[4] = { 0, 1, 2, 3 };
              evas_map_point_coord_set(m, i, ox + sl->x[p[i]], oy + sl->y[p[i]],
                                       sl->z[p[i]]);
              evas_map_point_image_uv_set(m, i, sl->u[p[i]], sl->v[p[i]]);
           }
-        else if (sd->dir == 1)
+        else if (sd->dir == ELM_FLIP_DIRECTION_RIGHT)
           {
              int p[4] = { 1, 0, 3, 2 };
              evas_map_point_coord_set(m, i, ox + (w - sl->x[p[i]]),
                                       oy + sl->y[p[i]], sl->z[p[i]]);
              evas_map_point_image_uv_set(m, i, ow - sl->u[p[i]], sl->v[p[i]]);
           }
-        else if (sd->dir == 2)
+        else if (sd->dir == ELM_FLIP_DIRECTION_UP)
           {
              int p[4] = { 1, 0, 3, 2 };
              evas_map_point_coord_set(m, i, ox + sl->y[p[i]], oy + sl->x[p[i]],
@@ -264,8 +333,8 @@ _slice_3d(Elm_Flip_Smart_Data *sd __UNUSED__,
    evas_map_util_3d_perspective(m, x + (w / 2), y + (h / 2), 0, 1024);
    for (i = 0; i < 4; i++)
      {
-        Evas_Coord xx, yy, zz;
-        evas_map_point_coord_get(m, i, &xx, &yy, &zz);
+        Evas_Coord xx, yy;
+        evas_map_point_coord_get(m, i, &xx, &yy, NULL);
         evas_map_point_coord_set(m, i, xx, yy, 0);
      }
 
@@ -460,8 +529,9 @@ _slice_obj_vert_color_merge(Slice *s1,
 }
 
 static int
-_state_update(Elm_Flip_Smart_Data *sd)
+_state_update(Evas_Object *obj)
 {
+   Elm_Flip_Smart_Data *sd = eo_data_scope_get(obj, MY_CLASS);
    Slice *sl;
    Vertex3 *tvo, *tvol;
    Evas_Object *front, *back;
@@ -484,23 +554,23 @@ _state_update(Elm_Flip_Smart_Data *sd)
         back = sd->back.content;
      }
 
-   evas_object_geometry_get(ELM_WIDGET_DATA(sd)->obj, &x, &y, &w, &h);
+   evas_object_geometry_get(obj, &x, &y, &w, &h);
    ox = x; oy = y; ow = w; oh = h;
    xx1 = sd->down_x;
    yy1 = sd->down_y;
    xx2 = sd->x;
    yy2 = sd->y;
 
-   if (sd->dir == 0)
+   if (sd->dir == ELM_FLIP_DIRECTION_LEFT)
      {
         // no nothing. left drag is standard
      }
-   else if (sd->dir == 1)
+   else if (sd->dir == ELM_FLIP_DIRECTION_RIGHT)
      {
         xx1 = (w - 1) - xx1;
         xx2 = (w - 1) - xx2;
      }
-   else if (sd->dir == 2)
+   else if (sd->dir == ELM_FLIP_DIRECTION_UP)
      {
         Evas_Coord tmp;
 
@@ -705,7 +775,7 @@ _state_update(Elm_Flip_Smart_Data *sd)
              sl = sd->slices[nn];
              if (!sl)
                {
-                  sl = _slice_new(sd, front);
+                  sl = _slice_new(obj, front);
                   sd->slices[nn] = sl;
                }
              _slice_xyz(sd, sl,
@@ -725,7 +795,7 @@ _state_update(Elm_Flip_Smart_Data *sd)
              sl = sd->slices2[nn];
              if (!sl)
                {
-                  sl = _slice_new(sd, back);
+                  sl = _slice_new(obj, back);
                   sd->slices2[nn] = sl;
                }
 
@@ -785,21 +855,21 @@ _state_update(Elm_Flip_Smart_Data *sd)
                s2[3] = sd->slices2[num];
              switch (sd->dir)
                {
-                case 0:
+                case ELM_FLIP_DIRECTION_LEFT:
                   _slice_obj_vert_color_merge
                     (s[0], 2, s[1], 3, s[2], 1, s[3], 0);
                   _slice_obj_vert_color_merge
                     (s2[0], 3, s2[1], 2, s2[2], 0, s2[3], 1);
                   break;
 
-                case 1:
+                case ELM_FLIP_DIRECTION_RIGHT:
                   _slice_obj_vert_color_merge
                     (s[0], 3, s[1], 2, s[2], 0, s[3], 1);
                   _slice_obj_vert_color_merge
                     (s2[0], 2, s2[1], 3, s2[2], 1, s2[3], 0);
                   break;
 
-                case 2:
+                case ELM_FLIP_DIRECTION_UP:
                   _slice_obj_vert_color_merge
                     (s[0], 3, s[1], 2, s[2], 0, s[3], 1);
                   _slice_obj_vert_color_merge
@@ -888,6 +958,32 @@ _flip_show_hide(Evas_Object *obj)
 }
 
 static void
+_map_uv_set(Evas_Object *obj, Evas_Map *map)
+{
+   Evas_Coord x, y, w, h;
+   const char *type = evas_object_type_get(obj);
+
+   // FIXME: only handles filled obj
+   if ((type) && (!strcmp(type, "image") &&
+                  !evas_object_image_source_get(obj)))
+     {
+        int iw, ih;
+        evas_object_image_size_get(obj, &iw, &ih);
+        evas_object_geometry_get(obj, &x, &y, &w, &h);
+        evas_map_util_points_populate_from_geometry(map, x, y, w, h, 0);
+        evas_map_point_image_uv_set(map, 0, 0, 0);
+        evas_map_point_image_uv_set(map, 1, iw, 0);
+        evas_map_point_image_uv_set(map, 2, iw, ih);
+        evas_map_point_image_uv_set(map, 3, 0, ih);
+     }
+   else
+     {
+        evas_object_geometry_get(obj, &x, &y, &w, &h);
+        evas_map_util_points_populate_from_geometry(map, x, y, w, h, 0);
+     }
+}
+
+static void
 _flip_do(Evas_Object *obj,
          double t,
          Elm_Flip_Mode mode,
@@ -908,50 +1004,9 @@ _flip_do(Evas_Object *obj,
    evas_map_smooth_set(mb, EINA_FALSE);
 
    if (sd->front.content)
-     {
-        const char *type = evas_object_type_get(sd->front.content);
-
-        // FIXME: only handles filled obj
-        if ((type) && (!strcmp(type, "image") &&
-                       !evas_object_image_source_get(sd->front.content)))
-          {
-             int iw, ih;
-             evas_object_image_size_get(sd->front.content, &iw, &ih);
-             evas_object_geometry_get(sd->front.content, &x, &y, &w, &h);
-             evas_map_util_points_populate_from_geometry(mf, x, y, w, h, 0);
-             evas_map_point_image_uv_set(mf, 0, 0, 0);
-             evas_map_point_image_uv_set(mf, 1, iw, 0);
-             evas_map_point_image_uv_set(mf, 2, iw, ih);
-             evas_map_point_image_uv_set(mf, 3, 0, ih);
-          }
-        else
-          {
-             evas_object_geometry_get(sd->front.content, &x, &y, &w, &h);
-             evas_map_util_points_populate_from_geometry(mf, x, y, w, h, 0);
-          }
-     }
+     _map_uv_set(sd->front.content, mf);
    if (sd->back.content)
-     {
-        const char *type = evas_object_type_get(sd->back.content);
-
-        if ((type) && (!strcmp(type, "image") &&
-                       !evas_object_image_source_get(sd->back.content)))
-          {
-             int iw, ih;
-             evas_object_image_size_get(sd->back.content, &iw, &ih);
-             evas_object_geometry_get(sd->back.content, &x, &y, &w, &h);
-             evas_map_util_points_populate_from_geometry(mb, x, y, w, h, 0);
-             evas_map_point_image_uv_set(mb, 0, 0, 0);
-             evas_map_point_image_uv_set(mb, 1, iw, 0);
-             evas_map_point_image_uv_set(mb, 2, iw, ih);
-             evas_map_point_image_uv_set(mb, 3, 0, ih);
-          }
-        else
-          {
-             evas_object_geometry_get(sd->back.content, &x, &y, &w, &h);
-             evas_map_util_points_populate_from_geometry(mb, x, y, w, h, 0);
-          }
-     }
+     _map_uv_set(sd->back.content, mb);
 
    evas_object_geometry_get(obj, &x, &y, &w, &h);
 
@@ -1177,7 +1232,6 @@ _configure(Evas_Object *obj)
    Evas_Coord fsize;
 
    ELM_FLIP_DATA_GET(obj, sd);
-
    _show_hide(obj);
    evas_object_geometry_get(obj, &x, &y, &w, &h);
    // FIXME: manual flip wont get fixed
@@ -1227,13 +1281,12 @@ _flip(Evas_Object *obj)
 
    t = t / sd->len;
    if (t > 1.0) t = 1.0;
-
    evas_object_geometry_get(obj, NULL, NULL, &w, &h);
    if (!sd->manual)
      {
         if (sd->mode == ELM_FLIP_PAGE_LEFT)
           {
-             sd->dir = 0;
+             sd->dir = ELM_FLIP_DIRECTION_LEFT;
              sd->started = EINA_TRUE;
              sd->pageflip = EINA_TRUE;
              sd->down_x = w - 1;
@@ -1241,11 +1294,11 @@ _flip(Evas_Object *obj)
              sd->x = (1.0 - t) * sd->down_x;
              sd->y = sd->down_y;
              _flip_show_hide(obj);
-             _state_update(sd);
+             _state_update(obj);
           }
         else if (sd->mode == ELM_FLIP_PAGE_RIGHT)
           {
-             sd->dir = 1;
+             sd->dir = ELM_FLIP_DIRECTION_RIGHT;
              sd->started = EINA_TRUE;
              sd->pageflip = EINA_TRUE;
              sd->down_x = 0;
@@ -1253,11 +1306,11 @@ _flip(Evas_Object *obj)
              sd->x = (t) * w;
              sd->y = sd->down_y;
              _flip_show_hide(obj);
-             _state_update(sd);
+             _state_update(obj);
           }
         else if (sd->mode == ELM_FLIP_PAGE_UP)
           {
-             sd->dir = 2;
+             sd->dir = ELM_FLIP_DIRECTION_UP;
              sd->started = EINA_TRUE;
              sd->pageflip = EINA_TRUE;
              sd->down_x = w / 2;
@@ -1265,11 +1318,11 @@ _flip(Evas_Object *obj)
              sd->x = sd->down_x;
              sd->y = (1.0 - t) * sd->down_y;
              _flip_show_hide(obj);
-             _state_update(sd);
+             _state_update(obj);
           }
         else if (sd->mode == ELM_FLIP_PAGE_DOWN)
           {
-             sd->dir = 3;
+             sd->dir = ELM_FLIP_DIRECTION_DOWN;
              sd->started = EINA_TRUE;
              sd->pageflip = EINA_TRUE;
              sd->down_x = w / 2;
@@ -1277,12 +1330,12 @@ _flip(Evas_Object *obj)
              sd->x = sd->down_x;
              sd->y = (t) * h;
              _flip_show_hide(obj);
-             _state_update(sd);
+             _state_update(obj);
           }
         else
           _flip_do(obj, t, sd->mode, 0, 0);
      }
-   
+
    if (t >= 1.0)
      {
 #if 0 // this breaks manual flipping. :/
@@ -1344,36 +1397,37 @@ _animate(void *data)
 }
 
 static double
-_pos_get(Elm_Flip_Smart_Data *sd,
+_pos_get(Evas_Object *obj,
+         Elm_Flip_Smart_Data *sd,
          int *rev,
          Elm_Flip_Mode *m)
 {
    Evas_Coord x, y, w, h;
    double t = 1.0;
 
-   evas_object_geometry_get(ELM_WIDGET_DATA(sd)->obj, &x, &y, &w, &h);
+   evas_object_geometry_get(obj, &x, &y, &w, &h);
    switch (sd->intmode)
      {
       case ELM_FLIP_INTERACTION_ROTATE:
       case ELM_FLIP_INTERACTION_CUBE:
       {
-         if (sd->dir == 0)
+         if (sd->dir == ELM_FLIP_DIRECTION_LEFT)
            {
               if (sd->down_x > 0)
                 t = 1.0 - ((double)sd->x / (double)sd->down_x);
               *rev = 1;
            }
-         else if (sd->dir == 1)
+         else if (sd->dir == ELM_FLIP_DIRECTION_RIGHT)
            {
               if (sd->down_x < w)
                 t = 1.0 - ((double)(w - sd->x) / (double)(w - sd->down_x));
            }
-         else if (sd->dir == 2)
+         else if (sd->dir == ELM_FLIP_DIRECTION_UP)
            {
               if (sd->down_y > 0)
                 t = 1.0 - ((double)sd->y / (double)sd->down_y);
            }
-         else if (sd->dir == 3)
+         else if (sd->dir == ELM_FLIP_DIRECTION_DOWN)
            {
               if (sd->down_y < h)
                 t = 1.0 - ((double)(h - sd->y) / (double)(h - sd->down_y));
@@ -1384,7 +1438,8 @@ _pos_get(Elm_Flip_Smart_Data *sd,
          else if (t > 1.0)
            t = 1.0;
 
-         if ((sd->dir == 0) || (sd->dir == 1))
+         if ((sd->dir == ELM_FLIP_DIRECTION_LEFT) ||
+             (sd->dir == ELM_FLIP_DIRECTION_RIGHT))
            {
               if (sd->intmode == ELM_FLIP_INTERACTION_ROTATE)
                 *m = ELM_FLIP_ROTATE_Y_CENTER_AXIS;
@@ -1426,24 +1481,24 @@ _event_anim(void *data,
    p = ecore_animator_pos_map(pos, ECORE_POS_MAP_ACCELERATE, 0.0, 0.0);
    if (sd->finish)
      {
-        if (sd->dir == 0)
+        if (sd->dir == ELM_FLIP_DIRECTION_LEFT)
           sd->x = sd->ox * (1.0 - p);
-        else if (sd->dir == 1)
+        else if (sd->dir == ELM_FLIP_DIRECTION_RIGHT)
           sd->x = sd->ox + ((sd->w - sd->ox) * p);
-        else if (sd->dir == 2)
+        else if (sd->dir == ELM_FLIP_DIRECTION_UP)
           sd->y = sd->oy * (1.0 - p);
-        else if (sd->dir == 3)
+        else if (sd->dir == ELM_FLIP_DIRECTION_DOWN)
           sd->y = sd->oy + ((sd->h - sd->oy) * p);
      }
    else
      {
-        if (sd->dir == 0)
+        if (sd->dir == ELM_FLIP_DIRECTION_LEFT)
           sd->x = sd->ox + ((sd->w - sd->ox) * p);
-        else if (sd->dir == 1)
+        else if (sd->dir == ELM_FLIP_DIRECTION_RIGHT)
           sd->x = sd->ox * (1.0 - p);
-        else if (sd->dir == 2)
+        else if (sd->dir == ELM_FLIP_DIRECTION_UP)
           sd->y = sd->oy + ((sd->h - sd->oy) * p);
-        else if (sd->dir == 3)
+        else if (sd->dir == ELM_FLIP_DIRECTION_DOWN)
           sd->y = sd->oy * (1.0 - p);
      }
    switch (sd->intmode)
@@ -1453,18 +1508,18 @@ _event_anim(void *data,
 
       case ELM_FLIP_INTERACTION_ROTATE:
       case ELM_FLIP_INTERACTION_CUBE:
-      {
-         Elm_Flip_Mode m = ELM_FLIP_ROTATE_X_CENTER_AXIS;
-         int rev = 0;
-         p = _pos_get(sd, &rev, &m);
-         _flip_do(ELM_WIDGET_DATA(sd)->obj, p, m, 1, rev);
-      }
-      break;
+          {
+             Elm_Flip_Mode m = ELM_FLIP_ROTATE_X_CENTER_AXIS;
+             int rev = 0;
+             p = _pos_get(sd->obj, sd, &rev, &m);
+             _flip_do(sd->obj, p, m, 1, rev);
+          }
+        break;
 
       case ELM_FLIP_INTERACTION_PAGE:
         sd->pageflip = EINA_TRUE;
-        _configure(ELM_WIDGET_DATA(sd)->obj);
-        _state_update(sd);
+        _configure(sd->obj);
+        _state_update(sd->obj);
         break;
 
       default:
@@ -1480,15 +1535,15 @@ _event_anim(void *data,
    evas_object_resize(sd->front.content, 0, 0);
    evas_object_resize(sd->back.content, 0, 0);
    evas_smart_objects_calculate
-     (evas_object_evas_get(ELM_WIDGET_DATA(sd)->obj));
+     (evas_object_evas_get(sd->obj));
    // FIXME: end hack
    sd->animator = NULL;
    if (sd->finish) sd->state = sd->next_state;
-   _flip_show_hide(ELM_WIDGET_DATA(sd)->obj);
-   _configure(ELM_WIDGET_DATA(sd)->obj);
+   _flip_show_hide(sd->obj);
+   _configure(sd->obj);
    sd->animator = NULL;
    evas_object_smart_callback_call
-     (ELM_WIDGET_DATA(sd)->obj, SIG_ANIMATE_DONE, NULL);
+     (sd->obj, SIG_ANIMATE_DONE, NULL);
 
    return ECORE_CALLBACK_CANCEL;
 }
@@ -1497,7 +1552,8 @@ static void
 _update_job(void *data)
 {
    Elm_Flip_Mode m = ELM_FLIP_ROTATE_X_CENTER_AXIS;
-   Elm_Flip_Smart_Data *sd = data;
+   Evas_Object *obj = data;
+   Elm_Flip_Smart_Data *sd = eo_data_scope_get(obj, MY_CLASS);
    int rev = 0;
    double p;
 
@@ -1506,14 +1562,14 @@ _update_job(void *data)
      {
       case ELM_FLIP_INTERACTION_ROTATE:
       case ELM_FLIP_INTERACTION_CUBE:
-        p = _pos_get(sd, &rev, &m);
-        _flip_do(ELM_WIDGET_DATA(sd)->obj, p, m, 1, rev);
+        p = _pos_get(obj, sd, &rev, &m);
+        _flip_do(obj, p, m, 1, rev);
         break;
 
       case ELM_FLIP_INTERACTION_PAGE:
         sd->pageflip = EINA_TRUE;
-        _configure(ELM_WIDGET_DATA(sd)->obj);
-        _state_update(sd);
+        _configure(obj);
+        _state_update(obj);
         break;
 
       default:
@@ -1535,11 +1591,7 @@ _down_cb(void *data,
 
    if (ev->button != 1) return;
    if (ev->event_flags & EVAS_EVENT_FLAG_ON_HOLD) return;
-   if (sd->animator)
-     {
-        ecore_animator_del(sd->animator);
-        sd->animator = NULL;
-     }
+   ELM_SAFE_FREE(sd->animator, ecore_animator_del);
    sd->down = EINA_TRUE;
    sd->started = EINA_FALSE;
    evas_object_geometry_get(data, &x, &y, &w, &h);
@@ -1566,8 +1618,8 @@ _up_cb(void *data,
 
    if (ev->button != 1) return;
    if (ev->event_flags & EVAS_EVENT_FLAG_ON_HOLD) return;
-
    sd->down = 0;
+   if (!sd->started) return;
    evas_object_geometry_get(data, &x, &y, &w, &h);
    sd->x = ev->canvas.x - x;
    sd->y = ev->canvas.y - y;
@@ -1575,28 +1627,24 @@ _up_cb(void *data,
    sd->h = h;
    sd->ox = sd->x;
    sd->oy = sd->y;
-   if (sd->job)
-     {
-        ecore_job_del(sd->job);
-        sd->job = NULL;
-     }
+   ELM_SAFE_FREE(sd->job, ecore_job_del);
    sd->finish = EINA_FALSE;
-   if (sd->dir == 0)
+   if (sd->dir == ELM_FLIP_DIRECTION_LEFT)
      {
         tm = (double)sd->x / (double)sd->w;
         if (sd->x < (sd->w / 2)) sd->finish = EINA_TRUE;
      }
-   else if (sd->dir == 1)
+   else if (sd->dir == ELM_FLIP_DIRECTION_RIGHT)
      {
         if (sd->x > (sd->w / 2)) sd->finish = EINA_TRUE;
         tm = 1.0 - ((double)sd->x / (double)sd->w);
      }
-   else if (sd->dir == 2)
+   else if (sd->dir == ELM_FLIP_DIRECTION_UP)
      {
         if (sd->y < (sd->h / 2)) sd->finish = EINA_TRUE;
         tm = (double)sd->y / (double)sd->h;
      }
-   else if (sd->dir == 3)
+   else if (sd->dir == ELM_FLIP_DIRECTION_DOWN)
      {
         if (sd->y > (sd->h / 2)) sd->finish = EINA_TRUE;
         tm = 1.0 - ((double)sd->y / (double)sd->h);
@@ -1625,7 +1673,6 @@ _move_cb(void *data,
    Evas_Coord x, y, w, h;
 
    ELM_FLIP_DATA_GET(fl, sd);
-
    if (!sd->down) return;
    if (ev->event_flags & EVAS_EVENT_FLAG_ON_HOLD) return;
    evas_object_geometry_get(data, &x, &y, &w, &h);
@@ -1642,17 +1689,30 @@ _move_cb(void *data,
         if (((dx * dx) + (dy * dy)) >
             (_elm_config->finger_size * _elm_config->finger_size / 4))
           {
-             sd->dir = 0;
+             sd->dir = ELM_FLIP_DIRECTION_LEFT;
              if ((sd->x > (w / 2)) &&
                  (dx < 0) && (abs(dx) > abs(dy)))
-               sd->dir = 0;  // left
+               {
+                  sd->dir = ELM_FLIP_DIRECTION_LEFT;
+                  if (!sd->dir_enabled[ELM_FLIP_DIRECTION_LEFT]) return;
+               }
              else if ((sd->x < (w / 2)) && (dx >= 0) &&
                       (abs(dx) > abs(dy)))
-               sd->dir = 1;  // right
+               {
+                  sd->dir = ELM_FLIP_DIRECTION_RIGHT;
+                  if (!sd->dir_enabled[ELM_FLIP_DIRECTION_RIGHT]) return;
+               }
              else if ((sd->y > (h / 2)) && (dy < 0) && (abs(dy) >= abs(dx)))
-               sd->dir = 2;  // up
+               {
+                  sd->dir = ELM_FLIP_DIRECTION_UP;
+                  if (!sd->dir_enabled[ELM_FLIP_DIRECTION_UP]) return;
+               }
              else if ((sd->y < (h / 2)) && (dy >= 0) && (abs(dy) >= abs(dx)))
-               sd->dir = 3;  // down
+               {
+                  sd->dir = ELM_FLIP_DIRECTION_DOWN;
+                  if (!sd->dir_enabled[ELM_FLIP_DIRECTION_DOWN]) return;
+               }
+
              sd->started = EINA_TRUE;
              if (sd->intmode == ELM_FLIP_INTERACTION_PAGE)
                sd->pageflip = EINA_TRUE;
@@ -1676,7 +1736,7 @@ _move_cb(void *data,
 
    ev->event_flags |= EVAS_EVENT_FLAG_ON_HOLD;
    if (sd->job) ecore_job_del(sd->job);
-   sd->job = ecore_job_add(_update_job, sd);
+   sd->job = ecore_job_add(_update_job, fl);
 }
 
 static Eina_Bool
@@ -1739,51 +1799,57 @@ _flip_content_unset(Evas_Object *obj,
    return content;
 }
 
-static Eina_Bool
-_elm_flip_smart_content_set(Evas_Object *obj,
-                            const char *part,
-                            Evas_Object *content)
+static void
+_elm_flip_smart_content_set(Eo *obj, void *_pd EINA_UNUSED, va_list *list)
 {
-   if (!part || !strcmp(part, "front"))
-     return _flip_content_set(obj, content, EINA_TRUE);
-   else if (!strcmp(part, "back"))
-     return _flip_content_set(obj, content, EINA_FALSE);
-
-   return EINA_FALSE;
-}
-
-static Evas_Object *
-_elm_flip_smart_content_get(const Evas_Object *obj,
-                            const char *part)
-{
-   ELM_FLIP_DATA_GET(obj, sd);
+   const char *part = va_arg(*list, const char *);
+   Evas_Object *content = va_arg(*list, Evas_Object *);
+   Eina_Bool *ret = va_arg(*list, Eina_Bool *);
+   Eina_Bool int_ret = EINA_FALSE;
 
    if (!part || !strcmp(part, "front"))
-     return sd->front.content;
+      int_ret = _flip_content_set(obj, content, EINA_TRUE);
    else if (!strcmp(part, "back"))
-     return sd->back.content;
+      int_ret = _flip_content_set(obj, content, EINA_FALSE);
 
-   return NULL;
-}
-
-static Evas_Object *
-_elm_flip_smart_content_unset(Evas_Object *obj,
-                              const char *part)
-{
-   if (!part || !strcmp(part, "front"))
-     return _flip_content_unset(obj, EINA_TRUE);
-   else if (!strcmp(part, "back"))
-     return _flip_content_unset(obj, EINA_FALSE);
-
-   return NULL;
+   if (ret) *ret = int_ret;
 }
 
 static void
-_elm_flip_smart_add(Evas_Object *obj)
+_elm_flip_smart_content_get(Eo *obj EINA_UNUSED, void *_pd, va_list *list)
 {
-   EVAS_SMART_DATA_ALLOC(obj, Elm_Flip_Smart_Data);
+   const char *part = va_arg(*list, const char *);
+   Evas_Object **ret = va_arg(*list, Evas_Object **);
+   Elm_Flip_Smart_Data *sd = _pd;
+   *ret = NULL;
 
-   ELM_WIDGET_CLASS(_elm_flip_parent_sc)->base.add(obj);
+   if (!part || !strcmp(part, "front"))
+      *ret = sd->front.content;
+   else if (!strcmp(part, "back"))
+      *ret = sd->back.content;
+}
+
+static void
+_elm_flip_smart_content_unset(Eo *obj EINA_UNUSED, void *_pd EINA_UNUSED, va_list *list)
+{
+   const char *part = va_arg(*list, const char *);
+   Evas_Object **ret = va_arg(*list, Evas_Object **);
+   Evas_Object *int_ret = NULL;
+
+   if (!part || !strcmp(part, "front"))
+      int_ret = _flip_content_unset(obj, EINA_TRUE);
+   else if (!strcmp(part, "back"))
+      int_ret = _flip_content_unset(obj, EINA_FALSE);
+   if (ret) *ret = int_ret;
+}
+
+static void
+_elm_flip_smart_add(Eo *obj, void *_pd, va_list *list EINA_UNUSED)
+{
+   Elm_Flip_Smart_Data *priv = _pd;
+
+   eo_do_super(obj, MY_CLASS, evas_obj_smart_add());
+   elm_widget_sub_object_parent_add(obj);
 
    priv->clip = evas_object_rectangle_add(evas_object_evas_get(obj));
    evas_object_static_clip_set(priv->clip, EINA_TRUE);
@@ -1823,72 +1889,52 @@ _elm_flip_smart_add(Evas_Object *obj)
 }
 
 static void
-_elm_flip_smart_del(Evas_Object *obj)
+_elm_flip_smart_del(Eo *obj, void *_pd, va_list *list EINA_UNUSED)
 {
-   ELM_FLIP_DATA_GET(obj, sd);
+   Elm_Flip_Smart_Data *sd = _pd;
 
    if (sd->animator) ecore_animator_del(sd->animator);
    _state_slices_clear(sd);
 
-   ELM_WIDGET_CLASS(_elm_flip_parent_sc)->base.del(obj);
-}
-
-static void
-_elm_flip_smart_set_user(Elm_Flip_Smart_Class *sc)
-{
-   ELM_WIDGET_CLASS(sc)->base.add = _elm_flip_smart_add;
-   ELM_WIDGET_CLASS(sc)->base.del = _elm_flip_smart_del;
-
-   ELM_WIDGET_CLASS(sc)->theme = _elm_flip_smart_theme;
-   ELM_WIDGET_CLASS(sc)->focus_next = _elm_flip_smart_focus_next;
-   ELM_WIDGET_CLASS(sc)->sub_object_add = _elm_flip_smart_sub_object_add;
-   ELM_WIDGET_CLASS(sc)->sub_object_del = _elm_flip_smart_sub_object_del;
-
-   ELM_CONTAINER_CLASS(sc)->content_set = _elm_flip_smart_content_set;
-   ELM_CONTAINER_CLASS(sc)->content_get = _elm_flip_smart_content_get;
-   ELM_CONTAINER_CLASS(sc)->content_unset = _elm_flip_smart_content_unset;
-}
-
-EAPI const Elm_Flip_Smart_Class *
-elm_flip_smart_class_get(void)
-{
-   static Elm_Flip_Smart_Class _sc =
-     ELM_FLIP_SMART_CLASS_INIT_NAME_VERSION(ELM_FLIP_SMART_NAME);
-   static const Elm_Flip_Smart_Class *class = NULL;
-   Evas_Smart_Class *esc = (Evas_Smart_Class *)&_sc;
-
-   if (class) return class;
-
-   _elm_flip_smart_set(&_sc);
-   esc->callbacks = _smart_callbacks;
-   class = &_sc;
-
-   return class;
+   eo_do_super(obj, MY_CLASS, evas_obj_smart_del());
 }
 
 EAPI Evas_Object *
 elm_flip_add(Evas_Object *parent)
 {
-   Evas_Object *obj;
-
    EINA_SAFETY_ON_NULL_RETURN_VAL(parent, NULL);
-
-   obj = elm_widget_add(_elm_flip_smart_class_new(), parent);
-   if (!obj) return NULL;
-
-   if (!elm_widget_sub_object_add(parent, obj))
-     ERR("could not add %p as sub object of %p", obj, parent);
-
+   Evas_Object *obj = eo_add(MY_CLASS, parent);
+   eo_unref(obj);
    return obj;
+}
+
+static void
+_constructor(Eo *obj, void *_pd, va_list *list EINA_UNUSED)
+{
+   Elm_Flip_Smart_Data *sd = _pd;
+   sd->obj = obj;
+
+   eo_do_super(obj, MY_CLASS, eo_constructor());
+   eo_do(obj,
+         evas_obj_type_set(MY_CLASS_NAME_LEGACY),
+         evas_obj_smart_callbacks_descriptions_set(_smart_callbacks, NULL));
 }
 
 EAPI Eina_Bool
 elm_flip_front_visible_get(const Evas_Object *obj)
 {
    ELM_FLIP_CHECK(obj) EINA_FALSE;
-   ELM_FLIP_DATA_GET(obj, sd);
+   Eina_Bool ret;
+   eo_do((Eo *) obj, elm_obj_flip_front_visible_get(&ret));
+   return ret;
+}
 
-   return sd->state;
+static void
+_front_visible_get(Eo *obj EINA_UNUSED, void *_pd, va_list *list)
+{
+   Eina_Bool *ret = va_arg(*list, Eina_Bool *);
+   Elm_Flip_Smart_Data *sd = _pd;
+   *ret = sd->state;
 }
 
 EAPI void
@@ -1903,12 +1949,11 @@ elm_flip_perspective_set(Evas_Object *obj,
 // FIXME: add ambient and lighting control
 
 static void
-_elm_flip_go_to(Elm_Flip_Smart_Data *sd,
+_elm_flip_go_to(Evas_Object *obj,
+                Elm_Flip_Smart_Data *sd,
                 Eina_Bool front,
                 Elm_Flip_Mode mode)
 {
-   Evas_Object *obj = ELM_WIDGET_DATA(sd)->obj;
-
    if (!sd->animator) sd->animator = ecore_animator_add(_animate, obj);
    _flip_show_hide(obj);
 
@@ -1934,6 +1979,13 @@ _elm_flip_go_to(Elm_Flip_Smart_Data *sd,
    _configure(obj);
    // FIXME: end hack
    evas_object_smart_callback_call(obj, SIG_ANIMATE_BEGIN, NULL);
+
+   // set focus to the content object when flip go to is called
+   if (elm_object_focus_get(obj))
+     {
+        if (front) elm_object_focus_set(sd->front.content, EINA_TRUE);
+        else elm_object_focus_set(sd->back.content, EINA_TRUE);
+     }
 }
 
 EAPI void
@@ -1942,11 +1994,19 @@ elm_flip_go_to(Evas_Object *obj,
                Elm_Flip_Mode mode)
 {
    ELM_FLIP_CHECK(obj);
-   ELM_FLIP_DATA_GET(obj, sd);
+   eo_do(obj, elm_obj_flip_go_to(front, mode));
+}
+
+static void
+_go_to(Eo *obj, void *_pd, va_list *list)
+{
+   Eina_Bool front = va_arg(*list, int);
+   Elm_Flip_Mode mode = va_arg(*list, Elm_Flip_Mode);
+   Elm_Flip_Smart_Data *sd = _pd;
 
    if (sd->next_state == front) return;
 
-   _elm_flip_go_to(sd, front, mode);
+   _elm_flip_go_to(obj, sd, front, mode);
 }
 
 EAPI void
@@ -1954,22 +2014,40 @@ elm_flip_go(Evas_Object *obj,
             Elm_Flip_Mode mode)
 {
    ELM_FLIP_CHECK(obj);
-   ELM_FLIP_DATA_GET(obj, sd);
+   eo_do(obj, elm_obj_flip_go(mode));
+}
 
-   _elm_flip_go_to(sd, !sd->state, mode);
+static void
+_go(Eo *obj, void *_pd, va_list *list)
+{
+   Elm_Flip_Mode mode = va_arg(*list, Elm_Flip_Mode);
+   Elm_Flip_Smart_Data *sd = _pd;
+
+   _elm_flip_go_to(obj, sd, !sd->state, mode);
 }
 
 EAPI void
 elm_flip_interaction_set(Evas_Object *obj,
                          Elm_Flip_Interaction mode)
 {
+   ELM_FLIP_CHECK(obj);
+   eo_do(obj, elm_obj_flip_interaction_set(mode));
+}
+
+static void
+_interaction_set(Eo *obj, void *_pd, va_list *list)
+{
+   Elm_Flip_Interaction mode = va_arg(*list, Elm_Flip_Interaction);
    int i;
 
-   ELM_FLIP_CHECK(obj);
-   ELM_FLIP_DATA_GET(obj, sd);
+   Elm_Flip_Smart_Data *sd = _pd;
 
    if (sd->intmode == mode) return;
    sd->intmode = mode;
+
+   Evas *e = evas_object_evas_get(obj);
+   Evas_Object *clip = evas_object_clip_get(obj);
+
    for (i = 0; i < 4; i++)
      {
         if (sd->intmode == ELM_FLIP_INTERACTION_NONE)
@@ -1984,11 +2062,10 @@ elm_flip_interaction_set(Evas_Object *obj,
           {
              if ((sd->dir_enabled[i]) && (!sd->event[i]))
                {
-                  Evas *e = evas_object_evas_get(obj);
                   sd->event[i] = evas_object_rectangle_add(e);
 
                   evas_object_data_set(sd->event[i], "_elm_leaveme", obj);
-                  evas_object_clip_set(sd->event[i], evas_object_clip_get(obj));
+                  evas_object_clip_set(sd->event[i], clip);
                   evas_object_color_set(sd->event[i], 0, 0, 0, 0);
                   evas_object_show(sd->event[i]);
                   evas_object_smart_member_add(sd->event[i], obj);
@@ -2010,9 +2087,17 @@ EAPI Elm_Flip_Interaction
 elm_flip_interaction_get(const Evas_Object *obj)
 {
    ELM_FLIP_CHECK(obj) ELM_FLIP_INTERACTION_NONE;
-   ELM_FLIP_DATA_GET(obj, sd);
+   Elm_Flip_Interaction ret = ELM_FLIP_INTERACTION_NONE;
+   eo_do((Eo *) obj, elm_obj_flip_interaction_get(&ret));
+   return ret;
+}
 
-   return sd->intmode;
+static void
+_interaction_get(Eo *obj EINA_UNUSED, void *_pd, va_list *list)
+{
+   Elm_Flip_Interaction *ret = va_arg(*list, Elm_Flip_Interaction *);
+   Elm_Flip_Smart_Data *sd = _pd;
+   *ret = sd->intmode;
 }
 
 EAPI void
@@ -2020,20 +2105,20 @@ elm_flip_interaction_direction_enabled_set(Evas_Object *obj,
                                            Elm_Flip_Direction dir,
                                            Eina_Bool enabled)
 {
-   int i = -1;
-
    ELM_FLIP_CHECK(obj);
-   ELM_FLIP_DATA_GET(obj, sd);
+   eo_do(obj, elm_obj_flip_interaction_direction_enabled_set(dir, enabled));
+}
+
+static void
+_interaction_direction_enabled_set(Eo *obj, void *_pd, va_list *list)
+{
+   Elm_Flip_Direction dir = va_arg(*list, Elm_Flip_Direction);
+   Eina_Bool enabled = va_arg(*list, int);
+   int i = (int) dir;
+
+   Elm_Flip_Smart_Data *sd = _pd;
 
    enabled = !!enabled;
-   if (dir == ELM_FLIP_DIRECTION_UP) i = 0;
-   else if (dir == ELM_FLIP_DIRECTION_DOWN)
-     i = 1;
-   else if (dir == ELM_FLIP_DIRECTION_LEFT)
-     i = 2;
-   else if (dir == ELM_FLIP_DIRECTION_RIGHT)
-     i = 3;
-   if (i < 0) return;
    if (sd->dir_enabled[i] == enabled) return;
    sd->dir_enabled[i] = enabled;
    if (sd->intmode == ELM_FLIP_INTERACTION_NONE) return;
@@ -2066,20 +2151,21 @@ EAPI Eina_Bool
 elm_flip_interaction_direction_enabled_get(Evas_Object *obj,
                                            Elm_Flip_Direction dir)
 {
-   int i = -1;
-
    ELM_FLIP_CHECK(obj) EINA_FALSE;
-   ELM_FLIP_DATA_GET(obj, sd);
+   Eina_Bool ret;
+   eo_do(obj, elm_obj_flip_interaction_direction_enabled_get(dir, &ret));
+   return ret;
+}
 
-   if (dir == ELM_FLIP_DIRECTION_UP) i = 0;
-   else if (dir == ELM_FLIP_DIRECTION_DOWN)
-     i = 1;
-   else if (dir == ELM_FLIP_DIRECTION_LEFT)
-     i = 2;
-   else if (dir == ELM_FLIP_DIRECTION_RIGHT)
-     i = 3;
-   if (i < 0) return EINA_FALSE;
-   return sd->dir_enabled[i];
+static void
+_interaction_direction_enabled_get(Eo *obj EINA_UNUSED, void *_pd, va_list *list)
+{
+   Elm_Flip_Direction dir = va_arg(*list, Elm_Flip_Direction);
+   Eina_Bool *ret = va_arg(*list, Eina_Bool *);
+
+   Elm_Flip_Smart_Data *sd = _pd;
+
+   *ret = sd->dir_enabled[(int) dir];
 }
 
 EAPI void
@@ -2087,22 +2173,23 @@ elm_flip_interaction_direction_hitsize_set(Evas_Object *obj,
                                            Elm_Flip_Direction dir,
                                            double hitsize)
 {
-   int i = -1;
-
    ELM_FLIP_CHECK(obj);
-   ELM_FLIP_DATA_GET(obj, sd);
+   eo_do(obj, elm_obj_flip_interaction_direction_hitsize_set(dir, hitsize));
+}
 
-   if (dir == ELM_FLIP_DIRECTION_UP) i = 0;
-   else if (dir == ELM_FLIP_DIRECTION_DOWN)
-     i = 1;
-   else if (dir == ELM_FLIP_DIRECTION_LEFT)
-     i = 2;
-   else if (dir == ELM_FLIP_DIRECTION_RIGHT)
-     i = 3;
-   if (i < 0) return;
+static void
+_interaction_direction_hitsize_set(Eo *obj, void *_pd, va_list *list)
+{
+   Elm_Flip_Direction dir = va_arg(*list, Elm_Flip_Direction);
+   double hitsize = va_arg(*list, double);
+   int i = (int) dir;
+
+   Elm_Flip_Smart_Data *sd = _pd;
+
    if (hitsize < 0.0) hitsize = 0.0;
    else if (hitsize > 1.0)
      hitsize = 1.0;
+
    if (sd->dir_hitsize[i] == hitsize) return;
    sd->dir_hitsize[i] = hitsize;
    _sizing_eval(obj);
@@ -2113,17 +2200,81 @@ EAPI double
 elm_flip_interaction_direction_hitsize_get(Evas_Object *obj,
                                            Elm_Flip_Direction dir)
 {
-   int i = -1;
    ELM_FLIP_CHECK(obj) EINA_FALSE;
-   ELM_FLIP_DATA_GET(obj, sd);
-
-   if (dir == ELM_FLIP_DIRECTION_UP) i = 0;
-   else if (dir == ELM_FLIP_DIRECTION_DOWN)
-     i = 1;
-   else if (dir == ELM_FLIP_DIRECTION_LEFT)
-     i = 2;
-   else if (dir == ELM_FLIP_DIRECTION_RIGHT)
-     i = 3;
-   if (i < 0) return 0.0;
-   return sd->dir_hitsize[i];
+   double ret;
+   eo_do(obj, elm_obj_flip_interaction_direction_hitsize_get(dir, &ret));
+   return ret;
 }
+
+static void
+_interaction_direction_hitsize_get(Eo *obj EINA_UNUSED, void *_pd, va_list *list)
+{
+   Elm_Flip_Direction dir = va_arg(*list, Elm_Flip_Direction);
+   double *ret = va_arg(*list, double *);
+   int i = (int) dir;
+   Elm_Flip_Smart_Data *sd = _pd;
+
+   *ret = sd->dir_hitsize[i];
+}
+
+static void
+_class_constructor(Eo_Class *klass)
+{
+   const Eo_Op_Func_Description func_desc[] = {
+        EO_OP_FUNC(EO_BASE_ID(EO_BASE_SUB_ID_CONSTRUCTOR), _constructor),
+
+        EO_OP_FUNC(EVAS_OBJ_SMART_ID(EVAS_OBJ_SMART_SUB_ID_ADD), _elm_flip_smart_add),
+        EO_OP_FUNC(EVAS_OBJ_SMART_ID(EVAS_OBJ_SMART_SUB_ID_DEL), _elm_flip_smart_del),
+
+        EO_OP_FUNC(ELM_WIDGET_ID(ELM_WIDGET_SUB_ID_THEME), _elm_flip_smart_theme),
+        EO_OP_FUNC(ELM_WIDGET_ID(ELM_WIDGET_SUB_ID_FOCUS_NEXT_MANAGER_IS), _elm_flip_smart_focus_next_manager_is),
+        EO_OP_FUNC(ELM_WIDGET_ID(ELM_WIDGET_SUB_ID_FOCUS_NEXT), _elm_flip_smart_focus_next),
+        EO_OP_FUNC(ELM_WIDGET_ID(ELM_WIDGET_SUB_ID_FOCUS_DIRECTION_MANAGER_IS), _elm_flip_smart_focus_direction_manager_is),
+        EO_OP_FUNC(ELM_WIDGET_ID(ELM_WIDGET_SUB_ID_FOCUS_DIRECTION), _elm_flip_smart_focus_direction),
+        EO_OP_FUNC(ELM_WIDGET_ID(ELM_WIDGET_SUB_ID_SUB_OBJECT_ADD), _elm_flip_smart_sub_object_add),
+        EO_OP_FUNC(ELM_WIDGET_ID(ELM_WIDGET_SUB_ID_SUB_OBJECT_DEL), _elm_flip_smart_sub_object_del),
+
+        EO_OP_FUNC(ELM_OBJ_CONTAINER_ID(ELM_OBJ_CONTAINER_SUB_ID_CONTENT_SET), _elm_flip_smart_content_set),
+        EO_OP_FUNC(ELM_OBJ_CONTAINER_ID(ELM_OBJ_CONTAINER_SUB_ID_CONTENT_GET), _elm_flip_smart_content_get),
+        EO_OP_FUNC(ELM_OBJ_CONTAINER_ID(ELM_OBJ_CONTAINER_SUB_ID_CONTENT_UNSET), _elm_flip_smart_content_unset),
+
+        EO_OP_FUNC(ELM_OBJ_FLIP_ID(ELM_OBJ_FLIP_SUB_ID_FRONT_VISIBLE_GET), _front_visible_get),
+        EO_OP_FUNC(ELM_OBJ_FLIP_ID(ELM_OBJ_FLIP_SUB_ID_GO), _go),
+        EO_OP_FUNC(ELM_OBJ_FLIP_ID(ELM_OBJ_FLIP_SUB_ID_GO_TO), _go_to),
+        EO_OP_FUNC(ELM_OBJ_FLIP_ID(ELM_OBJ_FLIP_SUB_ID_INTERACTION_SET), _interaction_set),
+        EO_OP_FUNC(ELM_OBJ_FLIP_ID(ELM_OBJ_FLIP_SUB_ID_INTERACTION_GET), _interaction_get),
+        EO_OP_FUNC(ELM_OBJ_FLIP_ID(ELM_OBJ_FLIP_SUB_ID_INTERACTION_DIRECTION_ENABLED_SET), _interaction_direction_enabled_set),
+        EO_OP_FUNC(ELM_OBJ_FLIP_ID(ELM_OBJ_FLIP_SUB_ID_INTERACTION_DIRECTION_ENABLED_GET), _interaction_direction_enabled_get),
+        EO_OP_FUNC(ELM_OBJ_FLIP_ID(ELM_OBJ_FLIP_SUB_ID_INTERACTION_DIRECTION_HITSIZE_SET), _interaction_direction_hitsize_set),
+        EO_OP_FUNC(ELM_OBJ_FLIP_ID(ELM_OBJ_FLIP_SUB_ID_INTERACTION_DIRECTION_HITSIZE_GET), _interaction_direction_hitsize_get),
+        EO_OP_FUNC_SENTINEL
+   };
+   eo_class_funcs_set(klass, func_desc);
+
+   evas_smart_legacy_type_register(MY_CLASS_NAME_LEGACY, klass);
+}
+static const Eo_Op_Description op_desc[] = {
+     EO_OP_DESCRIPTION(ELM_OBJ_FLIP_SUB_ID_FRONT_VISIBLE_GET, "Get flip front visibility state"),
+     EO_OP_DESCRIPTION(ELM_OBJ_FLIP_SUB_ID_PERSPECTIVE_SET, "Set flip perspective."),
+     EO_OP_DESCRIPTION(ELM_OBJ_FLIP_SUB_ID_GO, "Runs the flip animation."),
+     EO_OP_DESCRIPTION(ELM_OBJ_FLIP_SUB_ID_GO_TO, "Runs the flip animation to front or back."),
+     EO_OP_DESCRIPTION(ELM_OBJ_FLIP_SUB_ID_INTERACTION_SET, "Set the interactive flip mode."),
+     EO_OP_DESCRIPTION(ELM_OBJ_FLIP_SUB_ID_INTERACTION_GET, "Get the interactive flip mode."),
+     EO_OP_DESCRIPTION(ELM_OBJ_FLIP_SUB_ID_INTERACTION_DIRECTION_ENABLED_SET, "Set which directions of the flip respond to interactive flip."),
+     EO_OP_DESCRIPTION(ELM_OBJ_FLIP_SUB_ID_INTERACTION_DIRECTION_ENABLED_GET, "Get the enabled state of that flip direction."),
+     EO_OP_DESCRIPTION(ELM_OBJ_FLIP_SUB_ID_INTERACTION_DIRECTION_HITSIZE_SET, "Set the amount of the flip that is sensitive to interactive flip."),
+     EO_OP_DESCRIPTION(ELM_OBJ_FLIP_SUB_ID_INTERACTION_DIRECTION_HITSIZE_GET, "Get the amount of the flip that is sensitive to interactive flip."),
+     EO_OP_DESCRIPTION_SENTINEL
+};
+static const Eo_Class_Description class_desc = {
+     EO_VERSION,
+     MY_CLASS_NAME,
+     EO_CLASS_TYPE_REGULAR,
+     EO_CLASS_DESCRIPTION_OPS(&ELM_OBJ_FLIP_BASE_ID, op_desc, ELM_OBJ_FLIP_SUB_ID_LAST),
+     NULL,
+     sizeof(Elm_Flip_Smart_Data),
+     _class_constructor,
+     NULL
+};
+EO_DEFINE_CLASS(elm_obj_flip_class_get, &class_desc, ELM_OBJ_CONTAINER_CLASS, NULL);
+

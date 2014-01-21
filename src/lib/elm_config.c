@@ -18,6 +18,7 @@ static Eet_Data_Descriptor *_config_font_overlay_edd = NULL;
 static Eet_Data_Descriptor *_config_color_edd = NULL;
 static Eet_Data_Descriptor *_config_color_palette_edd = NULL;
 const char *_elm_preferred_engine = NULL;
+Eina_List  *_font_overlays_del = NULL;
 
 static Ecore_Poller *_elm_cache_flush_poller = NULL;
 
@@ -60,7 +61,7 @@ static const Elm_Text_Class _elm_text_classes[] = {
 static void        _desc_init(void);
 static void        _desc_shutdown(void);
 static void        _profile_fetch_from_conf(void);
-static void        _config_free(void);
+static void        _config_free(Elm_Config *cfg);
 static void        _config_apply(void);
 static Elm_Config *_config_user_load(void);
 static Elm_Config *_config_system_load(void);
@@ -71,10 +72,6 @@ static size_t      _elm_data_dir_snprintf(char       *dst,
                                           size_t      size,
                                           const char *fmt, ...)
                                           EINA_PRINTF(3, 4);
-static size_t _elm_user_dir_snprintf(char       *dst,
-                                     size_t      size,
-                                     const char *fmt, ...)
-                                     EINA_PRINTF(3, 4);
 
 #define ELM_CONFIG_VAL(edd, type, member, dtype) \
   EET_DATA_DESCRIPTOR_ADD_BASIC(edd, type, #member, member, dtype)
@@ -83,7 +80,6 @@ static size_t _elm_user_dir_snprintf(char       *dst,
 
 #ifdef HAVE_ELEMENTARY_X
 static Ecore_Event_Handler *_prop_change_handler = NULL;
-static Ecore_Timer *_prop_all_update_timer = NULL;
 static Ecore_Timer *_prop_change_delay_timer = NULL;
 static Ecore_X_Window _root_1st = 0;
 #define ATOM_COUNT 2
@@ -97,21 +93,29 @@ static const char *_atom_names[ATOM_COUNT] =
 #define ATOM_E_PROFILE                              0
 #define ATOM_E_CONFIG                               1
 
-static Eina_Bool _prop_all_update_cb(void *data __UNUSED__);
 static Eina_Bool _prop_config_get(void);
 static void      _prop_config_set(void);
 static Eina_Bool _prop_change(void *data  __UNUSED__,
                               int ev_type __UNUSED__,
                               void       *ev);
 
-static Eina_Bool
-_prop_all_update_cb(void *data __UNUSED__)
+static void
+_elm_font_overlays_del_free(void)
 {
-   _prop_config_set();
-   ecore_x_window_prop_string_set(_root_1st, _atom[ATOM_E_PROFILE],
-                                  _elm_profile);
-   _prop_all_update_timer = NULL;
-   return EINA_FALSE;
+   char *text_class;
+   Eina_List *l;
+   EINA_LIST_FOREACH(_font_overlays_del, l, text_class)
+     eina_stringshare_del(text_class);
+   _font_overlays_del = eina_list_free(_font_overlays_del);
+}
+
+static void
+_elm_config_font_overlays_cancel(void)
+{
+   Elm_Font_Overlay *efd;
+   Eina_List *l;
+   EINA_LIST_FOREACH(_elm_config->font_overlays, l, efd)
+     edje_text_class_del(efd->text_class);
 }
 
 static Eina_Bool
@@ -158,13 +162,17 @@ _prop_config_get(void)
    /* What in the case the version is older? Do we even support those
     * cases or we only check for equality above? */
 
-   _config_free();
+   _elm_config_font_overlays_cancel();
+   _config_free(_elm_config);
+   _elm_config = NULL;
    _elm_config = config_data;
    _env_get();
    _config_apply();
    _elm_config_font_overlay_apply();
    _elm_rescale();
    _elm_recache();
+   _elm_clouseau_reload();
+   _elm_win_access(_elm_config->access_mode);
    ecore_event_add(ELM_EVENT_CONFIG_ALL_CHANGED, NULL, NULL, NULL);
    return EINA_TRUE;
 }
@@ -208,7 +216,8 @@ _prop_change_delay_cb(void *data __UNUSED__)
      }
    _prop_config_get();
    _prop_change_delay_timer = NULL;
-   return EINA_FALSE;
+
+   return ECORE_CALLBACK_CANCEL;
 }
 
 static Eina_Bool
@@ -249,7 +258,7 @@ _desc_init(void)
    _config_edd = eet_data_descriptor_file_new(&eddc);
    if (!_config_edd)
      {
-        printf("EEEK! eet_data_descriptor_file_new() failed\n");
+        ERR("EEEK! eet_data_descriptor_file_new() failed.");
         return;
      }
 
@@ -261,7 +270,7 @@ _desc_init(void)
    _config_font_overlay_edd = eet_data_descriptor_stream_new(&eddc);
    if (!_config_font_overlay_edd)
      {
-        printf("EEEK! eet_data_descriptor_stream_new() failed\n");
+        ERR("EEEK! eet_data_descriptor_stream_new() failed.");
         eet_data_descriptor_free(_config_edd);
         return;
      }
@@ -274,7 +283,7 @@ _desc_init(void)
    _config_color_edd = eet_data_descriptor_stream_new(&eddc);
    if (!_config_color_edd)
      {
-        printf("EEEK! eet_data_descriptor_stream_new() failed\n");
+        ERR("EEEK! eet_data_descriptor_stream_new() failed.");
         eet_data_descriptor_free(_config_edd);
         return;
      }
@@ -287,7 +296,7 @@ _desc_init(void)
    _config_color_palette_edd = eet_data_descriptor_stream_new(&eddc);
    if (!_config_color_palette_edd)
      {
-        printf("EEEK! eet_data_descriptor_stream_new() failed\n");
+        ERR("EEEK! eet_data_descriptor_stream_new() failed.");
         eet_data_descriptor_free(_config_edd);
         return;
      }
@@ -328,15 +337,23 @@ _desc_init(void)
    ELM_CONFIG_VAL(D, T, vsync, T_UCHAR);
    ELM_CONFIG_VAL(D, T, thumbscroll_enable, T_UCHAR);
    ELM_CONFIG_VAL(D, T, thumbscroll_threshold, T_INT);
+   ELM_CONFIG_VAL(D, T, thumbscroll_hold_threshold, T_INT);
    ELM_CONFIG_VAL(D, T, thumbscroll_momentum_threshold, T_DOUBLE);
+   ELM_CONFIG_VAL(D, T, thumbscroll_flick_distance_tolerance, T_INT);
    ELM_CONFIG_VAL(D, T, thumbscroll_friction, T_DOUBLE);
+   ELM_CONFIG_VAL(D, T, thumbscroll_min_friction, T_DOUBLE);
+   ELM_CONFIG_VAL(D, T, thumbscroll_friction_standard, T_DOUBLE);
    ELM_CONFIG_VAL(D, T, thumbscroll_bounce_friction, T_DOUBLE);
    ELM_CONFIG_VAL(D, T, thumbscroll_border_friction, T_DOUBLE);
    ELM_CONFIG_VAL(D, T, thumbscroll_sensitivity_friction, T_DOUBLE);
+   ELM_CONFIG_VAL(D, T, thumbscroll_acceleration_threshold, T_DOUBLE);
+   ELM_CONFIG_VAL(D, T, thumbscroll_acceleration_time_limit, T_DOUBLE);
+   ELM_CONFIG_VAL(D, T, thumbscroll_acceleration_weight, T_DOUBLE);
    ELM_CONFIG_VAL(D, T, page_scroll_friction, T_DOUBLE);
    ELM_CONFIG_VAL(D, T, bring_in_scroll_friction, T_DOUBLE);
    ELM_CONFIG_VAL(D, T, zoom_friction, T_DOUBLE);
    ELM_CONFIG_VAL(D, T, thumbscroll_bounce_enable, T_UCHAR);
+   ELM_CONFIG_VAL(D, T, scroll_smooth_start_enable, T_UCHAR);
    ELM_CONFIG_VAL(D, T, scroll_smooth_time_interval, T_DOUBLE);
    ELM_CONFIG_VAL(D, T, scroll_smooth_amount, T_DOUBLE);
    ELM_CONFIG_VAL(D, T, scroll_smooth_history_weight, T_DOUBLE);
@@ -364,6 +381,7 @@ _desc_init(void)
    ELM_CONFIG_VAL(D, T, focus_highlight_animate, T_UCHAR);
    ELM_CONFIG_VAL(D, T, toolbar_shrink_mode, T_INT);
    ELM_CONFIG_VAL(D, T, fileselector_expand_enable, T_UCHAR);
+   ELM_CONFIG_VAL(D, T, fileselector_double_tap_navigation_enable, T_UCHAR);
    ELM_CONFIG_VAL(D, T, inwin_dialogs_enable, T_UCHAR);
    ELM_CONFIG_VAL(D, T, icon_size, T_INT);
    ELM_CONFIG_VAL(D, T, longpress_timeout, T_DOUBLE);
@@ -383,7 +401,8 @@ _desc_init(void)
    ELM_CONFIG_VAL(D, T, glayer_flick_time_limit_ms, T_INT);
    ELM_CONFIG_VAL(D, T, glayer_long_tap_start_timeout, T_DOUBLE);
    ELM_CONFIG_VAL(D, T, glayer_double_tap_timeout, T_DOUBLE);
-   ELM_CONFIG_VAL(D, T, access_mode, T_INT);
+   ELM_CONFIG_VAL(D, T, access_mode, T_UCHAR);
+   ELM_CONFIG_VAL(D, T, selection_clear_enable, T_UCHAR);
    ELM_CONFIG_VAL(D, T, glayer_continues_enable, T_UCHAR);
    ELM_CONFIG_VAL(D, T, week_start, T_INT);
    ELM_CONFIG_VAL(D, T, weekend_start, T_INT);
@@ -398,6 +417,14 @@ _desc_init(void)
    ELM_CONFIG_VAL(D, T, auto_dump_withdrawn, T_UCHAR);
    ELM_CONFIG_VAL(D, T, auto_throttle, T_UCHAR);
    ELM_CONFIG_VAL(D, T, auto_throttle_amount, T_DOUBLE);
+   ELM_CONFIG_VAL(D, T, indicator_service_0, T_STRING);
+   ELM_CONFIG_VAL(D, T, indicator_service_90, T_STRING);
+   ELM_CONFIG_VAL(D, T, indicator_service_180, T_STRING);
+   ELM_CONFIG_VAL(D, T, indicator_service_270, T_STRING);
+   ELM_CONFIG_VAL(D, T, disable_external_menu, T_UCHAR);
+   ELM_CONFIG_VAL(D, T, clouseau_enable, T_UCHAR);
+   ELM_CONFIG_VAL(D, T, magnifier_enable, T_UCHAR);
+   ELM_CONFIG_VAL(D, T, magnifier_scale, T_DOUBLE);
 #undef T
 #undef D
 #undef T_INT
@@ -472,30 +499,50 @@ end:
    return off;
 }
 
-static size_t
-_elm_user_dir_snprintf(char       *dst,
-                       size_t      size,
-                       const char *fmt,
-                       ...)
+size_t
+_elm_config_user_dir_snprintf(char       *dst,
+                              size_t      size,
+                              const char *fmt,
+                              ...)
 {
-   const char *home;
+   const char *home = NULL;
    size_t user_dir_len, off;
    va_list ap;
 
 #ifdef _WIN32
    home = evil_homedir_get();
+   user_dir_len = eina_str_join_len
+     (dst, size, '/', home, strlen(home),
+         ELEMENTARY_BASE_DIR, sizeof(ELEMENTARY_BASE_DIR) - 1);
 #else
-   home = getenv("HOME");
+#ifdef DOXDG
+   home = getenv("XDG_CONFIG_HOME");
+   if (home)
+     {
+        user_dir_len = eina_str_join_len
+          (dst, size, '/', home, strlen(home),
+              "elementary", sizeof("elementary") - 1);
+     }
+   else
 #endif
-   if (!home)
-     home = "/";
-
-   user_dir_len = eina_str_join_len(dst, size, '/', home, strlen(home),
-                                    ELEMENTARY_BASE_DIR, sizeof(ELEMENTARY_BASE_DIR) - 1);
+     {
+        home = getenv("HOME");
+        if (!home) home = "/";
+#ifdef DOXDG
+        user_dir_len = eina_str_join_len
+          (dst, size, '/', home, strlen(home),
+              ".config", sizeof(".config") - 1,
+              "elementary", sizeof("elementary") - 1);
+#else
+        user_dir_len = eina_str_join_len
+          (dst, size, '/', home, strlen(home),
+              ELEMENTARY_BASE_DIR, sizeof(ELEMENTARY_BASE_DIR) - 1);
+#endif
+     }
+#endif
 
    off = user_dir_len + 1;
-   if (off >= size)
-     goto end;
+   if (off >= size) goto end;
 
    va_start(ap, fmt);
    dst[user_dir_len] = '/';
@@ -516,7 +563,7 @@ _elm_config_profile_dir_get(const char *prof,
    if (!is_user)
      goto not_user;
 
-   _elm_user_dir_snprintf(buf, sizeof(buf), "config/%s", prof);
+   _elm_config_user_dir_snprintf(buf, sizeof(buf), "config/%s", prof);
 
    if (ecore_file_is_dir(buf))
      return strdup(buf);
@@ -549,6 +596,20 @@ void _elm_config_access_set(Eina_Bool is_access)
    if (_elm_config->access_mode == is_access) return;
    _elm_config->access_mode = is_access;
    _elm_win_access(is_access);
+
+   if (!is_access) _elm_access_shutdown();
+}
+
+Eina_Bool _elm_config_selection_unfocused_clear_get(void)
+{
+   return _elm_config->selection_clear_enable;
+}
+
+void _elm_config_selection_unfocused_clear_set(Eina_Bool enabled)
+{
+   enabled = !!enabled;
+   if (_elm_config->selection_clear_enable == enabled) return;
+   _elm_config->selection_clear_enable = enabled;
 }
 
 void
@@ -590,12 +651,15 @@ _elm_config_font_overlay_remove(const char *text_class)
 
    EINA_LIST_FOREACH(_elm_config->font_overlays, l, efd)
      {
-        if (strcmp(efd->text_class, text_class))
-          continue;
+        if (!efd->text_class) continue;
+        if (strcmp(efd->text_class, text_class)) continue;
 
+        _font_overlays_del =
+           eina_list_append(_font_overlays_del,
+                            eina_stringshare_add(text_class));
         _elm_config->font_overlays =
           eina_list_remove_list(_elm_config->font_overlays, l);
-        if (efd->text_class) eina_stringshare_del(efd->text_class);
+        eina_stringshare_del(efd->text_class);
         if (efd->font) eina_stringshare_del(efd->font);
         free(efd);
 
@@ -608,10 +672,13 @@ _elm_config_font_overlay_apply(void)
 {
    Elm_Font_Overlay *efd;
    Eina_List *l;
-   int i;
-
-   for (i = 0; _elm_text_classes[i].desc; i++)
-     edje_text_class_del(_elm_text_classes[i].name);
+   char *text_class;
+   EINA_LIST_FOREACH(_font_overlays_del, l, text_class)
+     {
+        edje_text_class_del(text_class);
+        eina_stringshare_del(text_class);
+     }
+   _font_overlays_del = eina_list_free(_font_overlays_del);
 
    EINA_LIST_FOREACH(_elm_config->font_overlays, l, efd)
      edje_text_class_set(efd->text_class, efd->font, efd->size);
@@ -713,7 +780,7 @@ _elm_config_profiles_list(void)
    const char *dir;
    size_t len;
 
-   len = _elm_user_dir_snprintf(buf, sizeof(buf), "config");
+   len = _elm_config_user_dir_snprintf(buf, sizeof(buf), "config");
 
    file_it = eina_file_stat_ls(buf);
    if (!file_it)
@@ -745,7 +812,7 @@ sys:
                            strlen(_elm_data_dir), "config",
                            sizeof("config") - 1);
 
-   file_it = eina_file_direct_ls(buf);
+   file_it = eina_file_stat_ls(buf);
    if (!file_it)
      goto list_free;
 
@@ -798,35 +865,31 @@ _profile_fetch_from_conf(void)
    Eet_File *ef = NULL;
    int len = 0;
 
-   _elm_profile = strdup("default");
-
    // if env var - use profile without question
    s = getenv("ELM_PROFILE");
    if (s)
      {
-        free(_elm_profile);
         _elm_profile = strdup(s);
         return;
      }
 
    // user profile
-   _elm_user_dir_snprintf(buf, sizeof(buf), "config/profile.cfg");
+   _elm_config_user_dir_snprintf(buf, sizeof(buf), "config/profile.cfg");
    ef = eet_open(buf, EET_FILE_MODE_READ);
    if (ef)
      {
         p = eet_read(ef, "config", &len);
         if (p)
           {
-             free(_elm_profile);
              _elm_profile = malloc(len + 1);
              memcpy(_elm_profile, p, len);
              _elm_profile[len] = 0;
              free(p);
+             eet_close(ef);
+             return;
           }
         eet_close(ef);
-        if (!p) ef = NULL;
      }
-   if (ef) return;
 
    // system profile
    _elm_data_dir_snprintf(buf, sizeof(buf), "config/profile.cfg");
@@ -836,46 +899,52 @@ _profile_fetch_from_conf(void)
         p = eet_read(ef, "config", &len);
         if (p)
           {
-             free(_elm_profile);
              _elm_profile = malloc(len + 1);
              memcpy(_elm_profile, p, len);
              _elm_profile[len] = 0;
              free(p);
+             eet_close(ef);
+             return;
           }
         eet_close(ef);
      }
+
+   _elm_profile = strdup("default");
 }
 
 static void
-_config_free(void)
+_config_free(Elm_Config *cfg)
 {
    Elm_Font_Overlay *fo;
    const char *fontdir;
    Elm_Custom_Palette *palette;
    Elm_Color_RGBA *color;
 
-   if (!_elm_config) return;
-   EINA_LIST_FREE(_elm_config->font_dirs, fontdir)
+   if (!cfg) return;
+   EINA_LIST_FREE(cfg->font_dirs, fontdir)
      {
         eina_stringshare_del(fontdir);
      }
-   if (_elm_config->engine) eina_stringshare_del(_elm_config->engine);
-   EINA_LIST_FREE(_elm_config->font_overlays, fo)
+   if (cfg->engine) eina_stringshare_del(cfg->engine);
+   EINA_LIST_FREE(cfg->font_overlays, fo)
      {
         if (fo->text_class) eina_stringshare_del(fo->text_class);
         if (fo->font) eina_stringshare_del(fo->font);
         free(fo);
      }
-   EINA_LIST_FREE(_elm_config->color_palette, palette)
+   EINA_LIST_FREE(cfg->color_palette, palette)
      {
         if (palette->palette_name) eina_stringshare_del(palette->palette_name);
         EINA_LIST_FREE(palette->color_list, color) free(color);
         free(palette);
      }
-   if (_elm_config->theme) eina_stringshare_del(_elm_config->theme);
-   if (_elm_config->modules) eina_stringshare_del(_elm_config->modules);
-   free(_elm_config);
-   _elm_config = NULL;
+   if (cfg->theme) eina_stringshare_del(cfg->theme);
+   if (cfg->modules) eina_stringshare_del(cfg->modules);
+   if (cfg->indicator_service_0) eina_stringshare_del(cfg->indicator_service_0);
+   if (cfg->indicator_service_90) eina_stringshare_del(cfg->indicator_service_90);
+   if (cfg->indicator_service_180) eina_stringshare_del(cfg->indicator_service_180);
+   if (cfg->indicator_service_270) eina_stringshare_del(cfg->indicator_service_270);
+   free(cfg);
 }
 
 static void
@@ -922,11 +991,7 @@ _elm_recache(void)
    edje_file_cache_set(_elm_config->edje_cache);
    edje_collection_cache_set(_elm_config->edje_collection_cache);
 
-   if (_elm_cache_flush_poller)
-     {
-        ecore_poller_del(_elm_cache_flush_poller);
-        _elm_cache_flush_poller = NULL;
-     }
+   ELM_SAFE_FREE(_elm_cache_flush_poller, ecore_poller_del);
    if (_elm_config->cache_flush_enable)
      {
         if (_elm_config->cache_flush_poll_interval > 0)
@@ -946,7 +1011,7 @@ _config_user_load(void)
    Eet_File *ef;
    char buf[PATH_MAX];
 
-   _elm_user_dir_snprintf(buf, sizeof(buf), "config/%s/base.cfg",
+   _elm_config_user_dir_snprintf(buf, sizeof(buf), "config/%s/base.cfg",
                           _elm_profile);
 
    ef = eet_open(buf, EET_FILE_MODE_READ);
@@ -985,6 +1050,16 @@ _config_load(void)
      {
         if (_elm_config->config_version < ELM_CONFIG_VERSION)
           _config_update();
+
+        /* set the default value if the configuration was just added and the
+         * value is zero which means it was not supported before and invalid. */
+        if (_elm_config->thumbscroll_min_friction == 0.0)
+          _elm_config->thumbscroll_min_friction = 0.5;
+        if (_elm_config->thumbscroll_friction_standard == 0.0)
+          _elm_config->thumbscroll_friction_standard = 1000.0;
+        if (_elm_config->thumbscroll_flick_distance_tolerance == 0)
+          _elm_config->thumbscroll_flick_distance_tolerance = 1000;
+
         return;
      }
 
@@ -1005,15 +1080,23 @@ _config_load(void)
    _elm_config->vsync = 0;
    _elm_config->thumbscroll_enable = EINA_TRUE;
    _elm_config->thumbscroll_threshold = 24;
+   _elm_config->thumbscroll_hold_threshold = 24;
    _elm_config->thumbscroll_momentum_threshold = 100.0;
+   _elm_config->thumbscroll_flick_distance_tolerance = 1000;
    _elm_config->thumbscroll_friction = 1.0;
+   _elm_config->thumbscroll_min_friction = 0.5;
+   _elm_config->thumbscroll_friction_standard = 1000.0;
    _elm_config->thumbscroll_bounce_friction = 0.5;
    _elm_config->thumbscroll_bounce_enable = EINA_TRUE;
+   _elm_config->thumbscroll_acceleration_threshold = 500.0;
+   _elm_config->thumbscroll_acceleration_time_limit = 0.7;
+   _elm_config->thumbscroll_acceleration_weight = 1.5;
    _elm_config->page_scroll_friction = 0.5;
    _elm_config->bring_in_scroll_friction = 0.5;
    _elm_config->zoom_friction = 0.5;
    _elm_config->thumbscroll_border_friction = 0.5;
    _elm_config->thumbscroll_sensitivity_friction = 0.25; // magic number! just trial and error shows this makes it behave "nicer" and not run off at high speed all the time
+   _elm_config->scroll_smooth_start_enable = EINA_FALSE;
    _elm_config->scroll_smooth_time_interval = 0.008;
    _elm_config->scroll_smooth_amount = 1.0;
    _elm_config->scroll_smooth_history_weight = 0.3;
@@ -1040,6 +1123,7 @@ _config_load(void)
    _elm_config->focus_highlight_animate = EINA_TRUE;
    _elm_config->toolbar_shrink_mode = 2;
    _elm_config->fileselector_expand_enable = EINA_FALSE;
+   _elm_config->fileselector_double_tap_navigation_enable = EINA_FALSE;
    _elm_config->inwin_dialogs_enable = EINA_FALSE;
    _elm_config->icon_size = 32;
    _elm_config->longpress_timeout = 1.0;
@@ -1051,17 +1135,18 @@ _config_load(void)
    _elm_config->glayer_zoom_finger_enable = EINA_TRUE;
    _elm_config->glayer_zoom_finger_factor = 1.0;
    _elm_config->glayer_zoom_wheel_factor = 0.05;
-   _elm_config->glayer_zoom_distance_tolerance = 1.0; /* 1 times elm_finger_size_get() */
+   _elm_config->glayer_zoom_distance_tolerance = 1.0; /* 1 times elm_config_finger_size_get() */
    _elm_config->glayer_rotate_finger_enable = EINA_TRUE;
    _elm_config->glayer_rotate_angular_tolerance = 2.0; /* 2 DEG */
-   _elm_config->glayer_line_min_length = 1.0;         /* 1 times elm_finger_size_get() */
-   _elm_config->glayer_line_distance_tolerance = 3.0; /* 3 times elm_finger_size_get() */
+   _elm_config->glayer_line_min_length = 1.0;         /* 1 times elm_config_finger_size_get() */
+   _elm_config->glayer_line_distance_tolerance = 3.0; /* 3 times elm_config_finger_size_get() */
    _elm_config->glayer_line_angular_tolerance = 20.0; /* 20 DEG */
    _elm_config->glayer_flick_time_limit_ms = 120;              /* ms to finish flick */
    _elm_config->glayer_long_tap_start_timeout = 1.2;   /* 1.2 second to start long-tap */
    _elm_config->glayer_double_tap_timeout = 0.25;   /* 0.25 seconds between 2 mouse downs of a tap. */
    _elm_config->glayer_continues_enable = EINA_TRUE;      /* Continue gestures default */
    _elm_config->access_mode = ELM_ACCESS_MODE_OFF;
+   _elm_config->selection_clear_enable = EINA_FALSE;
    _elm_config->week_start = 1; /* monday */
    _elm_config->weekend_start = 6; /* saturday */
    _elm_config->weekend_len = 2;
@@ -1075,6 +1160,13 @@ _config_load(void)
    _elm_config->auto_dump_withdrawn = 0;
    _elm_config->auto_throttle = 0;
    _elm_config->auto_throttle_amount = 0.1;
+   _elm_config->indicator_service_0 = eina_stringshare_add("elm_indicator_portrait");
+   _elm_config->indicator_service_90 = eina_stringshare_add("elm_indicator_landscape");
+   _elm_config->indicator_service_180 = eina_stringshare_add("elm_indicator_portrait");
+   _elm_config->indicator_service_270 = eina_stringshare_add("elm_indicator_landscape");
+   _elm_config->disable_external_menu = EINA_FALSE;
+   _elm_config->magnifier_enable = EINA_TRUE;
+   _elm_config->magnifier_scale = 1.5;
 }
 
 static const char *
@@ -1150,11 +1242,12 @@ _elm_config_profile_save(void)
    Eet_File *ef;
    size_t len;
 
-   len = _elm_user_dir_snprintf(buf, sizeof(buf), "config/profile.cfg");
+   len = _elm_config_user_dir_snprintf(buf, sizeof(buf), "config/profile.cfg");
    if (len + 1 >= sizeof(buf))
      return EINA_FALSE;
 
-   len = _elm_user_dir_snprintf(buf2, sizeof(buf2), "config/profile.cfg.tmp");
+   len = _elm_config_user_dir_snprintf(buf2, sizeof(buf2),
+                                       "config/profile.cfg.tmp");
    if (len + 1 >= sizeof(buf2))
      return EINA_FALSE;
 
@@ -1198,7 +1291,8 @@ _elm_config_save(void)
    Eet_File *ef;
    size_t len;
 
-   len = _elm_user_dir_snprintf(buf, sizeof(buf), "config/%s", _elm_profile);
+   len = _elm_config_user_dir_snprintf(buf, sizeof(buf), "config/%s",
+                                       _elm_profile);
    if (len + 1 >= sizeof(buf))
      return EINA_FALSE;
 
@@ -1263,13 +1357,14 @@ static void
 _config_update(void)
 {
    Elm_Config *tcfg;
+   const char *s = NULL;
 
    tcfg = _config_system_load();
    if (!tcfg)
      {
         /* weird profile or something? We should probably fill
          * with hardcoded defaults, or get from default previx */
-          return;
+        return;
      }
 #define IFCFG(v)   if ((_elm_config->config_version & 0xffff) < (v)) {
 #define IFCFGELSE } else {
@@ -1286,6 +1381,23 @@ _config_update(void)
      COPYVAL(longpress_timeout);
      IFCFGEND;
 
+     IFCFG(0x0004);
+#define PREFS_IFACE_MODULE_STR "prefs>prefs_iface"
+     if (!_elm_config->modules)
+       s = eina_stringshare_add(PREFS_IFACE_MODULE_STR);
+     else
+       {
+          if (!strstr(_elm_config->modules, PREFS_IFACE_MODULE_STR))
+            s = eina_stringshare_printf
+            ("%s:%s", _elm_config->modules, PREFS_IFACE_MODULE_STR);
+       }
+     if (s)
+       {
+          if (_elm_config->modules) eina_stringshare_del(_elm_config->modules);
+          _elm_config->modules = s;
+       }
+     IFCFGEND;
+
 #undef COPYSTR
 #undef COPYPTR
 #undef COPYVAL
@@ -1293,7 +1405,10 @@ _config_update(void)
 #undef IFCFGELSE
 #undef IFCFG
 
-     /* after updating user config, we must save */
+   _elm_config->config_version = ELM_CONFIG_VERSION;
+   /* after updating user config, we must save */
+   _config_free(tcfg);
+   _elm_config_save();
 }
 
 static void
@@ -1388,15 +1503,29 @@ _env_get(void)
    if (s) _elm_config->thumbscroll_enable = !!atoi(s);
    s = getenv("ELM_THUMBSCROLL_THRESHOLD");
    if (s) _elm_config->thumbscroll_threshold = atoi(s);
+   s = getenv("ELM_THUMBSCROLL_HOLD_THRESHOLD");
+   if (s) _elm_config->thumbscroll_hold_threshold = atoi(s);
    // FIXME: floatformat locale issues here 1.0 vs 1,0 - should just be 1.0
    s = getenv("ELM_THUMBSCROLL_MOMENTUM_THRESHOLD");
    if (s) _elm_config->thumbscroll_momentum_threshold = _elm_atof(s);
+   s = getenv("ELM_THUMBSCROLL_FLICK_DISTANCE_TOLERANCE");
+   if (s) _elm_config->thumbscroll_flick_distance_tolerance = atoi(s);
    s = getenv("ELM_THUMBSCROLL_FRICTION");
    if (s) _elm_config->thumbscroll_friction = _elm_atof(s);
+   s = getenv("ELM_THUMBSCROLL_MIN_FRICTION");
+   if (s) _elm_config->thumbscroll_min_friction = _elm_atof(s);
+   s = getenv("ELM_THUMBSCROLL_FRICTION_STANDARD");
+   if (s) _elm_config->thumbscroll_friction_standard = _elm_atof(s);
    s = getenv("ELM_THUMBSCROLL_BOUNCE_ENABLE");
    if (s) _elm_config->thumbscroll_bounce_enable = !!atoi(s);
    s = getenv("ELM_THUMBSCROLL_BOUNCE_FRICTION");
    if (s) _elm_config->thumbscroll_bounce_friction = _elm_atof(s);
+   s = getenv("ELM_THUMBSCROLL_ACCELERATION_THRESHOLD");
+   if (s) _elm_config->thumbscroll_acceleration_threshold = _elm_atof(s);
+   s = getenv("ELM_THUMBSCROLL_ACCELERATION_TIME_LIMIT");
+   if (s) _elm_config->thumbscroll_acceleration_time_limit = _elm_atof(s);
+   s = getenv("ELM_THUMBSCROLL_ACCELERATION_WEIGHT");
+   if (s) _elm_config->thumbscroll_acceleration_weight = _elm_atof(s);
    s = getenv("ELM_PAGE_SCROLL_FRICTION");
    if (s) _elm_config->page_scroll_friction = _elm_atof(s);
    s = getenv("ELM_BRING_IN_SCROLL_FRICTION");
@@ -1427,6 +1556,8 @@ _env_get(void)
 
         _elm_config->thumbscroll_sensitivity_friction = friction;
      }
+   s = getenv("ELM_SCROLL_SMOOTH_START_ENABLE");
+   if (s) _elm_config->scroll_smooth_start_enable = !!atoi(s);
    s = getenv("ELM_SCROLL_SMOOTH_TIME_INTERVAL");
    if (s) _elm_config->scroll_smooth_time_interval = atof(s);
    s = getenv("ELM_SCROLL_SMOOTH_AMOUNT");
@@ -1541,6 +1672,9 @@ _env_get(void)
    s = getenv("ELM_FILESELECTOR_EXPAND_ENABLE");
    if (s) _elm_config->fileselector_expand_enable = !!atoi(s);
 
+   s = getenv("ELM_FILESELECTOR_DOUBLE_TAP_NAVIGATION_ENABLE");
+   if (s) _elm_config->fileselector_double_tap_navigation_enable = !!atoi(s);
+
    s = getenv("ELM_INWIN_DIALOGS_ENABLE");
    if (s) _elm_config->inwin_dialogs_enable = !!atoi(s);
 
@@ -1560,6 +1694,9 @@ _env_get(void)
    s = getenv("ELM_ACCESS_MODE");
    if (s) _elm_config->access_mode = ELM_ACCESS_MODE_ON;
 
+   s = getenv("ELM_SELECTION_CLEAR_ENABLE");
+   if (s) _elm_config->selection_clear_enable = !!atoi(s);
+
    s = getenv("ELM_AUTO_THROTTLE");
    if (s) _elm_config->auto_throttle = EINA_TRUE;
    s = getenv("ELM_AUTO_THROTTLE_AMOUNT");
@@ -1572,6 +1709,24 @@ _env_get(void)
    if (s) _elm_config->auto_flush_withdrawn = EINA_TRUE;
    s = getenv("ELM_AUTO_DUMP_WIDTHDRAWN");
    if (s) _elm_config->auto_dump_withdrawn = EINA_TRUE;
+
+   s = getenv("ELM_INDICATOR_SERVICE_0");
+   if (s) eina_stringshare_replace(&_elm_config->indicator_service_0, s);
+   s = getenv("ELM_INDICATOR_SERVICE_90");
+   if (s) eina_stringshare_replace(&_elm_config->indicator_service_90, s);
+   s = getenv("ELM_INDICATOR_SERVICE_180");
+   if (s) eina_stringshare_replace(&_elm_config->indicator_service_180, s);
+   s = getenv("ELM_INDICATOR_SERVICE_270");
+   if (s) eina_stringshare_replace(&_elm_config->indicator_service_270, s);
+   s = getenv("ELM_DISABLE_EXTERNAL_MENU");
+   if (s) _elm_config->disable_external_menu = !!atoi(s);
+
+   s = getenv("ELM_CLOUSEAU");
+   if (s) _elm_config->clouseau_enable = atoi(s);
+   s = getenv("ELM_MAGNIFIER_ENABLE");
+   if (s) _elm_config->magnifier_enable = !!atoi(s);
+   s = getenv("ELM_MAGNIFIER_SCALE");
+   if (s) _elm_config->magnifier_scale = _elm_atof(s);
 }
 
 EAPI Eina_Bool
@@ -1624,6 +1779,7 @@ elm_config_scale_get(void)
 EAPI void
 elm_config_scale_set(double scale)
 {
+   if (scale < 0.0) return;
    if (_elm_config->scale == scale) return;
    _elm_config->scale = scale;
    _elm_rescale();
@@ -1652,6 +1808,7 @@ elm_config_password_show_last_timeout_get(void)
 EAPI void
 elm_config_password_show_last_timeout_set(double password_show_last_timeout)
 {
+   if (password_show_last_timeout < 0.0) return;
    if (_elm_config->password_show_last_timeout == password_show_last_timeout) return;
    _elm_config->password_show_last_timeout = password_show_last_timeout;
    edje_password_show_last_timeout_set(_elm_config->password_show_last_timeout);
@@ -1754,6 +1911,18 @@ elm_config_access_set(Eina_Bool is_access)
    _elm_config_access_set(is_access);
 }
 
+EAPI Eina_Bool
+elm_config_selection_unfocused_clear_get(void)
+{
+   return _elm_config_selection_unfocused_clear_get();
+}
+
+EAPI void
+elm_config_selection_unfocused_clear_set(Eina_Bool enabled)
+{
+   _elm_config_selection_unfocused_clear_set(enabled);
+}
+
 EAPI void
 elm_config_font_overlay_set(const char    *text_class,
                      const char    *font,
@@ -1786,6 +1955,7 @@ elm_config_finger_size_get(void)
 EAPI void
 elm_config_finger_size_set(Evas_Coord size)
 {
+   if (size < 0) return;
    if (_elm_config->finger_size == size) return;
    _elm_config->finger_size = size;
    _elm_rescale();
@@ -1832,6 +2002,7 @@ elm_config_cache_font_cache_size_get(void)
 EAPI void
 elm_config_cache_font_cache_size_set(int size)
 {
+   if (size < 0) return;
    if (_elm_config->font_cache == size) return;
    _elm_config->font_cache = size;
 
@@ -1847,6 +2018,7 @@ elm_config_cache_image_cache_size_get(void)
 EAPI void
 elm_config_cache_image_cache_size_set(int size)
 {
+   if (size < 0) return;
    if (_elm_config->image_cache == size) return;
    _elm_config->image_cache = size;
 
@@ -1862,6 +2034,7 @@ elm_config_cache_edje_file_cache_size_get()
 EAPI void
 elm_config_cache_edje_file_cache_size_set(int size)
 {
+   if (size < 0) return;
    if (_elm_config->edje_cache == size) return;
    _elm_config->edje_cache = size;
 
@@ -1991,6 +2164,18 @@ elm_config_scroll_thumbscroll_threshold_set(unsigned int threshold)
    _elm_config->thumbscroll_threshold = threshold;
 }
 
+EAPI unsigned int
+elm_config_scroll_thumbscroll_hold_threshold_get(void)
+{
+   return _elm_config->thumbscroll_hold_threshold;
+}
+
+EAPI void
+elm_config_scroll_thumbscroll_hold_threshold_set(unsigned int threshold)
+{
+   _elm_config->thumbscroll_hold_threshold = threshold;
+}
+
 EAPI double
 elm_config_scroll_thumbscroll_momentum_threshold_get(void)
 {
@@ -2003,6 +2188,18 @@ elm_config_scroll_thumbscroll_momentum_threshold_set(double threshold)
    _elm_config->thumbscroll_momentum_threshold = threshold;
 }
 
+EAPI unsigned int
+elm_config_scroll_thumbscroll_flick_distance_tolerance_get(void)
+{
+   return _elm_config->thumbscroll_flick_distance_tolerance;
+}
+
+EAPI void
+elm_config_scroll_thumbscroll_flick_distance_tolerance_set(unsigned int distance)
+{
+   _elm_config->thumbscroll_flick_distance_tolerance = distance;
+}
+
 EAPI double
 elm_config_scroll_thumbscroll_friction_get(void)
 {
@@ -2013,6 +2210,30 @@ EAPI void
 elm_config_scroll_thumbscroll_friction_set(double friction)
 {
    _elm_config->thumbscroll_friction = friction;
+}
+
+EAPI double
+elm_config_scroll_thumbscroll_min_friction_get(void)
+{
+   return _elm_config->thumbscroll_min_friction;
+}
+
+EAPI void
+elm_config_scroll_thumbscroll_min_friction_set(double friction)
+{
+   _elm_config->thumbscroll_min_friction = friction;
+}
+
+EAPI double
+elm_config_scroll_thumbscroll_friction_standard_get(void)
+{
+   return _elm_config->thumbscroll_friction_standard;
+}
+
+EAPI void
+elm_config_scroll_thumbscroll_friction_standard_set(double standard)
+{
+   _elm_config->thumbscroll_friction_standard = standard;
 }
 
 EAPI double
@@ -2043,6 +2264,42 @@ elm_config_scroll_thumbscroll_sensitivity_friction_set(double friction)
    _elm_config->thumbscroll_sensitivity_friction = friction;
 }
 
+EAPI double
+elm_config_scroll_thumbscroll_acceleration_threshold_get(void)
+{
+   return _elm_config->thumbscroll_acceleration_threshold;
+}
+
+EAPI void
+elm_config_scroll_thumbscroll_acceleration_threshold_set(double threshold)
+{
+   _elm_config->thumbscroll_acceleration_threshold = threshold;
+}
+
+EAPI double
+elm_config_scroll_thumbscroll_acceleration_time_limit_get(void)
+{
+   return _elm_config->thumbscroll_acceleration_time_limit;
+}
+
+EAPI void
+elm_config_scroll_thumbscroll_acceleration_time_limit_set(double time_limit)
+{
+   _elm_config->thumbscroll_acceleration_time_limit = time_limit;
+}
+
+EAPI double
+elm_config_scroll_thumbscroll_acceleration_weight_get(void)
+{
+   return _elm_config->thumbscroll_acceleration_weight;
+}
+
+EAPI void
+elm_config_scroll_thumbscroll_acceleration_weight_set(double weight)
+{
+   _elm_config->thumbscroll_acceleration_weight = weight;
+}
+
 EAPI void
 elm_config_longpress_timeout_set(double longpress_timeout)
 {
@@ -2067,12 +2324,86 @@ elm_config_softcursor_mode_get(void)
    return _elm_config->softcursor_mode;
 }
 
+EAPI Eina_Bool
+elm_config_disable_external_menu_get(void)
+{
+   return _elm_config->disable_external_menu;
+}
+
+EAPI void
+elm_config_disable_external_menu_set(Eina_Bool disable)
+{
+   _elm_config->disable_external_menu = !!disable;
+}
+
+EAPI Eina_Bool
+elm_config_clouseau_enabled_get(void)
+{
+   return _elm_config->clouseau_enable;
+}
+
+EAPI void
+elm_config_clouseau_enabled_set(Eina_Bool enable)
+{
+   _elm_config->clouseau_enable = !!enable;
+   _elm_clouseau_reload();
+}
+
+EAPI double
+elm_config_glayer_long_tap_start_timeout_get(void)
+{
+   return _elm_config->glayer_long_tap_start_timeout;
+}
+
+EAPI void
+elm_config_glayer_long_tap_start_timeout_set(double long_tap_timeout)
+{
+   _elm_config->glayer_long_tap_start_timeout = long_tap_timeout;
+}
+
+EAPI double
+elm_config_glayer_double_tap_timeout_get(void)
+{
+   return _elm_config->glayer_double_tap_timeout;
+}
+
+EAPI void
+elm_config_glayer_double_tap_timeout_set(double double_tap_timeout)
+{
+   _elm_config->glayer_double_tap_timeout = double_tap_timeout;
+}
+
+EAPI Eina_Bool
+elm_config_magnifier_enable_get(void)
+{
+   return _elm_config->magnifier_enable;
+}
+
+EAPI void
+elm_config_magnifier_enable_set(Eina_Bool enable)
+{
+   _elm_config->magnifier_enable = !!enable;
+}
+
+EAPI double
+elm_config_magnifier_scale_get(void)
+{
+   return _elm_config->magnifier_scale;
+}
+
+EAPI void
+elm_config_magnifier_scale_set(double scale)
+{
+   _elm_config->magnifier_scale = scale;
+}
+
 EAPI void
 elm_config_all_flush(void)
 {
 #ifdef HAVE_ELEMENTARY_X
-   if (_prop_all_update_timer) ecore_timer_del(_prop_all_update_timer);
-   _prop_all_update_timer = ecore_timer_add(0.1, _prop_all_update_cb, NULL);
+   _prop_config_set();
+   ecore_x_window_prop_string_set(_root_1st, _atom[ATOM_E_PROFILE],
+                                  _elm_profile);
 #endif
 }
 
@@ -2112,26 +2443,19 @@ _elm_config_init(void)
    _profile_fetch_from_conf();
    _config_load();
    _env_get();
-   if (_elm_preferred_engine) eina_stringshare_del(_elm_preferred_engine);
-   _elm_preferred_engine = NULL;
+   ELM_SAFE_FREE(_elm_preferred_engine, eina_stringshare_del);
    _translation_init();
    _config_apply();
    _elm_config_font_overlay_apply();
    _elm_recache();
+   _elm_clouseau_reload();
 }
 
 void
 _elm_config_sub_shutdown(void)
 {
 #ifdef HAVE_ELEMENTARY_X
-   if (_prop_all_update_timer)
-     {
-        ecore_timer_del(_prop_all_update_timer);
-        _prop_all_update_timer = NULL;
-        _prop_all_update_cb(NULL);
-     }
-   if (_prop_change_delay_timer) ecore_timer_del(_prop_change_delay_timer);
-   _prop_change_delay_timer = NULL;
+   ELM_SAFE_FREE(_prop_change_delay_timer, ecore_timer_del);
 #endif
 
 #define ENGINE_COMPARE(name) (!strcmp(_elm_config->engine, name))
@@ -2163,10 +2487,10 @@ _elm_config_sub_init(void)
         if (ecore_x_init(NULL))
           {
              _root_1st = ecore_x_window_root_first_get();
-             
+
              if (!ecore_x_screen_is_composited(0))
                _elm_config->compositing = 0;
-             
+
              ecore_x_atoms_get(_atom_names, ATOM_COUNT, _atom);
              ecore_x_event_mask_set(_root_1st,
                                     ECORE_X_EVENT_MASK_WINDOW_PROPERTY);
@@ -2175,13 +2499,13 @@ _elm_config_sub_init(void)
              if (!getenv("ELM_PROFILE"))
                {
                   char *s;
-                  
+
                   s = ecore_x_window_prop_string_get(_root_1st,
                                                      _atom[ATOM_E_PROFILE]);
                   if (s)
                     {
                        int changed = 0;
-                       
+
                        if (_elm_profile)
                          {
                             if (strcmp(_elm_profile, s)) changed = 1;
@@ -2202,12 +2526,14 @@ _elm_config_sub_init(void)
 void
 _elm_config_reload(void)
 {
-   _config_free();
+   _config_free(_elm_config);
+   _elm_config = NULL;
    _config_load();
    _config_apply();
    _elm_config_font_overlay_apply();
    _elm_rescale();
    _elm_recache();
+   _elm_clouseau_reload();
    ecore_event_add(ELM_EVENT_CONFIG_ALL_CHANGED, NULL, NULL, NULL);
 }
 
@@ -2233,34 +2559,51 @@ elm_config_preferred_engine_set(const char *engine)
      eina_stringshare_replace(&(_elm_preferred_engine), engine);
    else
      {
-        if (_elm_preferred_engine) eina_stringshare_del(_elm_preferred_engine);
-        _elm_preferred_engine = NULL;
+        ELM_SAFE_FREE(_elm_preferred_engine, eina_stringshare_del);
+     }
+}
+
+EAPI const char *
+elm_config_indicator_service_get(int rotation)
+{
+   switch (rotation)
+     {
+      case 0:
+        return _elm_config->indicator_service_0;
+      case 90:
+        return _elm_config->indicator_service_90;
+      case 180:
+        return _elm_config->indicator_service_180;
+      case 270:
+        return _elm_config->indicator_service_270;
+      default:
+        return NULL;
      }
 }
 
 void
 _elm_config_profile_set(const char *profile)
 {
-   Eina_Bool changed = EINA_FALSE;
+   if (!profile) return;
 
    if (_elm_profile)
      {
-        if (strcmp(_elm_profile, profile))
-          changed = 1;
+        if (!strcmp(_elm_profile, profile))
+          return;
+
         free(_elm_profile);
      }
 
    _elm_profile = strdup(profile);
 
-   if (changed)
-     {
-        _config_free();
-        _config_load();
-        _config_apply();
-        _elm_config_font_overlay_apply();
-        _elm_rescale();
-        _elm_recache();
-     }
+   _config_free(_elm_config);
+   _elm_config = NULL;
+   _config_load();
+   _config_apply();
+   _elm_config_font_overlay_apply();
+   _elm_rescale();
+   _elm_recache();
+   _elm_clouseau_reload();
 }
 
 void
@@ -2278,17 +2621,13 @@ _elm_config_shutdown(void)
         _prop_change_handler = NULL;
 #endif
      }
-   _config_free();
-   if (_elm_preferred_engine)
-     {
-        eina_stringshare_del(_elm_preferred_engine);
-        _elm_preferred_engine = NULL;
-     }
-   if (_elm_profile)
-     {
-        free(_elm_profile);
-        _elm_profile = NULL;
-     }
+   ELM_SAFE_FREE(_elm_config, _config_free);
+   ELM_SAFE_FREE(_elm_preferred_engine, eina_stringshare_del);
+   ELM_SAFE_FREE(_elm_profile, free);
+
+#ifdef HAVE_ELEMENTARY_X
+   _elm_font_overlays_del_free();
+#endif
    _desc_shutdown();
 }
 

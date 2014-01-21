@@ -179,6 +179,7 @@ EAPI Elm_Theme       *elm_theme_default_get(void);
  * of trouble.
  *
  * @see elm_theme_extension_add()
+ * @see elm_theme_overlay_mmap_add()
  *
  * @ingroup Theme
  */
@@ -195,6 +196,40 @@ EAPI void             elm_theme_overlay_add(Elm_Theme *th, const char *item);
  * @ingroup Theme
  */
 EAPI void             elm_theme_overlay_del(Elm_Theme *th, const char *item);
+
+/**
+ * Prepends a theme overlay to the list of overlays
+ *
+ * @param th The theme to add to, or if NULL, the default theme
+ * @param f The Edje file handle to be used
+ *
+ * Use this if your application needs to provide some custom overlay theme
+ * (An Edje file that replaces some default styles of widgets) where adding
+ * new styles, or changing system theme configuration is not possible. Do
+ * NOT use this instead of a proper system theme configuration. Use proper
+ * configuration files, profiles, environment variables etc. to set a theme
+ * so that the theme can be altered by simple configuration by a user. Using
+ * this call to achieve that effect is abusing the API and will create lots
+ * of trouble.
+ *
+ * @see elm_theme_extension_add()
+ * @see elm_theme_overlay_add()
+ *
+ * @ingroup Theme
+ */
+EAPI void             elm_theme_overlay_mmap_add(Elm_Theme *th, const Eina_File *f);
+
+/**
+ * Delete a theme overlay from the list of overlays
+ *
+ * @param th The theme to delete from, or if NULL, the default theme
+ * @param f The file handle of the theme overlay
+ *
+ * @see elm_theme_overlay_mmap_add()
+ *
+ * @ingroup Theme
+ */
+EAPI void             elm_theme_overlay_mmap_del(Elm_Theme *th, const Eina_File *f);
 
 /**
  * Get the list of registered overlays for the given theme
@@ -242,6 +277,41 @@ EAPI void             elm_theme_extension_add(Elm_Theme *th, const char *item);
  * @ingroup Theme
  */
 EAPI void             elm_theme_extension_del(Elm_Theme *th, const char *item);
+
+/**
+ * Appends a theme extension to the list of extensions.
+ *
+ * @param th The theme to add to, or if NULL, the default theme
+ * @param f The Edje file handle to be used
+ *
+ * This is intended when an application needs more styles of widgets or new
+ * widget themes that the default does not provide (or may not provide). The
+ * application has "extended" usage by coming up with new custom style names
+ * for widgets for specific uses, but as these are not "standard", they are
+ * not guaranteed to be provided by a default theme. This means the
+ * application is required to provide these extra elements itself in specific
+ * Edje files. This call adds one of those Edje files to the theme search
+ * path to be search after the default theme. The use of this call is
+ * encouraged when default styles do not meet the needs of the application.
+ * Use this call instead of elm_theme_overlay_add() for almost all cases.
+ *
+ * @see elm_object_style_set()
+ *
+ * @ingroup Theme
+ */
+EAPI void             elm_theme_extension_mmap_add(Elm_Theme *th, const Eina_File *f);
+
+/**
+ * Deletes a theme extension from the list of extensions.
+ *
+ * @param th The theme to delete from, or if NULL, the default theme
+ * @param f The file handle of the theme extension
+ *
+ * @see elm_theme_extension_add()
+ *
+ * @ingroup Theme
+ */
+EAPI void             elm_theme_extension_mmap_del(Elm_Theme *th, const Eina_File *f);
 
 /**
  * Get the list of registered extensions for the given theme
@@ -430,6 +500,85 @@ EAPI Elm_Theme       *elm_object_theme_get(const Evas_Object *obj);
  * @ingroup Theme
  */
 EAPI const char      *elm_theme_data_get(Elm_Theme *th, const char *key);
+
+/**
+ * Get the file path for an edje file for the group and theme given
+ *
+ * @param th The theme, or NULL for default theme
+ * @param group The group in the edje file to look for
+ * @return The full path to the file as a string
+ *
+ * This function looks up the given edje @p group in the set of theme edje
+ * files configured for the theme @p th (which if NULL indicates the default
+ * theme). If not found in any, NULL wil be returned. If found, the string
+ * returned is internal and should not be freed, but will only be valid
+ * until the theme is re-configured, or cache flushed, so if the string needs
+ * to be kept, duplicate it and store that. The string will be a stringshare
+ * string that is returned by functions like eina_stringshare_add() so it can
+ * be just references via stringshare functions if desired.
+ *
+ * If group is NULL, then nothing can be looked up, so it is a non-sensical
+ * request.
+ *
+ * @since 1.8
+ * @ingroup Theme
+ */
+EAPI const char *elm_theme_group_path_find(Elm_Theme *th, const char *group);
+
+/**
+ * Get a list of groups that match the initial base string given within all themes
+ *
+ * @param th The theme, or NULL for default theme
+ * @param base The base string group collection to look for
+ * @return A list of collection names (sorted) or NULL if none found
+ *
+ * This function will walk all theme files configured in the theme @p th (or
+ * NULL if its the default) and find all groups that BEGIN with the string
+ * @p begin and have that string as at LEAST their start, and then add the
+ * fulll group name that matches to the list and return that full group
+ * group string.
+ *
+ * The list returned must be freed by the caller, with each string being a
+ * stringshared string to be freed with eina_stringshare_del(). Not doing so
+ * may result in a leak.
+ *
+ * @since 1.8
+ * @ingroup Theme
+ */
+ EAPI Eina_List *elm_theme_group_base_list(Elm_Theme *th, const char *base);
+
+/**
+ * Get the file path where elementary system theme files are found
+ * 
+ * @return A string that holds the path where system themes are
+ * 
+ * This returns the location in the filesystem where the system themes are
+ * to be found that elementary looks for. This is useful for something
+ * that wishes toiterate over the files in this folder and display them, for
+ * example a theme selector.
+ * 
+ * @since 1.8
+ * @ingroup Theme
+ */
+EAPI const char *elm_theme_system_dir_get(void);
+
+/**
+ * Get the file path where elementary user theme files are found
+ * 
+ * @return A string that holds the path where user themes are
+ * 
+ * This returns the location in the filesystem where the user themes are
+ * to be found that elementary looks for. This is useful for something
+ * that wishes toiterate over the files in this folder and display them, for
+ * example a theme selector.
+ * 
+ * User themes are always looked for before system themes. The user theme
+ * directory is normally expected to be writable by the user.
+ * 
+ * @since 1.8
+ * @ingroup Theme
+ */
+EAPI const char *elm_theme_user_dir_get(void);
 
 /**
  * @}

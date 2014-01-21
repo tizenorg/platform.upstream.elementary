@@ -61,6 +61,7 @@ EXTRA_DIST = \
 README \
 AUTHORS \
 COPYING \
+COMPLIANCE \
 autogen.sh \
 elementary.pc.in \
 elementary.spec \
@@ -68,20 +69,22 @@ elementary.spec.in \
 m4/ac_attribute.m4 \
 m4/efl_binary.m4 \
 m4/efl_doxygen.m4 \
-config.rpath
+config.rpath \
+pkgbuild/PKGBUILD
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = elementary.pc
 
-.PHONY: doc install-doc screenshots
+cmakeconfigdir = $(libdir)/cmake/Elementary
+cmakeconfig_DATA = \
+cmakeconfig/ElementaryConfig.cmake \
+cmakeconfig/ElementaryConfigVersion.cmake
+
+.PHONY: doc screenshots
 
 doc:
 	@echo "entering doc/"
 	$(MAKE) -C doc doc
-
-install-doc:
-	@echo "entering doc/"
-	make -C doc install-doc
 
 screenshots: all
 	@echo "entering src/examples/"

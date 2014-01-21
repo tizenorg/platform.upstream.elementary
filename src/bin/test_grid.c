@@ -2,7 +2,7 @@
 # include "elementary_config.h"
 #endif
 #include <Elementary.h>
-#ifndef ELM_LIB_QUICKLAUNCH
+
 struct _Api_Data
 {
    Evas_Object *grid;
@@ -64,7 +64,7 @@ set_api_state(api_data *api)
 }
 
 static void
-_api_bt_clicked(void *data, Evas_Object *obj, void *event_info __UNUSED__)
+_api_bt_clicked(void *data, Evas_Object *obj, void *event_info EINA_UNUSED)
 {  /* Will add here a SWITCH command containing code to modify test-object */
    /* in accordance a->state value. */
    api_data *a = data;
@@ -79,7 +79,7 @@ _api_bt_clicked(void *data, Evas_Object *obj, void *event_info __UNUSED__)
 }
 
 static void
-_ch_grid(void *data __UNUSED__, Evas_Object *obj, void *event_info __UNUSED__)
+_ch_grid(void *data EINA_UNUSED, Evas_Object *obj, void *event_info EINA_UNUSED)
 {
    int x, y, w, h;
 
@@ -88,13 +88,13 @@ _ch_grid(void *data __UNUSED__, Evas_Object *obj, void *event_info __UNUSED__)
 }
 
 static void
-_cleanup_cb(void *data, Evas *e __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+_cleanup_cb(void *data, Evas *e EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    free(data);
 }
 
 void
-test_grid(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+test_grid(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *win, *gd, *bt, *rc, *en;
 
@@ -106,8 +106,8 @@ test_grid(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info _
 
    gd = elm_grid_add(win);
    elm_grid_size_set(gd, 100, 100);
-   elm_win_resize_object_add(win, gd);
    evas_object_size_hint_weight_set(gd, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   elm_win_resize_object_add(win, gd);
    api->data.grid = gd;
    evas_object_show(gd);
 
@@ -187,4 +187,3 @@ test_grid(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info _
    evas_object_resize(win, 480, 480);
    evas_object_show(win);
 }
-#endif

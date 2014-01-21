@@ -1,3 +1,7 @@
+#ifdef HAVE_CONFIG_H
+# include "elementary_config.h"
+#endif
+
 #include "Elementary.h"
 #include "private.h"
 
@@ -18,22 +22,13 @@ external_elm_init(void)
    elm_init(argc, argv);
 }
 
-static Eina_Bool
-_shutdown_idler(void *data __UNUSED__)
-{
-   elm_shutdown();
-
-   return ECORE_CALLBACK_CANCEL;
-}
-
 static void
 external_elm_shutdown(void)
 {
    init_count--;
    DBG("elm_real_shutdown\n");
    if (init_count > 0) return;
-
-   ecore_idler_add(_shutdown_idler, NULL);
+   elm_shutdown();
 }
 
 static void

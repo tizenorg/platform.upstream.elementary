@@ -11,94 +11,65 @@
 
 #include <Elementary.h>
 
-static void
-_on_done(void        *data,
-         Evas_Object *obj,
-         void        *event_info)
-{
-   elm_exit();
-}
+#define IMG_NUM 8
 
 static Evas_Object *slideshow, *bt_start, *bt_stop;
 static Elm_Slideshow_Item_Class itc;
 
-static char img1[256], img2[256], img3[256], img4[256], img5[256], img6[256], img7[256], img8[256], img9[256];
-
 static void
-_notify_show(void        *data,
-             Evas        *e,
-             Evas_Object *obj,
-             void        *event_info)
+_notify_show(void *data, Evas *e, Evas_Object *obj, void *event_info)
 {
    evas_object_show(data);
 }
 
 /* jump to next item, cyclically */
 static void
-_next(void        *data,
-      Evas_Object *obj,
-      void        *event_info)
+_next(void  *data, Evas_Object *obj, void *event_info)
 {
    elm_slideshow_next(data);
 }
 
 static void
-_previous(void        *data,
-          Evas_Object *obj,
-          void        *event_info)
+_previous(void *data, Evas_Object *obj, void *event_info)
 {
    elm_slideshow_previous(data);
 }
 
 static void
-_first(void        *data,
-       Evas_Object *obj,
-       void        *event_info)
+_first(void *data, Evas_Object *obj, void *event_info)
 {
    elm_slideshow_item_show(data);
 }
 
 static void
-_last(void        *data,
-      Evas_Object *obj,
-      void        *event_info)
+_last(void *data, Evas_Object *obj, void *event_info)
 {
    elm_slideshow_item_show(data);
 }
 
 static void
-_mouse_in(void        *data,
-          Evas        *e,
-          Evas_Object *obj,
-          void        *event_info)
+_mouse_in_cb(void *data, Evas *e, Evas_Object *obj, void *event_info)
 {
    elm_notify_timeout_set(data, 0.0);
    evas_object_show(data);
 }
 
 static void
-_mouse_out(void        *data,
-           Evas        *e,
-           Evas_Object *obj,
-           void        *event_info)
+_mouse_out_cb(void *data, Evas *e, Evas_Object *obj, void *event_info)
 {
    elm_notify_timeout_set(data, 3.0);
 }
 
 /* transition changed */
 static void
-_transition_select(void        *data,
-           Evas_Object *obj,
-           void        *event_info)
+_transition_select(void *data, Evas_Object *obj, void *event_info)
 {
    elm_slideshow_transition_set(slideshow, data);
    elm_object_text_set(obj, data);
 }
 
 static void
-_layout_select(void        *data,
-               Evas_Object *obj,
-               void        *event_info)
+_layout_select(void *data, Evas_Object *obj, void *event_info)
 {
    elm_slideshow_layout_set(slideshow, data);
    elm_object_text_set(obj, data);
@@ -106,9 +77,7 @@ _layout_select(void        *data,
 
 /* start the show! */
 static void
-_start(void        *data,
-       Evas_Object *obj,
-       void        *event_info)
+_start(void *data, Evas_Object *obj, void *event_info)
 {
    elm_slideshow_timeout_set(slideshow, elm_spinner_value_get(data));
 
@@ -117,9 +86,7 @@ _start(void        *data,
 }
 
 static void
-_stop(void        *data,
-      Evas_Object *obj,
-      void        *event_info)
+_stop(void *data, Evas_Object *obj, void *event_info)
 {
    elm_slideshow_timeout_set(slideshow, 0.0);
    elm_object_disabled_set(bt_start, EINA_FALSE);
@@ -128,9 +95,7 @@ _stop(void        *data,
 
 /* slideshow transition time has changed */
 static void
-_spin(void        *data,
-      Evas_Object *obj,
-      void        *event_info)
+_spin(void *data, Evas_Object *obj, void *event_info)
 {
    if (elm_slideshow_timeout_get(slideshow) > 0)
      elm_slideshow_timeout_set(slideshow, elm_spinner_value_get(data));
@@ -138,8 +103,7 @@ _spin(void        *data,
 
 /* get our images to make slideshow items */
 static Evas_Object *
-_get(void        *data,
-     Evas_Object *obj)
+_get(void *data, Evas_Object *obj)
 {
    Evas_Object *photo = elm_photo_add(obj);
    elm_photo_file_set(photo, data);
@@ -151,8 +115,7 @@ _get(void        *data,
 
 /* ordering alphabetically */
 static int
-_cmp_func(const void *data1,
-          const void *data2)
+_cmp_func(const void *data1, const void *data2)
 {
    const char *img_path1, *img_path2;
 
@@ -166,39 +129,33 @@ _cmp_func(const void *data1,
 }
 
 EAPI_MAIN int
-elm_main(int    argc,
-         char **argv)
+elm_main(int argc, char **argv)
 {
-   Evas_Object *win, *bg, *notify, *bx, *bt, *hv, *spin;
-   Elm_Object_Item *slide_first, *slide_last, *slide_it;
+   Evas_Object *win, *notify, *bx, *bt, *hv, *spin;
+   Elm_Object_Item *slide_first = NULL, *slide_last = NULL, *slide_it = NULL;
    const char *transition, *layout;
    const Eina_List *l, *list;
    const char *data_dir;
+   char img[IMG_NUM][PATH_MAX];
+   char *img_files[] =
+     {
+        "logo.png", "plant_01.jpg", "rock_01.jpg", "rock_02.jpg", "sky_01.jpg",
+        "wood_01.jpg", "mystrale.jpg", "mystrale_2.jpg"
+     };
+   int i = 0;
 
    elm_app_info_set(elm_main, "elementary", "images");
-   data_dir = elm_app_data_dir_get();
-   snprintf(img1, sizeof(img1), "%s/images/logo.png", data_dir);
-   snprintf(img2, sizeof(img2), "%s/images/plant_01.jpg", data_dir);
-   snprintf(img3, sizeof(img3), "%s/images/rock_01.jpg", data_dir);
-   snprintf(img4, sizeof(img4), "%s/images/rock_02.jpg", data_dir);
-   snprintf(img5, sizeof(img5), "%s/images/sky_01.jpg", data_dir);
-   snprintf(img6, sizeof(img6), "%s/images/sky_04.jpg", data_dir);
-   snprintf(img7, sizeof(img7), "%s/images/wood_01.jpg", data_dir);
-   snprintf(img8, sizeof(img8), "%s/images/mystrale.jpg", data_dir);
-   snprintf(img9, sizeof(img9), "%s/images/mystrale_2.jpg", data_dir);
 
-   win = elm_win_add(NULL, "slideshow", ELM_WIN_BASIC);
-   elm_win_title_set(win, "Slideshow example");
-   evas_object_smart_callback_add(win, "delete,request", _on_done, NULL);
-   elm_win_autodel_set(win, EINA_TRUE);
+   data_dir = elm_app_data_dir_get();
+   for (i = 0; i < IMG_NUM; i++)
+     snprintf(img[i], PATH_MAX, "%s/images/%s", data_dir, img_files[i]);
+
    elm_policy_set(ELM_POLICY_QUIT, ELM_POLICY_QUIT_LAST_WINDOW_CLOSED);
+
+   win = elm_win_util_standard_add("slideshow", "Slideshow example");
+   elm_win_autodel_set(win, EINA_TRUE);
    evas_object_resize(win, 600, 400);
    evas_object_show(win);
-
-   bg = elm_bg_add(win);
-   evas_object_size_hint_weight_set(bg, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-   elm_win_resize_object_add(win, bg);
-   evas_object_show(bg);
 
    slideshow = elm_slideshow_add(win);
    elm_slideshow_loop_set(slideshow, EINA_TRUE);
@@ -210,15 +167,13 @@ elm_main(int    argc,
    itc.func.get = _get;
    itc.func.del = NULL;
 
-   slide_first = elm_slideshow_item_sorted_insert(slideshow, &itc, img1, _cmp_func);
-   elm_slideshow_item_sorted_insert(slideshow, &itc, img2, _cmp_func);
-   elm_slideshow_item_sorted_insert(slideshow, &itc, img3, _cmp_func);
-   elm_slideshow_item_sorted_insert(slideshow, &itc, img4, _cmp_func);
-   elm_slideshow_item_sorted_insert(slideshow, &itc, img5, _cmp_func);
-   elm_slideshow_item_sorted_insert(slideshow, &itc, img6, _cmp_func);
-   elm_slideshow_item_sorted_insert(slideshow, &itc, img7, _cmp_func);
-   elm_slideshow_item_sorted_insert(slideshow, &itc, img8, _cmp_func);
-   slide_last = elm_slideshow_item_add(slideshow, &itc, img9);
+   for (i = 0; i < IMG_NUM; i++)
+     {
+        slide_it = elm_slideshow_item_sorted_insert(slideshow, &itc, img[i],
+                                                    _cmp_func);
+        if (!slide_first) slide_first = slide_it;
+     }
+   slide_last = slide_it;
 
    list = elm_slideshow_items_get(slideshow);
    fprintf(stdout, "List of items in the slideshow:\n");
@@ -227,20 +182,26 @@ elm_main(int    argc,
              (const char *)elm_object_item_data_get(slide_it));
 
    notify = elm_notify_add(win);
-   elm_notify_orient_set(notify, ELM_NOTIFY_ORIENT_BOTTOM);
+   elm_notify_align_set(notify, 0.5, 1.0);
    evas_object_size_hint_weight_set(notify, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-   elm_win_resize_object_add(win, notify);
    elm_notify_timeout_set(notify, 3.0);
+   evas_object_show(notify);
 
    bx = elm_box_add(win);
    elm_box_horizontal_set(bx, EINA_TRUE);
    elm_object_content_set(notify, bx);
    evas_object_show(bx);
 
-   evas_object_event_callback_add(bx, EVAS_CALLBACK_MOUSE_IN, _mouse_in,
-                                  notify);
-   evas_object_event_callback_add(bx, EVAS_CALLBACK_MOUSE_OUT, _mouse_out,
-                                  notify);
+   evas_object_event_callback_add(bx, EVAS_CALLBACK_MOUSE_IN,
+                                  _mouse_in_cb, notify);
+   evas_object_event_callback_add(bx, EVAS_CALLBACK_MOUSE_OUT,
+                                  _mouse_out_cb, notify);
+
+   bt = elm_button_add(win);
+   elm_object_text_set(bt, "First");
+   evas_object_smart_callback_add(bt, "clicked", _first, slide_first);
+   elm_box_pack_end(bx, bt);
+   evas_object_show(bt);
 
    bt = elm_button_add(win);
    elm_object_text_set(bt, "Previous");
@@ -251,12 +212,6 @@ elm_main(int    argc,
    bt = elm_button_add(win);
    elm_object_text_set(bt, "Next");
    evas_object_smart_callback_add(bt, "clicked", _next, slideshow);
-   elm_box_pack_end(bx, bt);
-   evas_object_show(bt);
-
-   bt = elm_button_add(win);
-   elm_object_text_set(bt, "First");
-   evas_object_smart_callback_add(bt, "clicked", _first, slide_first);
    elm_box_pack_end(bx, bt);
    evas_object_show(bt);
 
@@ -273,7 +228,7 @@ elm_main(int    argc,
      elm_hoversel_item_add(hv, transition, NULL, 0, _transition_select,
                            transition);
    elm_object_text_set(hv, eina_list_data_get(
-                         elm_slideshow_transitions_get(slideshow)));
+         elm_slideshow_transitions_get(slideshow)));
    evas_object_show(hv);
 
    hv = elm_hoversel_add(win);
@@ -312,8 +267,6 @@ elm_main(int    argc,
                                   _notify_show, notify);
    evas_object_event_callback_add(slideshow, EVAS_CALLBACK_MOUSE_MOVE,
                                   _notify_show, notify);
-
-   _notify_show(notify, NULL, NULL, NULL);
 
    elm_run();
    elm_shutdown();

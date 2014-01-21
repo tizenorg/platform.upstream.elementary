@@ -1,7 +1,9 @@
 #ifdef HAVE_CONFIG_H
 # include "elementary_config.h"
 #endif
+
 #include <Elementary.h>
+
 #include "elm_priv.h"
 
 char *
@@ -49,7 +51,7 @@ double
 _elm_atof(const char *s)
 {
    char *cradix, *buf, *p;
-   
+
    if ((!s) || (!s[0])) return 0.0;
    cradix = nl_langinfo(RADIXCHAR);
    if (!cradix) return atof(s);

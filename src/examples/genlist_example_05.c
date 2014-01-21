@@ -45,7 +45,7 @@ static void
 _item_sel_cb(void *data, Evas_Object *obj, void *event_info)
 {
    printf("sel item data [%p] on genlist obj [%p], item pointer [%p]\n",
-	  data, obj, event_info);
+          data, obj, event_info);
 }
 
 static char *
@@ -55,7 +55,7 @@ _parent_label_get(void *data, Evas_Object *obj, const char *part)
    Node_Data *d = data;
 
    snprintf(buf, sizeof(buf), "Group %d (%d items)", d->value / 7,
-	    eina_list_count(d->children));
+            eina_list_count(d->children));
 
    return strdup(buf);
 }
@@ -305,24 +305,16 @@ _button_add(Evas_Object *list, Evas_Object *box, const char *label, Evas_Smart_C
 EAPI_MAIN int
 elm_main(int argc, char **argv)
 {
-   Evas_Object *win, *bg, *box, *fbox;
+   Evas_Object *win, *box, *fbox;
    Evas_Object *list;
    int i;
 
-   win = elm_win_add(NULL, "icon", ELM_WIN_BASIC);
-   elm_win_title_set(win, "Icon");
+   win = elm_win_util_standard_add("genlist", "Genlist");
    elm_policy_set(ELM_POLICY_QUIT, ELM_POLICY_QUIT_LAST_WINDOW_CLOSED);
    elm_win_autodel_set(win, EINA_TRUE);
 
-   bg = elm_bg_add(win);
-   elm_bg_color_set(bg, 255,255 ,255);
-   evas_object_size_hint_weight_set(bg, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-   elm_win_resize_object_add(win, bg);
-   evas_object_show(bg);
-
    box = elm_box_add(win);
    evas_object_size_hint_weight_set(box, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-   evas_object_size_hint_align_set(box, EVAS_HINT_FILL, EVAS_HINT_FILL);
    elm_win_resize_object_add(win, box);
    evas_object_show(box);
 
@@ -378,14 +370,14 @@ elm_main(int argc, char **argv)
 
    for (i = 0; i < N_ITEMS; i++)
      {
-        Elm_Object_Item *gli, *glg;
+        Elm_Object_Item *gli = NULL, *glg = NULL;
         Node_Data *data = malloc(sizeof(*data)); // data for this item
         data->children = NULL;
         data->value = i;
         data->favorite = EINA_FALSE;
         nitems++;
 
-        Node_Data *pdata; // data for the parent of the group
+        Node_Data *pdata = NULL; // data for the parent of the group
 
         printf("creating item: #%d\n", data->value);
         if (i % 3 == 0)
@@ -402,7 +394,8 @@ elm_main(int argc, char **argv)
              gli = elm_genlist_item_append(list, _itc, data, glg,
                                            ELM_GENLIST_ITEM_NONE,
                                            _item_sel_cb, NULL);
-             pdata->children = eina_list_append(pdata->children, data);
+             if (pdata)
+               pdata->children = eina_list_append(pdata->children, data);
              data->level = 1;
           }
      }

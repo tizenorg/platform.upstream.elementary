@@ -25,7 +25,7 @@ my_thread_run(LPVOID arg)
 {
    double t = 0.0;
 
-   // inside the thread function lets loop forever incrimenting a time point
+   // inside the thread function lets loop forever incrementing a time point
    for (;;)
      {
         struct info *inf = malloc(sizeof(struct info));
@@ -59,17 +59,17 @@ my_thread_run(LPVOID arg)
 static void
 my_thread_new(void)
 {
-  InitializeCriticalSection(&lock);
-  thread = CreateThread(NULL, 0, my_thread_run, NULL, 0, NULL);
-  if (!thread)
-    {
-       char *str = evil_last_error_get();
-       if (str)
-         {
-            fprintf("thread creation failed: %s\n", str);
-            free(str);
-         }
-    }
+   InitializeCriticalSection(&lock);
+   thread = CreateThread(NULL, 0, my_thread_run, NULL, 0, NULL);
+   if (!thread)
+     {
+        char *str = evil_last_error_get();
+        if (str)
+          {
+             fprintf("thread creation failed: %s\n", str);
+             free(str);
+          }
+     }
 }
 
 static void
@@ -92,19 +92,14 @@ down(void *data, Evas *e, Evas_Object *obj, void *event_info)
 EAPI_MAIN int
 elm_main(int argc, char **argv)
 {
-   Evas_Object *o, *bg;
+   Evas_Object *o;
 
-   win = elm_win_add(NULL, "efl-thread-4", ELM_WIN_BASIC);
-   elm_win_title_set(win, "EFL Thread 4");
-   elm_win_autodel_set(win, EINA_TRUE);
    elm_policy_set(ELM_POLICY_QUIT, ELM_POLICY_QUIT_LAST_WINDOW_CLOSED);
+
+   win = elm_win_util_standard_add("efl-thread-4", "EFL Thread 4");
+   elm_win_autodel_set(win, EINA_TRUE);
    evas_object_resize(win, 400, 400);
    evas_object_show(win);
-
-   bg = elm_bg_add(win);
-   evas_object_size_hint_weight_set(bg, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-   elm_win_resize_object_add(win, bg);
-   evas_object_show(bg);
 
    o = evas_object_rectangle_add(evas_object_evas_get(win));
    evas_object_color_set(o, 50, 80, 180, 255);

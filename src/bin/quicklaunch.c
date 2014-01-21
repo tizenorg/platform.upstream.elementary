@@ -1,4 +1,3 @@
-#include <Elementary.h>
 #ifdef HAVE_CONFIG_H
 # include "elementary_config.h"
 #endif
@@ -17,6 +16,8 @@
 #include <fcntl.h>
 #include <signal.h>
 #include <sys/wait.h>
+
+#include <Elementary.h>
 
 #ifdef HAVE_ENVIRON
 extern char **environ;
@@ -48,7 +49,7 @@ static int _log_dom = -1;
 #define DBG(...) EINA_LOG_DOM_DBG(_log_dom, __VA_ARGS__)
 
 static void
-post_fork(void *data __UNUSED__)
+post_fork(void *data EINA_UNUSED)
 {
    sigaction(SIGINT, &old_sigint, NULL);
    sigaction(SIGTERM, &old_sigterm, NULL);
@@ -65,20 +66,20 @@ post_fork(void *data __UNUSED__)
    sigaction(SIGABRT, &old_sigabrt, NULL);
    if ((_log_dom > -1) && (_log_dom != EINA_LOG_DOMAIN_GLOBAL))
      {
-	eina_log_domain_unregister(_log_dom);
-	_log_dom = -1;
+        eina_log_domain_unregister(_log_dom);
+        _log_dom = -1;
      }
 }
 
 static void
-child_handler(int x __UNUSED__, siginfo_t *info __UNUSED__, void *data __UNUSED__)
+child_handler(int x EINA_UNUSED, siginfo_t *info EINA_UNUSED, void *data EINA_UNUSED)
 {
    int status;
    while (waitpid(-1, &status, WNOHANG) > 0);
 }
 
 static void
-crash_handler(int x __UNUSED__, siginfo_t *info __UNUSED__, void *data __UNUSED__)
+crash_handler(int x EINA_UNUSED, siginfo_t *info EINA_UNUSED, void *data EINA_UNUSED)
 {
    double t;
 
@@ -86,8 +87,8 @@ crash_handler(int x __UNUSED__, siginfo_t *info __UNUSED__, void *data __UNUSED_
    t = ecore_time_get();
    if ((t - restart_time) <= 2.0)
      {
-	CRITICAL("crash too fast - less than 2 seconds. abort restart");
-	exit(-1);
+        CRITICAL("crash too fast - less than 2 seconds. abort restart");
+        exit(-1);
      }
    ecore_app_restart();
 }
@@ -103,6 +104,8 @@ handle_run(int fd, unsigned long bytes)
    int argc, envnum;
    unsigned long off;
 
+   _elm_startup_time = ecore_time_unix_get();
+
    buf = alloca(bytes);
    if (read(fd, buf, bytes) != (int)bytes)
      {
@@ -111,17 +114,16 @@ handle_run(int fd, unsigned long bytes)
         return;
      }
    close(fd);
-   
+
    argc = ((unsigned long *)(buf))[0];
    envnum = ((unsigned long *)(buf))[1];
 
    if (argc <= 0)
      {
         CRITICAL("no executable specified");
-        close(fd);
         return;
      }
-   
+
    argv = alloca(argc * sizeof(char *));
    if (envnum > 0) envir = alloca(envnum * sizeof(char *));
    off = ((unsigned long *)(buf))[2 + argc + envnum] - sizeof(unsigned long);
@@ -149,7 +151,7 @@ handle_run(int fd, unsigned long bytes)
           }
      }
 #endif
-   elm_quicklaunch_prepare(argc, argv);
+   elm_quicklaunch_prepare(argc, argv, cwd);
    elm_quicklaunch_fork(argc, argv, cwd, post_fork, NULL);
    elm_quicklaunch_cleanup();
 }
@@ -164,59 +166,68 @@ main(int argc, char **argv)
    char buf[PATH_MAX];
    struct sigaction action;
    const char *disp;
+   int ret = 0;
 
    if (!eina_init())
      {
-	fprintf(stderr, "ERROR: failed to init eina.");
-	exit(-1);
+        fprintf(stderr, "ERROR: failed to init eina.");
+        exit(-1);
      }
    _log_dom = eina_log_domain_register
-     ("elementary_quicklaunch", EINA_COLOR_CYAN);
+      ("elementary_quicklaunch", EINA_COLOR_CYAN);
    if (_log_dom < 0)
      {
-	EINA_LOG_ERR("could not register elementary_quicklaunch log domain.");
-	_log_dom = EINA_LOG_DOMAIN_GLOBAL;
+        EINA_LOG_ERR("could not register elementary_quicklaunch log domain.");
+        _log_dom = EINA_LOG_DOMAIN_GLOBAL;
      }
 
    if (!(disp = getenv("DISPLAY"))) disp = "unknown";
    snprintf(buf, sizeof(buf), "/tmp/elm-ql-%i", getuid());
-   if (stat(buf, &st) < 0) mkdir(buf, S_IRUSR | S_IWUSR | S_IXUSR);
+   if (stat(buf, &st) < 0)
+     {
+        ret = mkdir(buf, S_IRUSR | S_IWUSR | S_IXUSR);
+        if (ret < 0)
+          {
+             CRITICAL("cannot create directory '%s'", buf);
+             exit(-1);
+          }
+     }
    snprintf(buf, sizeof(buf), "/tmp/elm-ql-%i/%s", getuid(), disp);
    unlink(buf);
    sock = socket(AF_UNIX, SOCK_STREAM, 0);
    if (sock < 0)
      {
-	CRITICAL("cannot create socket for socket for '%s': %s",
-		 buf, strerror(errno));
-	exit(-1);
+        CRITICAL("cannot create socket for socket for '%s': %s",
+                 buf, strerror(errno));
+        exit(-1);
      }
    if (fcntl(sock, F_SETFD, FD_CLOEXEC) < 0)
      {
-	CRITICAL("cannot set close on exec socket for '%s' (fd=%d): %s",
-		 buf, sock, strerror(errno));
-	exit(-1);
+        CRITICAL("cannot set close on exec socket for '%s' (fd=%d): %s",
+                 buf, sock, strerror(errno));
+        exit(-1);
      }
    lin.l_onoff = 1;
    lin.l_linger = 0;
    if (setsockopt(sock, SOL_SOCKET, SO_LINGER, &lin, sizeof(struct linger)) < 0)
      {
-	CRITICAL("cannot set linger for socket for '%s' (fd=%d): %s",
-		 buf, sock, strerror(errno));
-	exit(-1);
+        CRITICAL("cannot set linger for socket for '%s' (fd=%d): %s",
+                 buf, sock, strerror(errno));
+        exit(-1);
      }
    socket_unix.sun_family = AF_UNIX;
    strncpy(socket_unix.sun_path, buf, sizeof(socket_unix.sun_path));
    socket_unix_len = LENGTH_OF_SOCKADDR_UN(&socket_unix);
    if (bind(sock, (struct sockaddr *)&socket_unix, socket_unix_len) < 0)
      {
-	CRITICAL("cannot bind socket for '%s' (fd=%d): %s",
-		 buf, sock, strerror(errno));
-	exit(-1);
+        CRITICAL("cannot bind socket for '%s' (fd=%d): %s",
+                 buf, sock, strerror(errno));
+        exit(-1);
      }
    if (listen(sock, 4096) < 0)
      {
-	CRITICAL("listen(sock=%d, 4096): %s", sock, strerror(errno));
-	exit(-1);
+        CRITICAL("listen(sock=%d, 4096): %s", sock, strerror(errno));
+        exit(-1);
      }
    elm_quicklaunch_mode_set(EINA_TRUE);
    elm_quicklaunch_init(argc, argv);
@@ -303,32 +314,32 @@ main(int argc, char **argv)
 
    for (;;)
      {
-	int fd;
-	struct sockaddr_un client;
-	socklen_t len;
+        int fd;
+        struct sockaddr_un client;
+        socklen_t len;
 
-	len = sizeof(struct sockaddr_un);
-	fd = accept(sock, (struct sockaddr *)&client, &len);
-	elm_quicklaunch_sub_init(argc, argv);
-// don't seed since we are doing this AFTER launch request        
-//	elm_quicklaunch_seed();
-	if (fd >= 0)
-	  {
-	     unsigned long bytes;
-	     int num;
+        len = sizeof(struct sockaddr_un);
+        fd = accept(sock, (struct sockaddr *)&client, &len);
+        elm_quicklaunch_sub_init(argc, argv);
+        // don't seed since we are doing this AFTER launch request
+        // elm_quicklaunch_seed();
+        if (fd >= 0)
+          {
+             unsigned long bytes;
+             int num;
 
-	     num = read(fd, &bytes, sizeof(unsigned long));
-	     if (num == sizeof(unsigned long))
+             num = read(fd, &bytes, sizeof(unsigned long));
+             if (num == sizeof(unsigned long))
                handle_run(fd, bytes);
-	  }
-	while (elm_quicklaunch_sub_shutdown() > 0);
+          }
+        while (elm_quicklaunch_sub_shutdown() > 0);
      }
    elm_quicklaunch_shutdown();
 
    if ((_log_dom > -1) && (_log_dom != EINA_LOG_DOMAIN_GLOBAL))
      {
-	eina_log_domain_unregister(_log_dom);
-	_log_dom = -1;
+        eina_log_domain_unregister(_log_dom);
+        _log_dom = -1;
      }
    eina_shutdown();
 

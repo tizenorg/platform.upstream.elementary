@@ -2,12 +2,12 @@
 # include "elementary_config.h"
 #endif
 #include <Elementary.h>
-#ifndef ELM_LIB_QUICKLAUNCH
+
 
 static Evas_Object *glb;
 
 static void
-_bt_copy_clicked(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+_bt_copy_clicked(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *en = (Evas_Object*)(data);
    const char *txt = elm_object_text_get(en);
@@ -18,7 +18,7 @@ _bt_copy_clicked(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNU
 }
 
 static void
-_bt_paste_clicked(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+_bt_paste_clicked(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *en = (Evas_Object*)(data);
 
@@ -27,7 +27,7 @@ _bt_paste_clicked(void *data, Evas_Object *obj __UNUSED__, void *event_info __UN
 }
 
 static void
-_bt_clear_clicked(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+_bt_clear_clicked(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *en = (Evas_Object*)(data);
 
@@ -36,7 +36,7 @@ _bt_clear_clicked(void *data, Evas_Object *obj __UNUSED__, void *event_info __UN
 }
 
 void
-test_cnp(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+test_cnp(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *win, *gd, *bt, *en, *lb;
 
@@ -45,8 +45,8 @@ test_cnp(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info __
 
    gd = elm_grid_add(win);
    elm_grid_size_set(gd, 100, 100);
-   elm_win_resize_object_add(win, gd);
    evas_object_size_hint_weight_set(gd, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   elm_win_resize_object_add(win, gd);
    evas_object_show(gd);
 
    en = elm_entry_add(win);
@@ -102,4 +102,3 @@ test_cnp(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info __
    evas_object_resize(win, 480, 200);
    evas_object_show(win);
 }
-#endif

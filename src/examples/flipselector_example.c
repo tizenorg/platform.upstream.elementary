@@ -12,21 +12,13 @@
 #include <Elementary.h>
 
 static const char *commands = \
-  "commands are:\n"
-  "\tn - flip to next item\n"
-  "\tp - flip to previous item\n"
-  "\tf - print first item's label\n"
-  "\tl - print last item's label\n"
-  "\ts - print selected item's label\n"
-  "\th - print help\n";
-
-static void
-_on_done(void        *data,
-         Evas_Object *obj,
-         void        *event_info)
-{
-   elm_exit();
-}
+                              "commands are:\n"
+                              "\tn - flip to next item\n"
+                              "\tp - flip to previous item\n"
+                              "\tf - print first item's label\n"
+                              "\tl - print last item's label\n"
+                              "\ts - print selected item's label\n"
+                              "\th - print help\n";
 
 void /* unselect the item shown in the flip selector */
 _unsel_cb(void        *data,
@@ -42,8 +34,8 @@ _unsel_cb(void        *data,
 
 void /* delete the item shown in the flip selector */
 _del_cb(void        *data,
-          Evas_Object *obj,
-          void        *event_info)
+        Evas_Object *obj,
+        void        *event_info)
 {
    Elm_Object_Item *it;
    Evas_Object *fp = data;
@@ -88,7 +80,7 @@ _on_keydown(void              *data,
 
    if (strcmp(ev->keyname, "n") == 0) /* flip to next item */
      {
-         elm_flipselector_flip_next(fs);
+        elm_flipselector_flip_next(fs);
 
         fprintf(stdout, "Flipping to next item\n");
 
@@ -97,7 +89,7 @@ _on_keydown(void              *data,
 
    if (strcmp(ev->keyname, "p") == 0) /* flip to previous item */
      {
-         elm_flipselector_flip_prev(fs);
+        elm_flipselector_flip_prev(fs);
 
         fprintf(stdout, "Flipping to previous item\n");
 
@@ -106,36 +98,36 @@ _on_keydown(void              *data,
 
    if (strcmp(ev->keyname, "f") == 0) /* print first item's label */
      {
-         Elm_Object_Item *it;
+        Elm_Object_Item *it;
 
-         it = elm_flipselector_first_item_get(fs);
+        it = elm_flipselector_first_item_get(fs);
 
-         fprintf(stdout, "Flip selector's first item is: %s\n", it ?
-                 elm_object_item_text_get(it) : "none");
+        fprintf(stdout, "Flip selector's first item is: %s\n", it ?
+                elm_object_item_text_get(it) : "none");
 
         return;
      }
 
    if (strcmp(ev->keyname, "l") == 0) /* print last item's label */
      {
-         Elm_Object_Item *it;
+        Elm_Object_Item *it;
 
-         it = elm_flipselector_last_item_get(fs);
+        it = elm_flipselector_last_item_get(fs);
 
-         fprintf(stdout, "Flip selector's last item is: %s\n", it ?
-                 elm_object_item_text_get(it) : "none");
+        fprintf(stdout, "Flip selector's last item is: %s\n", it ?
+                elm_object_item_text_get(it) : "none");
 
         return;
      }
 
    if (strcmp(ev->keyname, "s") == 0) /* print selected item's label */
      {
-         Elm_Object_Item *it;
+        Elm_Object_Item *it;
 
-         it = elm_flipselector_selected_item_get(fs);
+        it = elm_flipselector_selected_item_get(fs);
 
-         fprintf(stdout, "Flip selector's selected item is: %s\n", it ?
-                 elm_object_item_text_get(it) : "none");
+        fprintf(stdout, "Flip selector's selected item is: %s\n", it ?
+                elm_object_item_text_get(it) : "none");
 
         return;
      }
@@ -145,27 +137,23 @@ EAPI_MAIN int
 elm_main(int argc, char **argv)
 {
    unsigned int i;
-   Evas_Object *win, *bg, *bx, *fp, *bt;
+   Evas_Object *win, *bx, *fp, *bt;
    static const char *lbl[] =
-   {
-      "Elementary",
-      "Evas",
-      "Eina",
-      "Edje",
-      "Eet",
-      "Ecore",
-      "Efreet",
-      "Edbus"
-   };
+     {
+        "Elementary",
+        "Evas",
+        "Eina",
+        "Edje",
+        "Eet",
+        "Ecore",
+        "Efreet",
+        "Eldbus"
+     };
 
-   win = elm_win_add(NULL, "flipselector", ELM_WIN_BASIC);
-   elm_win_title_set(win, "Flip Selector Example");
-   evas_object_smart_callback_add(win, "delete,request", _on_done, NULL);
+   elm_policy_set(ELM_POLICY_QUIT, ELM_POLICY_QUIT_LAST_WINDOW_CLOSED);
 
-   bg = elm_bg_add(win);
-   elm_win_resize_object_add(win, bg);
-   evas_object_size_hint_weight_set(bg, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-   evas_object_show(bg);
+   win = elm_win_util_standard_add("flipselector", "Flip Selector Example");
+   elm_win_autodel_set(win, EINA_TRUE);
 
    bx = elm_box_add(win);
    evas_object_size_hint_weight_set(bx, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);

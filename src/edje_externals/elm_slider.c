@@ -7,12 +7,12 @@ typedef struct _Elm_Params_Slider
    Evas_Object *icon;
    const char *indicator, *unit;
    double min, max, value;
+   Evas_Coord span;
    Eina_Bool min_exists:1;
    Eina_Bool max_exists:1;
    Eina_Bool value_exists:1;
    Eina_Bool inverted:1;
    Eina_Bool inverted_exists:1;
-   Eina_Bool span:1;
    Eina_Bool span_exists:1;
    Eina_Bool horizontal:1;
    Eina_Bool horizontal_exists:1;
@@ -170,7 +170,7 @@ external_slider_param_get(void *data __UNUSED__, const Evas_Object *obj, Edje_Ex
      }
    else if (!strcmp(param->name, "min"))
      {
-	if (param->type == EDJE_EXTERNAL_PARAM_TYPE_STRING)
+	if (param->type == EDJE_EXTERNAL_PARAM_TYPE_DOUBLE)
 	  {
 	     double min, max;
 	     elm_slider_min_max_get(obj, &min, &max);
@@ -180,7 +180,7 @@ external_slider_param_get(void *data __UNUSED__, const Evas_Object *obj, Edje_Ex
      }
    else if (!strcmp(param->name, "max"))
      {
-	if (param->type == EDJE_EXTERNAL_PARAM_TYPE_STRING)
+	if (param->type == EDJE_EXTERNAL_PARAM_TYPE_DOUBLE)
 	  {
 	     double min, max;
 	     elm_slider_min_max_get(obj, &min, &max);

@@ -2,7 +2,7 @@
 # include "elementary_config.h"
 #endif
 #include <Elementary.h>
-#ifndef ELM_LIB_QUICKLAUNCH
+
 
 #ifdef HAVE_ELEMENTARY_EWEATHER
 # include "EWeather_Smart.h"
@@ -15,7 +15,7 @@ static int current = 0;
 static Eina_Module *module[2];
 
 static void
-_first_city_cb(void *data __UNUSED__, Evas_Object *o __UNUSED__, void *event_info __UNUSED__)
+_first_city_cb(void *data EINA_UNUSED, Evas_Object *o EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    if (!current) return;
    current = 0;
@@ -23,25 +23,26 @@ _first_city_cb(void *data __UNUSED__, Evas_Object *o __UNUSED__, void *event_inf
 }
 
 static void
-_second_city_cb(void *dat __UNUSED__, Evas_Object *o __UNUSED__, void *event_info __UNUSED__)
+_second_city_cb(void *dat EINA_UNUSED, Evas_Object *o EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    if (current) return;
    current = 1;
    elm_flip_go(fl, ELM_FLIP_ROTATE_XZ_CENTER_AXIS);
 }
 
-static void _apply_cb(void *data __UNUSED__, Evas_Object *o __UNUSED__, void *event_info __UNUSED__)
+static void _apply_cb(void *data EINA_UNUSED, Evas_Object *o EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    EWeather *eweather = eweather_object_eweather_get(weather[current]);
 
    if (module[current])
      eweather_plugin_set(eweather, module[current]);
    eweather_code_set(eweather, elm_object_text_get(en));
-   printf("CURRENT %d %p %p\n", current, module[current], eweather);
+   printf("CURRENT %d, module[current] %p, eweather %p, city : %s\n",
+          current, module[current], eweather, elm_object_text_get(en));
 }
 
 static void
-_hover_select_cb(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info)
+_hover_select_cb(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info)
 {
    EWeather *eweather = eweather_object_eweather_get(weather[0]);
    module[0] = eweather_plugin_search(eweather, elm_object_item_text_get(event_info));
@@ -53,7 +54,7 @@ _hover_select_cb(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event
 #endif
 
 void
-test_weather(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+test_weather(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *win;
 #ifdef HAVE_ELEMENTARY_EWEATHER
@@ -70,8 +71,8 @@ test_weather(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_inf
 
 #ifdef HAVE_ELEMENTARY_EWEATHER
    bx = elm_box_add(win);
-   elm_win_resize_object_add(win, bx);
    evas_object_size_hint_weight_set(bx, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   elm_win_resize_object_add(win, bx);
    evas_object_show(bx);
 
    fl = elm_flip_add(win);
@@ -84,7 +85,7 @@ test_weather(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_inf
    module[0] = NULL;
    weather[0] = eweather_object_add(evas_object_evas_get(win));
    evas_object_size_hint_weight_set(weather[0], EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-   evas_object_size_hint_align_set(weather[0], -1.0, -1.0);
+   evas_object_size_hint_align_set(weather[0], EVAS_HINT_FILL, EVAS_HINT_FILL);
    elm_object_part_content_set(fl, "front", weather[0]);
    evas_object_show(weather[0]);
 
@@ -92,7 +93,7 @@ test_weather(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_inf
    weather[1] = eweather_object_add(evas_object_evas_get(win));
    eweather = eweather_object_eweather_get(weather[1]);
    evas_object_size_hint_weight_set(weather[1], EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-   evas_object_size_hint_align_set(weather[1], -1.0, -1.0);
+   evas_object_size_hint_align_set(weather[1], EVAS_HINT_FILL, EVAS_HINT_FILL);
    elm_object_part_content_set(fl, "back", weather[1]);
    evas_object_show(weather[1]);
 
@@ -101,7 +102,7 @@ test_weather(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_inf
    //
    bx0 = elm_box_add(win);
    elm_box_horizontal_set(bx0, EINA_TRUE);
-   evas_object_size_hint_weight_set(bx0, 1.0, 0.0);
+   evas_object_size_hint_weight_set(bx0, EVAS_HINT_EXPAND, 0.0);
    elm_box_pack_end(bx, bx0);
    evas_object_show(bx0);
 
@@ -121,7 +122,7 @@ test_weather(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_inf
    //
    bx0 = elm_box_add(win);
    elm_box_horizontal_set(bx0, EINA_TRUE);
-   evas_object_size_hint_weight_set(bx0, 1.0, 0.0);
+   evas_object_size_hint_weight_set(bx0, EVAS_HINT_EXPAND, 0.0);
    elm_box_pack_end(bx, bx0);
    evas_object_show(bx0);
 
@@ -144,6 +145,7 @@ test_weather(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_inf
    elm_object_text_set(en, "Paris");
    evas_object_size_hint_weight_set(en, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    evas_object_size_hint_align_set(en, EVAS_HINT_FILL, EVAS_HINT_FILL);
+   evas_object_smart_callback_add(en, "activated", _apply_cb, NULL);
    elm_box_pack_end(bx0, en);
    evas_object_show(en);
 
@@ -159,6 +161,7 @@ test_weather(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_inf
     Evas_Object *lbl;
 
     lbl = elm_label_add(win);
+    evas_object_size_hint_weight_set(lbl, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
     elm_win_resize_object_add(win, lbl);
     elm_object_text_set(lbl, "libeweather is required to display the forecast.");
     evas_object_show(lbl);
@@ -167,4 +170,3 @@ test_weather(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_inf
     evas_object_resize(win, 244, 388);
     evas_object_show(win);
 }
-#endif

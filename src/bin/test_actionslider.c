@@ -2,9 +2,9 @@
 # include "elementary_config.h"
 #endif
 #include <Elementary.h>
-#ifndef ELM_LIB_QUICKLAUNCH
 
-static void _pos_selected_cb(void *data __UNUSED__, Evas_Object *obj, void *event_info)
+
+static void _pos_selected_cb(void *data EINA_UNUSED, Evas_Object *obj, void *event_info)
 {
    Elm_Actionslider_Pos ipos, mpos, epos;
 
@@ -69,7 +69,7 @@ static void _pos_selected_cb(void *data __UNUSED__, Evas_Object *obj, void *even
 }
 
 static void
-_position_change_magnetic_cb(void *data __UNUSED__, Evas_Object * obj, void *event_info)
+_position_change_magnetic_cb(void *data EINA_UNUSED, Evas_Object * obj, void *event_info)
 {
    if (!strcmp((char *)event_info, "left"))
      elm_actionslider_magnet_pos_set(obj, ELM_ACTIONSLIDER_LEFT);
@@ -78,7 +78,7 @@ _position_change_magnetic_cb(void *data __UNUSED__, Evas_Object * obj, void *eve
 }
 
 static void
-_magnet_enable_disable_cb(void *data __UNUSED__, Evas_Object *obj, void *event_info)
+_magnet_enable_disable_cb(void *data EINA_UNUSED, Evas_Object *obj, void *event_info)
 {
    if (!strcmp((char *)event_info, "left"))
       elm_actionslider_magnet_pos_set(obj, ELM_ACTIONSLIDER_CENTER);
@@ -87,7 +87,7 @@ _magnet_enable_disable_cb(void *data __UNUSED__, Evas_Object *obj, void *event_i
 }
 
 void
-test_actionslider(void *data __UNUSED__, Evas_Object * obj __UNUSED__, void *event_info __UNUSED__)
+test_actionslider(void *data EINA_UNUSED, Evas_Object * obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *win, *bx, *as;
 
@@ -161,6 +161,23 @@ test_actionslider(void *data __UNUSED__, Evas_Object * obj __UNUSED__, void *eve
    evas_object_show(as);
    elm_box_pack_end(bx, as);
 
+   as = elm_actionslider_add(win);
+   elm_object_style_set(as, "bar");
+   elm_object_disabled_set(as, EINA_TRUE);
+   evas_object_size_hint_weight_set(as, EVAS_HINT_EXPAND, 0);
+   evas_object_size_hint_align_set(as, EVAS_HINT_FILL, 0);
+   elm_actionslider_indicator_pos_set(as, ELM_ACTIONSLIDER_LEFT);
+   elm_actionslider_magnet_pos_set(as, ELM_ACTIONSLIDER_LEFT);
+   elm_object_part_text_set(as, "left", NULL);
+   elm_object_part_text_set(as, "center", "Accept");
+   elm_object_part_text_set(as, "right", "Reject");
+   elm_object_text_set(as, "Go");
+   evas_object_smart_callback_add(as, "pos_changed",
+                                  _position_change_magnetic_cb, NULL);
+   evas_object_smart_callback_add(as, "selected", _pos_selected_cb, NULL);
+   evas_object_show(as);
+   elm_box_pack_end(bx, as);
+
 
    as = elm_actionslider_add(win);
    evas_object_size_hint_weight_set(as, EVAS_HINT_EXPAND, 0);
@@ -192,4 +209,3 @@ test_actionslider(void *data __UNUSED__, Evas_Object * obj __UNUSED__, void *eve
    evas_object_resize(win, 320, 400);
    evas_object_show(win);
 }
-#endif

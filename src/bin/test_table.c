@@ -2,9 +2,9 @@
 # include "elementary_config.h"
 #endif
 #include <Elementary.h>
-#ifndef ELM_LIB_QUICKLAUNCH
+
 void
-test_table(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+test_table(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *win, *tb, *bt;
 
@@ -12,8 +12,8 @@ test_table(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info 
    elm_win_autodel_set(win, EINA_TRUE);
 
    tb = elm_table_add(win);
-   elm_win_resize_object_add(win, tb);
    evas_object_size_hint_weight_set(tb, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   elm_win_resize_object_add(win, tb);
    evas_object_show(tb);
 
    bt = elm_button_add(win);
@@ -62,7 +62,7 @@ test_table(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info 
 }
 
 void
-test_table2(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+test_table2(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *win, *tb, *bt;
 
@@ -71,8 +71,8 @@ test_table2(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info
 
    tb = elm_table_add(win);
    elm_table_homogeneous_set(tb, EINA_TRUE);
-   elm_win_resize_object_add(win, tb);
    evas_object_size_hint_weight_set(tb, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   elm_win_resize_object_add(win, tb);
    evas_object_show(tb);
 
    bt = elm_button_add(win);
@@ -121,7 +121,7 @@ test_table2(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info
 }
 
 static void
-my_tb_ch(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+my_tb_ch(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *win = data;
    Evas_Object *tb = evas_object_data_get(win, "tb");
@@ -132,7 +132,7 @@ my_tb_ch(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
 }
 
 void
-test_table3(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+test_table3(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *win, *tb, *bt;
 
@@ -140,8 +140,8 @@ test_table3(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info
    elm_win_autodel_set(win, EINA_TRUE);
 
    tb = elm_table_add(win);
-   elm_win_resize_object_add(win, tb);
    evas_object_size_hint_weight_set(tb, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   elm_win_resize_object_add(win, tb);
    evas_object_data_set(win, "tb", tb);
    evas_object_show(tb);
 
@@ -176,7 +176,7 @@ test_table3(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info
 }
 
 void
-test_table4(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+test_table4(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *win, *tb, *bt;
 
@@ -184,8 +184,8 @@ test_table4(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info
    elm_win_autodel_set(win, EINA_TRUE);
 
    tb = elm_table_add(win);
-   elm_win_resize_object_add(win, tb);
    evas_object_size_hint_weight_set(tb, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   elm_win_resize_object_add(win, tb);
    evas_object_data_set(win, "tb", tb);
    evas_object_show(tb);
 
@@ -220,7 +220,7 @@ test_table4(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info
 }
 
 void
-test_table5(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+test_table5(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *win, *tb, *bt;
 
@@ -229,8 +229,8 @@ test_table5(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info
 
    tb = elm_table_add(win);
    elm_table_homogeneous_set(tb, EINA_TRUE);
-   elm_win_resize_object_add(win, tb);
    evas_object_size_hint_weight_set(tb, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   elm_win_resize_object_add(win, tb);
    evas_object_show(tb);
 
    bt = elm_button_add(win);
@@ -272,7 +272,7 @@ test_table5(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info
 }
 
 void
-test_table6(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+test_table6(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *win, *tb, *bt;
 
@@ -281,8 +281,8 @@ test_table6(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info
 
    tb = elm_table_add(win);
    elm_table_homogeneous_set(tb, EINA_TRUE);
-   elm_win_resize_object_add(win, tb);
    evas_object_size_hint_weight_set(tb, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   elm_win_resize_object_add(win, tb);
    evas_object_show(tb);
 
    bt = elm_button_add(win);
@@ -331,7 +331,7 @@ test_table6(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info
 }
 
 void
-test_table7(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+test_table7(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *win, *tb, *bt;
 
@@ -340,8 +340,8 @@ test_table7(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info
 
    tb = elm_table_add(win);
    elm_table_padding_set(tb, 10, 20);
-   elm_win_resize_object_add(win, tb);
    evas_object_size_hint_weight_set(tb, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   elm_win_resize_object_add(win, tb);
    evas_object_show(tb);
 
    bt = elm_button_add(win);
@@ -389,4 +389,3 @@ test_table7(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info
    evas_object_show(win);
 }
 
-#endif

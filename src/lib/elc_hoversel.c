@@ -1,28 +1,53 @@
+#ifdef HAVE_CONFIG_H
+# include "elementary_config.h"
+#endif
+
 #include <Elementary.h>
 #include "elm_priv.h"
 #include "elm_widget_hoversel.h"
 
-EAPI const char ELM_HOVERSEL_SMART_NAME[] = "elm_hoversel";
+EAPI Eo_Op ELM_OBJ_HOVERSEL_BASE_ID = EO_NOOP;
+
+#define MY_CLASS ELM_OBJ_HOVERSEL_CLASS
+
+#define MY_CLASS_NAME "Elm_Hoversel"
+#define MY_CLASS_NAME_LEGACY "elm_hoversel"
 
 static const char SIG_SELECTED[] = "selected";
 static const char SIG_DISMISSED[] = "dismissed";
 static const Evas_Smart_Cb_Description _smart_callbacks[] = {
    {SIG_SELECTED, ""},
    {SIG_DISMISSED, ""},
+   {"clicked", ""}, /**< handled by parent button class */
    {NULL, NULL}
 };
 
-EVAS_SMART_SUBCLASS_NEW
-  (ELM_HOVERSEL_SMART_NAME, _elm_hoversel, Elm_Hoversel_Smart_Class,
-  Elm_Button_Smart_Class, elm_button_smart_class_get, _smart_callbacks);
-
-static Eina_Bool
-_elm_hoversel_smart_theme(Evas_Object *obj)
+static void
+_elm_hoversel_smart_translate(Eo *obj EINA_UNUSED, void *_pd, va_list *list)
 {
+   Eina_Bool *ret = va_arg(*list, Eina_Bool *);
+   Elm_Hoversel_Smart_Data *sd = _pd;
+   Elm_Hoversel_Item *it;
+   Eina_List *l;
+
+   EINA_LIST_FOREACH(sd->items, l, it)
+     elm_widget_item_translate(it);
+
+   if (ret) *ret = EINA_TRUE;
+}
+
+static void
+_elm_hoversel_smart_theme(Eo *obj, void *_pd EINA_UNUSED, va_list *list)
+{
+   Eina_Bool *ret = va_arg(*list, Eina_Bool *);
+   if (ret) *ret = EINA_FALSE;
+   Eina_Bool int_ret;
+
+   Elm_Hoversel_Smart_Data *sd = _pd;
+   ELM_WIDGET_DATA_GET_OR_RETURN(obj, wd);
+
    char buf[4096];
    const char *style;
-
-   ELM_HOVERSEL_DATA_GET(obj, sd);
 
    style = eina_stringshare_add(elm_widget_style_get(obj));
 
@@ -32,12 +57,12 @@ _elm_hoversel_smart_theme(Evas_Object *obj)
      snprintf(buf, sizeof(buf), "hoversel_vertical/%s", style);
 
    /* hoversel's style has an extra bit: orientation */
-   eina_stringshare_replace(&(ELM_WIDGET_DATA(sd)->style), buf);
+   eina_stringshare_replace(&(wd->style), buf);
 
-   if (!ELM_WIDGET_CLASS(_elm_hoversel_parent_sc)->theme(obj))
-     return EINA_FALSE;
+   eo_do_super(obj, MY_CLASS, elm_wdg_theme(&int_ret));
+   if (!int_ret) return;
 
-   eina_stringshare_replace(&(ELM_WIDGET_DATA(sd)->style), style);
+   eina_stringshare_replace(&(wd->style), style);
 
    eina_stringshare_del(style);
 
@@ -46,7 +71,7 @@ _elm_hoversel_smart_theme(Evas_Object *obj)
 
    elm_hoversel_hover_end(obj);
 
-   return EINA_TRUE;
+   if (ret) *ret = EINA_TRUE;
 }
 
 static void
@@ -73,7 +98,7 @@ _on_item_clicked(void *data,
 static void
 _activate(Evas_Object *obj)
 {
-   const Elm_Hoversel_Item *item;
+   Elm_Hoversel_Item *item;
    Evas_Object *bt, *bx, *ic;
    const Eina_List *l;
    char buf[4096];
@@ -90,6 +115,7 @@ _activate(Evas_Object *obj)
    if (elm_widget_disabled_get(obj)) return;
 
    sd->hover = elm_hover_add(sd->hover_parent);
+   elm_widget_sub_object_add(obj, sd->hover);
    elm_widget_mirrored_automatic_set(sd->hover, EINA_FALSE);
 
    if (sd->horizontal)
@@ -118,9 +144,9 @@ _activate(Evas_Object *obj)
      snprintf(buf, sizeof(buf), "hoversel_vertical_entry/%s",
               elm_widget_style_get(obj));
 
-   EINA_LIST_FOREACH (sd->items, l, item)
+   EINA_LIST_FOREACH(sd->items, l, item)
      {
-        bt = elm_button_add(bx);
+        VIEW(item) = bt = elm_button_add(bx);
         elm_widget_mirrored_automatic_set(bt, EINA_FALSE);
         elm_widget_mirrored_set(bt, elm_widget_mirrored_get(obj));
         elm_object_style_set(bt, buf);
@@ -179,6 +205,15 @@ _item_text_get_hook(const Elm_Object_Item *it,
    return ((Elm_Hoversel_Item *)it)->label;
 }
 
+static void
+_item_signal_emit_hook(Elm_Object_Item *it,
+                       const char *emission,
+                       const char *source)
+{
+   if (VIEW(it))
+     elm_object_signal_emit(VIEW(it), emission, source);
+}
+
 static Eina_Bool
 _item_del_pre_hook(Elm_Object_Item *it)
 {
@@ -196,29 +231,28 @@ _item_del_pre_hook(Elm_Object_Item *it)
 }
 
 static void
-_elm_hoversel_smart_add(Evas_Object *obj)
+_elm_hoversel_smart_add(Eo *obj, void *_pd __UNUSED__,
+                        va_list *list EINA_UNUSED)
 {
-   EVAS_SMART_DATA_ALLOC(obj, Elm_Hoversel_Smart_Data);
-
-   ELM_WIDGET_CLASS(_elm_hoversel_parent_sc)->base.add(obj);
+   eo_do_super(obj, MY_CLASS, evas_obj_smart_add());
+   elm_widget_sub_object_parent_add(obj);
 
    elm_widget_mirrored_automatic_set(obj, EINA_FALSE);
 
-   priv->expanded = EINA_FALSE;
-
    evas_object_smart_callback_add(obj, "clicked", _on_clicked, obj);
 
-   _elm_hoversel_smart_theme(obj);
+   //What are you doing here?
+   eo_do(obj, elm_wdg_theme(NULL));
 }
 
 static void
-_elm_hoversel_smart_del(Evas_Object *obj)
+_elm_hoversel_smart_del(Eo *obj, void *_pd, va_list *list EINA_UNUSED)
 {
    Elm_Hoversel_Item *item;
 
-   ELM_HOVERSEL_DATA_GET(obj, sd);
+   Elm_Hoversel_Smart_Data *sd = _pd;
 
-   EINA_LIST_FREE (sd->items, item)
+   EINA_LIST_FREE(sd->items, item)
      {
         eina_stringshare_del(item->label);
         eina_stringshare_del(item->icon_file);
@@ -227,59 +261,55 @@ _elm_hoversel_smart_del(Evas_Object *obj)
      }
    elm_hoversel_hover_parent_set(obj, NULL);
 
-   ELM_WIDGET_CLASS(_elm_hoversel_parent_sc)->base.del(obj);
+   eo_do_super(obj, MY_CLASS, evas_obj_smart_del());
 }
 
 static void
-_elm_hoversel_smart_parent_set(Evas_Object *obj,
-                               Evas_Object *parent)
+_elm_hoversel_smart_show(Eo *obj, void *_pd EINA_UNUSED, va_list *list EINA_UNUSED)
 {
+   Elm_Hoversel_Smart_Data *sd = _pd;
+   eo_do_super(obj, MY_CLASS, evas_obj_smart_show());
+   evas_object_show(sd->hover);
+}
+
+static void
+_elm_hoversel_smart_hide(Eo *obj, void *_pd, va_list *list EINA_UNUSED)
+{
+   Elm_Hoversel_Smart_Data *sd = _pd;
+   eo_do_super(obj, MY_CLASS, evas_obj_smart_hide());
+   evas_object_hide(sd->hover);
+}
+
+static void
+_elm_hoversel_smart_parent_set(Eo *obj, void *_pd EINA_UNUSED, va_list *list)
+{
+   Evas_Object *parent = va_arg(*list, Evas_Object *);
    elm_hoversel_hover_parent_set(obj, parent);
 }
 
 static void
-_elm_hoversel_smart_set_user(Elm_Hoversel_Smart_Class *sc)
+_elm_hoversel_smart_admits_autorepeat_get(Eo *obj EINA_UNUSED, void *_pd EINA_UNUSED, va_list *list)
 {
-   ELM_WIDGET_CLASS(sc)->base.add = _elm_hoversel_smart_add;
-   ELM_WIDGET_CLASS(sc)->base.del = _elm_hoversel_smart_del;
-
-   ELM_WIDGET_CLASS(sc)->parent_set = _elm_hoversel_smart_parent_set;
-   ELM_WIDGET_CLASS(sc)->theme = _elm_hoversel_smart_theme;
-
-   ELM_BUTTON_CLASS(sc)->admits_autorepeat = EINA_FALSE;
-}
-
-EAPI const Elm_Hoversel_Smart_Class *
-elm_hoversel_smart_class_get(void)
-{
-   static Elm_Hoversel_Smart_Class _sc =
-     ELM_HOVERSEL_SMART_CLASS_INIT_NAME_VERSION(ELM_HOVERSEL_SMART_NAME);
-   static const Elm_Hoversel_Smart_Class *class = NULL;
-   Evas_Smart_Class *esc = (Evas_Smart_Class *)&_sc;
-
-   if (class) return class;
-
-   _elm_hoversel_smart_set(&_sc);
-   esc->callbacks = _smart_callbacks;
-   class = &_sc;
-
-   return class;
+   Eina_Bool *ret = va_arg(*list, Eina_Bool *);
+   *ret = EINA_FALSE;
 }
 
 EAPI Evas_Object *
 elm_hoversel_add(Evas_Object *parent)
 {
-   Evas_Object *obj;
-
    EINA_SAFETY_ON_NULL_RETURN_VAL(parent, NULL);
-
-   obj = elm_widget_add(_elm_hoversel_smart_class_new(), parent);
-   if (!obj) return NULL;
-
-   if (!elm_widget_sub_object_add(parent, obj))
-     ERR("could not add %p as sub object of %p", obj, parent);
-
+   Evas_Object *obj = eo_add(MY_CLASS, parent);
+   eo_unref(obj);
    return obj;
+}
+
+static void
+_constructor(Eo *obj, void *_pd EINA_UNUSED, va_list *list EINA_UNUSED)
+{
+   eo_do_super(obj, MY_CLASS, eo_constructor());
+   eo_do(obj,
+         evas_obj_type_set(MY_CLASS_NAME_LEGACY),
+         evas_obj_smart_callbacks_descriptions_set(_smart_callbacks, NULL));
 }
 
 EAPI void
@@ -287,7 +317,14 @@ elm_hoversel_hover_parent_set(Evas_Object *obj,
                               Evas_Object *parent)
 {
    ELM_HOVERSEL_CHECK(obj);
-   ELM_HOVERSEL_DATA_GET(obj, sd);
+   eo_do(obj, elm_obj_hoversel_hover_parent_set(parent));
+}
+
+static void
+_hover_parent_set(Eo *obj, void *_pd, va_list *list)
+{
+   Evas_Object *parent = va_arg(*list, Evas_Object *);
+   Elm_Hoversel_Smart_Data *sd = _pd;
 
    if (sd->hover_parent)
      evas_object_event_callback_del_full
@@ -303,9 +340,18 @@ EAPI Evas_Object *
 elm_hoversel_hover_parent_get(const Evas_Object *obj)
 {
    ELM_HOVERSEL_CHECK(obj) NULL;
-   ELM_HOVERSEL_DATA_GET(obj, sd);
+   Evas_Object *ret = NULL;
+   eo_do((Eo *) obj, elm_obj_hoversel_hover_parent_get(&ret));
+   return ret;
+}
 
-   return sd->hover_parent;
+static void
+_hover_parent_get(Eo *obj EINA_UNUSED, void *_pd, va_list *list)
+{
+   Evas_Object **ret = va_arg(*list, Evas_Object **);
+   Elm_Hoversel_Smart_Data *sd = _pd;
+
+   *ret = sd->hover_parent;
 }
 
 EAPI void
@@ -313,27 +359,49 @@ elm_hoversel_horizontal_set(Evas_Object *obj,
                             Eina_Bool horizontal)
 {
    ELM_HOVERSEL_CHECK(obj);
-   ELM_HOVERSEL_DATA_GET(obj, sd);
+   eo_do(obj, elm_obj_hoversel_horizontal_set(horizontal));
+}
+
+static void
+_horizontal_set(Eo *obj, void *_pd, va_list *list)
+{
+   Eina_Bool horizontal = va_arg(*list, int);
+   Elm_Hoversel_Smart_Data *sd = _pd;
 
    sd->horizontal = !!horizontal;
 
-   _elm_hoversel_smart_theme(obj);
+   eo_do(obj, elm_wdg_theme(NULL));
 }
 
 EAPI Eina_Bool
 elm_hoversel_horizontal_get(const Evas_Object *obj)
 {
    ELM_HOVERSEL_CHECK(obj) EINA_FALSE;
-   ELM_HOVERSEL_DATA_GET(obj, sd);
+   Eina_Bool ret = EINA_FALSE;
+   eo_do((Eo *) obj, elm_obj_hoversel_horizontal_get(&ret));
+   return ret;
+}
 
-   return sd->horizontal;
+static void
+_horizontal_get(Eo *obj EINA_UNUSED, void *_pd, va_list *list)
+{
+   Eina_Bool *ret = va_arg(*list, Eina_Bool *);
+   Elm_Hoversel_Smart_Data *sd = _pd;
+
+   *ret = sd->horizontal;
 }
 
 EAPI void
 elm_hoversel_hover_begin(Evas_Object *obj)
 {
    ELM_HOVERSEL_CHECK(obj);
-   ELM_HOVERSEL_DATA_GET(obj, sd);
+   eo_do(obj, elm_obj_hoversel_hover_begin());
+}
+
+static void
+_hover_begin(Eo *obj, void *_pd, va_list *list EINA_UNUSED)
+{
+   Elm_Hoversel_Smart_Data *sd = _pd;
 
    if (sd->hover) return;
 
@@ -344,12 +412,24 @@ EAPI void
 elm_hoversel_hover_end(Evas_Object *obj)
 {
    ELM_HOVERSEL_CHECK(obj);
-   ELM_HOVERSEL_DATA_GET(obj, sd);
+   eo_do(obj, elm_obj_hoversel_hover_end());
+}
+
+static void
+_hover_end(Eo *obj, void *_pd, va_list *list EINA_UNUSED)
+{
+   Elm_Object_Item *it;
+   Eina_List *l;
+   Elm_Hoversel_Smart_Data *sd = _pd;
 
    if (!sd->hover) return;
 
    sd->expanded = EINA_FALSE;
 
+   EINA_LIST_FOREACH(sd->items, l, it)
+     {
+        VIEW(it) = NULL;
+     }
    evas_object_del(sd->hover);
    sd->hover = NULL;
 
@@ -360,21 +440,36 @@ EAPI Eina_Bool
 elm_hoversel_expanded_get(const Evas_Object *obj)
 {
    ELM_HOVERSEL_CHECK(obj) EINA_FALSE;
-   ELM_HOVERSEL_DATA_GET(obj, sd);
+   Eina_Bool ret = EINA_FALSE;
+   eo_do((Eo *) obj, elm_obj_hoversel_expanded_get(&ret));
+   return ret;
+}
 
-   return (sd->hover) ? EINA_TRUE : EINA_FALSE;
+static void
+_expanded_get(Eo *obj EINA_UNUSED, void *_pd, va_list *list)
+{
+   Eina_Bool *ret = va_arg(*list, Eina_Bool *);
+   Elm_Hoversel_Smart_Data *sd = _pd;
+
+   *ret = (sd->hover) ? EINA_TRUE : EINA_FALSE;
 }
 
 EAPI void
 elm_hoversel_clear(Evas_Object *obj)
 {
+   ELM_HOVERSEL_CHECK(obj);
+   eo_do(obj, elm_obj_hoversel_clear());
+}
+
+static void
+_clear(Eo *obj EINA_UNUSED, void *_pd, va_list *list EINA_UNUSED)
+{
    Elm_Object_Item *it;
    Eina_List *l, *ll;
 
-   ELM_HOVERSEL_CHECK(obj);
-   ELM_HOVERSEL_DATA_GET(obj, sd);
+   Elm_Hoversel_Smart_Data *sd = _pd;
 
-   EINA_LIST_FOREACH_SAFE (sd->items, l, ll, it)
+   EINA_LIST_FOREACH_SAFE(sd->items, l, ll, it)
      {
         elm_widget_item_del(it);
      }
@@ -384,9 +479,18 @@ EAPI const Eina_List *
 elm_hoversel_items_get(const Evas_Object *obj)
 {
    ELM_HOVERSEL_CHECK(obj) NULL;
-   ELM_HOVERSEL_DATA_GET(obj, sd);
+   const Eina_List *ret = NULL;
+   eo_do((Eo *) obj, elm_obj_hoversel_items_get(&ret));
+   return ret;
+}
 
-   return sd->items;
+static void
+_items_get(Eo *obj EINA_UNUSED, void *_pd, va_list *list)
+{
+   const Eina_List **ret = va_arg(*list, const Eina_List **);
+   Elm_Hoversel_Smart_Data *sd = _pd;
+
+   *ret = sd->items;
 }
 
 EAPI Elm_Object_Item *
@@ -398,13 +502,29 @@ elm_hoversel_item_add(Evas_Object *obj,
                       const void *data)
 {
    ELM_HOVERSEL_CHECK(obj) NULL;
-   ELM_HOVERSEL_DATA_GET(obj, sd);
+   Elm_Object_Item *ret = NULL;
+   eo_do(obj, elm_obj_hoversel_item_add(label, icon_file, icon_type, func, data, &ret));
+   return ret;
+}
+
+static void
+_item_add(Eo *obj, void *_pd, va_list *list)
+{
+   const char *label = va_arg(*list, const char *);
+   const char *icon_file = va_arg(*list, const char *);
+   Elm_Icon_Type icon_type = va_arg(*list, Elm_Icon_Type);
+   Evas_Smart_Cb func = va_arg(*list, Evas_Smart_Cb);
+   const void *data = va_arg(*list, const void *);
+   Elm_Object_Item **ret = va_arg(*list, Elm_Object_Item **);
+   Elm_Hoversel_Smart_Data *sd = _pd;
+   *ret = NULL;
 
    Elm_Hoversel_Item *item = elm_widget_item_new(obj, Elm_Hoversel_Item);
-   if (!item) return NULL;
+   if (!item) return;
 
    elm_widget_item_del_pre_hook_set(item, _item_del_pre_hook);
    elm_widget_item_text_get_hook_set(item, _item_text_get_hook);
+   elm_widget_item_signal_emit_hook_set(item, _item_signal_emit_hook);
 
    item->label = eina_stringshare_add(label);
    item->icon_file = eina_stringshare_add(icon_file);
@@ -414,7 +534,7 @@ elm_hoversel_item_add(Evas_Object *obj,
 
    sd->items = eina_list_append(sd->items, item);
 
-   return (Elm_Object_Item *)item;
+   *ret = (Elm_Object_Item *)item;
 }
 
 EAPI void
@@ -447,3 +567,119 @@ elm_hoversel_item_icon_get(const Elm_Object_Item *it,
    if (icon_group) *icon_group = item->icon_group;
    if (icon_type) *icon_type = item->icon_type;
 }
+
+static void
+_elm_hoversel_smart_event(Eo *obj, void *_pd, va_list *list)
+{
+   Evas_Object *src = va_arg(*list, Evas_Object *);
+   (void) src;
+   Evas_Callback_Type type = va_arg(*list, Evas_Callback_Type);
+   void *event_info = va_arg(*list, void *);
+   Eina_Bool *ret = va_arg(*list, Eina_Bool *);
+   if (ret) *ret = EINA_FALSE;
+   Eina_Bool int_ret = EINA_FALSE;
+   Evas_Event_Key_Down *ev = event_info;
+   Elm_Hoversel_Smart_Data *sd = _pd;
+
+   eo_do_super(obj, MY_CLASS, elm_wdg_event(src, type, event_info, &int_ret));
+   if (int_ret) return;
+
+   if (!sd || !sd->hover) return;
+   if (elm_widget_disabled_get(obj)) return;
+   if (type != EVAS_CALLBACK_KEY_DOWN) return;
+   if (ev->event_flags & EVAS_EVENT_FLAG_ON_HOLD) return;
+
+   if ((!strcmp(ev->key, "Down")) ||
+       ((!strcmp(ev->key, "KP_Down")) && (!ev->string)))
+     {
+        elm_widget_focus_cycle(sd->hover, ELM_FOCUS_DOWN);
+        goto success;
+     }
+   else if ((!strcmp(ev->key, "Up")) ||
+            ((!strcmp(ev->key, "KP_Up")) && (!ev->string)))
+     {
+        elm_widget_focus_cycle(sd->hover, ELM_FOCUS_UP);
+        goto success;
+     }
+   else if ((!strcmp(ev->key, "Left")) ||
+            ((!strcmp(ev->key, "KP_Left")) && (!ev->string)))
+     {
+        elm_widget_focus_cycle(sd->hover, ELM_FOCUS_LEFT);
+        goto success;
+     }
+   else if ((!strcmp(ev->key, "Right")) ||
+            ((!strcmp(ev->key, "KP_Right")) && (!ev->string)))
+     {
+        elm_widget_focus_cycle(sd->hover, ELM_FOCUS_RIGHT);
+        goto success;
+     }
+
+   return;
+
+success:
+   ev->event_flags |= EVAS_EVENT_FLAG_ON_HOLD;
+   if (ret) *ret = EINA_TRUE;
+}
+
+static void
+_class_constructor(Eo_Class *klass)
+{
+      const Eo_Op_Func_Description func_desc[] = {
+           EO_OP_FUNC(EO_BASE_ID(EO_BASE_SUB_ID_CONSTRUCTOR), _constructor),
+
+           EO_OP_FUNC(EVAS_OBJ_SMART_ID(EVAS_OBJ_SMART_SUB_ID_ADD), _elm_hoversel_smart_add),
+           EO_OP_FUNC(EVAS_OBJ_SMART_ID(EVAS_OBJ_SMART_SUB_ID_DEL), _elm_hoversel_smart_del),
+           EO_OP_FUNC(EVAS_OBJ_SMART_ID(EVAS_OBJ_SMART_SUB_ID_SHOW), _elm_hoversel_smart_show),
+           EO_OP_FUNC(EVAS_OBJ_SMART_ID(EVAS_OBJ_SMART_SUB_ID_HIDE), _elm_hoversel_smart_hide),
+
+           EO_OP_FUNC(ELM_WIDGET_ID(ELM_WIDGET_SUB_ID_THEME), _elm_hoversel_smart_theme),
+           EO_OP_FUNC(ELM_WIDGET_ID(ELM_WIDGET_SUB_ID_TRANSLATE), _elm_hoversel_smart_translate),
+           EO_OP_FUNC(ELM_WIDGET_ID(ELM_WIDGET_SUB_ID_PARENT_SET), _elm_hoversel_smart_parent_set),
+           EO_OP_FUNC(ELM_WIDGET_ID(ELM_WIDGET_SUB_ID_EVENT), _elm_hoversel_smart_event),
+
+           EO_OP_FUNC(ELM_OBJ_BUTTON_ID(ELM_OBJ_BUTTON_SUB_ID_ADMITS_AUTOREPEAT_GET), _elm_hoversel_smart_admits_autorepeat_get),
+
+           EO_OP_FUNC(ELM_OBJ_HOVERSEL_ID(ELM_OBJ_HOVERSEL_SUB_ID_HOVER_PARENT_SET), _hover_parent_set),
+           EO_OP_FUNC(ELM_OBJ_HOVERSEL_ID(ELM_OBJ_HOVERSEL_SUB_ID_HOVER_PARENT_GET), _hover_parent_get),
+           EO_OP_FUNC(ELM_OBJ_HOVERSEL_ID(ELM_OBJ_HOVERSEL_SUB_ID_HORIZONTAL_SET), _horizontal_set),
+           EO_OP_FUNC(ELM_OBJ_HOVERSEL_ID(ELM_OBJ_HOVERSEL_SUB_ID_HORIZONTAL_GET), _horizontal_get),
+           EO_OP_FUNC(ELM_OBJ_HOVERSEL_ID(ELM_OBJ_HOVERSEL_SUB_ID_HOVER_BEGIN), _hover_begin),
+           EO_OP_FUNC(ELM_OBJ_HOVERSEL_ID(ELM_OBJ_HOVERSEL_SUB_ID_HOVER_END), _hover_end),
+           EO_OP_FUNC(ELM_OBJ_HOVERSEL_ID(ELM_OBJ_HOVERSEL_SUB_ID_EXPANDED_GET), _expanded_get),
+           EO_OP_FUNC(ELM_OBJ_HOVERSEL_ID(ELM_OBJ_HOVERSEL_SUB_ID_CLEAR), _clear),
+           EO_OP_FUNC(ELM_OBJ_HOVERSEL_ID(ELM_OBJ_HOVERSEL_SUB_ID_ITEMS_GET), _items_get),
+           EO_OP_FUNC(ELM_OBJ_HOVERSEL_ID(ELM_OBJ_HOVERSEL_SUB_ID_ITEM_ADD), _item_add),
+           EO_OP_FUNC_SENTINEL
+      };
+      eo_class_funcs_set(klass, func_desc);
+
+      evas_smart_legacy_type_register(MY_CLASS_NAME_LEGACY, klass);
+}
+
+static const Eo_Op_Description op_desc[] = {
+     EO_OP_DESCRIPTION(ELM_OBJ_HOVERSEL_SUB_ID_HOVER_PARENT_SET, "Set the Hover parent."),
+     EO_OP_DESCRIPTION(ELM_OBJ_HOVERSEL_SUB_ID_HOVER_PARENT_GET, "Get the Hover parent."),
+     EO_OP_DESCRIPTION(ELM_OBJ_HOVERSEL_SUB_ID_HORIZONTAL_SET, "This sets the hoversel to expand horizontally."),
+     EO_OP_DESCRIPTION(ELM_OBJ_HOVERSEL_SUB_ID_HORIZONTAL_GET, "This returns whether the hoversel is set to expand horizontally."),
+     EO_OP_DESCRIPTION(ELM_OBJ_HOVERSEL_SUB_ID_HOVER_BEGIN, "This triggers the hoversel popup from code, the same as if the user had clicked the button."),
+     EO_OP_DESCRIPTION(ELM_OBJ_HOVERSEL_SUB_ID_HOVER_END, "This dismisses the hoversel popup as if the user had clicked outside the hover."),
+     EO_OP_DESCRIPTION(ELM_OBJ_HOVERSEL_SUB_ID_EXPANDED_GET, "Returns whether the hoversel is expanded."),
+     EO_OP_DESCRIPTION(ELM_OBJ_HOVERSEL_SUB_ID_CLEAR, "This will remove all the children items from the hoversel."),
+     EO_OP_DESCRIPTION(ELM_OBJ_HOVERSEL_SUB_ID_ITEMS_GET, "Get the list of items within the given hoversel."),
+     EO_OP_DESCRIPTION(ELM_OBJ_HOVERSEL_SUB_ID_ITEM_ADD, "Add an item to the hoversel button."),
+     EO_OP_DESCRIPTION_SENTINEL
+};
+
+static const Eo_Class_Description class_desc = {
+     EO_VERSION,
+     MY_CLASS_NAME,
+     EO_CLASS_TYPE_REGULAR,
+     EO_CLASS_DESCRIPTION_OPS(&ELM_OBJ_HOVERSEL_BASE_ID, op_desc, ELM_OBJ_HOVERSEL_SUB_ID_LAST),
+     NULL,
+     sizeof(Elm_Hoversel_Smart_Data),
+     _class_constructor,
+     NULL
+};
+
+EO_DEFINE_CLASS(elm_obj_hoversel_class_get, &class_desc, ELM_OBJ_BUTTON_CLASS, EVAS_SMART_SELECTABLE_INTERFACE, NULL);
+

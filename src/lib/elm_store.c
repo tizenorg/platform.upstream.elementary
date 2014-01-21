@@ -1,5 +1,10 @@
+#ifdef HAVE_CONFIG_H
+# include "elementary_config.h"
+#endif
+
 #include <Elementary.h>
 #include <Elementary_Cursor.h>
+
 #include "elm_priv.h"
 
 typedef struct _Elm_Store_Filesystem           Elm_Store_Filesystem;
@@ -94,11 +99,7 @@ _store_cache_trim(Elm_Store *st)
         if (!sti->fetched)
           {
              eina_lock_release(&sti->lock);
-             if (sti->fetch_th)
-               {
-                  ecore_thread_cancel(sti->fetch_th);
-                  sti->fetch_th = NULL;
-               }
+             ELM_SAFE_FREE(sti->fetch_th, ecore_thread_cancel);
              eina_lock_take(&sti->lock);
           }
         sti->fetched = EINA_FALSE;
@@ -117,25 +118,13 @@ _store_genlist_del(void *data, Evas *e __UNUSED__, Evas_Object *obj __UNUSED__, 
 {
    Elm_Store *st = data;
    st->genlist = NULL;
-   if (st->list_th)
-     {
-        ecore_thread_cancel(st->list_th);
-        st->list_th = NULL;
-     }
+   ELM_SAFE_FREE(st->list_th, ecore_thread_cancel);
    st->realized = eina_list_free(st->realized);
    while (st->items)
      {
         Elm_Store_Item *sti = (Elm_Store_Item *)st->items;
-        if (sti->eval_job)
-          {
-             ecore_job_del(sti->eval_job);
-             sti->eval_job = NULL;
-          }
-        if (sti->fetch_th)
-          {
-             ecore_thread_cancel(sti->fetch_th);
-             sti->fetch_th = NULL;
-          }
+        ELM_SAFE_FREE(sti->eval_job, ecore_job_del);
+        ELM_SAFE_FREE(sti->fetch_th, ecore_thread_cancel);
         if (sti->store->item.free) sti->store->item.free(sti);
         eina_lock_take(&sti->lock);
         if (sti->data)
@@ -146,7 +135,7 @@ _store_genlist_del(void *data, Evas *e __UNUSED__, Evas_Object *obj __UNUSED__, 
           }
         eina_lock_release(&sti->lock);
         eina_lock_free(&sti->lock);
-	st->items = NULL;
+        st->items = eina_inlist_remove(st->items, EINA_INLIST_GET(sti));
         free(sti);
      }
    // FIXME: kill threads and more
@@ -229,11 +218,7 @@ _store_item_eval(void *data)
      }
    else
      {
-        if (sti->fetch_th)
-          {
-             ecore_thread_cancel(sti->fetch_th);
-             sti->fetch_th = NULL;
-          }
+        ELM_SAFE_FREE(sti->fetch_th, ecore_thread_cancel);
         _store_cache_trim(sti->store);
      }
 }
@@ -398,7 +383,7 @@ _store_filesystem_list_do(void *data, Ecore_Thread *th __UNUSED__)
         Eina_Bool ok;
         size_t pathsz = finf->path_length + 1;
 
-	if (finf->path[finf->name_start] == '.') continue ;
+        if (finf->path[finf->name_start] == '.') continue ;
 
         info = calloc(1, sizeof(Elm_Store_Item_Info_Filesystem) + pathsz);
         if (!info) continue;
@@ -546,26 +531,14 @@ elm_store_free(Elm_Store *st)
 {
    void (*item_free)(Elm_Store_Item *);
    if (!EINA_MAGIC_CHECK(st, ELM_STORE_MAGIC)) return;
-   if (st->list_th)
-     {
-        ecore_thread_cancel(st->list_th);
-        st->list_th = NULL;
-     }
+   ELM_SAFE_FREE(st->list_th, ecore_thread_cancel);
    st->realized = eina_list_free(st->realized);
    item_free = st->item.free;
    while (st->items)
      {
         Elm_Store_Item *sti = (Elm_Store_Item *)st->items;
-        if (sti->eval_job)
-          {
-             ecore_job_del(sti->eval_job);
-             sti->eval_job = NULL;
-          }
-        if (sti->fetch_th)
-          {
-             ecore_thread_cancel(sti->fetch_th);
-             sti->fetch_th = NULL;
-          }
+        ELM_SAFE_FREE(sti->eval_job, ecore_job_del);
+        ELM_SAFE_FREE(sti->fetch_th, ecore_thread_cancel);
         if (item_free) item_free(sti);
         eina_lock_take(&sti->lock);
         if (sti->data)
@@ -576,6 +549,7 @@ elm_store_free(Elm_Store *st)
           }
         eina_lock_release(&sti->lock);
         eina_lock_free(&sti->lock);
+        st->items = eina_inlist_remove(st->items, EINA_INLIST_GET(sti));
         free(sti);
      }
    if (st->genlist)
@@ -616,11 +590,7 @@ elm_store_filesystem_directory_set(Elm_Store *store, const char *dir)
    Elm_Store_Filesystem *st = (Elm_Store_Filesystem *)store;
    if (!EINA_MAGIC_CHECK(store, ELM_STORE_MAGIC)) return;
    if (!EINA_MAGIC_CHECK(st, ELM_STORE_FILESYSTEM_MAGIC)) return;
-   if (store->list_th)
-     {
-        ecore_thread_cancel(store->list_th);
-        store->list_th = NULL;
-     }
+   ELM_SAFE_FREE(store->list_th, ecore_thread_cancel);
    if (!eina_stringshare_replace(&st->dir, dir)) return;
    store->list_th = ecore_thread_feedback_run(_store_filesystem_list_do,
                                               _store_filesystem_list_update,

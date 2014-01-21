@@ -1,3 +1,7 @@
+#ifdef HAVE_CONFIG_H
+# include "elementary_config.h"
+#endif
+
 #include <Elementary.h>
 #include "elm_priv.h"
 EINA_DEPRECATED EAPI Evas_Object *
@@ -145,13 +149,13 @@ elm_scrolled_entry_context_menu_disabled_get(const Evas_Object *obj)
 {return elm_entry_context_menu_disabled_get(obj);}
 EINA_DEPRECATED EAPI void
 elm_scrolled_entry_scrollbar_policy_set(Evas_Object *obj, Elm_Scroller_Policy h, Elm_Scroller_Policy v)
-{elm_entry_scrollbar_policy_set(obj, h, v);}
+{elm_scroller_policy_set(obj, h, v);}
 EINA_DEPRECATED EAPI void
 elm_scrolled_entry_bounce_set(Evas_Object *obj, Eina_Bool h_bounce, Eina_Bool v_bounce)
-{elm_entry_bounce_set(obj, h_bounce, v_bounce);}
+{elm_scroller_bounce_set(obj, h_bounce, v_bounce);}
 EINA_DEPRECATED EAPI void
 elm_scrolled_entry_bounce_get(const Evas_Object *obj, Eina_Bool *h_bounce, Eina_Bool *v_bounce)
-{elm_entry_bounce_get(obj, h_bounce, v_bounce);}
+{elm_scroller_bounce_get(obj, h_bounce, v_bounce);}
 EINA_DEPRECATED EAPI void
 elm_scrolled_entry_item_provider_append(Evas_Object *obj, Evas_Object *(*func) (void *data, Evas_Object *entry, const char *item), void *data)
 {elm_entry_item_provider_append(obj, func, data);}

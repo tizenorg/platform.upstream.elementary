@@ -5,13 +5,13 @@
  * See stdout/stderr for output. Compile with:
  *
  * @verbatim
- * gcc -g index_example.c -o index_example `pkg-config --cflags --libs elementary`
+ * gcc -g index_example_02.c -o index_example_02 `pkg-config --cflags --libs elementary`
  * @endverbatim
  */
 
 #include <Elementary.h>
 
-static const char *items[] = \
+static const char *items[] =
 {
    "Judith",
    "Paulina",
@@ -32,14 +32,6 @@ _index_changed(void        *data,
    elm_gengrid_item_bring_in(item, ELM_GENGRID_ITEM_SCROLLTO_IN);
 }
 
-static void
-_on_done(void        *data,
-         Evas_Object *obj,
-         void        *event_info)
-{
-   elm_exit();
-}
-
 static char *
 _grid_label_get(void        *data,
                 Evas_Object *obj,
@@ -51,8 +43,8 @@ _grid_label_get(void        *data,
 
 Evas_Object *
 _grid_content_get(void        *data,
-               Evas_Object *obj,
-               const char  *part)
+                  Evas_Object *obj,
+                  const char  *part)
 {
    if (!strcmp(part, "elm.swallow.icon"))
      {
@@ -91,21 +83,17 @@ EAPI_MAIN int
 elm_main(int    argc,
          char **argv)
 {
-   Evas_Object *win, *bg, *grid, *idx;
+   Evas_Object *win, *grid, *idx;
    Elm_Object_Item *gg_it;
    unsigned int i;
 
    Elm_Gengrid_Item_Class gic;
 
+   elm_policy_set(ELM_POLICY_QUIT, ELM_POLICY_QUIT_LAST_WINDOW_CLOSED);
    elm_app_info_set(elm_main, "elementary", "images");
-   win = elm_win_add(NULL, "index", ELM_WIN_BASIC);
-   elm_win_title_set(win, "Index Example");
-   evas_object_smart_callback_add(win, "delete,request", _on_done, NULL);
 
-   bg = elm_bg_add(win);
-   elm_win_resize_object_add(win, bg);
-   evas_object_size_hint_weight_set(bg, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-   evas_object_show(bg);
+   win = elm_win_util_standard_add("index", "Index Example");
+   elm_win_autodel_set(win, EINA_TRUE);
 
    grid = elm_gengrid_add(win);
    elm_gengrid_item_size_set(grid, 150, 150);
@@ -123,7 +111,6 @@ elm_main(int    argc,
    idx = elm_index_add(win);
    evas_object_size_hint_weight_set(idx, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    elm_win_resize_object_add(win, idx);
-
    evas_object_show(idx);
 
    for (i = 0; i < (sizeof(items) / sizeof(items[0])); i++)
@@ -143,6 +130,7 @@ elm_main(int    argc,
    evas_object_show(win);
 
    elm_index_autohide_disabled_set(idx, EINA_FALSE);
+   elm_index_level_go(idx, 0);
 
    elm_run();
    elm_shutdown();

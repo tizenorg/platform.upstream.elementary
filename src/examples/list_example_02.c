@@ -11,50 +11,32 @@
 
 #include <Elementary.h>
 
-static void
-_on_done(void *data,
-         Evas_Object *obj,
-         void *event_info)
-{
-   elm_exit();
-}
-
 EAPI_MAIN int
 elm_main(int argc, char **argv)
 {
-   Evas_Object *win, *bg, *bx, *li;
+   Evas_Object *win, *li;
    unsigned int i;
    static const char *lbl[] =
-   {
-      "Sunday",
-      "Monday",
-      "Tuesday",
-      "Wednesday",
-      "Thursday",
-      "Friday",
-      "Saturday"
-   };
+     {
+        "Sunday",
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday"
+     };
 
-   win = elm_win_add(NULL, "list", ELM_WIN_BASIC);
-   elm_win_title_set(win, "List Example");
-   evas_object_smart_callback_add(win, "delete,request", _on_done, NULL);
+   elm_policy_set(ELM_POLICY_QUIT, ELM_POLICY_QUIT_LAST_WINDOW_CLOSED);
 
-   bg = elm_bg_add(win);
-   elm_win_resize_object_add(win, bg);
-   evas_object_size_hint_weight_set(bg, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-   evas_object_show(bg);
-
-   bx = elm_box_add(win);
-   evas_object_size_hint_weight_set(bx, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-   evas_object_size_hint_align_set(bx, EVAS_HINT_FILL, EVAS_HINT_FILL);
-   elm_win_resize_object_add(win, bx);
-   evas_object_show(bx);
+   win = elm_win_util_standard_add("list", "List Example");
+   elm_win_autodel_set(win, EINA_TRUE);
 
    /* default */
    li = elm_list_add(win);
    evas_object_size_hint_weight_set(li, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-   evas_object_size_hint_align_set(li, EVAS_HINT_FILL, EVAS_HINT_FILL);
-   elm_box_pack_end(bx, li);
+   elm_win_resize_object_add(win, li);
+
    for (i = 0; i < sizeof(lbl) / sizeof(lbl[0]); i++)
      elm_list_item_append(li, lbl[i], NULL, NULL, NULL, NULL);
 
@@ -69,7 +51,7 @@ elm_main(int argc, char **argv)
    /* set bounce and scroller policy */
    elm_scroller_bounce_set(li, EINA_TRUE, EINA_TRUE);
    elm_scroller_policy_set(li, ELM_SCROLLER_POLICY_AUTO,
-                                ELM_SCROLLER_POLICY_ON);
+                           ELM_SCROLLER_POLICY_ON);
 
    elm_list_go(li);
    evas_object_show(li);

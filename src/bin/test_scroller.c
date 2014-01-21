@@ -2,33 +2,33 @@
 # include "elementary_config.h"
 #endif
 #include <Elementary.h>
-#ifndef ELM_LIB_QUICKLAUNCH
+
 void
-my_bt_go_300_300(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+my_bt_go_300_300(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    elm_scroller_region_bring_in((Evas_Object *)data, 300, 300, 318, 318);
 }
 
 void
-my_bt_go_900_300(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+my_bt_go_900_300(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    elm_scroller_region_bring_in((Evas_Object *)data, 900, 300, 318, 318);
 }
 
 void
-my_bt_go_300_900(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+my_bt_go_300_900(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    elm_scroller_region_bring_in((Evas_Object *)data, 300, 900, 318, 318);
 }
 
 void
-my_bt_go_900_900(void *data, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+my_bt_go_900_900(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    elm_scroller_region_bring_in((Evas_Object *)data, 900, 900, 318, 318);
 }
 
 void
-my_bt_freeze_toggle(void *data, Evas_Object *obj, void *event_info __UNUSED__)
+my_bt_freeze_toggle(void *data, Evas_Object *obj, void *event_info EINA_UNUSED)
 {
    if (elm_check_state_get(obj))
      elm_object_scroll_freeze_push((Evas_Object *)data);
@@ -37,7 +37,7 @@ my_bt_freeze_toggle(void *data, Evas_Object *obj, void *event_info __UNUSED__)
 }
 
 void
-my_bt_hold_toggle(void *data, Evas_Object *obj, void *event_info __UNUSED__)
+my_bt_hold_toggle(void *data, Evas_Object *obj, void *event_info EINA_UNUSED)
 {
    if (elm_check_state_get(obj))
      elm_object_scroll_hold_push((Evas_Object *)data);
@@ -46,7 +46,86 @@ my_bt_hold_toggle(void *data, Evas_Object *obj, void *event_info __UNUSED__)
 }
 
 void
-_sc_move_cb(void *data, Evas *e __UNUSED__, Evas_Object *obj, void *event_info __UNUSED__)
+my_bt_block_movements_x_axis(void *data, Evas_Object *obj,
+                             void *event_info EINA_UNUSED)
+{
+   Elm_Scroller_Movement_Block block;
+
+   block = elm_scroller_movement_block_get((Evas_Object *)data);
+
+   if (elm_check_state_get(obj))
+     {
+        elm_scroller_movement_block_set((Evas_Object *)data,
+                                        ELM_SCROLLER_MOVEMENT_BLOCK_HORIZONTAL |
+                                        block);
+     }
+   else if (block & ELM_SCROLLER_MOVEMENT_BLOCK_VERTICAL)
+     {
+        elm_scroller_movement_block_set((Evas_Object *)data,
+                                        ELM_SCROLLER_MOVEMENT_BLOCK_VERTICAL);
+     }
+   else
+     {
+        elm_scroller_movement_block_set((Evas_Object *)data,
+                                        ELM_SCROLLER_MOVEMENT_NO_BLOCK);
+     }
+}
+
+void
+my_bt_snap_to_pages(void *data,
+                    Evas_Object *obj,
+                    void *event_info EINA_UNUSED)
+{
+   if (elm_check_state_get(obj))
+     {
+        elm_scroller_page_snap_set(data, EINA_TRUE, EINA_TRUE);
+     }
+   else
+     {
+        elm_scroller_page_snap_set(data, EINA_FALSE, EINA_FALSE);
+     }
+}
+
+void
+my_bt_block_movements_y_axis(void *data, Evas_Object *obj,
+                             void *event_info EINA_UNUSED)
+{
+   Elm_Scroller_Movement_Block block;
+
+   block = elm_scroller_movement_block_get((Evas_Object *)data);
+
+   if (elm_check_state_get(obj))
+     {
+        elm_scroller_movement_block_set((Evas_Object *)data,
+                                        ELM_SCROLLER_MOVEMENT_BLOCK_VERTICAL |
+                                        block);
+     }
+   else if (block & ELM_SCROLLER_MOVEMENT_BLOCK_HORIZONTAL)
+     {
+        elm_scroller_movement_block_set((Evas_Object *)data,
+                                        ELM_SCROLLER_MOVEMENT_BLOCK_HORIZONTAL);
+     }
+   else
+     {
+        elm_scroller_movement_block_set((Evas_Object *)data,
+                                        ELM_SCROLLER_MOVEMENT_NO_BLOCK);
+     }
+}
+
+void
+page_change_cb(void *data EINA_UNUSED,
+               Evas_Object *obj,
+               void *event_info EINA_UNUSED)
+{
+   int page_x = 0, page_y = 0;
+
+   elm_scroller_current_page_get(obj, &page_x, &page_y);
+
+   printf("Page changed to %d, %d\n", page_x, page_y);
+}
+
+void
+_sc_move_cb(void *data, Evas *e EINA_UNUSED, Evas_Object *obj, void *event_info EINA_UNUSED)
 {
    Evas_Coord x = 0, y = 0;
    evas_object_geometry_get(obj, &x, &y, NULL, NULL);
@@ -54,7 +133,7 @@ _sc_move_cb(void *data, Evas *e __UNUSED__, Evas_Object *obj, void *event_info _
 }
 
 void
-_sc_resize_cb(void *data, Evas *e __UNUSED__, Evas_Object *obj, void *event_info __UNUSED__)
+_sc_resize_cb(void *data, Evas *e EINA_UNUSED, Evas_Object *obj, void *event_info EINA_UNUSED)
 {
    Evas_Coord w = 0, h = 0;
    evas_object_geometry_get(obj, NULL, NULL, &w, &h);
@@ -62,9 +141,10 @@ _sc_resize_cb(void *data, Evas *e __UNUSED__, Evas_Object *obj, void *event_info
 }
 
 void
-test_scroller(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+test_scroller(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
-   Evas_Object *win, *bg2, *tb, *tb2, *sc, *bt, *ck1, *ck2, *bx, *bx2, *fr;
+   Evas_Object *win, *bg2, *tb, *tb2, *sc, *bt, *ck1, *ck2, *bx, *bx2, *fr,
+       *ck3, *ck4, *ck5;
    int i, j, n;
    char buf[PATH_MAX];
    Evas_Coord x = 0, y = 0, w = 0, h = 0;
@@ -111,6 +191,21 @@ test_scroller(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_in
    elm_box_pack_end(bx2, ck2);
    evas_object_show(ck2);
 
+   ck3 = elm_check_add(win);
+   elm_object_text_set(ck3, "Block movements in X axis");
+   elm_box_pack_end(bx2, ck3);
+   evas_object_show(ck3);
+
+   ck4 = elm_check_add(win);
+   elm_object_text_set(ck4, "Block movements in Y axis");
+   elm_box_pack_end(bx2, ck4);
+   evas_object_show(ck4);
+
+   ck5 = elm_check_add(win);
+   elm_object_text_set(ck5, "Snap to pages");
+   elm_box_pack_end(bx2, ck5);
+   evas_object_show(ck5);
+
    sc = elm_scroller_add(win);
    evas_object_size_hint_weight_set(sc, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    evas_object_size_hint_align_set(sc, EVAS_HINT_FILL, EVAS_HINT_FILL);
@@ -140,11 +235,19 @@ test_scroller(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_in
    elm_object_content_set(sc, tb);
    evas_object_show(tb);
 
-   elm_scroller_page_relative_set(sc, 1.0, 1.0);
+   elm_scroller_page_size_set(sc, 318, 318);
    evas_object_show(sc);
+
+   evas_object_smart_callback_add
+       (sc, "scroll,page,changed", page_change_cb, sc);
 
    evas_object_smart_callback_add(ck1, "changed", my_bt_freeze_toggle, tb);
    evas_object_smart_callback_add(ck2, "changed", my_bt_hold_toggle, tb);
+   evas_object_smart_callback_add(ck3, "changed", my_bt_block_movements_x_axis,
+                                  sc);
+   evas_object_smart_callback_add(ck4, "changed", my_bt_block_movements_y_axis,
+                                  sc);
+   evas_object_smart_callback_add(ck5, "changed", my_bt_snap_to_pages, sc);
 
    tb2 = elm_table_add(win);
 
@@ -192,13 +295,13 @@ test_scroller(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_in
 }
 
 void
-click_through(void *data __UNUSED__, Evas_Object *obj, void *event_info __UNUSED__)
+click_through(void *data EINA_UNUSED, Evas_Object *obj, void *event_info EINA_UNUSED)
 {
    printf("click went through on %p\n", obj);
 }
 
 void
-test_scroller2(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_info __UNUSED__)
+test_scroller2(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *win, *bt, *bx, *bx2, *sc, *tb, *tb2, *rc;
    int i, j;
@@ -318,4 +421,3 @@ test_scroller2(void *data __UNUSED__, Evas_Object *obj __UNUSED__, void *event_i
    evas_object_resize(win, 320, 480);
    evas_object_show(win);
 }
-#endif
