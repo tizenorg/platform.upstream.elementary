@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: enlightenment-devel@lists.sourceforge.net\n"
-"POT-Creation-Date: 2014-01-07 15:04+0100\n"
+"POT-Creation-Date: 2013-12-01 18:58+0900\n"
 "PO-Revision-Date: 2012-12-16 21:59+0100\n"
 "Last-Translator: Tomáš Čech <sleep_walker@suse.cz>\n"
 "Language-Team: Czech <kde-i18n-doc@kde.org>\n"
@@ -75,7 +75,7 @@ msgstr "Bublina"
 msgid "Clicked"
 msgstr "Kliknuto"
 
-#: src/lib/elm_button.c:279 src/lib/elm_check.c:222 src/lib/elm_gengrid.c:705
+#: src/lib/elm_button.c:279 src/lib/elm_check.c:222 src/lib/elm_gengrid.c:681
 #: src/lib/elm_genlist.c:1464 src/lib/elm_list.c:1547 src/lib/elm_radio.c:265
 #: src/lib/elm_segment_control.c:537 src/lib/elm_spinner.c:556
 #: src/lib/elm_toolbar.c:1980
@@ -197,11 +197,11 @@ msgstr "Vybrat"
 msgid "Paste"
 msgstr "Vložit"
 
-#: src/lib/elm_entry.c:3307
+#: src/lib/elm_entry.c:3301
 msgid "Entry"
 msgstr "Vstup"
 
-#: src/lib/elm_gengrid.c:735
+#: src/lib/elm_gengrid.c:711
 msgid "Gengrid Item"
 msgstr "Položka mřížky"
 
