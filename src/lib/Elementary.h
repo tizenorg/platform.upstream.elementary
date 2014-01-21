@@ -14,7 +14,7 @@
 #define ELM_EFREET
 #define ELM_ETHUMB
 #undef ELM_WEB
-#define ELM_EMAP
+#undef ELM_EMAP
 #undef ELM_DEBUG
 #define ELM_ALLOCA_H
 #define ELM_LIBINTL_H
