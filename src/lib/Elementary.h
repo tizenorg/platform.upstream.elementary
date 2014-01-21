@@ -14,9 +14,9 @@
 #define ELM_UNIX
 #undef ELM_WIN32
 #undef ELM_WINCE
-#define ELM_ELOCATION
+#undef ELM_ELOCATION
 #undef ELM_WEB
-#undef ELM_EMAP
+#define ELM_EMAP
 #undef ELM_DEBUG
 #define ELM_ALLOCA_H
 #define ELM_LIBINTL_H

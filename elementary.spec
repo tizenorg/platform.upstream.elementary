@@ -3,7 +3,7 @@
 
 Summary: EFL toolkit for small touchscreens
 Name: elementary
-Version: 1.8.2
+Version: 1.8.3
 Release: %{_rel}
 License: Lesser GPL
 Group: System Environment/Libraries
