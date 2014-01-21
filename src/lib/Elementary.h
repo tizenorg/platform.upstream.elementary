@@ -10,7 +10,7 @@
 #define ELM_UNIX
 #undef ELM_WIN32
 #undef ELM_WINCE
-#define ELM_EDBUS
+#undef ELM_EDBUS
 #define ELM_EFREET
 #define ELM_ETHUMB
 #undef ELM_WEB
