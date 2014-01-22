@@ -10,17 +10,22 @@ Summary:        EFL toolkit for small touchscreens
 Url:            http://trac.enlightenment.org/e/wiki/Elementary
 Group:          Graphics/EFL
 Source0:        elementary-%{version}.tar.bz2
-Source1001: 	elementary.manifest
+Source1001:     elementary.manifest
 BuildRequires:  doxygen
 BuildRequires:  gettext-devel
 BuildRequires:  pkgconfig(ecore)
 BuildRequires:  pkgconfig(ecore-evas)
 BuildRequires:  pkgconfig(ecore-file)
 BuildRequires:  pkgconfig(ecore-imf)
+%if %{with wayland}
+%else
+BuildRequires:  pkgconfig(ecore-fb)
 %if %{with x}
 BuildRequires:  pkgconfig(ecore-x)
 BuildRequires:  pkgconfig(x11)
 %endif
+%endif
+BuildRequires:  pkgconfig(edbus)
 BuildRequires:  pkgconfig(edje)
 BuildRequires:  pkgconfig(eet)
 BuildRequires:  pkgconfig(efreet)
@@ -87,13 +92,13 @@ make %{?_smp_mflags}
 %install
 %make_install
 
-%find_lang %{name}
+# find_lang %{name}
 
 %post -p /sbin/ldconfig
 
 %postun -p /sbin/ldconfig
 
-%lang_package 
+# lang_package 
 
 %files 
 %manifest %{name}.manifest
