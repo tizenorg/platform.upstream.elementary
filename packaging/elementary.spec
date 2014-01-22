@@ -1,3 +1,5 @@
+%define dbus_unavailable 1
+
 %bcond_with wayland
 %bcond_with x
 Name:           elementary
@@ -10,9 +12,9 @@ Group:          Graphics/EFL
 Source0:        elementary-%{version}.tar.bz2
 Source1001: 	elementary.manifest
 BuildRequires:  doxygen
+BuildRequires:  gettext-devel
 BuildRequires:  pkgconfig(ecore)
 BuildRequires:  pkgconfig(ecore-evas)
-BuildRequires:  pkgconfig(ecore-fb)
 BuildRequires:  pkgconfig(ecore-file)
 BuildRequires:  pkgconfig(ecore-imf)
 %if %{with x}
@@ -25,7 +27,8 @@ BuildRequires:  pkgconfig(eet)
 BuildRequires:  pkgconfig(efreet)
 BuildRequires:  pkgconfig(eina)
 BuildRequires:  pkgconfig(evas)
-
+BuildRequires:  pkgconfig(ethumb)
+BuildRequires:  pkgconfig(emotion)
 BuildRequires:  eet-tools
 BuildRequires:  python-devel
 
@@ -73,7 +76,12 @@ cp %{SOURCE1001} .
 %if !%{with x}
          --disable-ecore-x \
 %endif
-         --enable-build-examples
+%if %dbus_unavailable
+         --disable-build-examples \
+%else
+         --enable-build-examples \
+%endif
+    #eol
 
 make %{?_smp_mflags}
 
@@ -100,15 +108,19 @@ make %{?_smp_mflags}
 %{_datadir}/elementary/*
 %{_datadir}/icons/elementary.png
 
+%if ! %dbus_unavailable
 %files examples
 %defattr(-,root,root,-)
 %{_libdir}/elementary/examples/*
+%endif
 
 %files tools
 %defattr(-,root,root,-)
 %{_datadir}/applications/*
 %{_bindir}/elementary_config
 %{_bindir}/elementary_test*
+%{_bindir}/elementary_codegen
+%{_bindir}/elm_prefs_cc
 
 %files devel
 %manifest %{name}.manifest
@@ -116,5 +128,7 @@ make %{?_smp_mflags}
 %{_includedir}/elementary-1/*.h
 %{_libdir}/*.so
 %{_libdir}/pkgconfig/*.pc
+%{_libdir}/cmake/Elementary/ElementaryConfig.cmake
+%{_libdir}/cmake/Elementary/ElementaryConfigVersion.cmake
 
 %changelog
