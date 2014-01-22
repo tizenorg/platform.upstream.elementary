@@ -12,12 +12,15 @@ Source1001: 	elementary.manifest
 BuildRequires:  doxygen
 BuildRequires:  pkgconfig(ecore)
 BuildRequires:  pkgconfig(ecore-evas)
-BuildRequires:  pkgconfig(ecore-fb)
 BuildRequires:  pkgconfig(ecore-file)
 BuildRequires:  pkgconfig(ecore-imf)
+%if %{with wayland}
+%else
+BuildRequires:  pkgconfig(ecore-fb)
 %if %{with x}
 BuildRequires:  pkgconfig(ecore-x)
 BuildRequires:  pkgconfig(x11)
+%endif
 %endif
 BuildRequires:  pkgconfig(edbus)
 BuildRequires:  pkgconfig(edje)
@@ -25,6 +28,8 @@ BuildRequires:  pkgconfig(eet)
 BuildRequires:  pkgconfig(efreet)
 BuildRequires:  pkgconfig(eina)
 BuildRequires:  pkgconfig(evas)
+BuildRequires:  pkgconfig(ethumb)
+BuildRequires:  pkgconfig(emotion)
 
 BuildRequires:  eet-tools
 BuildRequires:  python-devel
@@ -80,13 +85,13 @@ make %{?_smp_mflags}
 %install
 %make_install
 
-%find_lang %{name}
+# find_lang %{name}
 
 %post -p /sbin/ldconfig
 
 %postun -p /sbin/ldconfig
 
-%lang_package 
+# lang_package 
 
 %files 
 %manifest %{name}.manifest
@@ -109,6 +114,8 @@ make %{?_smp_mflags}
 %{_datadir}/applications/*
 %{_bindir}/elementary_config
 %{_bindir}/elementary_test*
+%{_bindir}/elementary_codegen
+%{_bindir}/elm_prefs_cc
 
 %files devel
 %manifest %{name}.manifest
@@ -116,5 +123,7 @@ make %{?_smp_mflags}
 %{_includedir}/elementary-1/*.h
 %{_libdir}/*.so
 %{_libdir}/pkgconfig/*.pc
+%{_libdir}/cmake/Elementary/ElementaryConfig.cmake
+%{_libdir}/cmake/Elementary/ElementaryConfigVersion.cmake
 
 %changelog
