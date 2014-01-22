@@ -672,3 +672,31 @@ elm_clock_first_interval_get(const Evas_Object *obj)
 
    return sd->first_interval;
 }
+
+EAPI void
+elm_clock_pause_set(Evas_Object *obj, Eina_Bool paused)
+{
+   ELM_CLOCK_CHECK(obj);
+   ELM_CLOCK_DATA_GET(obj, sd);
+
+   paused = !!paused;
+   if (sd->paused == paused)
+     return;
+   sd->paused = paused;
+   if (paused)
+     ecore_timer_freeze(sd->ticker);
+   else
+     {
+        _timediff_set(sd);
+        ecore_timer_thaw(sd->ticker);
+     }
+}
+
+EAPI Eina_Bool
+elm_clock_pause_get(const Evas_Object *obj)
+{
+   ELM_CLOCK_CHECK(obj) EINA_FALSE;
+   ELM_CLOCK_DATA_GET(obj, sd);
+
+   return sd->paused;
+}
