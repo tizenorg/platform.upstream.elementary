@@ -3,7 +3,7 @@
 %bcond_with wayland
 %bcond_with x
 Name:           elementary
-Version:        1.8.3
+Version:        1.8.4
 Release:        0
 License:        LGPL-2.1+
 Summary:        EFL toolkit for small touchscreens
@@ -21,7 +21,6 @@ BuildRequires:  pkgconfig(ecore-imf)
 BuildRequires:  pkgconfig(ecore-x)
 BuildRequires:  pkgconfig(x11)
 %endif
-BuildRequires:  pkgconfig(edbus)
 BuildRequires:  pkgconfig(edje)
 BuildRequires:  pkgconfig(eet)
 BuildRequires:  pkgconfig(efreet)
