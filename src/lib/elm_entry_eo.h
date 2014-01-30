@@ -282,7 +282,7 @@ enum
  *
  * @ingroup Entry
  */
-#define elm_obj_entry_selection_handler_disabled_set(disbaled) ELM_OBJ_ENTRY_ID(ELM_OBJ_ENTRY_SUB_ID_SELECTION_HANDLER_DISABLED_SET), EO_TYPECHECK(Eina_Bool, disabled)
+#define elm_obj_entry_selection_handler_disabled_set(disabled) ELM_OBJ_ENTRY_ID(ELM_OBJ_ENTRY_SUB_ID_SELECTION_HANDLER_DISABLED_SET), EO_TYPECHECK(Eina_Bool, disabled)
 
 /**
  * @def elm_obj_entry_selection_handler_disabled_get
