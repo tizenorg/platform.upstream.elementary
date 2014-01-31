@@ -95,6 +95,8 @@ make %{?_smp_mflags}
 %{_datadir}/applications/*
 %{_bindir}/elementary_config
 %{_bindir}/elementary_test*
+%{_bindir}/elementary_codegen
+%{_bindir}/elm_prefs_cc
 
 %files devel
 %manifest %{name}.manifest
