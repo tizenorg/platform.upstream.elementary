@@ -1,12 +1,12 @@
 %bcond_with wayland
 %bcond_with x
 Name:           elementary
-Version:        1.7.8
-Release:        2 
+Version:        1.8.4
+Release:        0
 License:        LGPL-2.1+
 Summary:        EFL toolkit for small touchscreens
 Url:            http://trac.enlightenment.org/e/wiki/Elementary
-Group:          Graphics/EFL
+Group:          Graphics & UI Framework/API
 Source0:        elementary-%{version}.tar.bz2
 Source1001:     elementary.manifest
 BuildRequires:  pkgconfig(ecore)
@@ -42,21 +42,21 @@ widget "personality" is on top. And that is... Elementary, my dear watson.
 Elementary.
 
 %package examples
-Summary:   EFL elementary examples
+Summary: EFL elementary examples
 
 %description examples
 EFL elementary examples
 
 %package tools
-Summary:   EFL elementary configuration and test apps
+Summary: EFL elementary configuration and test apps
 
 %description tools
 EFL elementary configuration and test apps
 
 %package devel
-Summary:        Development components for the elementary package
-Group:          Development/Libraries
-Requires:       %{name} = %{version}
+Summary:  Development components for the elementary package
+Group:    Graphics & UI Framework/Development
+Requires: %{name} = %{version}
 
 %description devel
 Development files for elementary
