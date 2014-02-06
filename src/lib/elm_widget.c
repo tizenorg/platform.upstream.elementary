@@ -3555,24 +3555,6 @@ _elm_widget_parents_bounce_get(Eo *obj, void *_pd EINA_UNUSED, va_list *list)
    while (parent_obj);
 }
 
-EAPI const Eina_List *
-elm_widget_sub_object_list_get(const Evas_Object *obj)
-{
-   ELM_WIDGET_CHECK(obj) NULL;
-   const Eina_List *ret = NULL;
-   eo_do(obj, elm_wdg_sub_object_list_get(&ret));
-   return ret;
-}
-
-static void
-_elm_widget_sub_object_list_get(Eo *obj EINA_UNUSED, void *_pd, va_list *list)
-{
-   Eina_List **ret = va_arg(*list, Eina_List **);
-   Elm_Widget_Smart_Data *sd = _pd;
-
-   if (ret) *ret = sd->subobjs;
-}
-
 EAPI Eina_List *
 elm_widget_scrollable_children_get(Evas_Object *obj)
 {
@@ -6329,7 +6311,6 @@ _class_constructor(Eo_Class *klass)
 
         EO_OP_FUNC(ELM_WIDGET_ID(ELM_WIDGET_SUB_ID_PARENTS_BOUNCE_GET), _elm_widget_parents_bounce_get),
 
-        EO_OP_FUNC(ELM_WIDGET_ID(ELM_WIDGET_SUB_ID_SUB_OBJECT_LIST_GET), _elm_widget_sub_object_list_get),
         EO_OP_FUNC(ELM_WIDGET_ID(ELM_WIDGET_SUB_ID_SCROLLABLE_CHILDREN_GET), _elm_widget_scrollable_children_get),
         EO_OP_FUNC(ELM_WIDGET_ID(ELM_WIDGET_SUB_ID_SCALE_SET), _elm_widget_scale_set),
         EO_OP_FUNC(ELM_WIDGET_ID(ELM_WIDGET_SUB_ID_SCALE_GET), _elm_widget_scale_get),

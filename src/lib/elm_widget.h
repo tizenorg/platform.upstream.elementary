@@ -788,9 +788,6 @@ EAPI void             _elm_widget_item_track_cancel(Elm_Widget_Item *item);
  */
 EAPI Eina_List       *elm_widget_scrollable_children_get(Evas_Object *obj);
 
- /* Added for backwards compatibility */
-EAPI const Eina_List       *elm_widget_sub_object_list_get(const Evas_Object *obj);
-
 /* debug function. don't use it unless you are tracking parenting issues */
 EAPI void             elm_widget_tree_dump(const Evas_Object *top);
 EAPI void             elm_widget_tree_dot_dump(const Evas_Object *top, FILE *output);
@@ -1142,7 +1139,6 @@ enum
 
    ELM_WIDGET_SUB_ID_PARENTS_BOUNCE_GET,
 
-   ELM_WIDGET_SUB_ID_SUB_OBJECT_LIST_GET,
    ELM_WIDGET_SUB_ID_SCROLLABLE_CHILDREN_GET,
    ELM_WIDGET_SUB_ID_SCALE_SET,
    ELM_WIDGET_SUB_ID_SCALE_GET,
@@ -1834,16 +1830,6 @@ typedef void * (*list_data_get_func_type)(const Eina_List * l);
  *
  */
 #define elm_wdg_parents_bounce_get(horiz, vert) ELM_WIDGET_ID(ELM_WIDGET_SUB_ID_PARENTS_BOUNCE_GET), EO_TYPECHECK(Eina_Bool *, horiz), EO_TYPECHECK(Eina_Bool *, vert)
-
-/**
- * @def elm_wdg_sub_object_list_get_
- *
- * Added for backwards compatibility.
- *
- * @param[out] ret
- *
- */
-#define elm_wdg_sub_object_list_get(ret) ELM_WIDGET_ID(ELM_WIDGET_SUB_ID_SUB_OBJECT_LIST_GET), EO_TYPECHECK(Eina_List **, ret)
 
 /**
  * @def elm_wdg_scrollable_children_get
