@@ -16,6 +16,8 @@ BuildRequires:  pkgconfig(eet)
 BuildRequires:  pkgconfig(efreet)
 BuildRequires:  pkgconfig(eina)
 BuildRequires:  pkgconfig(evas)
+BuildRequires:  pkgconfig(emotion)
+BuildRequires:  pkgconfig(ethumb_client)
 BuildRequires:  pkgconfig(x11)
 BuildRequires:  eet-tools
 
