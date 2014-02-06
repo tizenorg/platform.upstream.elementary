@@ -93,9 +93,6 @@ enum
    ELM_OBJ_ENTRY_SUB_ID_ANCHOR_HOVER_STYLE_SET,
    ELM_OBJ_ENTRY_SUB_ID_ANCHOR_HOVER_STYLE_GET,
    ELM_OBJ_ENTRY_SUB_ID_ANCHOR_HOVER_END,
-   ELM_OBJ_ENTRY_SUB_ID_MAGNIFIER_DISABLED_SET,
-   ELM_OBJ_ENTRY_SUB_ID_MAGNIFIER_DISABLED_GET,
-   ELM_OBJ_ENTRY_SUB_ID_MAGNIFIER_TYPE_SET,
    ELM_OBJ_ENTRY_SUB_ID_INPUT_PANEL_LAYOUT_VARIATION_SET,
    ELM_OBJ_ENTRY_SUB_ID_INPUT_PANEL_LAYOUT_VARIATION_GET,
    ELM_OBJ_ENTRY_SUB_ID_LAST
@@ -1353,39 +1350,3 @@ enum
  * @ingroup Entry
  */
 #define elm_obj_entry_anchor_hover_end() ELM_OBJ_ENTRY_ID(ELM_OBJ_ENTRY_SUB_ID_ANCHOR_HOVER_END)
-
-/**
- * @def elm_obj_entry_magnifier_disabled_set
- *
- * This disables the entry's magnifier feature.
- *
- *
- * @see elm_entry_magnifier_disabled_set
- *
- * @ingroup Entry
- */
-#define elm_obj_entry_magnifier_disabled_set(disabled) ELM_OBJ_ENTRY_ID(ELM_OBJ_ENTRY_SUB_ID_MAGNIFIER_DISABLED_SET), EO_TYPECHECK(Eina_Bool, disabled)
-
-/**
- * @def elm_obj_entry_magnifier_disabled_get
- *
- * This returns whether the entry's magnifier feature is disabled.
- *
- *
- * @see elm_entry_magnifier_disabled_get
- *
- * @ingroup Entry
- */
-#define elm_obj_entry_magnifier_disabled_get(ret) ELM_OBJ_ENTRY_ID(ELM_OBJ_ENTRY_SUB_ID_MAGNIFIER_DISABLED_GET), EO_TYPECHECK(Eina_Bool, *ret)
-
-/**
- * @def elm_obj_entry_magnifier_type_set
- *
- * This sets the magnifier's type.
- *
- *
- * @see elm_entry_magnifier_type_set
- *
- * @ingroup Entry
- */
-#define elm_obj_entry_magnifier_type_set(type) ELM_OBJ_ENTRY_ID(ELM_OBJ_ENTRY_SUB_ID_MAGNIFIER_TYPE_SET), EO_TYPECHECK(int, type)

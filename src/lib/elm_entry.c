@@ -5717,58 +5717,6 @@ _anchor_hover_end(Eo *obj EINA_UNUSED, void *_pd, va_list *list EINA_UNUSED)
 }
 /* END - ANCHOR HOVER */
 
-EAPI void
-elm_entry_magnifier_disabled_set(Evas_Object *obj, Eina_Bool disabled)
-{
-   ELM_ENTRY_CHECK(obj);
-   eo_do(obj, elm_obj_entry_magnifier_disabled_set(disabled));
-}
-
-static void
-_magnifier_disabled_set(Eo *obj EINA_UNUSED, void *_pd, va_list *list)
-{
-   Eina_Bool ret = va_arg(*list, int);
-   Elm_Entry_Smart_Data *sd = _pd;
-
-   /* TODO: Forward port tizen specific magnification feature */
-}
-
-EAPI Eina_Bool
-elm_entry_magnifier_disabled_get(const Evas_Object *obj)
-{
-   ELM_ENTRY_CHECK(obj) EINA_FALSE;
-   Eina_Bool ret = EINA_FALSE;
-   eo_do((Eo *)obj, elm_obj_entry_magnifier_disabled_get(&ret));
-   return ret;
-}
-
-static void
-_magnifier_disabled_get(Eo *obj EINA_UNUSED, void *_pd, va_list *list)
-{
-   Eina_Bool *ret = va_arg(*list, Eina_Bool *);
-   Elm_Entry_Smart_Data *sd = _pd;
-
-   /* TODO: Forward port tizen specific magnification feature */
-
-   if (ret) *ret = EINA_FALSE;
-}
-
-EAPI void
-elm_entry_magnifier_type_set(Evas_Object *obj, int type)
-{
-   ELM_ENTRY_CHECK(obj);
-   eo_do(obj, elm_obj_entry_magnifier_disabled_set(type));
-}
-
-static void
-_magnifier_type_set(Eo *obj EINA_UNUSED, void *_pd, va_list *list)
-{
-   int ret = va_arg(*list, int);
-   Elm_Entry_Smart_Data *sd = _pd;
-
-   /* TODO: Forward port tizen specific magnification feature */
-}
-
 static void
 _elm_entry_smart_focus_next_manager_is(Eo *obj EINA_UNUSED, void *_pd EINA_UNUSED, va_list *list)
 {
@@ -5906,9 +5854,6 @@ _class_constructor(Eo_Class *klass)
         EO_OP_FUNC(ELM_OBJ_ENTRY_ID(ELM_OBJ_ENTRY_SUB_ID_ANCHOR_HOVER_STYLE_SET), _anchor_hover_style_set),
         EO_OP_FUNC(ELM_OBJ_ENTRY_ID(ELM_OBJ_ENTRY_SUB_ID_ANCHOR_HOVER_STYLE_GET), _anchor_hover_style_get),
         EO_OP_FUNC(ELM_OBJ_ENTRY_ID(ELM_OBJ_ENTRY_SUB_ID_ANCHOR_HOVER_END), _anchor_hover_end),
-        EO_OP_FUNC(ELM_OBJ_ENTRY_ID(ELM_OBJ_ENTRY_SUB_ID_MAGNIFIER_DISABLED_SET), _magnifier_disabled_set),
-        EO_OP_FUNC(ELM_OBJ_ENTRY_ID(ELM_OBJ_ENTRY_SUB_ID_MAGNIFIER_DISABLED_GET), _magnifier_disabled_get),
-        EO_OP_FUNC(ELM_OBJ_ENTRY_ID(ELM_OBJ_ENTRY_SUB_ID_MAGNIFIER_TYPE_SET), _magnifier_type_set),
         EO_OP_FUNC(ELM_OBJ_ENTRY_ID(ELM_OBJ_ENTRY_SUB_ID_INPUT_PANEL_LAYOUT_VARIATION_SET), _input_panel_layout_variation_set),
         EO_OP_FUNC(ELM_OBJ_ENTRY_ID(ELM_OBJ_ENTRY_SUB_ID_INPUT_PANEL_LAYOUT_VARIATION_GET), _input_panel_layout_variation_get),
         EO_OP_FUNC_SENTINEL
