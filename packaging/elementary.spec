@@ -35,6 +35,7 @@ BuildRequires:  pkgconfig(ethumb)
 BuildRequires:  pkgconfig(emotion)
 BuildRequires:  eet-tools
 BuildRequires:  python-devel
+Recommends:     %{name}-locale = %{version}
 
 %description
 Elementary is a widget set. It is a new-style of widget set much more canvas
@@ -92,15 +93,15 @@ make %{?_smp_mflags}
 %install
 %make_install
 
-# find_lang %{name}
+%find_lang %{name}
 
 %post -p /sbin/ldconfig
 
 %postun -p /sbin/ldconfig
 
-# lang_package 
+%lang_package
 
-%files 
+%files
 %manifest %{name}.manifest
 %defattr(-,root,root,-)
 %license COPYING
