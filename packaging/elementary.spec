@@ -9,6 +9,7 @@ Url:            http://trac.enlightenment.org/e/wiki/Elementary
 Group:          Graphics & UI Framework/API
 Source0:        elementary-%{version}.tar.bz2
 Source1001:     elementary.manifest
+BuildRequires:  gettext-tools
 BuildRequires:  pkgconfig(ecore)
 BuildRequires:  pkgconfig(ecore-evas)
 BuildRequires:  pkgconfig(ecore-file)
