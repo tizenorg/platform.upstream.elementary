@@ -1,6 +1,6 @@
 Name:           elementary
 Version:        1.7.8
-Release:        2 
+Release:        0 
 License:        LGPL-2.1+
 Summary:        EFL toolkit for small touchscreens
 Url:            http://trac.enlightenment.org/e/wiki/Elementary
@@ -8,6 +8,7 @@ Group:          Graphics/EFL
 Source0:        elementary-%{version}.tar.bz2
 Source1001: 	elementary.manifest
 BuildRequires:  doxygen
+BuildRequires:  gettext
 BuildRequires:  pkgconfig(ecore)
 BuildRequires:  pkgconfig(ecore-evas)
 BuildRequires:  pkgconfig(ecore-fb)
@@ -73,7 +74,7 @@ make %{?_smp_mflags}
 
 %postun -p /sbin/ldconfig
 
-%lang_package 
+%lang_package
 
 %files 
 %manifest %{name}.manifest
