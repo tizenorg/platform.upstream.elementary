@@ -17,14 +17,22 @@ BuildRequires:  pkgconfig(ecore)
 BuildRequires:  pkgconfig(ecore-evas)
 BuildRequires:  pkgconfig(ecore-file)
 BuildRequires:  pkgconfig(ecore-imf)
+
 %if %{with wayland}
-%else
-BuildRequires:  pkgconfig(ecore-fb)
+BuildRequires:  pkgconfig(ecore-wayland)
+%endif
+
 %if %{with x}
 BuildRequires:  pkgconfig(ecore-x)
 BuildRequires:  pkgconfig(x11)
 %endif
+
+%if !%{with x}
+%if !%{with wayland}
+BuildRequires:  pkgconfig(ecore-fb)
 %endif
+%endif
+
 BuildRequires:  pkgconfig(edbus)
 BuildRequires:  pkgconfig(edje)
 BuildRequires:  pkgconfig(eet)
