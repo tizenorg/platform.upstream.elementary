@@ -3865,6 +3865,8 @@ EAPI void
 _elm_widget_item_del(Elm_Widget_Item *item)
 {
    ELM_WIDGET_ITEM_CHECK_OR_RETURN(item);
+   ELM_WIDGET_ITEM_RETURN_IF_ONDEL(item);
+   item->on_deletion = EINA_TRUE;
 
    //Widget item delete callback
    if (item->del_pre_func)
@@ -3889,6 +3891,7 @@ EAPI void
 _elm_widget_item_del_pre_hook_set(Elm_Widget_Item *item, Elm_Widget_Del_Pre_Cb func)
 {
    ELM_WIDGET_ITEM_CHECK_OR_RETURN(item);
+   ELM_WIDGET_ITEM_RETURN_IF_ONDEL(item);
    item->del_pre_func = func;
 }
 
@@ -3937,6 +3940,7 @@ _elm_widget_item_del_cb_set(Elm_Widget_Item *item,
                             Evas_Smart_Cb    func)
 {
    ELM_WIDGET_ITEM_CHECK_OR_RETURN(item);
+   ELM_WIDGET_ITEM_RETURN_IF_ONDEL(item);
 
    if ((item->del_func) && (item->del_func != func))
      WRN("You're replacing a previously set del_cb %p of item %p with %p",
@@ -3980,6 +3984,7 @@ _elm_widget_item_data_set(Elm_Widget_Item *item,
                           const void      *data)
 {
    ELM_WIDGET_ITEM_CHECK_OR_RETURN(item);
+   ELM_WIDGET_ITEM_RETURN_IF_ONDEL(item);
    if ((item->data) && (item->data != data))
      DBG("Replacing item %p data %p with %p", item, item->data, data);
    item->data = data;
@@ -4005,6 +4010,7 @@ EAPI void
 _elm_widget_item_disabled_set(Elm_Widget_Item *item, Eina_Bool disabled)
 {
    ELM_WIDGET_ITEM_CHECK_OR_RETURN(item);
+   ELM_WIDGET_ITEM_RETURN_IF_ONDEL(item);
 
    if (item->disabled == disabled) return;
    item->disabled = !!disabled;
@@ -4023,6 +4029,8 @@ _elm_widget_item_disable_hook_set(Elm_Widget_Item *item,
                                   Elm_Widget_Disable_Cb func)
 {
    ELM_WIDGET_ITEM_CHECK_OR_RETURN(item);
+   ELM_WIDGET_ITEM_RETURN_IF_ONDEL(item);
+
    item->disable_func = func;
 }
 
@@ -4091,6 +4099,7 @@ _elm_widget_item_tooltip_text_set(Elm_Widget_Item *item,
 {
    ELM_WIDGET_ITEM_CHECK_OR_RETURN(item);
    EINA_SAFETY_ON_NULL_RETURN(text);
+   ELM_WIDGET_ITEM_RETURN_IF_ONDEL(item);
 
    text = eina_stringshare_add(text);
    _elm_widget_item_tooltip_content_cb_set
@@ -4104,6 +4113,7 @@ _elm_widget_item_tooltip_translatable_text_set(Elm_Widget_Item *item,
 {
    ELM_WIDGET_ITEM_CHECK_OR_RETURN(item);
    EINA_SAFETY_ON_NULL_RETURN(text);
+   ELM_WIDGET_ITEM_RETURN_IF_ONDEL(item);
 
    text = eina_stringshare_add(text);
    _elm_widget_item_tooltip_content_cb_set
@@ -4161,6 +4171,7 @@ _elm_widget_item_tooltip_content_cb_set(Elm_Widget_Item            *item,
    Elm_Widget_Item_Tooltip *wit;
 
    ELM_WIDGET_ITEM_CHECK_OR_GOTO(item, error_noitem);
+   ELM_WIDGET_ITEM_RETURN_IF_ONDEL(item);
 
    if (!func)
      {
@@ -4207,6 +4218,8 @@ EAPI void
 _elm_widget_item_tooltip_unset(Elm_Widget_Item *item)
 {
    ELM_WIDGET_ITEM_CHECK_OR_RETURN(item);
+   ELM_WIDGET_ITEM_RETURN_IF_ONDEL(item);
+
    elm_object_tooltip_unset(item->view);
 }
 
@@ -4229,6 +4242,8 @@ _elm_widget_item_tooltip_style_set(Elm_Widget_Item *item,
                                    const char      *style)
 {
    ELM_WIDGET_ITEM_CHECK_OR_RETURN(item);
+   ELM_WIDGET_ITEM_RETURN_IF_ONDEL(item);
+
    elm_object_tooltip_style_set(item->view, style);
 }
 
@@ -4236,6 +4251,8 @@ EAPI Eina_Bool
 _elm_widget_item_tooltip_window_mode_set(Elm_Widget_Item *item, Eina_Bool disable)
 {
    ELM_WIDGET_ITEM_CHECK_OR_RETURN(item, EINA_FALSE);
+   ELM_WIDGET_ITEM_RETURN_IF_ONDEL(item, EINA_FALSE);
+
    return elm_object_tooltip_window_mode_set(item->view, disable);
 }
 
@@ -4261,6 +4278,8 @@ EAPI const char *
 _elm_widget_item_tooltip_style_get(const Elm_Widget_Item *item)
 {
    ELM_WIDGET_ITEM_CHECK_OR_RETURN(item, NULL);
+   ELM_WIDGET_ITEM_RETURN_IF_ONDEL(item, NULL);
+
    return elm_object_tooltip_style_get(item->view);
 }
 
@@ -4269,6 +4288,8 @@ _elm_widget_item_cursor_set(Elm_Widget_Item *item,
                             const char      *cursor)
 {
    ELM_WIDGET_ITEM_CHECK_OR_RETURN(item);
+   ELM_WIDGET_ITEM_RETURN_IF_ONDEL(item);
+
    elm_object_sub_cursor_set(item->view, item->widget, cursor);
 }
 
@@ -4283,6 +4304,8 @@ EAPI void
 _elm_widget_item_cursor_unset(Elm_Widget_Item *item)
 {
    ELM_WIDGET_ITEM_CHECK_OR_RETURN(item);
+   ELM_WIDGET_ITEM_RETURN_IF_ONDEL(item);
+
    elm_object_cursor_unset(item->view);
 }
 
@@ -4304,6 +4327,8 @@ _elm_widget_item_cursor_style_set(Elm_Widget_Item *item,
                                   const char      *style)
 {
    ELM_WIDGET_ITEM_CHECK_OR_RETURN(item);
+   ELM_WIDGET_ITEM_RETURN_IF_ONDEL(item);
+
    elm_object_cursor_style_set(item->view, style);
 }
 
@@ -4346,6 +4371,8 @@ _elm_widget_item_cursor_engine_only_set(Elm_Widget_Item *item,
                                         Eina_Bool        engine_only)
 {
    ELM_WIDGET_ITEM_CHECK_OR_RETURN(item);
+   ELM_WIDGET_ITEM_RETURN_IF_ONDEL(item);
+
    elm_object_cursor_theme_search_enabled_set(item->view, engine_only);
 }
 
@@ -4390,6 +4417,7 @@ _elm_widget_item_part_content_set(Elm_Widget_Item *item,
                                   Evas_Object *content)
 {
    ELM_WIDGET_ITEM_CHECK_OR_RETURN(item);
+   ELM_WIDGET_ITEM_RETURN_IF_ONDEL(item);
    if (!item->content_set_func)
      {
         ERR("%s does not support elm_object_item_part_content_set() API.",
@@ -4404,6 +4432,8 @@ _elm_widget_item_part_content_get(const Elm_Widget_Item *item,
                                   const char *part)
 {
    ELM_WIDGET_ITEM_CHECK_OR_RETURN(item, NULL);
+   ELM_WIDGET_ITEM_RETURN_IF_ONDEL(item, NULL);
+
    if (!item->content_get_func)
      {
         ERR("%s does not support elm_object_item_part_content_get() API.",
@@ -4418,6 +4448,8 @@ _elm_widget_item_part_content_unset(Elm_Widget_Item *item,
                                     const char *part)
 {
    ELM_WIDGET_ITEM_CHECK_OR_RETURN(item, NULL);
+   ELM_WIDGET_ITEM_RETURN_IF_ONDEL(item, NULL);
+
    if (!item->content_unset_func)
      {
         ERR("%s does not support elm_object_item_part_content_unset() API.",
@@ -4433,6 +4465,7 @@ _elm_widget_item_part_text_set(Elm_Widget_Item *item,
                                const char *label)
 {
    ELM_WIDGET_ITEM_CHECK_OR_RETURN(item);
+   ELM_WIDGET_ITEM_RETURN_IF_ONDEL(item);
    if (!item->text_set_func)
      {
         ERR("%s does not support elm_object_item_part_text_set() API.",
@@ -4447,6 +4480,7 @@ _elm_widget_item_part_text_get(const Elm_Widget_Item *item,
                                const char *part)
 {
    ELM_WIDGET_ITEM_CHECK_OR_RETURN(item, NULL);
+   ELM_WIDGET_ITEM_RETURN_IF_ONDEL(item, NULL);
    if (!item->text_get_func)
      {
         ERR("%s does not support elm_object_item_part_text_get() API.",
@@ -4461,6 +4495,8 @@ _elm_widget_item_content_set_hook_set(Elm_Widget_Item *item,
                                       Elm_Widget_Content_Set_Cb func)
 {
    ELM_WIDGET_ITEM_CHECK_OR_RETURN(item);
+   ELM_WIDGET_ITEM_RETURN_IF_ONDEL(item);
+
    item->content_set_func = func;
 }
 
@@ -4469,6 +4505,8 @@ _elm_widget_item_content_get_hook_set(Elm_Widget_Item *item,
                                       Elm_Widget_Content_Get_Cb func)
 {
    ELM_WIDGET_ITEM_CHECK_OR_RETURN(item);
+   ELM_WIDGET_ITEM_RETURN_IF_ONDEL(item);
+
    item->content_get_func = func;
 }
 
@@ -4477,6 +4515,8 @@ _elm_widget_item_content_unset_hook_set(Elm_Widget_Item *item,
                                         Elm_Widget_Content_Unset_Cb func)
 {
    ELM_WIDGET_ITEM_CHECK_OR_RETURN(item);
+   ELM_WIDGET_ITEM_RETURN_IF_ONDEL(item);
+
    item->content_unset_func = func;
 }
 
@@ -4485,6 +4525,8 @@ _elm_widget_item_text_set_hook_set(Elm_Widget_Item *item,
                                    Elm_Widget_Text_Set_Cb func)
 {
    ELM_WIDGET_ITEM_CHECK_OR_RETURN(item);
+   ELM_WIDGET_ITEM_RETURN_IF_ONDEL(item);
+
    item->text_set_func = func;
 }
 
@@ -4493,6 +4535,8 @@ _elm_widget_item_text_get_hook_set(Elm_Widget_Item *item,
                                    Elm_Widget_Text_Get_Cb func)
 {
    ELM_WIDGET_ITEM_CHECK_OR_RETURN(item);
+   ELM_WIDGET_ITEM_RETURN_IF_ONDEL(item);
+
    item->text_get_func = func;
 }
 
@@ -4502,6 +4546,8 @@ _elm_widget_item_signal_emit(Elm_Widget_Item *item,
                              const char *source)
 {
    ELM_WIDGET_ITEM_CHECK_OR_RETURN(item);
+   ELM_WIDGET_ITEM_RETURN_IF_ONDEL(item);
+
    if (item->signal_emit_func)
      item->signal_emit_func((Elm_Object_Item *)item, emission, source);
 }
@@ -4511,6 +4557,8 @@ _elm_widget_item_signal_emit_hook_set(Elm_Widget_Item *item,
                                       Elm_Widget_Signal_Emit_Cb func)
 {
    ELM_WIDGET_ITEM_CHECK_OR_RETURN(item);
+   ELM_WIDGET_ITEM_RETURN_IF_ONDEL(item);
+
    item->signal_emit_func = func;
 }
 
@@ -4518,6 +4566,8 @@ EAPI void
 _elm_widget_item_access_info_set(Elm_Widget_Item *item, const char *txt)
 {
    ELM_WIDGET_ITEM_CHECK_OR_RETURN(item);
+   ELM_WIDGET_ITEM_RETURN_IF_ONDEL(item);
+
    if (item->access_info) eina_stringshare_del(item->access_info);
    if (!txt) item->access_info = NULL;
    else item->access_info = eina_stringshare_add(txt);

@@ -616,6 +616,7 @@ struct _Elm_Widget_Item
    const char                    *access_info;
 
    Eina_Bool                      disabled : 1;
+   Eina_Bool                      on_deletion : 1;
 };
 
 struct _Elm_Object_Item
@@ -1027,6 +1028,23 @@ EAPI const Eina_List *elm_widget_sub_object_list_get(const Evas_Object *obj);
  */
 #define elm_widget_item_del_pre_hook_set(item, func) \
   _elm_widget_item_del_pre_hook_set((Elm_Widget_Item *)item, (Elm_Widget_Del_Pre_Cb)func)
+
+#define ELM_WIDGET_CHECK_OR_RETURN(obj, ...)                    \
+   do {                                                         \
+        if (!obj || !evas_object_smart_data_get(obj))           \
+          {                                                     \
+             ERR("Object [%p] is NULL or already deleted", obj);\
+             return __VA_ARGS__;                                \
+          }                                                     \
+   } while (0)
+
+#define ELM_WIDGET_ITEM_RETURN_IF_ONDEL(item, ...)              \
+   do {                                                         \
+       if (item && (item)->on_deletion) {                       \
+            WRN("Elm_Widget_Item " # item " is deleting");      \
+            return __VA_ARGS__;                                 \
+        }                                                       \
+   } while (0)
 
 #define ELM_WIDGET_ITEM_CHECK_OR_RETURN(item, ...)              \
    do {                                                         \
