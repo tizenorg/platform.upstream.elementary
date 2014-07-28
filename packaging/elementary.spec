@@ -8,7 +8,7 @@ Release:        0
 License:        LGPL-2.1+
 Summary:        EFL toolkit for small touchscreens
 Url:            http://trac.enlightenment.org/e/wiki/Elementary
-Group:          Graphics/EFL
+Group:          Graphics & UI Framework/Development
 Source0:        elementary-%{version}.tar.bz2
 Source1001:     elementary.manifest
 BuildRequires:  doxygen
@@ -66,15 +66,16 @@ EFL elementary examples
 Summary:   EFL elementary configuration and test apps
 
 %description tools
-EFL elementary configuration and test apps
+EFL elementary configuration and test apps package
 
 %package devel
-Summary:        Development components for the elementary package
+Summary:        Development files for elementary
 Group:          Development/Libraries
 Requires:       %{name} = %{version}
 
 %description devel
-Development files for elementary
+Development components for the elementary package
+
 
 %prep
 %setup -q
@@ -90,13 +91,12 @@ cp %{SOURCE1001} .
          --disable-ecore-x \
 %endif
 %if %dbus_unavailable
-         --disable-build-examples \
+         --disable-build-examples 
 %else
-         --enable-build-examples \
+         --enable-build-examples 
 %endif
-    #eol
 
-make %{?_smp_mflags}
+%__make %{?_smp_mflags}
 
 %install
 %make_install
