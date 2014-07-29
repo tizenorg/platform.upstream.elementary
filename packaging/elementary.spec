@@ -3,7 +3,7 @@
 %bcond_with wayland
 %bcond_with x
 Name:           elementary
-Version:        1.9.3
+Version:        1.10.2
 Release:        0
 License:        LGPL-2.1+
 Summary:        EFL toolkit for small touchscreens
@@ -42,6 +42,7 @@ BuildRequires:  pkgconfig(evas)
 BuildRequires:  pkgconfig(ethumb)
 BuildRequires:  pkgconfig(emotion)
 BuildRequires:  eet-tools
+BuildRequires:  eolian
 BuildRequires:  python-devel
 Recommends:     %{name}-locale = %{version}
 
