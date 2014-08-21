@@ -3,7 +3,7 @@
 %bcond_with wayland
 %bcond_with x
 Name:           elementary
-Version:        1.11.0+alpha1
+Version:        1.11.0
 Release:        0
 License:        LGPL-2.1+
 Summary:        EFL toolkit for small touchscreens
@@ -42,7 +42,7 @@ BuildRequires:  pkgconfig(evas)
 BuildRequires:  pkgconfig(ethumb)
 BuildRequires:  pkgconfig(emotion)
 BuildRequires:  eet-tools
-BuildRequires:  eolian
+BuildRequires:  eolian-devel
 BuildRequires:  python-devel
 Recommends:     %{name}-locale = %{version}
 
@@ -141,7 +141,9 @@ cp %{SOURCE1001} .
 %files devel
 %manifest %{name}.manifest
 %defattr(-,root,root,-)
-%{_includedir}/elementary-1/*.h
+%{_includedir}/%{name}-1/*.h
+%{_includedir}/%{name}-1/*.hh
+%{_datadir}/eolian/include/%{name}-1/*.eo
 %{_libdir}/*.so
 %{_libdir}/pkgconfig/*.pc
 %{_libdir}/cmake/Elementary/ElementaryConfig.cmake
