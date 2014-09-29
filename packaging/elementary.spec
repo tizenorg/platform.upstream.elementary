@@ -13,6 +13,7 @@ Source0:        elementary-%{version}.tar.bz2
 Source1001:     elementary.manifest
 BuildRequires:  doxygen
 BuildRequires:  gettext-devel
+BuildRequires:  pkgconfig
 BuildRequires:  pkgconfig(ecore)
 BuildRequires:  pkgconfig(ecore-evas)
 BuildRequires:  pkgconfig(ecore-file)
@@ -145,5 +146,3 @@ cp %{SOURCE1001} .
 %{_libdir}/pkgconfig/*.pc
 %{_libdir}/cmake/Elementary/ElementaryConfig.cmake
 %{_libdir}/cmake/Elementary/ElementaryConfigVersion.cmake
-
-%changelog
