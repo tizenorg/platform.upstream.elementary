@@ -3,7 +3,7 @@
 %bcond_with wayland
 %bcond_with x
 Name:           elementary
-Version:        1.11.1
+Version:        1.12.0
 Release:        0
 License:        LGPL-2.1+
 Summary:        EFL toolkit for small touchscreens
@@ -141,12 +141,10 @@ cp %{SOURCE1001} .
 %files devel
 %manifest %{name}.manifest
 %defattr(-,root,root,-)
-%{_includedir}/%{name}-1/*.h
-%{_includedir}/%{name}-1/*.hh
+%{_includedir}/%{name}-1/*.h*
 %{_datadir}/eolian/include/%{name}-1/*.eo
 %{_libdir}/*.so
 %{_libdir}/pkgconfig/*.pc
 %{_libdir}/cmake/Elementary/ElementaryConfig.cmake
 %{_libdir}/cmake/Elementary/ElementaryConfigVersion.cmake
 
-%changelog
