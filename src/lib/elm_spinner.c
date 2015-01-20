@@ -285,6 +285,7 @@ _entry_toggle_cb(void *data EINA_UNUSED,
                  const char *source EINA_UNUSED)
 {
    ELM_SPINNER_DATA_GET(obj, sd);
+   Eina_Strbuf *buf = NULL;
 
    if (sd->dragging)
      {
@@ -300,6 +301,12 @@ _entry_toggle_cb(void *data EINA_UNUSED,
           {
              sd->ent = elm_entry_add(obj);
              elm_entry_single_line_set(sd->ent, EINA_TRUE);
+
+             buf = eina_strbuf_new();
+             eina_strbuf_append_printf(buf, "spinner/%s", elm_widget_style_get(obj));
+             elm_widget_style_set(sd->ent, eina_strbuf_string_steal(buf));
+             eina_strbuf_free(buf);
+
              evas_object_smart_callback_add
                 (sd->ent, "activated", _entry_activated_cb, obj);
              elm_layout_content_set(obj, "elm.swallow.entry", sd->ent);
@@ -758,15 +765,24 @@ _elm_spinner_evas_object_smart_del(Eo *obj, Elm_Spinner_Data *sd)
 EOLIAN static Eina_Bool
 _elm_spinner_elm_widget_theme_apply(Eo *obj, Elm_Spinner_Data *sd EINA_UNUSED)
 {
+   Eina_Strbuf *buf;
    Eina_Bool int_ret = elm_layout_theme_set(obj, "spinner", "base",
                               elm_widget_style_get(obj));
 
    if (!int_ret) CRI("Failed to set layout!");
 
+   buf = eina_strbuf_new();
+   if (sd->ent)
+     {
+        eina_strbuf_append_printf(buf, "spinner/%s", elm_widget_style_get(obj));
+        elm_widget_style_set(sd->ent, eina_strbuf_string_steal(buf));
+     }
+
    if (_elm_config->access_mode)
      _access_spinner_register(obj, EINA_TRUE);
 
    elm_layout_sizing_eval(obj);
+   eina_strbuf_free(buf);
 
    return int_ret;
 }
