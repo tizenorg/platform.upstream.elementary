@@ -83,6 +83,9 @@ class Elm.Panel (Elm.Layout, Elm_Interface_Scrollable,
       Elm.Container.content_unset;
       Elm.Container.content_set;
       Elm.Layout.sizing_eval;
+      // TIZEN_ONLY(20150128): Panel implementation merge into 2.4
+      Elm.Widget.orientation.set;
+      ////////////////////////////////////////////////////////////
       Elm_Interface_Atspi_Widget_Action.elm_actions.get;
    }
 }
