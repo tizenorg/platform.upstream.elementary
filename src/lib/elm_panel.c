@@ -1075,6 +1075,18 @@ _elm_panel_evas_object_smart_del(Eo *obj, Elm_Panel_Data *sd)
    eo_do_super(obj, MY_CLASS, evas_obj_smart_del());
 }
 
+// TIZEN_ONLY(20150128): Panel implementation merge into 2.4
+EOLIAN static void
+_elm_panel_elm_widget_orientation_set(Eo *obj, Elm_Panel_Data *sd EINA_UNUSED, int orient_mode)
+{
+   eo_do_super(obj, MY_CLASS, elm_obj_widget_orientation_set(orient_mode));
+   if (orient_mode == 90 || orient_mode == 270)
+     elm_panel_scrollable_content_size_set(obj, 0.45);
+   else
+     elm_panel_scrollable_content_size_set(obj, 0.80);
+}
+////////////////////////////////////////////////////////////
+
 EOLIAN static void
 _elm_panel_evas_object_smart_move(Eo *obj, Elm_Panel_Data *sd, Evas_Coord x, Evas_Coord y)
 {
@@ -1420,6 +1432,13 @@ _elm_panel_scrollable_set(Eo *obj, Elm_Panel_Data *sd, Eina_Bool scrollable)
           }
 
         elm_widget_resize_object_set(obj, sd->scr_edje, EINA_TRUE);
+
+        // TIZEN_ONLY(20150128): Panel implementation merge into 2.4
+        if (elm_win_rotation_get(elm_widget_top_get(obj)) == 90 || elm_win_rotation_get(elm_widget_top_get(obj)) == 270)
+          elm_panel_scrollable_content_size_set(obj, 0.45);
+        else
+          elm_panel_scrollable_content_size_set(obj, 0.80);
+        ////////////////////////////////////////////////////////////
 
         if (!sd->hit_rect)
           {
