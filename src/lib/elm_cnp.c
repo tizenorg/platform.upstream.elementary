@@ -4106,7 +4106,7 @@ _elm_item_container_pos_cb(void *data, Evas_Object *obj, Evas_Coord x, Evas_Coor
      {  /* Call container drop func with specific item pointer */
         int xo = 0;
         int yo = 0;
-        eo_do(obj, evas_obj_position_get(&xo, &yo));
+        eo_do(obj, efl_gfx_position_get(&xo, &yo));
         if (st->itemgetcb)
           it = st->itemgetcb(obj, x+xo, y+yo, &xposret, &yposret);
 
@@ -4128,7 +4128,7 @@ _elm_item_container_drop_cb(void *data, Evas_Object *obj , Elm_Selection_Data *e
      {  /* Call container drop func with specific item pointer */
         int xo = 0;
         int yo = 0;
-        eo_do(obj, evas_obj_position_get(&xo, &yo));
+        eo_do(obj, efl_gfx_position_get(&xo, &yo));
         if (st->itemgetcb)
           it = st->itemgetcb(obj, ev->x+xo, ev->y+yo, &xposret, &yposret);
 
