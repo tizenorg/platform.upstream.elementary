@@ -2800,13 +2800,49 @@ _key_action_move(Evas_Object *obj, const char *params)
 }
 
 static Eina_Bool
-_key_action_select(Evas_Object *obj, const char *params EINA_UNUSED)
+_key_action_select(Evas_Object *obj, const char *params)
 {
-   Elm_Object_Item *it = NULL;
+   Elm_Object_Item *item = elm_object_focused_item_get(obj);
+   Elm_Gen_Item *it = (Elm_Gen_Item *)item;
 
-   it = elm_object_focused_item_get(obj);
-   if (!it) return EINA_TRUE;
-   elm_genlist_item_expanded_set(it, !elm_genlist_item_expanded_get(it));
+   if (!item) return EINA_TRUE;
+   elm_genlist_item_expanded_set(item, !elm_genlist_item_expanded_get(item));
+   ELM_GENLIST_DATA_GET_FROM_ITEM(it, sd);
+
+   if (sd->multi &&
+       ((sd->multi_select_mode != ELM_OBJECT_MULTI_SELECT_MODE_WITH_CONTROL) ||
+        (!strcmp(params, "multi"))))
+     {
+        if (!it->selected)
+          {
+             it->highlight_cb(it);
+             it->sel_cb(it);
+          }
+        else
+          it->unsel_cb(it);
+     }
+   else
+     {
+        if (!it->selected)
+          {
+             while (sd->selected)
+               it->unsel_cb(sd->selected->data);
+          }
+        else
+          {
+             const Eina_List *l, *l_next;
+             Elm_Gen_Item *it2;
+
+             EINA_LIST_FOREACH_SAFE(sd->selected, l, l_next, it2)
+               {
+                  if (it2 != it)
+                    it->unsel_cb(it2);
+               }
+          }
+        it->highlight_cb(it);
+        it->sel_cb(it);
+     }
+
    evas_object_smart_callback_call(WIDGET(it), SIG_ACTIVATED, it);
 
    return EINA_TRUE;
@@ -7631,6 +7667,7 @@ _elm_genlist_elm_interface_atspi_widget_action_elm_actions_get(Eo *obj EINA_UNUS
           { "move,first", "move", "first", _key_action_move},
           { "move,last", "move", "last", _key_action_move},
           { "select", "select", NULL, _key_action_select},
+          { "select,multi", "select", "multi", _key_action_select},
           { "escape", "escape", NULL, _key_action_escape},
           { NULL, NULL, NULL, NULL }
    };
