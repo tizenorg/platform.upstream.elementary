@@ -1190,6 +1190,9 @@ _elm_genlist_item_state_update(Elm_Gen_Item *it,
                  (it->deco_all_view, "elm,state,expanded", "elm");
           }
      }
+   if (it == (Elm_Gen_Item *)GL_IT(it)->wsd->focused_item &&
+       elm_widget_focus_highlight_enabled_get(WIDGET(it)))
+     edje_object_signal_emit(VIEW(it), "elm,state,focused", "elm");
 }
 
 static void
