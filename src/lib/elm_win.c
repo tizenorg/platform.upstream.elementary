@@ -285,6 +285,8 @@ _elm_win_on_resize_obj_changed_size_hints(void *data,
 static void
 _elm_win_img_callbacks_del(Evas_Object *obj, Evas_Object *imgobj);
 static Eina_Bool _elm_win_theme_internal(Eo *obj, Elm_Win_Data *sd);
+static void
+_elm_win_borderless_set(Eo *obj EINA_UNUSED, Elm_Win_Data *sd, Eina_Bool borderless);
 
 #ifdef HAVE_ELEMENTARY_X
 static void _elm_win_xwin_update(Elm_Win_Data *sd);
@@ -3583,6 +3585,10 @@ _elm_win_constructor(Eo *obj, Elm_Win_Data *sd, const char *name, Elm_Win_Type t
         elm_interface_atspi_accessible_children_changed_added_signal_emit(_elm_atspi_bridge_root_get(), obj);
         eo_do(obj, eo_event_callback_call(ELM_INTERFACE_ATSPI_WINDOW_EVENT_WINDOW_CREATED, NULL));
      }
+
+
+   if(_elm_config->win_no_border)
+     _elm_win_borderless_set(obj, sd, EINA_TRUE);
 
    evas_object_show(sd->edje);
 }

@@ -206,6 +206,7 @@ struct _Elm_Config
    double        scroll_smooth_future_time;
    double        scroll_smooth_time_window;
    double        scale;
+   int           win_no_border;
    int           bgpixmap;
    int           compositing;
    Eina_List    *font_dirs;
