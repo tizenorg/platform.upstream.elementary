@@ -1056,6 +1056,12 @@ _elm_win_focus_in(Ecore_Evas *ee)
         edje_object_signal_emit(sd->frame_obj, "elm,action,focus", "elm");
      }
 
+   if (_elm_config->atspi_mode)
+     {
+        elm_interface_atspi_window_activated_signal_emit(obj);
+        elm_interface_atspi_accessible_state_changed_signal_emit(obj, ELM_ATSPI_STATE_ACTIVE, EINA_TRUE);
+     }
+
    /* do nothing */
    /* else if (sd->img_obj) */
    /*   { */
@@ -1084,6 +1090,12 @@ _elm_win_focus_out(Ecore_Evas *ee)
 
    /* access */
    _elm_access_object_highlight_disable(evas_object_evas_get(obj));
+
+   if (_elm_config->atspi_mode)
+     {
+        elm_interface_atspi_window_deactivated_signal_emit(obj);
+        elm_interface_atspi_accessible_state_changed_signal_emit(obj, ELM_ATSPI_STATE_ACTIVE, EINA_FALSE);
+     }
 
    /* do nothing */
    /* if (sd->img_obj) */
@@ -1285,9 +1297,17 @@ _elm_win_state_change(Ecore_Evas *ee)
         if (sd->withdrawn)
           evas_object_smart_callback_call(obj, SIG_WITHDRAWN, NULL);
         else if (sd->iconified)
-          evas_object_smart_callback_call(obj, SIG_ICONIFIED, NULL);
+          {
+             evas_object_smart_callback_call(obj, SIG_ICONIFIED, NULL);
+             if (_elm_config->atspi_mode)
+               elm_interface_atspi_window_minimized_signal_emit(obj);
+          }
         else
-          evas_object_smart_callback_call(obj, SIG_NORMAL, NULL);
+          {
+             evas_object_smart_callback_call(obj, SIG_NORMAL, NULL);
+             if (_elm_config->atspi_mode)
+               elm_interface_atspi_window_restored_signal_emit(obj);
+          }
      }
    if (ch_sticky)
      {
@@ -1306,9 +1326,17 @@ _elm_win_state_change(Ecore_Evas *ee)
    if (ch_maximized)
      {
         if (sd->maximized)
-          evas_object_smart_callback_call(obj, SIG_MAXIMIZED, NULL);
+          {
+             evas_object_smart_callback_call(obj, SIG_MAXIMIZED, NULL);
+             if (_elm_config->atspi_mode)
+               elm_interface_atspi_window_maximized_signal_emit(obj);
+          }
         else
-          evas_object_smart_callback_call(obj, SIG_UNMAXIMIZED, NULL);
+          {
+             evas_object_smart_callback_call(obj, SIG_UNMAXIMIZED, NULL);
+             if (_elm_config->atspi_mode)
+               elm_interface_atspi_window_restored_signal_emit(obj);
+          }
      }
    if (ch_profile)
      {
@@ -1487,6 +1515,14 @@ _elm_win_evas_object_smart_show(Eo *obj, Elm_Win_Data *sd)
 
    TRAP(sd, show);
 
+   if (_elm_config->atspi_mode)
+     {
+        Eo *bridge = _elm_atspi_bridge_get();
+        elm_interface_atspi_window_created_signal_emit(obj);
+        if (bridge)
+           elm_interface_atspi_accessible_children_changed_added_signal_emit(elm_atspi_bridge_root_get(bridge), obj);
+     }
+
    if (sd->shot.info) _shot_handle(sd);
 }
 
@@ -1520,6 +1556,13 @@ _elm_win_evas_object_smart_hide(Eo *obj, Elm_Win_Data *sd)
      {
         evas_object_hide(sd->pointer.obj);
         ecore_evas_hide(sd->pointer.ee);
+     }
+   if (_elm_config->atspi_mode)
+     {
+        Eo *bridge = _elm_atspi_bridge_get();
+        elm_interface_atspi_window_destroyed_signal_emit(obj);
+        if (bridge)
+           elm_interface_atspi_accessible_children_changed_del_signal_emit(elm_atspi_bridge_root_get(bridge), obj);
      }
 }
 
@@ -1791,6 +1834,9 @@ _elm_win_evas_object_smart_del(Eo *obj, Elm_Win_Data *sd)
 
    if (sd->autodel_clear) *(sd->autodel_clear) = -1;
 
+   if (_elm_config->atspi_mode)
+     elm_interface_atspi_window_destroyed_signal_emit(obj);
+
    _elm_win_list = eina_list_remove(_elm_win_list, obj);
    _elm_win_count--;
    _elm_win_state_eval_queue();
@@ -1977,6 +2023,8 @@ _elm_win_delete_request(Ecore_Evas *ee)
    evas_object_ref(obj);
    evas_object_smart_callback_call(obj, SIG_DELETE_REQUEST, NULL);
    // FIXME: if above callback deletes - then the below will be invalid
+   if (_elm_config->atspi_mode)
+     elm_interface_atspi_window_destroyed_signal_emit(obj);
    if (autodel) evas_object_del(obj);
    else sd->autodel_clear = NULL;
    evas_object_unref(obj);
@@ -3698,11 +3746,8 @@ _elm_win_constructor(Eo *obj, Elm_Win_Data *sd, const char *name, Elm_Win_Type t
                                   _elm_win_on_resize_obj_changed_size_hints, obj);
 
    eo_do(obj, elm_interface_atspi_accessible_role_set(ELM_ATSPI_ROLE_WINDOW));
-   if (_elm_config->atspi_mode == ELM_ATSPI_MODE_ON)
-     {
-        elm_interface_atspi_accessible_children_changed_added_signal_emit(_elm_atspi_bridge_root_get(), obj);
-        eo_do(obj, eo_event_callback_call(ELM_INTERFACE_ATSPI_WINDOW_EVENT_WINDOW_CREATED, NULL));
-     }
+   if (_elm_config->atspi_mode)
+     elm_interface_atspi_window_created_signal_emit(obj);
 
 
    if(_elm_config->win_no_border)
@@ -5423,17 +5468,50 @@ elm_win_window_id_get(const Evas_Object *obj)
    return ret;
 }
 
+static Eina_Bool
+_on_atspi_bus_connected(void *data EINA_UNUSED, Eo *obj EINA_UNUSED, const Eo_Event_Description *desc EINA_UNUSED, void *event_info EINA_UNUSED)
+{
+   Evas_Object *win;
+   Eina_List *l;
+
+   EINA_LIST_FOREACH(_elm_win_list, l, win)
+     {
+        /**
+         * Reemit accessibility events when AT-SPI2 connection is begin
+         * established. This assures that Assistive Technology clients will
+         * recieve all org.a11y.window events and could keep track of active
+         * windows whithin system.
+         */
+        elm_interface_atspi_window_created_signal_emit(win);
+        if (elm_win_focus_get(win))
+          {
+             elm_interface_atspi_window_activated_signal_emit(win);
+          }
+        else
+          elm_interface_atspi_window_deactivated_signal_emit(win);
+     }
+   return EINA_TRUE;
+}
+
 EOLIAN static void
 _elm_win_class_constructor(Eo_Class *klass)
 {
    evas_smart_legacy_type_register(MY_CLASS_NAME_LEGACY, klass);
+
+   if (_elm_config->atspi_mode)
+     {
+        Eo *bridge = _elm_atspi_bridge_get();
+        if (bridge)
+           eo_do(bridge, eo_event_callback_add(ELM_ATSPI_BRIDGE_EVENT_CONNECTED, _on_atspi_bus_connected, NULL));
+     }
 }
 
 EOLIAN static Eo*
 _elm_win_elm_interface_atspi_accessible_parent_get(Eo *obj EINA_UNUSED, Elm_Win_Data *sd EINA_UNUSED)
 {
    // attach all kinds of windows directly to ATSPI application root object
-   return _elm_atspi_bridge_root_get();
+   Eo *bridge = _elm_atspi_bridge_get();
+   return elm_atspi_bridge_root_get(bridge);
 }
 
 EOLIAN static const Elm_Atspi_Action*
@@ -5449,6 +5527,25 @@ _elm_win_elm_interface_atspi_widget_action_elm_actions_get(Eo *obj EINA_UNUSED, 
           { NULL, NULL, NULL, NULL }
    };
    return &atspi_actions[0];
+}
+
+EOLIAN static Elm_Atspi_State_Set
+_elm_win_elm_interface_atspi_accessible_state_set_get(Eo *obj, Elm_Win_Data *sd EINA_UNUSED)
+{
+   Elm_Atspi_State_Set ret;
+   eo_do_super(obj, MY_CLASS, ret = elm_interface_atspi_accessible_state_set_get());
+
+   if (elm_win_focus_get(obj))
+     STATE_TYPE_SET(ret, ELM_ATSPI_STATE_ACTIVE);
+
+   return ret;
+}
+
+EOLIAN static char*
+_elm_win_elm_interface_atspi_accessible_name_get(Eo *obj, Elm_Win_Data *sd EINA_UNUSED)
+{
+   const char *ret = elm_win_title_get(obj);
+   return ret ? strdup(ret) : strdup("");
 }
 
 #include "elm_win.eo.c"

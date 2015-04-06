@@ -34,9 +34,11 @@ includesdir = $(includedir)/elementary-@VMAJ@
 
 includesunstable_HEADERS = \
 elm_gen_common.h \
+elm_atspi_bridge.h \
 elm_interface_atspi_accessible.h \
 elm_interface_atspi_text.h \
 elm_interface_atspi_widget_action.h \
+elm_interface_atspi_window.h \
 elm_interface_fileselector.h \
 elm_interface_scrollable.h \
 elm_interfaces.h \
@@ -449,7 +451,6 @@ elm_interface_atspi_image.c \
 elm_interface_atspi_selection.c \
 elm_interface_atspi_text.c \
 elm_interface_atspi_value.c \
-elm_interface_atspi_widget.c \
 elm_interface_atspi_widget_action.c \
 elm_interface_atspi_window.c \
 elm_interface_fileselector.c \
@@ -517,6 +518,7 @@ elm_intro.h.in
 elm_eolian_files = \
 elm_access.eo \
 elm_actionslider.eo \
+elm_atspi_bridge.eo \
 elm_app_client.eo \
 elm_app_client_view.eo \
 elm_app_server.eo \
@@ -563,7 +565,6 @@ elm_interface_atspi_image.eo \
 elm_interface_atspi_selection.eo \
 elm_interface_atspi_text.eo \
 elm_interface_atspi_value.eo \
-elm_interface_atspi_widget.eo \
 elm_interface_atspi_widget_action.eo \
 elm_interface_atspi_window.eo \
 elm_interface_fileselector.eo \
@@ -658,6 +659,7 @@ elementaryeolianfiles_DATA = \
 	     elm_app_server.eo \
 	     elm_app_server_view.eo \
 	     elm_atspi_app_object.eo \
+	     elm_atspi_bridge.eo \
 	     elm_interface_atspi_accessible.eo \
 	     elm_interface_atspi_action.eo \
 	     elm_interface_atspi_component.eo \
@@ -666,7 +668,6 @@ elementaryeolianfiles_DATA = \
 	     elm_interface_atspi_selection.eo \
 	     elm_interface_atspi_text.eo \
 	     elm_interface_atspi_value.eo \
-	     elm_interface_atspi_widget.eo \
 	     elm_interface_atspi_widget_action.eo \
 	     elm_interface_atspi_window.eo \
 	     elm_bg.eo \

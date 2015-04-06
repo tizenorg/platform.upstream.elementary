@@ -1,4 +1,5 @@
-class Elm_Widget_Item(Eo.Base)
+class Elm_Widget_Item(Eo.Base, Elm_Interface_Atspi_Accessible,
+                      Elm_Interface_Atspi_Component)
 {
       eo_prefix: elm_wdg_item;
       legacy_prefix: elm_object_item;
@@ -774,5 +775,12 @@ class Elm_Widget_Item(Eo.Base)
       implements {
            Eo.Base.constructor;
            Eo.Base.destructor;
+           Elm_Interface_Atspi_Accessible.state_set.get;
+           Elm_Interface_Atspi_Accessible.parent.get;
+           Elm_Interface_Atspi_Component.extents.get;
+           Elm_Interface_Atspi_Component.extents.set;
+           Elm_Interface_Atspi_Component.alpha.get;
+           Elm_Interface_Atspi_Component.layer.get;
+           Elm_Interface_Atspi_Component.focus_grab;
       }
 }
