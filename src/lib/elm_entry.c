@@ -59,6 +59,8 @@
 
 ELM_PRIV_ENTRY_SIGNALS(ELM_PRIV_STATIC_VARIABLE_DECLARE);
 
+#define ENTRY_PASSWORD_MASK_CHARACTER 0x002A
+
 static const Evas_Smart_Cb_Description _smart_callbacks[] = {
    ELM_PRIV_ENTRY_SIGNALS(ELM_PRIV_SMART_CALLBACKS_DESC)
    {SIG_WIDGET_LANG_CHANGED, ""}, /**< handled by elm_widget */
@@ -1092,6 +1094,8 @@ _elm_entry_elm_widget_on_focus(Eo *obj, Elm_Entry_Data *sd, Elm_Object_Item *ite
             !edje_object_part_text_imf_context_get(sd->entry_edje, "elm.text"))
           elm_win_keyboard_mode_set(top, ELM_WIN_KEYBOARD_ON);
         evas_object_smart_callback_call(obj, SIG_FOCUSED, NULL);
+        if (_elm_config->atspi_mode)
+          elm_interface_atspi_accessible_state_changed_signal_emit(obj, ELM_ATSPI_STATE_FOCUSED, EINA_TRUE);
         _return_key_enabled_check(obj);
      }
    else
@@ -1102,6 +1106,8 @@ _elm_entry_elm_widget_on_focus(Eo *obj, Elm_Entry_Data *sd, Elm_Object_Item *ite
             !edje_object_part_text_imf_context_get(sd->entry_edje, "elm.text"))
           elm_win_keyboard_mode_set(top, ELM_WIN_KEYBOARD_OFF);
         evas_object_smart_callback_call(obj, SIG_UNFOCUSED, NULL);
+        if (_elm_config->atspi_mode)
+          elm_interface_atspi_accessible_state_changed_signal_emit(obj, ELM_ATSPI_STATE_FOCUSED, EINA_FALSE);
 
         if (_elm_config->selection_clear_enable)
           {
@@ -1930,14 +1936,14 @@ _entry_changed_user_signal_cb(void *data,
              atspi_info.content = edje_info->change.insert.content;
              atspi_info.pos = edje_info->change.insert.pos;
              atspi_info.len = edje_info->change.insert.plain_length;
-             eo_do(data, eo_event_callback_call(ELM_INTERFACE_ATSPI_TEXT_EVENT_ACCESS_TEXT_INSERTED, &atspi_info));
+             eo_do(ELM_INTERFACE_ATSPI_ACCESSIBLE_MIXIN, elm_interface_atspi_accessible_event_emit(data, ELM_INTERFACE_ATSPI_TEXT_EVENT_ACCESS_TEXT_INSERTED, &atspi_info));
           }
         else if (edje_info && !edje_info->insert)
           {
              atspi_info.content = edje_info->change.del.content;
              atspi_info.pos = MIN(edje_info->change.del.start, edje_info->change.del.end);
-             atspi_info.len = abs(edje_info->change.del.end - edje_info->change.del.start);
-             eo_do(data, eo_event_callback_call(ELM_INTERFACE_ATSPI_TEXT_EVENT_ACCESS_TEXT_REMOVED, &atspi_info));
+             atspi_info.len = MAX(edje_info->change.del.start, edje_info->change.del.end) - atspi_info.pos;
+             eo_do(ELM_INTERFACE_ATSPI_ACCESSIBLE_MIXIN, elm_interface_atspi_accessible_event_emit(data, ELM_INTERFACE_ATSPI_TEXT_EVENT_ACCESS_TEXT_REMOVED, &atspi_info));
           }
      }
 }
@@ -2023,7 +2029,7 @@ _entry_selection_changed_signal_cb(void *data,
    _selection_store(ELM_SEL_TYPE_PRIMARY, data);
    _update_selection_handler(data);
    if (_elm_config->atspi_mode)
-     eo_do(data, eo_event_callback_call(ELM_INTERFACE_ATSPI_TEXT_EVENT_ACCESS_TEXT_SELECTION_CHANGED, NULL));
+     eo_do(ELM_INTERFACE_ATSPI_ACCESSIBLE_MIXIN, elm_interface_atspi_accessible_event_emit(data, ELM_INTERFACE_ATSPI_TEXT_EVENT_ACCESS_TEXT_SELECTION_CHANGED, NULL));
 }
 
 static void
@@ -2128,7 +2134,7 @@ _entry_cursor_changed_signal_cb(void *data,
      edje_object_signal_emit(sd->entry_edje, "elm,action,show,cursor", "elm");
    _cursor_geometry_recalc(data);
    if (_elm_config->atspi_mode)
-     eo_do(data, eo_event_callback_call(ELM_INTERFACE_ATSPI_TEXT_EVENT_ACCESS_TEXT_CARET_MOVED, NULL));
+     eo_do(ELM_INTERFACE_ATSPI_ACCESSIBLE_MIXIN, elm_interface_atspi_accessible_event_emit(data, ELM_INTERFACE_ATSPI_TEXT_EVENT_ACCESS_TEXT_CARET_MOVED, NULL));
 }
 
 static void
@@ -2139,7 +2145,7 @@ _entry_cursor_changed_manual_signal_cb(void *data,
 {
    evas_object_smart_callback_call(data, SIG_CURSOR_CHANGED_MANUAL, NULL);
    if (_elm_config->atspi_mode)
-     eo_do(data, eo_event_callback_call(ELM_INTERFACE_ATSPI_TEXT_EVENT_ACCESS_TEXT_CARET_MOVED, NULL));
+     eo_do(ELM_INTERFACE_ATSPI_ACCESSIBLE_MIXIN, elm_interface_atspi_accessible_event_emit(data, ELM_INTERFACE_ATSPI_TEXT_EVENT_ACCESS_TEXT_CARET_MOVED, NULL));
 }
 
 static void
@@ -3788,6 +3794,7 @@ _elm_entry_password_set(Eo *obj, Elm_Entry_Data *sd, Eina_Bool password)
         sd->line_wrap = ELM_WRAP_NONE;
         elm_entry_input_hint_set(obj, ((sd->input_hints & ~ELM_INPUT_HINT_AUTO_COMPLETE) | ELM_INPUT_HINT_SENSITIVE_DATA));
         _entry_selection_callbacks_unregister(obj);
+        elm_interface_atspi_accessible_role_set(ELM_ATSPI_ROLE_PASSWORD_TEXT);
      }
    else
      {
@@ -3800,6 +3807,7 @@ _elm_entry_password_set(Eo *obj, Elm_Entry_Data *sd, Eina_Bool password)
 
         elm_entry_input_hint_set(obj, ((sd->input_hints | ELM_INPUT_HINT_AUTO_COMPLETE) & ~ELM_INPUT_HINT_SENSITIVE_DATA));
         _entry_selection_callbacks_register(obj);
+        elm_interface_atspi_accessible_role_set(ELM_ATSPI_ROLE_ENTRY);
      }
 
    eo_do(obj, elm_obj_widget_theme_apply());
@@ -5087,6 +5095,9 @@ _elm_entry_elm_interface_atspi_text_character_get(Eo *obj, Elm_Entry_Data *_pd E
 
    free(txt);
 
+   if (_pd->password)
+     ret = ENTRY_PASSWORD_MASK_CHARACTER;
+
    return ret;
 }
 
@@ -5173,6 +5184,13 @@ _elm_entry_elm_interface_atspi_text_string_get(Eo *obj, Elm_Entry_Data *_pd EINA
    evas_textblock_cursor_free(cur);
    evas_textblock_cursor_free(cur2);
 
+   if (ret && _pd->password)
+     {
+        int i = 0;
+        while (ret[i] != '\0')
+         ret[i++] = ENTRY_PASSWORD_MASK_CHARACTER;
+     }
+
    return ret;
 
 fail:
@@ -5207,6 +5225,13 @@ _elm_entry_elm_interface_atspi_text_text_get(Eo *obj, Elm_Entry_Data *_pd EINA_U
 
    evas_textblock_cursor_free(cur);
    evas_textblock_cursor_free(cur2);
+
+   if (ret && _pd->password)
+     {
+        int i = 0;
+        while (ret[i] != '\0')
+         ret[i++] = ENTRY_PASSWORD_MASK_CHARACTER;
+     }
 
    return ret;
 
@@ -5608,6 +5633,25 @@ _elm_entry_elm_interface_atspi_editable_text_cut(Eo *obj, Elm_Entry_Data *_pd EI
    elm_entry_select_region_set(obj, start, end);
    elm_entry_selection_cut(obj);
    return EINA_TRUE;
+}
+
+EOLIAN static Elm_Atspi_State_Set
+_elm_entry_elm_interface_atspi_accessible_state_set_get(Eo *obj, Elm_Entry_Data *_pd EINA_UNUSED)
+{
+   Elm_Atspi_State_Set ret;
+   eo_do_super(obj, ELM_ENTRY_CLASS, ret = elm_interface_atspi_accessible_state_set_get());
+
+   if (elm_entry_editable_get(obj))
+     STATE_TYPE_SET(ret, ELM_ATSPI_STATE_EDITABLE);
+
+   return ret;
+}
+
+EOLIAN static char*
+_elm_entry_elm_interface_atspi_accessible_name_get(Eo *obj EINA_UNUSED, Elm_Entry_Data *sd)
+{
+   const char *ret = edje_object_part_text_get(sd->entry_edje, "elm.guide");
+   return ret ? strdup(ret) : NULL;
 }
 
 #include "elm_entry.eo.c"
