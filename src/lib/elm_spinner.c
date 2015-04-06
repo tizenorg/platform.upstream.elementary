@@ -1114,10 +1114,11 @@ _elm_spinner_elm_interface_atspi_value_increment_get(Eo *obj EINA_UNUSED, Elm_Sp
    return sd->step;
 }
 
-EOLIAN static const char*
+EOLIAN static char*
 _elm_spinner_elm_interface_atspi_accessible_name_get(Eo *obj, Elm_Spinner_Data *sd EINA_UNUSED)
 {
-   return elm_layout_text_get(obj, "elm.text");
+   const char *ret = elm_layout_text_get(obj, "elm.text");
+   return ret ? strdup(ret) : NULL;
 }
 
 EOLIAN static const Elm_Atspi_Action*
