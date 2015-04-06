@@ -265,6 +265,7 @@ class Elm_Ctxpopup (Elm_Layout, Elm_Interface_Atspi_Widget_Action)
       Elm_Layout.sub_object_add_enable;
       Elm_Layout.sizing_eval;
       Elm_Interface_Atspi_Widget_Action.elm_actions.get;
+      Elm_Interface_Atspi_Accessible.state_set.get;
    }
    events {
       language,changed;

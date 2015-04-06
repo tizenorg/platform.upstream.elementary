@@ -2,7 +2,7 @@ mixin Elm_Interface_Atspi_Accessible ()
 {
    legacy_prefix: null;
    eo_prefix: elm_interface_atspi_accessible;
-   data: null;
+   data: Elm_Interface_Atspi_Accessible_Data;
    properties {
       localized_role_name @protected {
          get {
@@ -14,12 +14,13 @@ mixin Elm_Interface_Atspi_Accessible ()
       }
       name @protected {
          get {
-            /*@ Gets an string describing ATSPI widget role name. */
+            /*@ Gets an string describing ATSPI widget role name. 
+                Should be free by a user. */
          }
          set {
          }
          values {
-            const(char)* name; /*@ obj name */
+            char* name; /*@ obj name */
          }
       }
       relation_set @protected {
@@ -28,7 +29,7 @@ mixin Elm_Interface_Atspi_Accessible ()
             elements Should be free by a user. */
          }
          values {
-            list *relations;
+            Elm_Atspi_Relation_Set relations;
          }
       }
       role @protected {
@@ -94,7 +95,7 @@ mixin Elm_Interface_Atspi_Accessible ()
             /*@ Sets widget accessible parent. */
          }
          values {
-            Eo *parent;
+            Elm_Interface_Atspi_Accessible *parent;
          }
       }
       state_set @protected {
@@ -105,12 +106,97 @@ mixin Elm_Interface_Atspi_Accessible ()
             Elm_Atspi_State_Set states;
          }
       }
+      translation_domain @protected {
+         get {
+            /*Gets the translation domain of "name" and "description"
+              properties.*/
+         }
+         set {
+            /*Sets the translation domain of "name" and "description"
+              properties.
+
+              Translation domain should be set if application wants to support i18n
+              for accessibily "name" and "description" properties.
+
+              When translation domain is set values of "name" and "description"
+              properties will be translated with dgettext function using
+              current translation domain as "domainname" parameter.
+
+              It is application developer responsibility to ensure that
+              translation files are loaded and binded to translation domain
+              when accessibility is enabled.*/
+         }
+         values {
+            const(char) *domain; /* translation domain */
+         }
+      }
+   }
+   methods {
+      event_handler_add @class @protected {
+         /* Register accessibility event listener */
+         params {
+              @in Eo_Event_Cb cb; /*callback*/
+              @in void *data; /*data*/
+         }
+         return: Elm_Atspi_Event_Handler*; /*Event handler*/
+      }
+      event_handler_del @class @protected {
+         /*Deregister accessibility event listener*/
+         params {
+              @in Elm_Atspi_Event_Handler *handler; /*Event handler*/
+         }
+      }
+      event_emit @class @protected {
+         params {
+            @in Elm_Interface_Atspi_Accessible *accessible; /*Accessibility object.*/
+            @in const(Eo_Event_Description) *event; /*Accessibility event type.*/
+            @in void *event_info; /*Accessibility event details.*/
+         }
+      }
+      relationship_append @protected {
+         /*Defines the relationship between two accessible objects.
+
+           Adds unique relation between source object and relation_object of a
+           given type.
+
+           Relationships can be queried by Assistive Technology clients to
+           provide customized feedback, improving overall user experience.
+
+           Relationship_append API is asymmetric, which means that
+           appending, for example, relation ELM_ATSPI_RELATION_FLOWS_TO from object A to B,
+           do NOT append relation ELM_ATSPI_RELATION_FLOWS_FROM from object B to
+           object A.
+
+           return: EINA_TRUE is relationship was successfully appended, EINA_FALSE
+           otherwise*/
+         return: bool;
+         params {
+            @in Elm_Atspi_Relation_Type type;
+            @in const(Elm_Interface_Atspi_Accessible) *relation_object;
+         }
+      }
+      relationship_remove @protected {
+         /*Removes the relationship between two accessible objects.
+
+          If relation_object is NULL function removes all relations
+          of given type.
+         */
+         params {
+            @in Elm_Atspi_Relation_Type type;
+            @in const(Elm_Interface_Atspi_Accessible) *relation_object;
+         }
+      }
+      relationships_clear @protected {
+         /*Removes all relationships in accessible object.*/
+      }
    }
    events {
       property,changed: const(char)*;
       children,changed: Elm_Atspi_Event_Children_Changed_Data;
       state,changed: Elm_Atspi_Event_State_Changed_Data;
       visible,data,changed;
-      active,descendants,changed;
+      active,descendant,changed;
+      added;
+      removed;
    }
 }

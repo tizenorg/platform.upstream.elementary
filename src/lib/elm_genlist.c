@@ -5,6 +5,7 @@
 #include <fnmatch.h>
 
 #define ELM_INTERFACE_ATSPI_ACCESSIBLE_PROTECTED
+#define ELM_INTERFACE_ATSPI_SELECTION_PROTECTED
 #define ELM_INTERFACE_ATSPI_WIDGET_ACTION_PROTECTED
 #define ELM_WIDGET_ITEM_PROTECTED
 
@@ -332,6 +333,8 @@ _item_text_realize(Elm_Gen_Item *it,
           {
              edje_object_part_text_set(target, key, "");
           }
+        if (_elm_config->atspi_mode)
+          elm_interface_atspi_accessible_name_changed_signal_emit(EO_OBJ(it));
      }
 }
 
@@ -374,6 +377,8 @@ _item_content_realize(Elm_Gen_Item *it,
                   ((void *)WIDGET_ITEM_DATA_GET(EO_OBJ(it)), WIDGET(it), key);
              if (!content) continue;
              *contents = eina_list_append(*contents, content);
+             if (_elm_config->atspi_mode && eo_isa(content, ELM_INTERFACE_ATSPI_ACCESSIBLE_MIXIN))
+               eo_do(content, elm_interface_atspi_accessible_parent_set(EO_OBJ(it)));
              if (!edje_object_part_swallow(target, key, content))
                {
                   ERR("%s (%p) can not be swallowed into %s",
@@ -387,6 +392,12 @@ _item_content_realize(Elm_Gen_Item *it,
 
              snprintf(buf, sizeof(buf), "elm,state,%s,visible", key);
              edje_object_signal_emit(target, buf, "elm");
+
+             if (_elm_config->atspi_mode && eo_isa(content, ELM_INTERFACE_ATSPI_ACCESSIBLE_MIXIN))
+               {
+                  eo_do(content, elm_interface_atspi_accessible_parent_set(EO_OBJ(it)));
+                  elm_interface_atspi_accessible_children_changed_added_signal_emit(EO_OBJ(it), content);
+               }
           }
      }
 }
@@ -2599,6 +2610,8 @@ _elm_genlist_item_focused(Elm_Object_Item *eo_it)
           evas_object_raise(VIEW(it));
      }
    evas_object_smart_callback_call(obj, SIG_ITEM_FOCUSED, eo_it);
+   if (_elm_config->atspi_mode)
+     elm_interface_atspi_accessible_state_changed_signal_emit(eo_it, ELM_ATSPI_STATE_FOCUSED, EINA_TRUE);
 }
 
 static void
@@ -2625,6 +2638,8 @@ _elm_genlist_item_unfocused(Elm_Object_Item *eo_it)
 
    sd->focused_item = NULL;
    evas_object_smart_callback_call(obj, SIG_ITEM_UNFOCUSED, eo_it);
+   if (_elm_config->atspi_mode)
+     elm_interface_atspi_accessible_state_changed_signal_emit(eo_it, ELM_ATSPI_STATE_FOCUSED, EINA_FALSE);
 }
 
 static Eina_Bool
@@ -4541,6 +4556,12 @@ _item_queue(Elm_Genlist_Data *sd,
 //   evas_event_thaw_eval(evas_object_evas_get(sd->obj));
    evas_object_geometry_get(sd->obj, NULL, NULL, &w, NULL);
    if (w > 0) _requeue_idle_enterer(sd);
+
+   if (_elm_config->atspi_mode)
+     {
+        elm_interface_atspi_accessible_added(EO_OBJ(it));
+        elm_interface_atspi_accessible_children_changed_added_signal_emit(sd->obj, EO_OBJ(it));
+     }
 }
 
 /* If the application wants to know the relative item, use
@@ -5874,7 +5895,9 @@ EOLIAN static void
 _elm_genlist_item_eo_base_constructor(Eo *eo_it, Elm_Gen_Item *it)
 {
    eo_do_super(eo_it, ELM_GENLIST_ITEM_CLASS, eo_constructor());
+
    it->base = eo_data_scope_get(eo_it, ELM_WIDGET_ITEM_CLASS);
+   eo_do(eo_it, elm_interface_atspi_accessible_role_set(ELM_ATSPI_ROLE_LIST_ITEM));
 }
 
 static Elm_Gen_Item *
@@ -6643,6 +6666,8 @@ _elm_genlist_item_expanded_set(Eo *eo_item EINA_UNUSED, Elm_Gen_Item *it, Eina_B
           edje_object_signal_emit(VIEW(it), SIGNAL_EXPANDED, "elm");
         evas_object_smart_callback_call(WIDGET(it), SIG_EXPANDED, EO_OBJ(it));
         sd->auto_scroll_enabled = EINA_TRUE;
+        if (_elm_config->atspi_mode)
+          elm_interface_atspi_accessible_state_changed_signal_emit(eo_item, ELM_ATSPI_STATE_EXPANDED, EINA_TRUE);
      }
    else
      {
@@ -6651,6 +6676,8 @@ _elm_genlist_item_expanded_set(Eo *eo_item EINA_UNUSED, Elm_Gen_Item *it, Eina_B
           edje_object_signal_emit(VIEW(it), SIGNAL_CONTRACTED, "elm");
         evas_object_smart_callback_call(WIDGET(it), SIG_CONTRACTED, EO_OBJ(it));
         sd->auto_scroll_enabled = EINA_FALSE;
+        if (_elm_config->atspi_mode)
+          elm_interface_atspi_accessible_state_changed_signal_emit(eo_item, ELM_ATSPI_STATE_EXPANDED, EINA_FALSE);
      }
 }
 
@@ -7639,6 +7666,94 @@ _elm_genlist_item_select_mode_get(Eo *eo_it EINA_UNUSED, Elm_Gen_Item *it)
    return it->select_mode;
 }
 
+EOLIAN Elm_Atspi_State_Set
+_elm_genlist_item_elm_interface_atspi_accessible_state_set_get(Eo *eo_it, Elm_Gen_Item *it EINA_UNUSED)
+{
+   Elm_Atspi_State_Set ret;
+   Eina_Bool sel;
+
+   eo_do_super(eo_it, ELM_GENLIST_ITEM_CLASS, ret = elm_interface_atspi_accessible_state_set_get());
+
+   eo_do(eo_it, sel = elm_obj_genlist_item_selected_get());
+
+   STATE_TYPE_SET(ret, ELM_ATSPI_STATE_SELECTABLE);
+
+   if (sel)
+      STATE_TYPE_SET(ret, ELM_ATSPI_STATE_SELECTED);
+
+   if (elm_genlist_item_type_get(eo_it) == ELM_GENLIST_ITEM_TREE)
+     {
+        STATE_TYPE_SET(ret, ELM_ATSPI_STATE_EXPANDABLE);
+        if (elm_genlist_item_expanded_get(eo_it))
+           STATE_TYPE_SET(ret, ELM_ATSPI_STATE_EXPANDED);
+     }
+
+   return ret;
+}
+
+EOLIAN char*
+_elm_genlist_item_elm_interface_atspi_accessible_name_get(Eo *eo_it EINA_UNUSED,
+                                                          Elm_Gen_Item *it)
+{
+   char *ret;
+   Eina_Strbuf *buf;
+
+   buf = eina_strbuf_new();
+
+   if (it->itc->func.text_get)
+     {
+        Eina_List *texts;
+        const char *key;
+
+        texts =
+           elm_widget_stringlist_get(edje_object_data_get(VIEW(it), "texts"));
+
+        EINA_LIST_FREE(texts, key)
+          {
+             char *str_markup = it->itc->func.text_get
+                ((void *)WIDGET_ITEM_DATA_GET(EO_OBJ(it)), WIDGET(it), key);
+             char *str_utf8 = _elm_util_mkup_to_text(str_markup);
+
+             free(str_markup);
+
+             if (str_utf8)
+               {
+                  if (eina_strbuf_length_get(buf) > 0) eina_strbuf_append(buf, ", ");
+                  eina_strbuf_append(buf, str_utf8);
+                  free(str_utf8);
+               }
+          }
+     }
+
+   ret = eina_strbuf_string_steal(buf);
+   eina_strbuf_free(buf);
+   return ret;
+}
+
+EOLIAN Eina_List*
+_elm_genlist_item_elm_interface_atspi_accessible_children_get(Eo *eo_it EINA_UNUSED, Elm_Gen_Item *it)
+{
+   Eina_List *ret = NULL;
+   if (VIEW(it))
+     {
+        Eina_List *parts;
+        const char *key;
+        parts = elm_widget_stringlist_get(edje_object_data_get(VIEW(it), "contents"));
+
+        EINA_LIST_FREE(parts, key)
+          {
+             Evas_Object *part;
+             part = edje_object_part_swallow_get(VIEW(it), key);
+             if (part && eo_isa(part, ELM_INTERFACE_ATSPI_ACCESSIBLE_MIXIN))
+               {
+                  ret = eina_list_append(ret, part);
+                  eo_do(part, elm_interface_atspi_accessible_parent_set(eo_it));
+               }
+          }
+     }
+   return ret;
+}
+
 EOLIAN static void
 _elm_genlist_tree_effect_enabled_set(Eo *obj EINA_UNUSED, Elm_Genlist_Data *sd, Eina_Bool enabled)
 {
@@ -7824,6 +7939,130 @@ _elm_genlist_elm_interface_atspi_widget_action_elm_actions_get(Eo *obj EINA_UNUS
           { NULL, NULL, NULL, NULL }
    };
    return &atspi_actions[0];
+}
+
+EOLIAN Eina_List*
+_elm_genlist_elm_interface_atspi_accessible_children_get(Eo *obj EINA_UNUSED, Elm_Genlist_Data *sd)
+{
+   Eina_List *ret = NULL;
+   Elm_Gen_Item *it;
+
+   EINA_INLIST_FOREACH(sd->items, it)
+      ret = eina_list_append(ret, EO_OBJ(it));
+
+   return ret;
+}
+
+EOLIAN Elm_Atspi_State_Set
+_elm_genlist_elm_interface_atspi_accessible_state_set_get(Eo *obj, Elm_Genlist_Data *sd EINA_UNUSED)
+{
+   Elm_Atspi_State_Set ret;
+
+   eo_do_super(obj, ELM_GENLIST_CLASS, ret = elm_interface_atspi_accessible_state_set_get());
+
+   STATE_TYPE_SET(ret, ELM_ATSPI_STATE_MANAGES_DESCENDANTS);
+
+   return ret;
+}
+
+EOLIAN int
+_elm_genlist_elm_interface_atspi_selection_selected_children_count_get(Eo *objm EINA_UNUSED, Elm_Genlist_Data *pd)
+{
+   return eina_list_count(pd->selected);
+}
+
+EOLIAN Eo*
+_elm_genlist_elm_interface_atspi_selection_selected_child_get(Eo *obj EINA_UNUSED, Elm_Genlist_Data *pd, int child_idx)
+{
+   return eina_list_nth(pd->selected, child_idx);
+}
+
+EOLIAN Eina_Bool
+_elm_genlist_elm_interface_atspi_selection_child_select(Eo *obj EINA_UNUSED, Elm_Genlist_Data *pd, int child_index)
+{
+   Elm_Gen_Item *item;
+   if (pd->select_mode != ELM_OBJECT_SELECT_MODE_NONE)
+     {
+        EINA_INLIST_FOREACH(pd->items, item)
+          {
+             if (child_index-- == 0)
+               {
+                  elm_genlist_item_selected_set(EO_OBJ(item), EINA_TRUE);
+                  return EINA_TRUE;
+               }
+          }
+     }
+   return EINA_FALSE;
+}
+
+EOLIAN Eina_Bool
+_elm_genlist_elm_interface_atspi_selection_selected_child_deselect(Eo *obj EINA_UNUSED, Elm_Genlist_Data *pd, int child_index)
+{
+   Eo *item;
+   Eina_List *l;
+
+   EINA_LIST_FOREACH(pd->selected, l, item)
+     {
+        if (child_index-- == 0)
+          {
+             elm_genlist_item_selected_set(item, EINA_FALSE);
+             return EINA_TRUE;
+          }
+     }
+   return EINA_FALSE;
+}
+
+EOLIAN Eina_Bool
+_elm_genlist_elm_interface_atspi_selection_is_child_selected(Eo *obj EINA_UNUSED, Elm_Genlist_Data *pd, int child_index)
+{
+   Elm_Gen_Item *item;
+
+   EINA_INLIST_FOREACH(pd->items, item)
+     {
+        if (child_index-- == 0)
+          {
+             return elm_genlist_item_selected_get(EO_OBJ(item));
+          }
+     }
+   return EINA_FALSE;
+}
+
+EOLIAN Eina_Bool
+_elm_genlist_elm_interface_atspi_selection_all_children_select(Eo *obj, Elm_Genlist_Data *pd)
+{
+   Elm_Gen_Item *item;
+
+   if (!elm_genlist_multi_select_get(obj))
+     return EINA_FALSE;
+
+   EINA_INLIST_FOREACH(pd->items, item)
+      elm_genlist_item_selected_set(EO_OBJ(item), EINA_TRUE);
+
+   return EINA_TRUE;
+}
+
+EOLIAN Eina_Bool
+_elm_genlist_elm_interface_atspi_selection_clear(Eo *obj EINA_UNUSED, Elm_Genlist_Data *pd)
+{
+   return _all_items_deselect(pd);
+}
+
+EOLIAN Eina_Bool
+_elm_genlist_elm_interface_atspi_selection_child_deselect(Eo *obj EINA_UNUSED, Elm_Genlist_Data *pd, int child_index)
+{
+   Elm_Gen_Item *item;
+   if (pd->select_mode != ELM_OBJECT_SELECT_MODE_NONE)
+     {
+        EINA_INLIST_FOREACH(pd->items, item)
+          {
+             if (child_index-- == 0)
+               {
+                  elm_genlist_item_selected_set(EO_OBJ(item), EINA_FALSE);
+                  return EINA_TRUE;
+               }
+          }
+     }
+   return EINA_FALSE;
 }
 
 #include "elm_genlist.eo.c"
