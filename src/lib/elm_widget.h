@@ -413,7 +413,13 @@ typedef struct _Elm_Widget_Smart_Data
 
    int                          role;         /**< Accessibility role */
    const char                   *description; /**< Accessibility description */
+   //TIZEN_ONLY(20150717) add widget name setter
+   const char                   *name;
+   ///
    Eo                           *atspi_custom_parent; /**< Accessibility parent if different then parent_obj */
+   //TIZEN_ONLY(20150709) add relations atpi
+   Elm_Atspi_Relation_Set       atspi_custom_relations; /**< Developer-defined accessiblity relations */
+   ///////////////////////////////////
 
    /* this is a hook to be set on-the-fly on widgets. this is code
     * handling the request of showing a specific region from an inner
@@ -633,6 +639,9 @@ struct _Elm_Widget_Item_Data
    /**< A11Y info */
    const char                    *description;
    int                            role;
+   //TIZEN_ONLY(20150709) add relations atpi
+   Elm_Atspi_Relation_Set        atspi_custom_relations; /**< Developer-defined accessiblity relations */
+   ///////////////////////////////////
 
    Eina_Bool                      disabled : 1;
    Eina_Bool                      on_deletion : 1;
