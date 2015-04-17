@@ -195,4 +195,10 @@ mixin Elm_Interface_Atspi_Accessible ()
       added;
       removed;
    }
+   //TIZEN_ONLY(20150709) : atspi relations api
+   implements {
+      @virtual .relationship_append;
+      @virtual .relationship_remove;
+   }
+   //////////
 }

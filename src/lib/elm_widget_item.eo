@@ -531,6 +531,10 @@ class Elm.Widget_Item(Eo.Base, Elm_Interface_Atspi_Accessible,
            Eo.Base.destructor;
            Elm_Interface_Atspi_Accessible.state_set.get;
            Elm_Interface_Atspi_Accessible.parent.get;
+           //TIZEN_ONLY(20150709) : atspi relations api
+           Elm_Interface_Atspi_Accessible.relationship_append;
+           Elm_Interface_Atspi_Accessible.relationship_remove;
+           //
            Elm_Interface_Atspi_Component.extents.get;
            Elm_Interface_Atspi_Component.extents.set;
            Elm_Interface_Atspi_Component.alpha.get;
