@@ -4488,6 +4488,9 @@ _elm_widget_item_eo_base_destructor(Eo *eo_item, Elm_Widget_Item_Data *item)
 
    elm_interface_atspi_accessible_removed(eo_item);
 
+   if (item->atspi_custom_relations)
+     elm_atspi_relation_set_free(&item->atspi_custom_relations);
+
    EINA_MAGIC_SET(item, EINA_MAGIC_NONE);
 
    eo_do_super(eo_item, ELM_WIDGET_ITEM_CLASS, eo_destructor());
@@ -5770,6 +5773,10 @@ _elm_widget_eo_base_destructor(Eo *obj, Elm_Widget_Smart_Data *sd EINA_UNUSED)
          elm_interface_atspi_accessible_translation_domain_set(NULL),
          elm_interface_atspi_accessible_relationships_clear()
          );
+   \\TIZEN ONLY(): atspi: add new APIs for setting atspi relationship.
+   if (sd->atspi_custom_relations)
+     elm_atspi_relation_set_free(&sd->atspi_custom_relations);
+   \\
    eo_do_super(obj, ELM_WIDGET_CLASS, eo_destructor());
    sd->on_destroy = EINA_FALSE;
 
@@ -6035,6 +6042,14 @@ _elm_widget_elm_interface_atspi_accessible_attributes_get(Eo *obj, Elm_Widget_Sm
    return ret;
 }
 
+// TIZEN_ONLY(20150709) : atspi relations api
+EOLIAN static Elm_Atspi_Relation_Set
+_elm_widget_elm_interface_atspi_accessible_relation_set_get(Eo *obj EINA_UNUSED, Elm_Widget_Smart_Data *sd)
+{
+   return elm_atspi_relation_set_clone(&sd->atspi_custom_relations);
+}
+//////////////////////////////
+
 EOLIAN static void
 _elm_widget_item_elm_interface_atspi_component_extents_get(Eo *obj EINA_UNUSED, Elm_Widget_Item_Data *sd EINA_UNUSED, Eina_Bool screen_coords, int *x, int *y, int *w, int *h)
 {
@@ -6189,6 +6204,32 @@ _elm_widget_elm_interface_atspi_component_accessible_at_point_get(Eo *obj, Elm_W
    return NULL;
 }
 //
+
+//TIZEN_ONLY(20150709) add relations atpi
+EOLIAN static Eina_Bool
+_elm_widget_elm_interface_atspi_accessible_relationship_append(Eo *obj EINA_UNUSED, Elm_Widget_Smart_Data *sd, Elm_Atspi_Relation_Type type, const Eo *relation_obj)
+{
+   return elm_atspi_relation_set_relation_append(&sd->atspi_custom_relations, type, relation_obj);
+}
+
+EOLIAN static void
+_elm_widget_elm_interface_atspi_accessible_relationship_remove(Eo *obj EINA_UNUSED, Elm_Widget_Smart_Data *sd, Elm_Atspi_Relation_Type type, const Eo *relation_obj)
+{
+   elm_atspi_relation_set_relation_remove(&sd->atspi_custom_relations, type, relation_obj);
+}
+
+EOLIAN static Eina_Bool
+_elm_widget_item_elm_interface_atspi_accessible_relationship_append(Eo *obj EINA_UNUSED, Elm_Widget_Item_Data *sd, Elm_Atspi_Relation_Type type, const Eo *relation_obj)
+{
+   return elm_atspi_relation_set_relation_append(&sd->atspi_custom_relations, type, relation_obj);
+}
+
+EOLIAN static void
+_elm_widget_item_elm_interface_atspi_accessible_relationship_remove(Eo *obj EINA_UNUSED, Elm_Widget_Item_Data *sd, Elm_Atspi_Relation_Type type, const Eo *relation_obj)
+{
+   elm_atspi_relation_set_relation_remove(&sd->atspi_custom_relations, type, relation_obj);
+}
+///////////////////////////////////
 
 #include "elm_widget_item.eo.c"
 #include "elm_widget.eo.c"

@@ -31,6 +31,7 @@ mixin Elm_Interface_Atspi_Accessible ()
          values {
             relations: Elm_Atspi_Relation_Set;
          }
+         ////////////////////////
       }
       @property role {
          get {
@@ -186,6 +187,25 @@ mixin Elm_Interface_Atspi_Accessible ()
          [[Removes all relationships in accessible object.]]
       }
    }
+   //TIZEN_ONLY(20150709) : atspi relations api
+   methods {
+      relationship_append {
+         /*@ No description supplied by the EAPI. */
+         return: bool;
+         params {
+            @in Elm_Atspi_Relation_Type type;
+            @in const(Eo) *relation_object;
+         }
+      }
+      relationship_remove {
+         /*@ No description supplied by the EAPI. */
+         params {
+            @in Elm_Atspi_Relation_Type type;
+            @in const(Eo) *relation_object;
+         }
+      }
+   }
+   //////////////////////////
    events {
       property,changed: const(char)*;
       children,changed: Elm_Atspi_Event_Children_Changed_Data;
@@ -195,4 +215,10 @@ mixin Elm_Interface_Atspi_Accessible ()
       added;
       removed;
    }
+   //TIZEN_ONLY(20150709) : atspi relations api
+   implements {
+      @virtual .relationship_append;
+      @virtual .relationship_remove;
+   }
+   //////////
 }
