@@ -131,3 +131,17 @@ msgstr "ஒட்டு"
 msgid "IDS_COM_BODY_CLIPBOARD"
 msgstr "கிளிப்போர்டு"
 
+msgid "WDS_ST_OPT_DAY_ABB"
+msgstr "நாள்"
+
+msgid "WDS_ST_OPT_HRS_ABB"
+msgstr "மணி"
+
+msgid "WDS_ST_OPT_MINS_ABB"
+msgstr "நிமி."
+
+msgid "WDS_ST_OPT_MONTH_ABB"
+msgstr "மாதம்"
+
+msgid "WDS_ST_OPT_YEAR_ABB"
+msgstr "ஆண்டு"

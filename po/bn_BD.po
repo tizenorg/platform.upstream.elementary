@@ -1,0 +1,272 @@
+#: src/lib/elm_config.c:2101
+msgid ""
+msgstr ""
+"Project-Id-Version: elementary\n"
+"Report-Msgid-Bugs-To: enlightenment-devel@lists.sourceforge.net\n"
+"POT-Creation-Date: 2014-02-07 13:50+0900\n"
+"PO-Revision-Date: 2014-02-07 09:09-0800\n"
+"Last-Translator: Jaeun Choi <jaeun12.choi@samsung.com>\n"
+"Language-Team: General\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Check"
+msgstr "টিকবক্স"
+
+msgid "Tick"
+msgstr "টিক"
+
+msgid "Untick"
+msgstr "টিকমুক্ত"
+
+msgid "Up"
+msgstr "উপরে"
+
+msgid "State: Off"
+msgstr "অনির্বাচিত"
+
+msgid "On/Off button"
+msgstr "বাটন চালু করুন/বন্ধ করুন"
+
+msgid "Radio"
+msgstr "রেডিও বাটন"
+
+msgid "Selected"
+msgstr "নির্বাচিত"
+
+msgid "OK"
+msgstr "ওকে"
+
+msgid "AM"
+msgstr "পূর্বাহ্ণ"
+
+msgid "Set time"
+msgstr "সময় সেট করুন"
+
+msgid "Contextual Popup"
+msgstr "প্রাসঙ্গিক পপ-আপ"
+
+msgid "A contextual popup is open, double tap to close it"
+msgstr "একটি প্রাসঙ্গিক পপ-আপ খোলা আছে। এটি বন্ধ করতে দুবার ট্যাপ করুন।"
+
+msgid "Cancel"
+msgstr "বাতিল"
+
+msgid "%d characters"
+msgstr "%dটি অক্ষর।"
+
+msgid "Off"
+msgstr "বন্ধ"
+
+msgid "On"
+msgstr "চালু"
+
+msgid "Set date"
+msgstr "তারিখ সেট করুন"
+
+msgid "Disabled"
+msgstr "বন্ধ"
+
+msgid "Copy"
+msgstr "অনুলিপি করুন"
+
+msgid "Cut"
+msgstr "কাট"
+
+msgid "Paste"
+msgstr "প্রতিলেপন"
+
+msgid "Select"
+msgstr "নির্বাচন করুন"
+
+msgid "Button"
+msgstr "বোতাম"
+
+msgid "Contextual popup"
+msgstr "প্রাসঙ্গিক পপ-আপ"
+
+msgid "Double tap to change"
+msgstr "পরিবর্তন করতে দুবার ট্যাপ করুন।"
+
+msgid "Double tap to edit the recipients"
+msgstr "প্রাপকদের সম্পাদনা করতে দুবার ট্যাপ করুন।"
+
+msgid "Double tap to move to content"
+msgstr "কন্টেন্ট এ সরাতে দুবার ট্যাপ করুন।"
+
+msgid "Flick up and down to adjust the position"
+msgstr "অবস্থান সামঞ্জস্য করতে উপরে এবং নীচে ফ্লিক করুন।"
+
+msgid "hour"
+msgstr "ঘণ্টা"
+
+msgid "minute"
+msgstr "মিনিট"
+
+msgid "month"
+msgstr "মাস"
+
+msgid "%d percent"
+msgstr "%d শতাংশ"
+
+msgid "slider"
+msgstr "স্লাইডার"
+
+msgid "Toolbar Item"
+msgstr "ট্যাব"
+
+msgid "year"
+msgstr "বছর"
+
+msgid "double tap to edit"
+msgstr "সম্পাদনা করতে দুবার ট্যাপ করুন।"
+
+msgid "Double tap to enable fast scrolling"
+msgstr "দ্রুত স্ক্রলিং সক্রিয় করতে দুবার ট্যাপ করুন৷"
+
+msgid "Popup Title"
+msgstr "পপ-আপ হেডার"
+
+msgid "Popup Body Text"
+msgstr "পপ-আপের মূল অংশে লেখ্য"
+
+msgid "Edit Field"
+msgstr "সম্পাদনা ক্ষেত্র"
+
+msgid "Index"
+msgstr "দ্রুত স্ক্রোল বার"
+
+msgid "icon"
+msgstr "Icon"
+
+msgid "Home"
+msgstr "বাড়ি"
+
+msgid "And %d more"
+msgstr "and %d more"
+
+msgid "title"
+msgstr "শিরোনাম"
+
+msgid "Popup_list"
+msgstr "List"
+
+msgid "Clicked"
+msgstr "Click"
+
+msgid "Tap to apply"
+msgstr "Tap to apply."
+
+msgid "A drawer is open, double tap to close it"
+msgstr "A drawer is open. Double tap to close it."
+
+msgid "spinner increment button"
+msgstr "Increase"
+
+msgid "spinner decrement button"
+msgstr "Decrease"
+
+msgid "Set"
+msgstr "সেট"
+
+msgid "flick up and down to adjust %s or double tap to open keyboard"
+msgstr "Flick up and down to adjust %s or double tap to open keyboard."
+
+msgid "date"
+msgstr "তারিখ"
+
+msgid "IDS_ACCS_BODY_PD_M_DAY"
+msgstr "%d"
+
+msgid "IDS_ACCS_BODY_PD_M_YEAR"
+msgstr "%d"
+
+msgid "IDS_ACCS_BODY_PD_M_MINUTES"
+msgstr "%d"
+
+msgid "Portrait Mode"
+msgstr "Portrait mode"
+
+msgid "Landscape Mode"
+msgstr "Landscape mode"
+
+msgid "Double tap to close popup"
+msgstr "Double tap to close the pop-up."
+
+msgid "Central popup"
+msgstr "Central pop-up"
+
+msgid "A drawer is open"
+msgstr "A drawer is open."
+
+msgid "Double tap to close drawer menu"
+msgstr "Double tap to close drawer menu."
+
+msgid "Cursor at beginning of text"
+msgstr "Cursor at beginning of text"
+
+msgid "Cursor at end of text"
+msgstr "Cursor at end of text"
+
+msgid "tap to change"
+msgstr "Tap to change the mode."
+
+msgid "IDS_ST_BODY_P1SD_OF_P2SD_TTS"
+msgstr "%1$d of %2$d."
+
+msgid "IDS_COM_BODY_DECREASE_DAY"
+msgstr "Decrease day"
+
+msgid "IDS_COM_BODY_DECREASE_HOUR"
+msgstr "Decrease hour"
+
+msgid "IDS_COM_BODY_DECREASE_MINUTE"
+msgstr "Decrease minute"
+
+msgid "IDS_COM_BODY_DECREASE_MONTH"
+msgstr "Decrease month"
+
+msgid "IDS_COM_BODY_DECREASE_YEAR"
+msgstr "Decrease year"
+
+msgid "IDS_COM_BODY_INCREASE_DAY"
+msgstr "Increase day"
+
+msgid "IDS_COM_BODY_INCREASE_HOUR"
+msgstr "Increase hour"
+
+msgid "IDS_COM_BODY_INCREASE_MINUTE"
+msgstr "Increase minute"
+
+msgid "IDS_COM_BODY_INCREASE_MONTH"
+msgstr "Increase month"
+
+msgid "IDS_COM_BODY_INCREASE_YEAR"
+msgstr "Increase year"
+
+msgid "PM"
+msgstr "অপরাহ্ণ"
+
+msgid "Editing"
+msgstr "সম্পাদনা করা হচ্ছে।"
+
+msgid "default:LTR"
+msgstr ""
+
+msgid "WDS_ST_OPT_DAY_ABB"
+msgstr "Day"
+
+msgid "WDS_ST_OPT_HRS_ABB"
+msgstr "Hrs"
+
+msgid "WDS_ST_OPT_MINS_ABB"
+msgstr "Mins"
+
+msgid "WDS_ST_OPT_MONTH_ABB"
+msgstr "Month"
+
+msgid "WDS_ST_OPT_YEAR_ABB"
+msgstr "Year"

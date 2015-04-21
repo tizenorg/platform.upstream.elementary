@@ -566,3 +566,17 @@ msgstr "Klistra in"
 msgid "IDS_COM_BODY_CLIPBOARD"
 msgstr "Urklipp"
 
+msgid "WDS_ST_OPT_DAY_ABB"
+msgstr "Dag"
+
+msgid "WDS_ST_OPT_HRS_ABB"
+msgstr "Timme"
+
+msgid "WDS_ST_OPT_MINS_ABB"
+msgstr "Minut"
+
+msgid "WDS_ST_OPT_MONTH_ABB"
+msgstr "Månad"
+
+msgid "WDS_ST_OPT_YEAR_ABB"
+msgstr "År"

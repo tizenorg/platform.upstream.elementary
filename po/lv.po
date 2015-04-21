@@ -566,3 +566,17 @@ msgstr "Ielīmēt"
 msgid "IDS_COM_BODY_CLIPBOARD"
 msgstr "Starpliktuve"
 
+msgid "WDS_ST_OPT_DAY_ABB"
+msgstr "Diena"
+
+msgid "WDS_ST_OPT_HRS_ABB"
+msgstr "H"
+
+msgid "WDS_ST_OPT_MINS_ABB"
+msgstr "Min"
+
+msgid "WDS_ST_OPT_MONTH_ABB"
+msgstr "Mēn."
+
+msgid "WDS_ST_OPT_YEAR_ABB"
+msgstr "Gads"

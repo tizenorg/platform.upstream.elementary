@@ -131,3 +131,17 @@ msgstr "ကူးထည့္ပါ"
 msgid "IDS_COM_BODY_CLIPBOARD"
 msgstr "ကလစ္ဘုတ္"
 
+msgid "WDS_ST_OPT_DAY_ABB"
+msgstr "နေ့"
+
+msgid "WDS_ST_OPT_HRS_ABB"
+msgstr "နာရီ"
+
+msgid "WDS_ST_OPT_MINS_ABB"
+msgstr "မိနစ်"
+
+msgid "WDS_ST_OPT_MONTH_ABB"
+msgstr "လ"
+
+msgid "WDS_ST_OPT_YEAR_ABB"
+msgstr "ခုနှစ်"

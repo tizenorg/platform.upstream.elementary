@@ -131,3 +131,17 @@ msgstr "បិទ​ភ្ជាប់"
 msgid "IDS_COM_BODY_CLIPBOARD"
 msgstr "ក្ដារ​តម្បៀតខ្ទាស់"
 
+msgid "WDS_ST_OPT_DAY_ABB"
+msgstr "ថ្ងៃ"
+
+msgid "WDS_ST_OPT_HRS_ABB"
+msgstr "ម៉ោង"
+
+msgid "WDS_ST_OPT_MINS_ABB"
+msgstr "នាទី"
+
+msgid "WDS_ST_OPT_MONTH_ABB"
+msgstr "ខែ"
+
+msgid "WDS_ST_OPT_YEAR_ABB"
+msgstr "ឆ្នាំ"

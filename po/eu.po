@@ -566,3 +566,17 @@ msgstr "Itsatsi"
 msgid "IDS_COM_BODY_CLIPBOARD"
 msgstr "Arbela"
 
+msgid "WDS_ST_OPT_DAY_ABB"
+msgstr "Eguna"
+
+msgid "WDS_ST_OPT_HRS_ABB"
+msgstr "Orduak"
+
+msgid "WDS_ST_OPT_MINS_ABB"
+msgstr "Minut."
+
+msgid "WDS_ST_OPT_MONTH_ABB"
+msgstr "Hila"
+
+msgid "WDS_ST_OPT_YEAR_ABB"
+msgstr "Urtea"

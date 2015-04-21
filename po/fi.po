@@ -508,3 +508,17 @@ msgstr "Liitä"
 msgid "IDS_COM_BODY_CLIPBOARD"
 msgstr "Leikepöytä"
 
+msgid "WDS_ST_OPT_DAY_ABB"
+msgstr "Päivä"
+
+msgid "WDS_ST_OPT_HRS_ABB"
+msgstr "Tunnit"
+
+msgid "WDS_ST_OPT_MINS_ABB"
+msgstr "Min."
+
+msgid "WDS_ST_OPT_MONTH_ABB"
+msgstr "Kuuk."
+
+msgid "WDS_ST_OPT_YEAR_ABB"
+msgstr "Vuosi"

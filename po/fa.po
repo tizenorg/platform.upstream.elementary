@@ -416,3 +416,17 @@ msgstr "الحاق"
 msgid "IDS_COM_BODY_CLIPBOARD"
 msgstr "کلیپ بورد"
 
+msgid "WDS_ST_OPT_DAY_ABB"
+msgstr "روز"
+
+msgid "WDS_ST_OPT_HRS_ABB"
+msgstr "ساعت"
+
+msgid "WDS_ST_OPT_MINS_ABB"
+msgstr "دقیقه"
+
+msgid "WDS_ST_OPT_MONTH_ABB"
+msgstr "ماه"
+
+msgid "WDS_ST_OPT_YEAR_ABB"
+msgstr "سال"
