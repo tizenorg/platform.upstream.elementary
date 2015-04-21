@@ -508,3 +508,17 @@ msgstr "Zalepi"
 msgid "IDS_COM_BODY_CLIPBOARD"
 msgstr "Privremena memorija"
 
+msgid "WDS_ST_OPT_DAY_ABB"
+msgstr "Dan"
+
+msgid "WDS_ST_OPT_HRS_ABB"
+msgstr "Sati"
+
+msgid "WDS_ST_OPT_MINS_ABB"
+msgstr "Minuta"
+
+msgid "WDS_ST_OPT_MONTH_ABB"
+msgstr "Mesec"
+
+msgid "WDS_ST_OPT_YEAR_ABB"
+msgstr "Godina"

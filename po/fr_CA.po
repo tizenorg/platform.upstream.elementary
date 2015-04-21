@@ -566,3 +566,17 @@ msgstr "Coller"
 msgid "IDS_COM_BODY_CLIPBOARD"
 msgstr "Presse-papier"
 
+msgid "WDS_ST_OPT_DAY_ABB"
+msgstr "Jour"
+
+msgid "WDS_ST_OPT_HRS_ABB"
+msgstr "H"
+
+msgid "WDS_ST_OPT_MINS_ABB"
+msgstr "Min"
+
+msgid "WDS_ST_OPT_MONTH_ABB"
+msgstr "Mois"
+
+msgid "WDS_ST_OPT_YEAR_ABB"
+msgstr "Année"

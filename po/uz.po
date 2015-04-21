@@ -566,3 +566,17 @@ msgstr "Qo‘shib qo‘yish"
 msgid "IDS_COM_BODY_CLIPBOARD"
 msgstr "Bufer"
 
+msgid "WDS_ST_OPT_DAY_ABB"
+msgstr "Kun"
+
+msgid "WDS_ST_OPT_HRS_ABB"
+msgstr "Soat"
+
+msgid "WDS_ST_OPT_MINS_ABB"
+msgstr "Daqlar"
+
+msgid "WDS_ST_OPT_MONTH_ABB"
+msgstr "Oy"
+
+msgid "WDS_ST_OPT_YEAR_ABB"
+msgstr "Yil"

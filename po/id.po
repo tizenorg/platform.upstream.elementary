@@ -131,3 +131,17 @@ msgstr "Kutip"
 msgid "IDS_COM_BODY_CLIPBOARD"
 msgstr "Papan klip"
 
+msgid "WDS_ST_OPT_DAY_ABB"
+msgstr "Hari"
+
+msgid "WDS_ST_OPT_HRS_ABB"
+msgstr "Jam"
+
+msgid "WDS_ST_OPT_MINS_ABB"
+msgstr "Mnt"
+
+msgid "WDS_ST_OPT_MONTH_ABB"
+msgstr "Bulan"
+
+msgid "WDS_ST_OPT_YEAR_ABB"
+msgstr "Tahun"

@@ -131,3 +131,17 @@ msgstr "I-paste"
 msgid "IDS_COM_BODY_CLIPBOARD"
 msgstr "Clipboard"
 
+msgid "WDS_ST_OPT_DAY_ABB"
+msgstr "Araw"
+
+msgid "WDS_ST_OPT_HRS_ABB"
+msgstr "Oras"
+
+msgid "WDS_ST_OPT_MINS_ABB"
+msgstr "Min"
+
+msgid "WDS_ST_OPT_MONTH_ABB"
+msgstr "Buwan"
+
+msgid "WDS_ST_OPT_YEAR_ABB"
+msgstr "Taon"

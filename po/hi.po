@@ -131,3 +131,17 @@ msgstr "पेस्ट करें"
 msgid "IDS_COM_BODY_CLIPBOARD"
 msgstr "क्लिपबोर्ड"
 
+msgid "WDS_ST_OPT_DAY_ABB"
+msgstr "दिन"
+
+msgid "WDS_ST_OPT_HRS_ABB"
+msgstr "घंटे"
+
+msgid "WDS_ST_OPT_MINS_ABB"
+msgstr "मिनट"
+
+msgid "WDS_ST_OPT_MONTH_ABB"
+msgstr "महीना"
+
+msgid "WDS_ST_OPT_YEAR_ABB"
+msgstr "वर्ष"

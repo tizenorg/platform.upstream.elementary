@@ -566,3 +566,17 @@ msgstr "Вставити"
 msgid "IDS_COM_BODY_CLIPBOARD"
 msgstr "Буфер обміну"
 
+msgid "WDS_ST_OPT_DAY_ABB"
+msgstr "День"
+
+msgid "WDS_ST_OPT_HRS_ABB"
+msgstr "Год."
+
+msgid "WDS_ST_OPT_MINS_ABB"
+msgstr "Хв."
+
+msgid "WDS_ST_OPT_MONTH_ABB"
+msgstr "Місяць"
+
+msgid "WDS_ST_OPT_YEAR_ABB"
+msgstr "Рік"
