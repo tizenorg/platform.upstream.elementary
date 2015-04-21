@@ -566,3 +566,17 @@ msgstr "Қою"
 msgid "IDS_COM_BODY_CLIPBOARD"
 msgstr "Буфер"
 
+msgid "WDS_ST_OPT_DAY_ABB"
+msgstr "Күн"
+
+msgid "WDS_ST_OPT_HRS_ABB"
+msgstr "Сағ"
+
+msgid "WDS_ST_OPT_MINS_ABB"
+msgstr "Мин"
+
+msgid "WDS_ST_OPT_MONTH_ABB"
+msgstr "Ай"
+
+msgid "WDS_ST_OPT_YEAR_ABB"
+msgstr "Жыл"

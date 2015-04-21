@@ -136,3 +136,17 @@ msgstr "貼り付け"
 msgid "IDS_COM_BODY_CLIPBOARD"
 msgstr "クリップボード"
 
+msgid "WDS_ST_OPT_DAY_ABB"
+msgstr "日"
+
+msgid "WDS_ST_OPT_HRS_ABB"
+msgstr "時間"
+
+msgid "WDS_ST_OPT_MINS_ABB"
+msgstr "分"
+
+msgid "WDS_ST_OPT_MONTH_ABB"
+msgstr "月"
+
+msgid "WDS_ST_OPT_YEAR_ABB"
+msgstr "年"

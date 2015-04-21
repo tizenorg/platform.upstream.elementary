@@ -566,3 +566,17 @@ msgstr "ჩასმა"
 msgid "IDS_COM_BODY_CLIPBOARD"
 msgstr "ბუფერული მეხს."
 
+msgid "WDS_ST_OPT_DAY_ABB"
+msgstr "დღე"
+
+msgid "WDS_ST_OPT_HRS_ABB"
+msgstr "სთ"
+
+msgid "WDS_ST_OPT_MINS_ABB"
+msgstr "წუთი"
+
+msgid "WDS_ST_OPT_MONTH_ABB"
+msgstr "თვე"
+
+msgid "WDS_ST_OPT_YEAR_ABB"
+msgstr "წელი"

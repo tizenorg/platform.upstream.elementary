@@ -15,23 +15,23 @@ msgstr ""
 
 #: src/lib/elm_entry.c:2007
 msgid "Cancel"
-msgstr "റദ്ദാക്കുക"
+msgstr "ပယ္ဖ်က္ပါ"
 
 #: src/lib/elm_entry.c:1246
 msgid "Copy"
-msgstr "പകര്‍ത്തുക"
+msgstr "ကူးပါ"
 
 #: src/lib/elm_entry.c:1250
 msgid "Cut"
-msgstr "മുറിക്കുക"
+msgstr "ျဖတ္ေတာက္ပါ"
 
 #: src/lib/elm_entry.c:1266
 msgid "Select"
-msgstr "തിരഞ്ഞെടുക്കുക"
+msgstr "ေရြးခ်ယ္ပါ"
 
 #: src/lib/elm_entry.c:1273
 msgid "Paste"
-msgstr "ഒട്ടിക്കുക"
+msgstr "ကူးထည့္ပါ"
 
 #: src/modules/datetime_input_popup/datetime_input_popup.c:749
 #: src/modules/datetime_input_popup/datetime_input_popup.c:992
@@ -45,103 +45,103 @@ msgstr "PM"
 
 #: src/modules/datetime_input_popup/datetime_input_popup.c:786
 msgid "Set"
-msgstr "സജ്ജമാ."
+msgstr "သတ္မွတ္ပါ"
 
 #: src/modules/datetime_input_popup/datetime_input_popup.c:375
 msgid "Set date"
-msgstr "തീയതി സജ്ജമാക്കുക"
+msgstr "ေန႔စြဲသတ္မွတ္ပါ"
 
 #: src/modules/datetime_input_popup/datetime_input_popup.c:384
 msgid "Set time"
-msgstr "സമയം സജ്ജമാക്കുക"
+msgstr "အခ်ိန္သတ္မွတ္ပါ"
 
 #: src/lib/elm_config.c:2117
 msgid "default:LTR"
 msgstr ""
 
 msgid "tap to change"
-msgstr "മോഡ് മാറ്റുന്നതിന് ടാപ്പുചെയ്യുക."
+msgstr "အေနအထားေျပာင္းရန္ ႏွိပ္ပါ။"
 
 msgid "date"
-msgstr "തീയതി"
+msgstr "ေန႔စြဲ"
 
 msgid "hour"
-msgstr "മണിക്കൂര്‍"
+msgstr "နာရီ"
 
 msgid "minute"
-msgstr "മിനിറ്റ്"
+msgstr "မိနစ္"
 
 msgid "month"
-msgstr "മാസം"
+msgstr "လ"
 
 msgid "year"
-msgstr "വര്‍ഷം"
+msgstr "ႏွစ္"
 
 msgid "IDS_ST_BODY_P1SD_OF_P2SD_TTS"
-msgstr "%2$d-ൽ %1$d."
+msgstr "%2$d ၏ %1$d။"
 
 msgid "IDS_COM_BODY_DECREASE_DAY"
-msgstr "ദിവസം കുറയ്ക്കുക"
+msgstr "ရက္ ေလွ်ာ့ခ်ပါ"
 
 msgid "IDS_COM_BODY_DECREASE_HOUR"
-msgstr "മണിക്കൂര്‍ കുറയ്ക്കുക"
+msgstr "နာရီ ေလွ်ာ့ခ်ပါ"
 
 msgid "IDS_COM_BODY_DECREASE_MINUTE"
-msgstr "മിനിറ്റ് കുറയ്ക്കുക"
+msgstr "မိနစ္ ေလွ်ာ့ပါ"
 
 msgid "IDS_COM_BODY_DECREASE_MONTH"
-msgstr "മാസം കുറയ്ക്കുക"
+msgstr "လ ေလွ်ာ့ခ်ပါ"
 
 msgid "IDS_COM_BODY_DECREASE_YEAR"
-msgstr "വര്‍ഷം കുറയ്ക്കുക"
+msgstr "ႏွစ္ ေလွ်ာ့ခ်ပါ"
 
 msgid "IDS_COM_BODY_INCREASE_DAY"
-msgstr "ദിവസം കൂട്ടുക"
+msgstr "ရက္ တိုးပါ"
 
 msgid "IDS_COM_BODY_INCREASE_HOUR"
-msgstr "മണിക്കൂര്‍ കൂട്ടുക"
+msgstr "နာရီ တိုးပါ"
 
 msgid "IDS_COM_BODY_INCREASE_MINUTE"
-msgstr "മിനിറ്റ് കൂട്ടുക"
+msgstr "မိနစ္ တိုးပါ"
 
 msgid "IDS_COM_BODY_INCREASE_MONTH"
-msgstr "മാസം കൂട്ടുക"
+msgstr "လ တိုးပါ"
 
 msgid "IDS_COM_BODY_INCREASE_YEAR"
-msgstr "വര്‍ഷം കൂട്ടുക"
+msgstr "ႏွစ္ တိုးပါ"
 
 msgid "IDS_IDLE_BODY_TAP_TO_CHANGE"
-msgstr "മാറ്റുന്നതിന് തട്ടുക."
+msgstr "ေျပာင္းရန္ ႏွိပ္ပါ။"
 
 msgid "IDS_COM_BODY_SELECT_ALL"
-msgstr "എല്ലാം തിരഞ്ഞെടുക്കുക"
+msgstr "အားလုံးကုိ ေရြးပါ"
 
 msgid "IDS_COM_BODY_COPY"
-msgstr "പകര്‍ത്തുക"
+msgstr "ကူးပါ"
 
 msgid "IDS_COM_SK_SELECT"
-msgstr "തിരഞ്ഞെ."
+msgstr "ေရြးခ်ယ္"
 
 msgid "IDS_COM_BODY_CUT"
-msgstr "മുറിക്കുക"
+msgstr "ျဖတ္ေတာက္ပါ"
 
 msgid "IDS_COM_BODY_PASTE"
-msgstr "ഒട്ടിക്കുക"
+msgstr "ကူးထည့္ပါ"
 
 msgid "IDS_COM_BODY_CLIPBOARD"
-msgstr "ക്ലിപ്ബോര്‍ഡ്"
+msgstr "ကလစ္ဘုတ္"
 
 msgid "WDS_ST_OPT_DAY_ABB"
-msgstr "ദിവസം"
+msgstr "ေန႔"
 
 msgid "WDS_ST_OPT_HRS_ABB"
-msgstr "മണി."
+msgstr "နာရီ"
 
 msgid "WDS_ST_OPT_MINS_ABB"
-msgstr "മിനി."
+msgstr "မိနစ္"
 
 msgid "WDS_ST_OPT_MONTH_ABB"
-msgstr "മാസം"
+msgstr "လ"
 
 msgid "WDS_ST_OPT_YEAR_ABB"
-msgstr "വർഷം"
+msgstr "ခုႏွစ္"

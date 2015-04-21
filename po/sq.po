@@ -131,3 +131,17 @@ msgstr "Ngjit"
 msgid "IDS_COM_BODY_CLIPBOARD"
 msgstr "Kujt. e fragm."
 
+msgid "WDS_ST_OPT_DAY_ABB"
+msgstr "Dita"
+
+msgid "WDS_ST_OPT_HRS_ABB"
+msgstr "Orë"
+
+msgid "WDS_ST_OPT_MINS_ABB"
+msgstr "Min"
+
+msgid "WDS_ST_OPT_MONTH_ABB"
+msgstr "Muaji"
+
+msgid "WDS_ST_OPT_YEAR_ABB"
+msgstr "Viti"

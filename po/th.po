@@ -131,3 +131,17 @@ msgstr "วาง"
 msgid "IDS_COM_BODY_CLIPBOARD"
 msgstr "คลิ​ป​บอร์ด"
 
+msgid "WDS_ST_OPT_DAY_ABB"
+msgstr "วัน"
+
+msgid "WDS_ST_OPT_HRS_ABB"
+msgstr "ชม."
+
+msgid "WDS_ST_OPT_MINS_ABB"
+msgstr "นาที"
+
+msgid "WDS_ST_OPT_MONTH_ABB"
+msgstr "เดือน"
+
+msgid "WDS_ST_OPT_YEAR_ABB"
+msgstr "ปี"

@@ -566,3 +566,17 @@ msgstr "Pegar"
 msgid "IDS_COM_BODY_CLIPBOARD"
 msgstr "Portapapeles"
 
+msgid "WDS_ST_OPT_DAY_ABB"
+msgstr "Día"
+
+msgid "WDS_ST_OPT_HRS_ABB"
+msgstr "Horas"
+
+msgid "WDS_ST_OPT_MINS_ABB"
+msgstr "Min"
+
+msgid "WDS_ST_OPT_MONTH_ABB"
+msgstr "Mes"
+
+msgid "WDS_ST_OPT_YEAR_ABB"
+msgstr "Año"

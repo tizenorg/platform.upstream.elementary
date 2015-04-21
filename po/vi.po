@@ -418,3 +418,17 @@ msgstr "Dán"
 msgid "IDS_COM_BODY_CLIPBOARD"
 msgstr "Bộ nhớ tạm"
 
+msgid "WDS_ST_OPT_DAY_ABB"
+msgstr "Ngày"
+
+msgid "WDS_ST_OPT_HRS_ABB"
+msgstr "Giờ"
+
+msgid "WDS_ST_OPT_MINS_ABB"
+msgstr "Phút"
+
+msgid "WDS_ST_OPT_MONTH_ABB"
+msgstr "Tháng"
+
+msgid "WDS_ST_OPT_YEAR_ABB"
+msgstr "Năm"
