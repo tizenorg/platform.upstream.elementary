@@ -507,3 +507,17 @@ msgstr "Vložit"
 msgid "IDS_COM_BODY_CLIPBOARD"
 msgstr "Schránka"
 
+msgid "WDS_ST_OPT_DAY_ABB"
+msgstr "Den"
+
+msgid "WDS_ST_OPT_HRS_ABB"
+msgstr "Hod"
+
+msgid "WDS_ST_OPT_MINS_ABB"
+msgstr "Min"
+
+msgid "WDS_ST_OPT_MONTH_ABB"
+msgstr "Měsíc"
+
+msgid "WDS_ST_OPT_YEAR_ABB"
+msgstr "Rok"

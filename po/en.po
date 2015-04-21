@@ -601,5 +601,17 @@ msgstr "Paste"
 msgid "IDS_COM_BODY_CLIPBOARD"
 msgstr "Clipboard"
 
-msgid "group index"
-msgstr "group index"
+msgid "WDS_ST_OPT_DAY_ABB"
+msgstr "Day"
+
+msgid "WDS_ST_OPT_HRS_ABB"
+msgstr "Hrs"
+
+msgid "WDS_ST_OPT_MINS_ABB"
+msgstr "Mins"
+
+msgid "WDS_ST_OPT_MONTH_ABB"
+msgstr "Month"
+
+msgid "WDS_ST_OPT_YEAR_ABB"
+msgstr "Year"

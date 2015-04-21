@@ -130,3 +130,17 @@ msgstr "লেপন কৰক"
 
 msgid "IDS_COM_BODY_CLIPBOARD"
 msgstr "ক্লিপব'ৰ্ড"
+msgid "WDS_ST_OPT_DAY_ABB"
+msgstr "দিন"
+
+msgid "WDS_ST_OPT_HRS_ABB"
+msgstr "ঘ্ণ্টা"
+
+msgid "WDS_ST_OPT_MINS_ABB"
+msgstr "মিনিট"
+
+msgid "WDS_ST_OPT_MONTH_ABB"
+msgstr "মাহ"
+
+msgid "WDS_ST_OPT_YEAR_ABB"
+msgstr "বছৰ"

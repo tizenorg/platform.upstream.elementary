@@ -131,3 +131,17 @@ msgstr "ວາງໃສ່"
 msgid "IDS_COM_BODY_CLIPBOARD"
 msgstr "ກະດານເກັບຄວາມຈໍາ"
 
+msgid "WDS_ST_OPT_DAY_ABB"
+msgstr "ວັນ"
+
+msgid "WDS_ST_OPT_HRS_ABB"
+msgstr "ຊົ່ວໂມງ"
+
+msgid "WDS_ST_OPT_MINS_ABB"
+msgstr "ນທ"
+
+msgid "WDS_ST_OPT_MONTH_ABB"
+msgstr "ເດືອນ"
+
+msgid "WDS_ST_OPT_YEAR_ABB"
+msgstr "ປີ"

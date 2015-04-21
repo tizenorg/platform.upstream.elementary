@@ -131,3 +131,17 @@ msgstr "ಅಂಟಿಸಿರಿ"
 msgid "IDS_COM_BODY_CLIPBOARD"
 msgstr "ಕ್ಲಿಪ್‌ಬೋರ್ಡ್"
 
+msgid "WDS_ST_OPT_DAY_ABB"
+msgstr "ದಿನ"
+
+msgid "WDS_ST_OPT_HRS_ABB"
+msgstr "ಗಂಟೆಗಳು"
+
+msgid "WDS_ST_OPT_MINS_ABB"
+msgstr "ನಿಮಿಷಗಳು"
+
+msgid "WDS_ST_OPT_MONTH_ABB"
+msgstr "ತಿಂಗಳು"
+
+msgid "WDS_ST_OPT_YEAR_ABB"
+msgstr "ವರ್ಷ"

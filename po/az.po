@@ -565,3 +565,17 @@ msgstr "Yapışdır"
 msgid "IDS_COM_BODY_CLIPBOARD"
 msgstr "Mübadilə buferi"
 
+msgid "WDS_ST_OPT_DAY_ABB"
+msgstr "Gün"
+
+msgid "WDS_ST_OPT_HRS_ABB"
+msgstr "Saat"
+
+msgid "WDS_ST_OPT_MINS_ABB"
+msgstr "Dəq"
+
+msgid "WDS_ST_OPT_MONTH_ABB"
+msgstr "Ay"
+
+msgid "WDS_ST_OPT_YEAR_ABB"
+msgstr "İl"

@@ -502,3 +502,17 @@ msgstr "Enganxar"
 msgid "IDS_COM_BODY_CLIPBOARD"
 msgstr "Porta-retalls"
 
+msgid "WDS_ST_OPT_DAY_ABB"
+msgstr "Dia"
+
+msgid "WDS_ST_OPT_HRS_ABB"
+msgstr "H"
+
+msgid "WDS_ST_OPT_MINS_ABB"
+msgstr "Min"
+
+msgid "WDS_ST_OPT_MONTH_ABB"
+msgstr "Mes"
+
+msgid "WDS_ST_OPT_YEAR_ABB"
+msgstr "Any"

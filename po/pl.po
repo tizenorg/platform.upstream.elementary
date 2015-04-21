@@ -471,3 +471,17 @@ msgstr "Wklej"
 msgid "IDS_COM_BODY_CLIPBOARD"
 msgstr "Schowek"
 
+msgid "WDS_ST_OPT_DAY_ABB"
+msgstr "dd"
+
+msgid "WDS_ST_OPT_HRS_ABB"
+msgstr "gg"
+
+msgid "WDS_ST_OPT_MINS_ABB"
+msgstr "mm"
+
+msgid "WDS_ST_OPT_MONTH_ABB"
+msgstr "mm"
+
+msgid "WDS_ST_OPT_YEAR_ABB"
+msgstr "rr"

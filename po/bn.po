@@ -131,3 +131,17 @@ msgstr "প্রতিলেপন"
 msgid "IDS_COM_BODY_CLIPBOARD"
 msgstr "ক্লিপবোর্ড"
 
+msgid "WDS_ST_OPT_DAY_ABB"
+msgstr "দিন"
+
+msgid "WDS_ST_OPT_HRS_ABB"
+msgstr "ঘন্টা"
+
+msgid "WDS_ST_OPT_MINS_ABB"
+msgstr "মিনিট"
+
+msgid "WDS_ST_OPT_MONTH_ABB"
+msgstr "মাস"
+
+msgid "WDS_ST_OPT_YEAR_ABB"
+msgstr "বছর"

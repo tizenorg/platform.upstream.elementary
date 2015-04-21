@@ -504,3 +504,18 @@ msgstr "Beilleszt"
 
 msgid "IDS_COM_BODY_CLIPBOARD"
 msgstr "Vágólap"
+
+msgid "WDS_ST_OPT_DAY_ABB"
+msgstr "Nap"
+
+msgid "WDS_ST_OPT_HRS_ABB"
+msgstr "Óra"
+
+msgid "WDS_ST_OPT_MINS_ABB"
+msgstr "Perc"
+
+msgid "WDS_ST_OPT_MONTH_ABB"
+msgstr "Hónap"
+
+msgid "WDS_ST_OPT_YEAR_ABB"
+msgstr "Év"

@@ -317,6 +317,17 @@ msgstr ""
 msgid "Unselected"
 msgstr ""
 
-#: src/lib/elm_toolbar.c:2321
-msgid "Toolbar Item"
-msgstr ""
+msgid "WDS_ST_OPT_DAY_ABB"
+msgstr "دن"
+
+msgid "WDS_ST_OPT_HRS_ABB"
+msgstr "گھنٹے"
+
+msgid "WDS_ST_OPT_MINS_ABB"
+msgstr "منٹ"
+
+msgid "WDS_ST_OPT_MONTH_ABB"
+msgstr "مہینہ"
+
+msgid "WDS_ST_OPT_YEAR_ABB"
+msgstr "سال"

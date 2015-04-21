@@ -512,3 +512,18 @@ msgstr "붙여넣기"
 
 msgid "IDS_COM_BODY_CLIPBOARD"
 msgstr "클립보드"
+
+msgid "WDS_ST_OPT_DAY_ABB"
+msgstr "일"
+
+msgid "WDS_ST_OPT_HRS_ABB"
+msgstr "시"
+
+msgid "WDS_ST_OPT_MINS_ABB"
+msgstr "분"
+
+msgid "WDS_ST_OPT_MONTH_ABB"
+msgstr "월"
+
+msgid "WDS_ST_OPT_YEAR_ABB"
+msgstr "년"
