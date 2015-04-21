@@ -566,3 +566,17 @@ msgstr "Yapıştır"
 msgid "IDS_COM_BODY_CLIPBOARD"
 msgstr "Pano"
 
+msgid "WDS_ST_OPT_DAY_ABB"
+msgstr "Gün"
+
+msgid "WDS_ST_OPT_HRS_ABB"
+msgstr "Sa"
+
+msgid "WDS_ST_OPT_MINS_ABB"
+msgstr "Dak"
+
+msgid "WDS_ST_OPT_MONTH_ABB"
+msgstr "Ay"
+
+msgid "WDS_ST_OPT_YEAR_ABB"
+msgstr "Yıl"

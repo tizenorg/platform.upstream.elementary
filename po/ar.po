@@ -417,3 +417,18 @@ msgstr "لصق"
 
 msgid "IDS_COM_BODY_CLIPBOARD"
 msgstr "الحافظة"
+
+msgid "WDS_ST_OPT_DAY_ABB"
+msgstr "اليوم"
+
+msgid "WDS_ST_OPT_HRS_ABB"
+msgstr "الساعات"
+
+msgid "WDS_ST_OPT_MINS_ABB"
+msgstr "الدقائق"
+
+msgid "WDS_ST_OPT_MONTH_ABB"
+msgstr "الشهر"
+
+msgid "WDS_ST_OPT_YEAR_ABB"
+msgstr "العام"

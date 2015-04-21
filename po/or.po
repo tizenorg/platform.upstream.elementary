@@ -131,3 +131,17 @@ msgstr "ଲେପନ"
 msgid "IDS_COM_BODY_CLIPBOARD"
 msgstr "କ୍ଲିପ୍‌ବୋର୍ଡ୍"
 
+msgid "WDS_ST_OPT_DAY_ABB"
+msgstr "ଦିନ"
+
+msgid "WDS_ST_OPT_HRS_ABB"
+msgstr "ଘଣ୍ଟା"
+
+msgid "WDS_ST_OPT_MINS_ABB"
+msgstr "ମିନିଟ୍"
+
+msgid "WDS_ST_OPT_MONTH_ABB"
+msgstr "ମାସ"
+
+msgid "WDS_ST_OPT_YEAR_ABB"
+msgstr "ବର୍ଷ"

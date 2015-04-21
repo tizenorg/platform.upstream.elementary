@@ -566,3 +566,17 @@ msgstr "Lipire"
 msgid "IDS_COM_BODY_CLIPBOARD"
 msgstr "Clipboard"
 
+msgid "WDS_ST_OPT_DAY_ABB"
+msgstr "Zi"
+
+msgid "WDS_ST_OPT_HRS_ABB"
+msgstr "Ore"
+
+msgid "WDS_ST_OPT_MINS_ABB"
+msgstr "Minute"
+
+msgid "WDS_ST_OPT_MONTH_ABB"
+msgstr "Lună"
+
+msgid "WDS_ST_OPT_YEAR_ABB"
+msgstr "An"

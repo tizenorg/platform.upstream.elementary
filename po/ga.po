@@ -131,3 +131,17 @@ msgstr "Greamaigh"
 msgid "IDS_COM_BODY_CLIPBOARD"
 msgstr "Gearrthaisce"
 
+msgid "WDS_ST_OPT_DAY_ABB"
+msgstr "Lá"
+
+msgid "WDS_ST_OPT_HRS_ABB"
+msgstr "Ur"
+
+msgid "WDS_ST_OPT_MINS_ABB"
+msgstr "Nóim"
+
+msgid "WDS_ST_OPT_MONTH_ABB"
+msgstr "Mí"
+
+msgid "WDS_ST_OPT_YEAR_ABB"
+msgstr "Bliain"
