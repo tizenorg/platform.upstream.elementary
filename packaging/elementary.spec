@@ -122,6 +122,8 @@ cp %{SOURCE1001} .
 %{_datadir}/elementary/*
 %{_datadir}/icons/elementary.png
 
+%exclude %{_datadir}/elementary/config/
+
 %if ! %dbus_unavailable
 %files examples
 %manifest %{name}.manifest
