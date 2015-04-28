@@ -751,27 +751,31 @@ static void
 _elm_win_move(Ecore_Evas *ee)
 {
    Elm_Win_Data *sd = _elm_win_associate_get(ee);
-   int x, y;
+   int x, y, w, h;
 
    if (!sd) return;
 
-   ecore_evas_geometry_get(ee, &x, &y, NULL, NULL);
+   ecore_evas_geometry_get(ee, &x, &y, &w, &h);
    sd->screen.x = x;
    sd->screen.y = y;
    evas_object_smart_callback_call(sd->obj, SIG_MOVED, NULL);
    evas_nochange_push(evas_object_evas_get(sd->obj));
    evas_object_move(sd->obj, x, y);
    evas_nochange_pop(evas_object_evas_get(sd->obj));
+
+#ifdef HAVE_ELEMENTARY_WAYLAND
+   ecore_wl_window_opaque_region_set(sd->wl.win, x, y, w, h);
+#endif
 }
 
 static void
 _elm_win_resize_job(void *data)
 {
    ELM_WIN_DATA_GET(data, sd);
-   int w, h;
+   int x, y, w, h;
 
    sd->deferred_resize_job = NULL;
-   ecore_evas_request_geometry_get(sd->ee, NULL, NULL, &w, &h);
+   ecore_evas_request_geometry_get(sd->ee, &x, &y, &w, &h);
    if (sd->constrain)
      {
         int sw, sh;
@@ -791,6 +795,10 @@ _elm_win_resize_job(void *data)
 
    evas_object_resize(sd->obj, w, h);
    evas_object_resize(sd->edje, w, h);
+
+#ifdef HAVE_ELEMENTARY_WAYLAND
+   ecore_wl_window_opaque_region_set(sd->wl.win, x, y, w, h);
+#endif
 }
 
 static void
@@ -1795,6 +1803,12 @@ _elm_win_obj_intercept_show(void *data,
         ecore_evas_show(sd->pointer.ee);
         evas_object_show(sd->pointer.obj);
      }
+#ifdef HAVE_ELEMENTARY_WAYLAND
+   int x, y, w, h;
+
+   evas_object_geometry_get(obj, &x, &y, &w, &h);
+   ecore_wl_window_opaque_region_set(sd->wl.win, x, y, w, h);
+#endif
    evas_object_show(obj);
 #ifdef ELEMENTARY_X
    if (sd->type == ELM_WIN_TOOLTIP)
