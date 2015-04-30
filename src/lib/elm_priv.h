@@ -568,4 +568,12 @@ void   _elm_entry_entry_paste(Evas_Object *obj, const char *entry);
 
 double _elm_atof(const char *s);
 
+#define TIZEN_VECTOR_UX 1
+
+#ifdef TIZEN_VECTOR_UX
+void tizen_vg_box_button_set(Elm_Button *obj);
+#endif
+
+
+
 #endif

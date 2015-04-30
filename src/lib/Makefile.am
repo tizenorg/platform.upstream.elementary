@@ -497,7 +497,8 @@ elm_win.c \
 els_box.c \
 els_cursor.c \
 els_tooltip.c \
-elu_ews_wm.c
+elu_ews_wm.c \
+tizen_vector.c
 
 libelementary_la_CFLAGS = @ELEMENTARY_CFLAGS@
 libelementary_la_LIBADD = \
