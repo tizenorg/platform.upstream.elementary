@@ -258,7 +258,7 @@ _grid_load(Evas_Object *obj,
              else if ((g->grid[tn].want) && (!visible))
                {
                   sd->preload_num--;
-                  if (!sd->preload_num)
+                  if (sd->preload_num == 0)
                     {
                        edje_object_signal_emit
                          (wd->resize_obj,
@@ -348,17 +348,17 @@ _elm_photocam_pan_evas_object_smart_calculate(Eo *obj, Elm_Photocam_Pan_Data *ps
 
    evas_object_geometry_get(obj, &ox, &oy, &ow, &oh);
    _image_place(
-       wd->obj, psd->wsd->pan_x, psd->wsd->pan_y,
-       ox - psd->wsd->g_layer_zoom.imx, oy - psd->wsd->g_layer_zoom.imy, ow,
-       oh);
+      wd->obj, psd->wsd->pan_x, psd->wsd->pan_y,
+      ox - psd->wsd->g_layer_zoom.imx, oy - psd->wsd->g_layer_zoom.imy, ow,
+      oh);
 
    EINA_LIST_FOREACH(psd->wsd->grids, l, g)
      {
         _grid_load(wd->obj, g);
         _grid_place(
-              wd->obj, g, psd->wsd->pan_x,
-             psd->wsd->pan_y, ox - psd->wsd->g_layer_zoom.imx,
-             oy - psd->wsd->g_layer_zoom.imy, ow, oh);
+           wd->obj, g, psd->wsd->pan_x,
+           psd->wsd->pan_y, ox - psd->wsd->g_layer_zoom.imx,
+           oy - psd->wsd->g_layer_zoom.imy, ow, oh);
      }
 }
 
@@ -456,13 +456,11 @@ _grid_clear(Evas_Object *obj,
              if (g->grid[tn].want)
                {
                   sd->preload_num--;
-                  if (!sd->preload_num)
+                  if (sd->preload_num == 0)
                     {
                        edje_object_signal_emit
                          (wd->resize_obj,
                          "elm,state,busy,stop", "elm");
-                       evas_object_smart_callback_call
-                         (obj, SIG_LOAD_DETAIL, NULL);
                     }
                }
           }
@@ -489,7 +487,7 @@ _tile_preloaded_cb(void *data,
         evas_object_show(git->img);
         git->have = 1;
         sd->preload_num--;
-        if (!sd->preload_num)
+        if (sd->preload_num == 0)
           {
              edje_object_signal_emit
                (wd->resize_obj, "elm,state,busy,stop",
@@ -506,6 +504,7 @@ _grid_zoom_calc(double zoom)
    int z = zoom;
 
    if (z < 1) z = 1;
+   if (z > 8) z = 8;
    return _nearest_pow2_get(z);
 }
 
@@ -527,18 +526,13 @@ _grid_create(Evas_Object *obj)
 
    g->w = g->iw / g->zoom;
    g->h = g->ih / g->zoom;
-   if (g->zoom >= 8)
-     {
-        free(g);
 
-        return NULL;
-     }
-   if (sd->do_region)
+   if ((sd->do_region) && (g->zoom < 8))
      {
         g->gw = (g->w + g->tsize - 1) / g->tsize;
         g->gh = (g->h + g->tsize - 1) / g->tsize;
      }
-   else
+   else //need to create 1x1 grid when zoom >= 8 to load high res img
      {
         g->gw = 1;
         g->gh = 1;
@@ -612,33 +606,6 @@ _grid_clear_all(Evas_Object *obj)
 }
 
 static void
-_smooth_update(Evas_Object *obj)
-{
-   Elm_Phocam_Grid *g;
-   int x, y;
-   Eina_List *l;
-
-   ELM_PHOTOCAM_DATA_GET(obj, sd);
-
-   EINA_LIST_FOREACH(sd->grids, l, g)
-     {
-        for (y = 0; y < g->gh; y++)
-          {
-             for (x = 0; x < g->gw; x++)
-               {
-                  int tn;
-
-                  tn = (y * g->gw) + x;
-                  evas_object_image_smooth_scale_set
-                    (g->grid[tn].img, (!sd->no_smooth));
-               }
-          }
-     }
-
-   evas_object_image_smooth_scale_set(sd->img, (!sd->no_smooth));
-}
-
-static void
 _grid_raise(Elm_Phocam_Grid *g)
 {
    int x, y;
@@ -655,19 +622,6 @@ _grid_raise(Elm_Phocam_Grid *g)
      }
 }
 
-static Eina_Bool
-_scroll_timeout_cb(void *data)
-{
-   ELM_PHOTOCAM_DATA_GET(data, sd);
-
-   sd->no_smooth--;
-   if (!sd->no_smooth) _smooth_update(data);
-
-   sd->scr_timer = NULL;
-
-   return ECORE_CALLBACK_CANCEL;
-}
-
 static void
 _main_img_preloaded_cb(void *data,
                        Evas *e EINA_UNUSED,
@@ -681,7 +635,7 @@ _main_img_preloaded_cb(void *data,
    ELM_WIDGET_DATA_GET_OR_RETURN(data, wd);
 
    evas_object_show(sd->img);
-   sd->main_load_pending = 0;
+   sd->main_load_pending = EINA_FALSE;
    g = _grid_create(obj);
    if (g)
      {
@@ -691,13 +645,6 @@ _main_img_preloaded_cb(void *data,
    ecore_job_del(sd->calc_job);
    sd->calc_job = ecore_job_add(_calc_job_cb, data);
    evas_object_smart_callback_call(data, SIG_LOADED, NULL);
-   sd->preload_num--;
-   if (!sd->preload_num)
-     {
-        edje_object_signal_emit
-          (wd->resize_obj, "elm,state,busy,stop", "elm");
-        evas_object_smart_callback_call(obj, SIG_LOADED_DETAIL, NULL);
-     }
 }
 
 static Eina_Bool
@@ -752,12 +699,13 @@ _zoom_do(Evas_Object *obj,
 static Eina_Bool
 _zoom_anim_cb(void *data)
 {
-   double t;
+//   double t;
    Eina_Bool go;
    Evas_Object *obj = data;
 
    ELM_PHOTOCAM_DATA_GET(obj, sd);
-
+/** FIXME
+  * temporarily disable zoom effect (2015.5.1)
    t = ecore_loop_time_get();
    if (t >= sd->t_end)
      t = 1.0;
@@ -767,11 +715,11 @@ _zoom_anim_cb(void *data)
      t = 1.0;
    t = 1.0 - t;
    t = 1.0 - (t * t);
-   go = _zoom_do(obj, t);
+   go = _zoom_do(obj, t);*/
+
+   go = _zoom_do(obj, 1.0);
    if (!go)
      {
-        sd->no_smooth--;
-        if (!sd->no_smooth) _smooth_update(data);
         sd->zoom_animator = NULL;
         evas_object_smart_callback_call(obj, SIG_ZOOM_STOP, NULL);
      }
@@ -902,17 +850,6 @@ static void
 _scroll_cb(Evas_Object *obj,
            void *data EINA_UNUSED)
 {
-   ELM_PHOTOCAM_DATA_GET(obj, sd);
-
-   if (!sd->scr_timer)
-     {
-        sd->no_smooth++;
-        if (sd->no_smooth == 1) _smooth_update(obj);
-     }
-
-   ecore_timer_del(sd->scr_timer);
-   sd->scr_timer = ecore_timer_add(0.5, _scroll_timeout_cb, obj);
-
    evas_object_smart_callback_call(obj, SIG_SCROLL, NULL);
 }
 
@@ -1369,7 +1306,6 @@ _elm_photocam_evas_object_smart_del(Eo *obj, Elm_Photocam_Data *sd)
    if (sd->remote) _elm_url_cancel(sd->remote);
    eina_stringshare_del(sd->file);
    ecore_job_del(sd->calc_job);
-   ecore_timer_del(sd->scr_timer);
    ecore_timer_del(sd->long_timer);
    ecore_animator_del(sd->zoom_animator);
    ecore_animator_del(sd->g_layer_zoom.bounce.animator);
@@ -1436,9 +1372,6 @@ _internal_file_set(Eo *obj, Elm_Photocam_Data *sd, const char *file, Eina_File *
    eina_stringshare_replace(&sd->file, file);
    sd->f = eina_file_dup(f);
 
-   evas_object_image_smooth_scale_set(sd->img, (sd->no_smooth == 0));
-   evas_object_image_file_set(sd->img, NULL, NULL);
-   evas_object_image_load_scale_down_set(sd->img, 0);
    _photocam_image_file_set(sd->img, sd);
    err = evas_object_image_load_error_get(sd->img);
    if (err != EVAS_LOAD_ERROR_NONE)
@@ -1447,36 +1380,23 @@ _internal_file_set(Eo *obj, Elm_Photocam_Data *sd, const char *file, Eina_File *
         if (ret) *ret = err;
         return;
      }
-   evas_object_image_size_get(sd->img, &w, &h);
 
+   // get image size
+   evas_object_image_load_scale_down_set(sd->img, 0);
+   evas_object_image_size_get(sd->img, &w, &h);
    sd->do_region = evas_object_image_region_support_get(sd->img);
    sd->size.imw = w;
    sd->size.imh = h;
    sd->size.w = sd->size.imw / sd->zoom;
    sd->size.h = sd->size.imh / sd->zoom;
-   evas_object_image_file_set(sd->img, NULL, NULL);
-   evas_object_image_load_scale_down_set(sd->img, 8);
-   _photocam_image_file_set(sd->img, sd);
-   err = evas_object_image_load_error_get(sd->img);
-   if (err != EVAS_LOAD_ERROR_NONE)
-     {
-        ERR("Things are going bad for '%s' (%p)", file, sd->img);
-        if (ret) *ret = err;
-        return;
-     }
 
+   // load low resolution image
+   evas_object_image_load_scale_down_set(sd->img, 8);
    evas_object_image_preload(sd->img, 0);
+   evas_object_smart_callback_call(obj, SIG_LOAD, NULL);
    sd->main_load_pending = EINA_TRUE;
 
    sd->calc_job = ecore_job_add(_calc_job_cb, obj);
-   evas_object_smart_callback_call(obj, SIG_LOAD, NULL);
-   sd->preload_num++;
-   if (sd->preload_num == 1)
-     {
-        edje_object_signal_emit
-          (wd->resize_obj, "elm,state,busy,start", "elm");
-        evas_object_smart_callback_call(obj, SIG_LOAD_DETAIL, NULL);
-     }
 
    tz = sd->zoom;
    sd->zoom = 0.0;
@@ -1552,23 +1472,24 @@ _elm_photocam_file_set(Eo *obj, Elm_Photocam_Data *sd, const char *file)
    Evas_Load_Error ret = EVAS_LOAD_ERROR_NONE;
    unsigned int i;
 
-   _grid_clear_all(obj);
-   ELM_SAFE_FREE(sd->g_layer_zoom.bounce.animator, ecore_animator_del);
-   if (sd->zoom_animator)
-     {
-        sd->no_smooth--;
-        if (sd->no_smooth == 0) _smooth_update(obj);
-        ecore_animator_del(sd->zoom_animator);
-        sd->zoom_animator = NULL;
-     }
-   ecore_job_del(sd->calc_job);
-   evas_object_hide(sd->img);
-   if (sd->f) eina_file_close(sd->f);
-   sd->f = NULL;
+   // return if the file name is the same as the previous one
+   if ((sd->file) && (file) && !strcmp(sd->file, file)) return EVAS_LOAD_ERROR_NONE;
 
-   free(sd->remote_data);
-   if (sd->remote) _elm_url_cancel(sd->remote);
-   sd->remote = NULL;
+   // clear things 
+   _grid_clear_all(obj);
+   evas_object_hide(sd->img);
+   if (sd->main_load_pending) evas_object_image_preload(sd->img, 1);
+   ELM_SAFE_FREE(sd->g_layer_zoom.bounce.animator, ecore_animator_del);
+   ELM_SAFE_FREE(sd->zoom_animator, ecore_animator_del);
+   ELM_SAFE_FREE(sd->calc_job, ecore_job_del);
+   ELM_SAFE_FREE(sd->f, eina_file_close);
+   ELM_SAFE_FREE(sd->remote_data, free);
+   if (sd->remote)
+     {
+        _elm_url_cancel(sd->remote);
+        sd->remote = NULL;
+     }
+
    sd->preload_num = 0;
 
    for (i = 0; i < sizeof (remote_uri) / sizeof (remote_uri[0]); ++i)
@@ -1792,8 +1713,6 @@ done:
         if (!sd->zoom_animator)
           {
              sd->zoom_animator = ecore_animator_add(_zoom_anim_cb, obj);
-             sd->no_smooth++;
-             if (sd->no_smooth == 1) _smooth_update(obj);
              started = 1;
           }
      }
@@ -1926,7 +1845,6 @@ _elm_photocam_image_region_show(Eo *obj, Elm_Photocam_Data *sd, int x, int y, in
      }
    if (sd->zoom_animator)
      {
-        sd->no_smooth--;
         ecore_animator_del(sd->zoom_animator);
         sd->zoom_animator = NULL;
         _zoom_do(obj, 1.0);
@@ -1968,8 +1886,6 @@ _elm_photocam_elm_interface_scrollable_region_bring_in(Eo *obj, Elm_Photocam_Dat
      }
    if (sd->zoom_animator)
      {
-        sd->no_smooth--;
-        if (!sd->no_smooth) _smooth_update(obj);
         ecore_animator_del(sd->zoom_animator);
         sd->zoom_animator = NULL;
         _zoom_do(obj, 1.0);
