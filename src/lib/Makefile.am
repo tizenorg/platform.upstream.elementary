@@ -154,6 +154,7 @@ elm_app_client_view_eo.h \
 elm_app_client_view.h \
 elm_app.h \
 elm_atspi_app_object.h \
+elm_atspi_proxy.h \
 elm_authors.h \
 elm_bg.h \
 elm_bg_eo.h \
@@ -402,6 +403,7 @@ elm_app_server_view.c \
 elm_app_client.c \
 elm_app_client_view.c \
 elm_atspi_app_object.c \
+elm_atspi_proxy.c \
 elm_atspi_bridge.c \
 elm_bg.c \
 elm_box.c \
@@ -520,6 +522,7 @@ elm_app_client_view.eo \
 elm_app_server.eo \
 elm_app_server_view.eo \
 elm_atspi_app_object.eo \
+elm_atspi_proxy.eo \
 elm_bg.eo \
 elm_box.eo \
 elm_bubble.eo \
