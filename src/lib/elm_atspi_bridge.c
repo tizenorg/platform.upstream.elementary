@@ -34,6 +34,8 @@
 #define ELM_ACCESS_OBJECT_PATH_PREFIX2  "/org/a11y/atspi/accessible"
 #define ELM_ACCESS_OBJECT_REFERENCE_TEMPLATE ELM_ACCESS_OBJECT_PATH_PREFIX "%llu"
 
+#define ELM_ATSPI_DBUS_INTERFACE_PROXY "elm.atspi.bridge.proxy.Socket"
+
 #define SIZE(x) sizeof(x)/sizeof(x[0])
 #define ELM_ATSPI_BRIDGE_CLASS_NAME "__Elm_Atspi_Bridge"
 
