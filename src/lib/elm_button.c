@@ -125,7 +125,7 @@ _elm_button_elm_widget_theme_apply(Eo *obj, Elm_Button_Data *_pd EINA_UNUSED)
    _icon_signal_emit(obj);
 
 #ifdef TIZEN_VECTOR_UX
-   tizen_vg_box_button_set(obj);
+   tizen_vg_button_set(obj);
 #endif
 
    return EINA_TRUE;
@@ -327,7 +327,7 @@ elm_button_add(Evas_Object *parent)
    Evas_Object *obj = eo_add(MY_CLASS, parent);
 
 #ifdef TIZEN_VECTOR_UX
-   tizen_vg_box_button_set(obj);
+   tizen_vg_button_set(obj);
 #endif
 
    return obj;
