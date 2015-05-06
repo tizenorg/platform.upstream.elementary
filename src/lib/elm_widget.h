@@ -801,6 +801,8 @@ EAPI void             elm_widget_focus_move_policy_set(Evas_Object *obj, Elm_Foc
 EAPI Elm_Focus_Move_Policy elm_widget_focus_move_policy_get(const Evas_Object *obj);
 EAPI void             elm_widget_focus_region_show_mode_set(Evas_Object *obj, Elm_Focus_Region_Show_Mode mode);
 EAPI Elm_Focus_Region_Show_Mode elm_widget_focus_region_show_mode_get(const Evas_Object *obj);
+EAPI Eo*              _elm_atspi_bridge_utils_plug_create(Eo *parent, const char *svcname, int svcnum);
+EAPI Eo*              _elm_atspi_bridge_utils_socket_create(Eo *parent, const char *svcname, int svcnum);
 
 /**
  * Function to operate on a given widget's scrollabe children when necessary.
