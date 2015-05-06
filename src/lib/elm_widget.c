@@ -534,7 +534,7 @@ _elm_widget_evas_object_smart_show(Eo *obj, Elm_Widget_Smart_Data *_pd EINA_UNUS
      {
         Eo *parent;
         eo_do(obj, parent = elm_interface_atspi_accessible_parent_get());
-        elm_interface_atspi_accessible_children_changed_added_signal_emit(parent, obj);
+        if (parent) elm_interface_atspi_accessible_children_changed_added_signal_emit(parent, obj);
      }
 
    it = evas_object_smart_iterator_new(obj);

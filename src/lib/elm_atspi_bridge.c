@@ -34,6 +34,8 @@
 #define ELM_ACCESS_OBJECT_PATH_PREFIX2  "/org/a11y/atspi/accessible"
 #define ELM_ACCESS_OBJECT_REFERENCE_TEMPLATE ELM_ACCESS_OBJECT_PATH_PREFIX "%llu"
 
+#define ELM_ATSPI_DBUS_INTERFACE_PROXY "elm.atspi.bridge.proxy.Socket"
+
 #define SIZE(x) sizeof(x)/sizeof(x[0])
 #define ELM_ATSPI_BRIDGE_CLASS_NAME "__Elm_Atspi_Bridge"
 
@@ -96,6 +98,8 @@ typedef struct _Elm_Atspi_Bridge_Data
    } interfaces;
    Elm_Atspi_Event_Handler *event_hdlr;
    Eina_Hash *event_hash;
+   Eina_List *socket_queue;
+   Eina_List *plug_queue;
    Eina_Bool connected : 1;
 } Elm_Atspi_Bridge_Data;
 
@@ -114,6 +118,7 @@ struct collection_match_rule {
 
 static Eo *_instance;
 static int _init_count = 0;
+static const char *_a11y_socket_address;
 
 // Object Event handlers
 static Eina_Bool _state_changed_signal_send(void *data, Eo *obj, const Eo_Event_Description *desc, void *event_info);
@@ -129,6 +134,7 @@ static Eina_Bool _text_caret_moved_send(void *data, Eo *obj, const Eo_Event_Desc
 static Eina_Bool _text_selection_changed_send(void *data, Eo *obj, const Eo_Event_Description *desc, void *event_info EINA_UNUSED);
 
 // bridge private methods
+static void _bridge_cache_build(Eo *bridge, void *obj);
 static void _bridge_object_register(Eo *bridge, Eo *obj);
 static void _bridge_object_unregister(Eo *bridge, Eo *obj);
 static const char * _bridge_path_from_object(Eo *bridge, const Eo *eo);
@@ -142,6 +148,8 @@ static Eina_Bool _elm_atspi_bridge_key_filter(void *data, void *loop, int type, 
 static void _object_desktop_reference_append(Eldbus_Message_Iter *iter);
 static Eina_Bool _on_object_add(void *data, Eo *obj, const Eo_Event_Description *event EINA_UNUSED, void *event_info EINA_UNUSED);
 static Eina_Bool _on_object_del(void *data, Eo *obj, const Eo_Event_Description *event EINA_UNUSED, void *event_info EINA_UNUSED);
+static void _plug_connect(Eldbus_Connection *conn, Eo *proxy);
+static void _socket_ifc_create(Eldbus_Connection *conn, Eo *proxy);
 
 typedef struct {
      const Eo_Event_Description *desc;
@@ -1996,6 +2004,58 @@ _editable_text_text_paste(const Eldbus_Service_Interface *iface, const Eldbus_Me
    return ret;
 }
 
+Eina_Bool
+_elm_atspi_bridge_plug_id_split(const char *plug_id, char **bus, char **path)
+{
+   if (!plug_id || !strcmp(plug_id, "")) return EINA_FALSE;
+   unsigned int tokens = 0;
+   char **split = eina_str_split_full(plug_id, ":", 0, &tokens);
+   Eina_Bool ret = EINA_FALSE;
+   if (tokens == 2)
+     {
+        if (bus) *bus = strdup(split[1]);
+        if (path) *path = strdup(split[2]);
+        ret = EINA_TRUE;
+     }
+   else if (tokens == 3)
+     {
+        char buf[128];
+        snprintf(buf, sizeof(buf), ":%s", split[1]);
+        if (bus) *bus = strdup(buf);
+        if (path) *path = strdup(split[2]);
+        ret = EINA_TRUE;
+     }
+
+   free(split[0]);
+   free(split);
+   return ret;
+}
+
+static Eldbus_Message *
+_socket_embedded(const Eldbus_Service_Interface *iface, const Eldbus_Message *msg)
+{
+   Eo *proxy;
+   const char *obj_path = eldbus_service_object_path_get(iface);
+   const char *bus, *path;
+   Eo *bridge = _elm_atspi_bridge_get();
+   Eo *obj = _bridge_object_from_path(bridge, obj_path);
+   eo_do(obj, proxy = elm_interface_atspi_accessible_parent_get());
+
+   if (!eo_isa(proxy, ELM_ATSPI_PROXY_CLASS))
+     return eldbus_message_error_new(msg, "org.freedesktop.DBus.Error.Failed", "Unable to embed object.");
+
+   if (!eldbus_message_arguments_get(msg, "s", &path))
+     return eldbus_message_error_new(msg, "org.freedesktop.DBus.Error.InvalidArgs", "Plug id expected.");
+
+   bus = eldbus_message_sender_get(msg);
+
+   eo_do(proxy, elm_obj_atspi_proxy_address_set(bus, path));
+
+   _bridge_cache_build(bridge, proxy);
+
+   return eldbus_message_method_return_new(msg);
+}
+
 static const Eldbus_Method editable_text_methods[] = {
    { "SetTextContents", ELDBUS_ARGS({"s", "newcontents"}), ELDBUS_ARGS({"b", NULL}), _editable_text_text_content_set, 0 },
    { "InsertText", ELDBUS_ARGS({"i", "position"}, {"s", "text"}, {"i", "length"}), ELDBUS_ARGS({"b", NULL}), _editable_text_text_insert, 0 },
@@ -2005,6 +2065,28 @@ static const Eldbus_Method editable_text_methods[] = {
    { "PasteText", ELDBUS_ARGS({"i", "position"}), ELDBUS_ARGS({"b", NULL}), _editable_text_text_paste, 0 },
    { NULL, NULL, NULL, NULL, 0 }
 };
+
+static const Eldbus_Method socket_methods[] = {
+   { "Embedded", ELDBUS_ARGS({"s", "id"}), ELDBUS_ARGS({NULL, NULL}), _socket_embedded, 0 },
+   { NULL, NULL, NULL, NULL, 0 }
+};
+
+static const Eldbus_Service_Interface_Desc socket_iface_desc = {
+   ATSPI_DBUS_INTERFACE_SOCKET, socket_methods, NULL, NULL, NULL, NULL
+};
+
+static void _socket_interface_register(Eldbus_Connection *conn, Eo *proxy)
+{
+   Eo *parent;
+   Eo *bridge = _elm_atspi_bridge_get();
+
+   eo_do(proxy, parent = eo_parent_get());
+   if (!eo_isa(parent, ELM_INTERFACE_ATSPI_ACCESSIBLE_MIXIN))
+     return;
+
+   const char *path = _bridge_path_from_object(bridge, parent);
+   eldbus_service_interface_register(conn, path, &socket_iface_desc);
+}
 
 static Eo *
 _bridge_object_from_path(Eo *bridge, const char *path)
@@ -3966,6 +4048,10 @@ _children_changed_signal_send(void *data, Eo *obj, const Eo_Event_Description *d
 
    type = ev_data->is_added ? ATSPI_OBJECT_CHILD_ADDED : ATSPI_OBJECT_CHILD_REMOVED;
 
+   // update cached objects
+   if (ev_data->is_added)
+     _bridge_cache_build(data, ev_data->child);
+
    if (!STATE_TYPE_GET(pd->object_children_broadcast_mask, type))
      return EINA_FALSE;
 
@@ -4244,6 +4330,36 @@ _on_object_del(void *data, Eo *obj, const Eo_Event_Description *event EINA_UNUSE
 }
 
 static void
+_bridge_cache_build(Eo *bridge, void *obj)
+{
+   Eina_List *children;
+   Elm_Atspi_State_Set ss;
+   Eo *child;
+
+   ELM_ATSPI_BRIDGE_DATA_GET_OR_RETURN(bridge, pd);
+
+   if (!eo_isa(obj, ELM_INTERFACE_ATSPI_ACCESSIBLE_MIXIN))
+     return;
+
+   if (!eo_isa(obj, ELM_ATSPI_PROXY_CLASS))
+      _bridge_object_register(bridge, obj);
+
+   eo_do(obj, ss = elm_interface_atspi_accessible_state_set_get());
+   if (STATE_TYPE_GET(ss, ELM_ATSPI_STATE_MANAGES_DESCENDANTS))
+     return;
+   if (eo_isa(obj, ELM_INTERFACE_ATSPI_WINDOW_INTERFACE))
+     {
+        if (STATE_TYPE_GET(ss, ELM_ATSPI_STATE_ACTIVE))
+          _window_signal_send(bridge, obj, ELM_INTERFACE_ATSPI_WINDOW_EVENT_WINDOW_ACTIVATED, NULL);
+        else
+          _window_signal_send(bridge, obj, ELM_INTERFACE_ATSPI_WINDOW_EVENT_WINDOW_DEACTIVATED, NULL);
+     }
+   eo_do(obj, children = elm_interface_atspi_accessible_children_get());
+   EINA_LIST_FREE(children, child)
+      _bridge_cache_build(bridge, child);
+}
+
+static void
 _interfaces_unregister(Eo *bridge)
 {
     ELM_ATSPI_BRIDGE_DATA_GET_OR_RETURN(bridge, pd);
@@ -4379,7 +4495,7 @@ static void
 _a11y_bus_initialize(Eo *obj, const char *socket_addr)
 {
    ELM_ATSPI_BRIDGE_DATA_GET_OR_RETURN(obj, pd);
-
+   Eo *root;
    pd->a11y_bus = eldbus_private_address_connection_get(socket_addr);
    if (!pd->a11y_bus)
      return;
@@ -4395,10 +4511,23 @@ _a11y_bus_initialize(Eo *obj, const char *socket_addr)
    _cache_register(obj);
    _interfaces_register(obj);
    _event_handlers_register(obj);
-   _elm_atspi_bridge_app_register(obj);
+   if (!getenv("ELM_ATSPI_NO_EMBED"))
+     _elm_atspi_bridge_app_register(obj);
+
+   // buid cache
+   eo_do(obj, root = elm_obj_atspi_bridge_root_get());
+   _bridge_cache_build(obj, root);
 
    // register accesible object event listener
    eo_do(ELM_INTERFACE_ATSPI_ACCESSIBLE_MIXIN, pd->event_hdlr = elm_interface_atspi_accessible_event_handler_add(_bridge_accessible_event_dispatch, obj));
+
+   // additionally register all socket objects and its descendants
+   EINA_LIST_FREE(pd->plug_queue, obj)
+   _plug_connect(pd->a11y_bus, obj);
+   EINA_LIST_FREE(pd->socket_queue, obj)
+   _socket_ifc_create(pd->a11y_bus, obj);
+   pd->plug_queue = pd->socket_queue = NULL;
+
 }
 
 static void
@@ -4421,6 +4550,7 @@ _a11y_bus_address_get(void *data, const Eldbus_Message *msg, Eldbus_Pending *pen
         return;
      }
 
+   _a11y_socket_address = eina_stringshare_add(sock_addr);
    _a11y_bus_initialize((Eo*)data, sock_addr);
 }
 
@@ -4439,7 +4569,6 @@ static void _a11y_connection_init(Eo *bridge)
    if (p)
       pd->pending_requests = eina_list_append(pd->pending_requests, p);
 }
-
 static void
 _screen_reader_enabled_get(void *data, const Eldbus_Message *msg, Eldbus_Pending *pending)
 {
@@ -4512,6 +4641,9 @@ _elm_atspi_bridge_shutdown(void)
         eo_del(_instance);
         _init_count = 0;
      }
+   if (_a11y_socket_address)
+     eina_stringshare_del(_a11y_socket_address);
+   _a11y_socket_address = NULL;
 }
 
 static Key_Event_Info*
@@ -4740,4 +4872,306 @@ _elm_atspi_bridge_eo_base_destructor(Eo *obj, Elm_Atspi_Bridge_Data *pd)
    eo_do_super(obj, ELM_ATSPI_BRIDGE_CLASS, eo_destructor());
 }
 
+EAPI Eina_Bool
+elm_atspi_bridge_object_address_get(Eo *obj, char **bus, char **path)
+{
+   Eo *bridge = _elm_atspi_bridge_get();
+   if (!bridge)
+     {
+        ERR("Connection with accessibility bus not established.");
+        return EINA_FALSE;
+     }
+   ELM_ATSPI_BRIDGE_DATA_GET_OR_RETURN_VAL(bridge, pd, EINA_FALSE);
+   if (!eo_isa(obj, ELM_INTERFACE_ATSPI_ACCESSIBLE_MIXIN))
+     {
+        ERR("Connection with accessibility bus not established.");
+        return EINA_FALSE;
+     }
+   if (bus) *bus = strdup(eldbus_connection_unique_name_get(pd->a11y_bus));
+   if (path) *path = strdup(_bridge_path_from_object(bridge, obj));
+
+   return EINA_TRUE;
+}
+
+static Eina_Bool
+_proxy_property_get(const Eldbus_Service_Interface *interface, const char *property,
+                         Eldbus_Message_Iter *iter, const Eldbus_Message *request_msg EINA_UNUSED,
+                         Eldbus_Message **error EINA_UNUSED)
+{
+   char *bus, *path;
+   Eo *obj = eldbus_service_object_data_get(interface, "_atspi_obj");
+   EINA_SAFETY_ON_NULL_RETURN_VAL(obj, EINA_FALSE);
+
+   if (!strcmp(property, "Object"))
+     {
+       Eo *parent;
+       eo_do(obj, parent = eo_parent_get());
+       if (!elm_atspi_bridge_object_address_get(parent, &bus, &path))
+          return EINA_FALSE;
+
+       Eldbus_Message_Iter *iter_struct = eldbus_message_iter_container_new(iter, 'r', NULL);
+       if (iter_struct)
+         {
+            eldbus_message_iter_basic_append(iter_struct, 's', bus);
+            eldbus_message_iter_basic_append(iter_struct, 'o', path);
+            eldbus_message_iter_container_close(iter, iter_struct);
+         }
+       free(bus);
+       free(path);
+       return EINA_TRUE;
+     }
+   return EINA_FALSE;
+}
+
+static const Eldbus_Property proxy_properties[] = {
+   { "Object", "(so)", _proxy_property_get, NULL, 0 },
+   { NULL, NULL, NULL, NULL, 0 }
+};
+
+static const Eldbus_Service_Interface_Desc _proxy_iface_desc = {
+   ELM_ATSPI_DBUS_INTERFACE_PROXY, NULL, NULL, proxy_properties, NULL, NULL
+};
+
+static void _embedded_reply_cb(void *data, const Eldbus_Message *msg, Eldbus_Pending *pending EINA_UNUSED)
+{
+   Eo *parent, *proxy = data;
+   const char *err, *txt;
+
+   if (eldbus_message_error_get(msg, &err, &txt))
+     {
+        ERR("AT-SPI: Embedded method call failed: %s %s", err, txt);
+        eo_do(proxy, eo_event_callback_call(ELM_ATSPI_PROXY_EVENT_DISCONNECTED, NULL));
+        return;
+     }
+   eo_do(proxy, eo_event_callback_call(ELM_ATSPI_PROXY_EVENT_CONNECTED, NULL));
+
+   eo_do(proxy, parent = eo_parent_get());
+   if (parent)
+     elm_interface_atspi_accessible_children_changed_added_signal_emit(parent, proxy)
+}
+
+static void
+_plug_embedded_send(Eldbus_Connection *conn, Eo *proxy, const char *bus, const char *path)
+{
+   char *obj_path = NULL;
+   Eo *parent;
+   Eldbus_Message *msg = NULL;
+
+   eo_do(proxy, parent = eo_parent_get());
+   if (!parent) goto fail;
+
+   msg = eldbus_message_method_call_new(bus, path, ATSPI_DBUS_INTERFACE_SOCKET, "Embedded");
+   if (!msg) goto fail;
+
+   if (!elm_atspi_bridge_object_address_get(parent, NULL, &obj_path))
+     goto fail;
+
+   if (!eldbus_message_arguments_append(msg, "s", obj_path))
+     goto fail;
+
+   free(obj_path);
+
+   if (!eldbus_connection_send(conn, msg, _embedded_reply_cb, proxy, 100))
+     goto fail;
+
+   return;
+
+fail:
+   ERR("AT-SPI: Unable to send Embedded request.");
+   if (msg) eldbus_message_unref(msg);
+   free(obj_path);
+   eo_do(proxy, eo_event_callback_call(ELM_ATSPI_PROXY_EVENT_DISCONNECTED, NULL));
+}
+
+static void _socket_addr_get_cb(void *data, const Eldbus_Message *msg, Eldbus_Pending *pending EINA_UNUSED)
+{
+   Eo *proxy = data;
+   const char *bus, *path, *err, *txt;
+   Eldbus_Message_Iter *iter, *iter_variant, *iter_struct;
+
+   ELM_ATSPI_BRIDGE_DATA_GET_OR_RETURN(proxy, pd);
+
+   if (eldbus_message_error_get(msg, &err, &txt))
+     {
+        ERR("Unable to connect to socket: %s %s", err, txt);
+        goto fail;
+     }
+
+   iter = eldbus_message_iter_get(msg);
+   if (!eldbus_message_iter_arguments_get(iter, "v", &iter_variant))
+     {
+        ERR("Unable to get variant parameter");
+        goto fail;
+     }
+
+   if (!eldbus_message_iter_arguments_get(iter_variant, "(so)", &iter_struct))
+     {
+        ERR("Unable to get so parameters");
+        goto fail;
+     }
+
+   if (!eldbus_message_iter_arguments_get(iter_struct, "so", &bus, &path))
+     {
+        ERR("Unable to get so parameters");
+        goto fail;
+     }
+
+   eo_do(proxy, elm_obj_atspi_proxy_address_set(bus, path));
+
+   _plug_embedded_send(pd->a11y_bus, proxy, bus, path);
+
+   return;
+
+fail:
+   eo_do(proxy, eo_event_callback_call(ELM_ATSPI_PROXY_EVENT_DISCONNECTED, NULL));
+}
+
+static void _free_stringshared(void *data)
+{
+   eina_stringshare_del(data);
+}
+
+static void
+_plug_address_discover(Eldbus_Connection *conn, Eo *proxy, const char *svc_bus, const char *svc_path)
+{
+   Eldbus_Object *dobj;
+   dobj = eldbus_object_get(conn, svc_bus, svc_path);
+
+   Eldbus_Message *msg = eldbus_object_method_call_new(dobj, ELDBUS_FDO_INTERFACE_PROPERTIES, "Get");
+   eldbus_message_arguments_append(msg, "ss", ELM_ATSPI_DBUS_INTERFACE_PROXY, "Object");
+   eldbus_object_send(dobj, msg, _socket_addr_get_cb, proxy, 100);
+}
+
+static void _plug_connect(Eldbus_Connection *conn, Eo *proxy)
+{
+   const char *bus, *path;
+
+   eo_do(proxy, bus = eo_key_data_get("__svc_bus"));
+   eo_do(proxy, path = eo_key_data_get("__svc_path"));
+
+   if (bus && path)
+     {
+        _plug_address_discover(conn, proxy, bus, path);
+        return;
+     }
+   else
+     {
+        eo_do(proxy, elm_obj_atspi_proxy_address_get(&bus, &path));
+        if (!bus || !path)
+          {
+             ERR("AT-SPI: Elm_Atspi_Proxy bus or path not set. Unable to connect");
+             eo_do(proxy, eo_event_callback_call(ELM_ATSPI_PROXY_EVENT_DISCONNECTED, NULL));
+             return;
+          }
+        _plug_embedded_send(conn, proxy, bus, path);
+     }
+   return;
+}
+
+static Eina_Bool _from_list_remove(void *data, Eo *obj, const Eo_Event_Description *desc EINA_UNUSED, void *event_info EINA_UNUSED)
+{
+   Eina_List **list = data;
+   *list = eina_list_remove(*list, obj);
+   return EINA_TRUE;
+}
+
+EAPI void elm_atspi_bridge_utils_proxy_connect(Eo *proxy)
+{
+   Eo *bridge = _elm_atspi_bridge_get();
+
+   if (!bridge)
+     {
+        ERR("AT-SPI: Atspi bridge is not enabled.");
+        eo_do(proxy, eo_event_callback_call(ELM_ATSPI_PROXY_EVENT_DISCONNECTED, NULL));
+        return;
+     }
+   ELM_ATSPI_BRIDGE_DATA_GET_OR_RETURN(bridge, pd);
+
+   if (!pd->a11y_bus)
+     {
+        if (!eina_list_data_find(pd->plug_queue, proxy))
+          {
+             pd->plug_queue = eina_list_append(pd->plug_queue, proxy);
+             eo_do(proxy, eo_event_callback_add(EO_EV_DEL, _from_list_remove, &pd->plug_queue));
+          }
+        return;
+     }
+   _plug_connect(pd->a11y_bus, proxy);
+}
+
+Eo* _elm_atspi_bridge_utils_proxy_create(Eo *parent, const char *svcname, int svcnum, Elm_Atspi_Proxy_Type type)
+{
+   Eo *ret;
+   char bus[64], path[64];
+
+   ret = eo_add(ELM_ATSPI_PROXY_CLASS, parent, elm_obj_atspi_proxy_constructor(type));
+   if (!ret) return NULL;
+
+   snprintf(bus, sizeof(bus), "elm.atspi.proxy.socket.%s-%d", svcname, svcnum);
+   snprintf(path, sizeof(path), "/elm/atspi/proxy/socket/%s/%d", svcname, svcnum);
+
+   eo_do(ret, eo_key_data_set("__svc_bus", eina_stringshare_add(bus)));
+   eo_do(ret, eo_key_data_set("__svc_path", eina_stringshare_add(path)));
+
+   return ret;
+}
+
+static Eina_Bool
+_on_socket_del(void *data, Eo *obj, const Eo_Event_Description *event EINA_UNUSED, void *event_info EINA_UNUSED)
+{
+   Eldbus_Service_Interface *ifc = data;
+   const char *bus;
+   Eldbus_Connection *conn = eldbus_service_connection_get(ifc);
+   eo_do(obj, bus = eo_key_data_get("__svc_bus"));
+   eldbus_name_release(conn, bus, NULL, NULL);
+   eldbus_service_interface_unregister(ifc);
+   return EINA_TRUE;
+}
+
+static void
+_proxy_interface_register(Eldbus_Connection *conn, Eo *proxy, const char *bus, const char *path)
+{
+   Eldbus_Service_Interface *proxy_infc;
+   ELM_ATSPI_BRIDGE_DATA_GET_OR_RETURN(proxy, pd);
+   eldbus_name_request(conn, bus, ELDBUS_NAME_REQUEST_FLAG_DO_NOT_QUEUE, NULL, NULL);
+   proxy_infc = eldbus_service_interface_register(pd->a11y_bus, path, &_proxy_iface_desc);
+   if (!proxy_infc)
+     ERR("AT-SPI: Proxy interface registration failed");
+   eo_do(proxy, eo_event_callback_add(EO_EV_DEL, _on_socket_del, proxy_infc));
+   eldbus_service_object_data_set(proxy_infc, "_atspi_obj", proxy);
+}
+
+static void _socket_ifc_create(Eldbus_Connection *conn, Eo *proxy)
+{
+   const char *bus, *path;
+
+   eo_do(proxy, bus = eo_key_data_get("__svc_bus"));
+   eo_do(proxy, path = eo_key_data_get("__svc_path"));
+
+   if (bus && path)
+     _proxy_interface_register(conn, proxy, bus, path);
+
+   _socket_interface_register(conn, proxy);
+}
+
+EAPI void elm_atspi_bridge_utils_proxy_listen(Eo *proxy)
+{
+   Eo *bridge = _elm_atspi_bridge_get();
+   if (!bridge)
+     {
+        ERR("AT-SPI: Atspi bridge is not enabled.");
+        return;
+     }
+   ELM_ATSPI_BRIDGE_DATA_GET_OR_RETURN(bridge, pd);
+   if (!pd->a11y_bus)
+     {
+        if (!eina_list_data_find(pd->socket_queue, proxy))
+          {
+             pd->socket_queue = eina_list_append(pd->socket_queue, proxy);
+             eo_do(proxy, eo_event_callback_add(EO_EV_DEL, _from_list_remove, &pd->socket_queue));
+          }
+        return;
+     }
+   _socket_ifc_create(pd->a11y_bus, proxy);
+}
 #include "elm_atspi_bridge.eo.c"

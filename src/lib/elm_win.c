@@ -211,6 +211,8 @@ struct _Elm_Win_Data
       Eina_Bool    use : 1; /* set ture when application use window manager rotation. */
    } wm_rot;
 
+   Eo *socket_proxy; /* reference object to atspi object in separate process @since 1.15 */
+
    void *trap_data;
 
    struct
@@ -5968,6 +5970,14 @@ _elm_win_socket_listen(Eo *obj EINA_UNUSED, Elm_Win_Data *sd, const char *svcnam
 
    if (!ecore_evas_extn_socket_listen(sd->ee, svcname, svcnum, svcsys))
      return EINA_FALSE;
+
+   if (_elm_config->atspi_mode)
+     {
+        if (sd->socket_proxy)
+          eo_unref(sd->socket_proxy);
+        sd->socket_proxy = _elm_atspi_bridge_utils_proxy_create(obj, svcname, svcnum, ELM_ATSPI_PROXY_TYPE_SOCKET);
+        elm_atspi_bridge_utils_proxy_listen(sd->socket_proxy);
+     }
 
    return EINA_TRUE;
 }
