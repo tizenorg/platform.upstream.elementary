@@ -34,6 +34,8 @@
 #define ELM_ACCESS_OBJECT_PATH_PREFIX2  "/org/a11y/atspi/accessible"
 #define ELM_ACCESS_OBJECT_REFERENCE_TEMPLATE ELM_ACCESS_OBJECT_PATH_PREFIX "%llu"
 
+#define ELM_ATSPI_DBUS_INTERFACE_PROXY "elm.atspi.bridge.proxy.Socket"
+
 #define SIZE(x) sizeof(x)/sizeof(x[0])
 #define ELM_ATSPI_BRIDGE_CLASS_NAME "__Elm_Atspi_Bridge"
 
@@ -1996,6 +1998,56 @@ _editable_text_text_paste(const Eldbus_Service_Interface *iface, const Eldbus_Me
    return ret;
 }
 
+Eina_Bool
+_elm_atspi_bridge_plug_id_split(const char *plug_id, char **bus, char **path)
+{
+   if (!plug_id || !strcmp(plug_id, "")) return EINA_FALSE;
+   unsigned int tokens = 0;
+   char **split = eina_str_split_full(plug_id, ":", 0, &tokens);
+   Eina_Bool ret = EINA_FALSE;
+   if (tokens == 2)
+     {
+        if (bus) *bus = strdup(split[1]);
+        if (path) *path = strdup(split[2]);
+        ret = EINA_TRUE;
+     }
+   else if (tokens == 3)
+     {
+        char buf[128];
+        snprintf(buf, sizeof(buf), ":%s", split[1]);
+        if (bus) *bus = strdup(buf);
+        if (path) *path = strdup(split[2]);
+        ret = EINA_TRUE;
+     }
+
+   free(split[0]);
+   free(split);
+   return ret;
+}
+
+static Eldbus_Message *
+_socket_embedded(const Eldbus_Service_Interface *iface, const Eldbus_Message *msg)
+{
+   Eo *proxy;
+   const char *obj_path = eldbus_service_object_path_get(iface);
+   const char *bus, *path;
+   Eo *obj = _access_object_from_path(obj_path);
+   eo_do(obj, proxy = elm_interface_atspi_accessible_parent_get());
+   if (!eo_isa(proxy, ELM_ATSPI_PROXY_CLASS))
+     return eldbus_message_error_new(msg, "org.freedesktop.DBus.Error.Failed", "Unable to embed object.");
+
+   if (!eldbus_message_arguments_get(msg, "s", &path))
+     return eldbus_message_error_new(msg, "org.freedesktop.DBus.Error.InvalidArgs", "Plug id expected.");
+
+   bus = eldbus_message_sender_get(msg);
+
+   eo_do(proxy, elm_obj_atspi_proxy_address_set(bus, path));
+
+   _cache_build(proxy);
+
+   return eldbus_message_method_return_new(msg);
+}
+
 static const Eldbus_Method editable_text_methods[] = {
    { "SetTextContents", ELDBUS_ARGS({"s", "newcontents"}), ELDBUS_ARGS({"b", NULL}), _editable_text_text_content_set, 0 },
    { "InsertText", ELDBUS_ARGS({"i", "position"}, {"s", "text"}, {"i", "length"}), ELDBUS_ARGS({"b", NULL}), _editable_text_text_insert, 0 },
@@ -2003,6 +2055,11 @@ static const Eldbus_Method editable_text_methods[] = {
    { "CutText", ELDBUS_ARGS({"i", "startPos"}, {"i", "endPos"}), ELDBUS_ARGS({"b", NULL}), _editable_text_text_cut, 0 },
    { "DeleteText", ELDBUS_ARGS({"i", "startPos"}, {"i", "endPos"}), ELDBUS_ARGS({"b", NULL}), _editable_text_text_delete, 0 },
    { "PasteText", ELDBUS_ARGS({"i", "position"}), ELDBUS_ARGS({"b", NULL}), _editable_text_text_paste, 0 },
+   { NULL, NULL, NULL, NULL, 0 }
+};
+
+static const Eldbus_Method socket_methods[] = {
+   { "Embedded", ELDBUS_ARGS({"s", "id"}), ELDBUS_ARGS({NULL, NULL}), _socket_embedded, 0 },
    { NULL, NULL, NULL, NULL, 0 }
 };
 
