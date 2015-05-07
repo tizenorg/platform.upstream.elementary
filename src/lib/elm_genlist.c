@@ -307,6 +307,7 @@ _item_text_realize(Elm_Gen_Item *it,
    const Eina_List *l;
    const char *key;
    char *s;
+   char buf[256];
 
    if (!it->itc->func.text_get) return;
 
@@ -323,6 +324,9 @@ _item_text_realize(Elm_Gen_Item *it,
           {
              edje_object_part_text_escaped_set(target, key, s);
              free(s);
+
+             snprintf(buf, sizeof(buf), "elm,state,%s,visible", key);
+             edje_object_signal_emit(target, buf, "elm");
           }
         else
           {
@@ -341,6 +345,7 @@ _item_content_realize(Elm_Gen_Item *it,
                       const char *parts)
 {
    Evas_Object *content;
+   char buf[256];
 
    if (!parts)
      {
@@ -383,6 +388,9 @@ _item_content_realize(Elm_Gen_Item *it,
              elm_widget_sub_object_add(WIDGET(it), content);
              if (eo_do(EO_OBJ(it), elm_wdg_item_disabled_get()))
                elm_widget_disabled_set(content, EINA_TRUE);
+
+             snprintf(buf, sizeof(buf), "elm,state,%s,visible", key);
+             edje_object_signal_emit(target, buf, "elm");
           }
      }
 }
