@@ -169,7 +169,25 @@ typedef struct vg_button_s
    Evas_Object *vg[2];       //0: base, 1: effect
    Efl_VG_Shape *shape[2];   //0: base, 1: effect
    Evas_Object *obj;
+   Eina_Bool init : 1;
 } vg_button;
+
+static void
+button_init(vg_button *vd)
+{
+   if (vd->init) return;
+   vd->init = EINA_TRUE;
+
+   //Base Shape
+   Efl_VG *base_root = evas_object_vg_root_node_get(vd->vg[0]);
+   vd->shape[0] = evas_vg_shape_add(base_root);
+   evas_vg_node_color_set(vd->shape[0], 255, 255, 255, 255);
+
+   //Effect Shape
+   Efl_VG *effect_root = evas_object_vg_root_node_get(vd->vg[1]);
+   vd->shape[1] = evas_vg_shape_add(effect_root);
+   evas_vg_node_color_set(vd->shape[1], 255, 255, 255, 255);
+}
 
 static void
 button_effect_resize_cb(void *data, Evas *e EINA_UNUSED,
@@ -177,6 +195,8 @@ button_effect_resize_cb(void *data, Evas *e EINA_UNUSED,
                         void *event_info EINA_UNUSED)
 {
    vg_button *vd = data;
+
+   button_init(vd);
 
    //Update Effect Shape
    Evas_Coord x, y, w, h;
@@ -191,6 +211,8 @@ button_base_resize_cb(void *data, Evas *e EINA_UNUSED,
                       void *event_info EINA_UNUSED)
 {
    vg_button *vd = data;
+
+   button_init(vd);
 
    //Update Base Shape
    Evas_Coord x, y, w, h;
@@ -211,13 +233,13 @@ button_del_cb(void *data, Evas *e EINA_UNUSED, Evas_Object *obj EINA_UNUSED,
 void
 tizen_vg_button_set(Elm_Button *obj)
 {
+   vg_button *vd = evas_object_data_get(obj, vg_key);
+   if (vd) evas_object_del(vd->vg[0]);
+
    //Apply vector ux only theme has "vector_ux" "on"
    const char *str = elm_layout_data_get(obj, "vector_ux");
    if (!str) return;
    if (strcmp(str, "on")) return;
-
-   vg_button *vd = evas_object_data_get(obj, vg_key);
-   if (vd) evas_object_del(vd->vg[0]);
 
    vd = calloc(1, sizeof(vg_button));
    if (!vd)
@@ -238,21 +260,12 @@ tizen_vg_button_set(Elm_Button *obj)
                                   button_base_resize_cb, vd);
    elm_object_part_content_set(obj, "tizen_vg_shape", vd->vg[0]);
 
-   //Base Shape
-   Efl_VG *base_root = evas_object_vg_root_node_get(vd->vg[0]);
-   vd->shape[0] = evas_vg_shape_add(base_root);
-   evas_vg_node_color_set(vd->shape[0], 255, 255, 255, 255);
-
    //Effect VG
    vd->vg[1] = evas_object_vg_add(e);
    evas_object_event_callback_add(vd->vg[1], EVAS_CALLBACK_RESIZE,
                                   button_effect_resize_cb, vd);
    elm_object_part_content_set(obj, "tizen_vg_shape2", vd->vg[1]);
 
-   //Effect Shape
-   Efl_VG *effect_root = evas_object_vg_root_node_get(vd->vg[1]);
-   vd->shape[1] = evas_vg_shape_add(effect_root);
-   evas_vg_node_color_set(vd->shape[1], 255, 255, 255, 255);
    vd->obj = obj;
 }
 
