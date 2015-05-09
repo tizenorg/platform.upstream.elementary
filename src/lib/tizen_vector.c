@@ -198,7 +198,7 @@ typedef struct check_onoff_s
 {
    Evas_Object *vg[3]; //0: bg, 1: overlapped circle, 2: line-circle
    Efl_VG_Shape *shape[4];  //0: bg, 1: overlapped circle, 2: line, 3: circle
-   Elm_Transit *transit[2];  //0: circle, 1: line
+   Elm_Transit *transit[3];  //0: circle, 1: line, 2: overlapped circle
    Evas_Object *obj;
    Eina_Bool init : 1;
 } check_onoff;
@@ -243,13 +243,20 @@ transit_check_onoff_circle_op(Elm_Transit_Effect *effect,
 
    evas_vg_shape_shape_reset(vd->shape[3]);
 
+   int radius =
+      ELM_SCALE_SIZE((center_x > center_y ? center_x : center_y) - 2);
+
+   evas_vg_shape_shape_append_circle(vd->shape[3], center_x, center_y,
+                                     radius);
+
    if (elm_check_state_get(vd->obj)) progress = 1 - progress;
 
-   double radius = ELM_SCALE_SIZE(center_x - 2);
-
-   evas_vg_shape_stroke_width_set(vd->shape[3], ELM_SCALE_SIZE(2) * progress);
-   evas_vg_shape_shape_append_circle(vd->shape[3], center_x, center_y,
-                                     (radius * progress));
+   Eina_Matrix3 m;
+   eina_matrix3_identity(&m);
+   eina_matrix3_translate(&m, center_x, center_y);
+   eina_matrix3_scale(&m, progress, progress);
+   eina_matrix3_translate(&m, -center_x, -center_y);
+   evas_vg_node_transformation_set(vd->shape[3], &m);
 }
 
 static void
@@ -287,6 +294,44 @@ transit_check_onoff_line_del_cb(void *data, Elm_Transit *transit EINA_UNUSED)
 {
    check_onoff *vd = data;
    vd->transit[1] = NULL;
+}
+
+
+static void
+transit_check_onoff_sizing_op(void *data, Elm_Transit *transit EINA_UNUSED,
+                              double progress)
+{
+   check_onoff *vd = data;
+
+   check_onoff_init(vd);
+
+   Evas_Coord w, h;
+   evas_object_geometry_get(vd->vg[1], NULL, NULL, &w, &h);
+   Evas_Coord center_x = (w / 2);
+   Evas_Coord center_y = (h / 2);
+
+   evas_vg_shape_shape_reset(vd->shape[1]);
+   evas_vg_shape_shape_append_circle(vd->shape[1],
+                                     center_x, center_y,
+                                     center_x);
+
+   if (!elm_check_state_get(vd->obj)) progress = 1 - progress;
+   progress *= 0.3;
+
+   Eina_Matrix3 m;
+   eina_matrix3_identity(&m);
+   eina_matrix3_translate(&m, center_x, center_y);
+   eina_matrix3_scale(&m, 0.7 + progress, 0.7 + progress);
+   eina_matrix3_translate(&m, -center_x, -center_y);
+   evas_vg_node_transformation_set(vd->shape[1], &m);
+}
+
+static void
+transit_check_onoff_sizing_del_cb(void *data,
+                                  Elm_Transit *transit EINA_UNUSED)
+{
+   check_onoff *vd = data;
+   vd->transit[2] = NULL;
 }
 
 static void
@@ -338,6 +383,18 @@ check_onoff_changed_cb(void *data, Evas_Object *obj,
         elm_transit_duration_set(vd->transit[1], 0.1);
         elm_transit_go(vd->transit[1]);
      }
+
+   //Overlap Circle Sizing Effect
+   elm_transit_del(vd->transit[2]);
+   vd->transit[2] = elm_transit_add();
+   elm_transit_effect_add(vd->transit[2], transit_check_onoff_sizing_op, vd,
+                          NULL);
+   elm_transit_del_cb_set(vd->transit[2], transit_check_onoff_sizing_del_cb,
+                          vd);
+   elm_transit_tween_mode_set(vd->transit[2],
+                              ELM_TRANSIT_TWEEN_MODE_DECELERATE);
+   elm_transit_duration_set(vd->transit[2], 0.3);
+   elm_transit_go(vd->transit[2]);
 }
 
 static void
@@ -349,6 +406,7 @@ check_onoff_del_cb(void *data, Evas *e EINA_UNUSED,
    evas_object_smart_callback_del(vd->obj, "changed", check_onoff_changed_cb);
    elm_transit_del(vd->transit[0]);
    elm_transit_del(vd->transit[1]);
+   elm_transit_del(vd->transit[2]);
    free(vd);
 }
 
