@@ -11,6 +11,194 @@
 
 static const char *vg_key = "_tizen_vg";
 
+
+/////////////////////////////////////////////////////////////////////////
+/* Radio */
+/////////////////////////////////////////////////////////////////////////
+typedef struct vg_radio_s
+{
+   Evas_Object *vg[3];       //0: outline, 1: center circle, 2: iconic circle
+   Efl_VG_Shape *shape[4];   //0: outline, 1: center circle, 2: iconic outline, 3: iconic circle
+   Elm_Transit *transit;
+   Evas_Object *obj;
+   Eina_Bool init : 1;
+} vg_radio;
+
+static void
+transit_radio_op(Elm_Transit_Effect *effect, Elm_Transit *transit EINA_UNUSED,
+                 double progress)
+{
+   vg_radio *vd = effect;
+
+   Evas_Coord w, h;
+   evas_object_geometry_get(vd->vg[0], NULL, NULL, &w, &h);
+   Evas_Coord center_x = (w / 2);
+   Evas_Coord center_y = (h / 2);
+
+   if (elm_radio_selected_object_get(vd->obj) != vd->obj)
+     progress = 1 - progress;
+
+   int radius =
+      ELM_SCALE_SIZE((center_x > center_y ? center_x : center_y) - 2);
+
+   //Iconic Circle (Outline)
+   evas_vg_shape_stroke_width_set(vd->shape[2],
+                                  (1 + progress * ELM_SCALE_SIZE(1.5)));
+   //Iconic Circle (Outline)
+   evas_vg_shape_shape_reset(vd->shape[2]);
+   evas_vg_shape_shape_append_circle(vd->shape[2], center_x, center_y,
+                                     radius);
+   //Iconic Circle (Center)
+   evas_vg_shape_shape_reset(vd->shape[3]);
+   evas_vg_shape_shape_append_circle(vd->shape[3], center_x, center_y,
+                                     radius * 0.5 * progress);
+}
+
+static void
+transit_radio_del_cb(void *data, Elm_Transit *transit EINA_UNUSED)
+{
+   vg_radio *vd = data;
+   vd->transit = NULL;
+}
+
+static void
+radio_changed_cb(void *data, Evas_Object *obj EINA_UNUSED,
+                 void *event_info EINA_UNUSED)
+{
+   vg_radio *vd = data;
+
+   //Circle Effect
+   elm_transit_del(vd->transit);
+   vd->transit = elm_transit_add();
+   elm_transit_effect_add(vd->transit, transit_radio_op, vd,
+                          NULL);
+   elm_transit_del_cb_set(vd->transit, transit_radio_del_cb, vd);
+   elm_transit_tween_mode_set(vd->transit,
+                              ELM_TRANSIT_TWEEN_MODE_DECELERATE);
+   elm_transit_duration_set(vd->transit, 0.2);
+   elm_transit_go(vd->transit);
+}
+
+static void
+radio_del_cb(void *data, Evas *e EINA_UNUSED, Evas_Object *obj EINA_UNUSED,
+             void *event_info EINA_UNUSED)
+{
+   vg_radio *vd = data;
+   evas_object_data_set(vd->obj, vg_key, NULL);
+   evas_object_smart_callback_del(vd->obj, "changed",
+                                  radio_changed_cb);
+   elm_transit_del(vd->transit);
+   free(vd);
+}
+
+static void
+radio_init(vg_radio *vd)
+{
+   if (vd->init) return;
+   vd->init = EINA_TRUE;
+
+   //Outline Shape
+   vd->shape[0] = evas_vg_shape_add(evas_object_vg_root_node_get(vd->vg[0]));
+   evas_vg_shape_stroke_color_set(vd->shape[0], 255, 255, 255, 255);
+   evas_vg_shape_stroke_width_set(vd->shape[0], ELM_SCALE_SIZE(1));
+
+   //Center Circle
+   vd->shape[1] = evas_vg_shape_add(evas_object_vg_root_node_get(vd->vg[1]));
+   evas_vg_node_color_set(vd->shape[1], 255, 255, 255, 255);
+
+   //Iconic Circle (Outline)
+   vd->shape[2] = evas_vg_shape_add(evas_object_vg_root_node_get(vd->vg[2]));
+   evas_vg_shape_stroke_color_set(vd->shape[2], 255, 255, 255, 255);
+   evas_vg_shape_stroke_width_set(vd->shape[2], ELM_SCALE_SIZE(1.5));
+
+   //Iconic Circle (Center Point)
+   vd->shape[3] = evas_vg_shape_add(evas_object_vg_root_node_get(vd->vg[2]));
+   evas_vg_node_color_set(vd->shape[3], 255, 255, 255, 255);
+}
+
+static void
+radio_base_resize_cb(void *data, Evas *e EINA_UNUSED,
+                     Evas_Object *obj EINA_UNUSED,
+                     void *event_info EINA_UNUSED)
+{
+   vg_radio *vd = data;
+
+   radio_init(vd);
+
+   Evas_Coord w, h;
+   evas_object_geometry_get(vd->vg[0], NULL, NULL, &w, &h);
+   Evas_Coord center_x = (w / 2);
+   Evas_Coord center_y = (h / 2);
+
+   int radius =
+      ELM_SCALE_SIZE((center_x > center_y ? center_x : center_y) - 2);
+
+   //Outline
+   evas_vg_shape_shape_reset(vd->shape[0]);
+   evas_vg_shape_shape_append_circle(vd->shape[0], center_x, center_y,
+                                     radius);
+
+   if (elm_radio_selected_object_get(vd->obj) != vd->obj) return;
+
+   //Center Circle
+   evas_vg_shape_shape_reset(vd->shape[1]);
+   evas_vg_shape_shape_append_circle(vd->shape[1], center_x, center_y,
+                                     radius);
+
+   //Iconic Circle (Outline)
+   evas_vg_shape_shape_reset(vd->shape[2]);
+   evas_vg_shape_shape_append_circle(vd->shape[2], center_x, center_y,
+                                     radius);
+
+   //Iconic Circle (Center)
+   evas_vg_shape_shape_reset(vd->shape[3]);
+   evas_vg_shape_shape_append_circle(vd->shape[3], center_x, center_y,
+                                     radius * 0.5);
+}
+
+void
+tizen_vg_radio_set(Elm_Radio *obj)
+{
+   vg_radio *vd = evas_object_data_get(obj, vg_key);
+   if (vd) evas_object_del(vd->vg[0]);
+
+   //Apply vector ux only theme has "vector_ux" "on"
+   const char *str = elm_layout_data_get(obj, "vector_ux");
+   if (!str) return;
+   if (strcmp(str, "on")) return;
+
+   vd = calloc(1, sizeof(vg_radio));
+   if (!vd)
+     {
+        ERR("Failed to allocate vector graphics data memory");
+        return;
+     }
+   evas_object_data_set(obj, vg_key, vd);
+   evas_object_smart_callback_add(obj, "changed", radio_changed_cb, vd);
+
+   //Vector Graphics Object
+   Evas *e = evas_object_evas_get(obj);
+
+   //Outline VG
+   vd->vg[0] = evas_object_vg_add(e);
+   evas_object_event_callback_add(vd->vg[0], EVAS_CALLBACK_DEL,
+                                  radio_del_cb, vd);
+   evas_object_event_callback_add(vd->vg[0], EVAS_CALLBACK_RESIZE,
+                                  radio_base_resize_cb, vd);
+   elm_object_part_content_set(obj, "tizen_vg_shape", vd->vg[0]);
+
+   //Center Circle
+   vd->vg[1] = evas_object_vg_add(e);
+   elm_object_part_content_set(obj, "tizen_vg_shape2", vd->vg[1]);
+
+   //Iconic Circle
+   vd->vg[2] = evas_object_vg_add(e);
+   elm_object_part_content_set(obj, "tizen_vg_shape3", vd->vg[2]);
+
+   vd->obj = obj;
+}
+
+
 /////////////////////////////////////////////////////////////////////////
 /* Check: Favorite */
 /////////////////////////////////////////////////////////////////////////

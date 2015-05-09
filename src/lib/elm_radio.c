@@ -208,6 +208,10 @@ _elm_radio_elm_widget_theme_apply(Eo *obj, Elm_Radio_Data *sd)
 
    eo_do(obj, elm_obj_layout_sizing_eval());
 
+#ifdef TIZEN_VECTOR_UX
+   tizen_vg_radio_set(obj);
+#endif
+
    return EINA_TRUE;
 }
 
@@ -324,6 +328,11 @@ elm_radio_add(Evas_Object *parent)
 {
    EINA_SAFETY_ON_NULL_RETURN_VAL(parent, NULL);
    Evas_Object *obj = eo_add(MY_CLASS, parent);
+
+#ifdef TIZEN_VECTOR_UX
+   tizen_vg_radio_set(obj);
+#endif
+
    return obj;
 }
 
