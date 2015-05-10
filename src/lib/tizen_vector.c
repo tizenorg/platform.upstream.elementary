@@ -32,13 +32,13 @@ transit_radio_op(Elm_Transit_Effect *effect, Elm_Transit *transit EINA_UNUSED,
 
    Evas_Coord w, h;
    evas_object_geometry_get(vd->vg[0], NULL, NULL, &w, &h);
-   Evas_Coord center_x = (w / 2);
-   Evas_Coord center_y = (h / 2);
+   double center_x = ((double)w / 2);
+   double center_y = ((double)h / 2);
 
    if (elm_radio_selected_object_get(vd->obj) != vd->obj)
      progress = 1 - progress;
 
-   int radius =
+   double radius =
       ELM_SCALE_SIZE((center_x > center_y ? center_x : center_y) - 2);
 
    //Iconic Circle (Outline)
@@ -130,7 +130,7 @@ radio_base_resize_cb(void *data, Evas *e EINA_UNUSED,
    Evas_Coord center_x = (w / 2);
    Evas_Coord center_y = (h / 2);
 
-   int radius =
+   double radius =
       ELM_SCALE_SIZE((center_x > center_y ? center_x : center_y) - 2);
 
    //Outline
@@ -241,8 +241,8 @@ check_favorite_shape_do(check_favorite *vd, int idx)
 
    Evas_Coord w, h;
    evas_object_geometry_get(vd->vg[idx], NULL, NULL, &w, &h);
-   Evas_Coord center_x = (w / 2);
-   Evas_Coord center_y = (h / 2);
+   double center_x = ((double)w / 2);
+   double center_y = ((double)h / 2);
 
    //Inner Star Body
    evas_vg_shape_shape_reset(vd->shape[idx]);
@@ -297,8 +297,8 @@ transit_check_favorite_op(Elm_Transit_Effect *effect,
 
    Evas_Coord w, h;
    evas_object_geometry_get(vd->vg[1], NULL, NULL, &w, &h);
-   Evas_Coord center_x = (w / 2);
-   Evas_Coord center_y = (h / 2);
+   double center_x = ((double)w / 2);
+   double center_y = ((double)h / 2);
 
    Eina_Matrix3 m;
    eina_matrix3_identity(&m);
@@ -426,12 +426,12 @@ transit_check_onoff_circle_op(Elm_Transit_Effect *effect,
 
    Evas_Coord w, h;
    evas_object_geometry_get(vd->vg[2], NULL, NULL, &w, &h);
-   Evas_Coord center_x = (w / 2);
-   Evas_Coord center_y = (h / 2);
+   double center_x = ((double)w / 2);
+   double center_y = ((double)h / 2);
 
    evas_vg_shape_shape_reset(vd->shape[3]);
 
-   int radius =
+   double radius =
       ELM_SCALE_SIZE((center_x > center_y ? center_x : center_y) - 2);
 
    evas_vg_shape_shape_append_circle(vd->shape[3], center_x, center_y,
@@ -462,8 +462,8 @@ transit_check_onoff_line_op(void *data, Elm_Transit *transit EINA_UNUSED,
 
    Evas_Coord w, h;
    evas_object_geometry_get(vd->vg[2], NULL, NULL, &w, &h);
-   Evas_Coord center_x = (w / 2);
-   Evas_Coord center_y = (h / 2);
+   double center_x = ((double)w / 2);
+   double center_y = ((double)h / 2);
 
    evas_vg_shape_shape_reset(vd->shape[2]);
 
@@ -495,8 +495,9 @@ transit_check_onoff_sizing_op(void *data, Elm_Transit *transit EINA_UNUSED,
 
    Evas_Coord w, h;
    evas_object_geometry_get(vd->vg[1], NULL, NULL, &w, &h);
-   Evas_Coord center_x = (w / 2);
-   Evas_Coord center_y = (h / 2);
+   double center_x = ((double)w / 2);
+   double center_y = ((double)h / 2);
+
 
    evas_vg_shape_shape_reset(vd->shape[1]);
    evas_vg_shape_shape_append_circle(vd->shape[1],
@@ -628,8 +629,8 @@ check_onoff_vg2_resize_cb(void *data, Evas *e EINA_UNUSED,
 
    Evas_Coord w, h;
    evas_object_geometry_get(vd->vg[1], NULL, NULL, &w, &h);
-   Evas_Coord center_x = (w / 2);
-   Evas_Coord center_y = (h / 2);
+   double center_x = ((double)w / 2);
+   double center_y = ((double)h / 2);
 
    evas_vg_shape_shape_reset(vd->shape[1]);
    evas_vg_shape_shape_append_circle(vd->shape[1],
@@ -648,8 +649,8 @@ check_onoff_vg3_resize_cb(void *data, Evas *e EINA_UNUSED,
 
    Evas_Coord w, h;
    evas_object_geometry_get(vd->vg[2], NULL, NULL, &w, &h);
-   Evas_Coord center_x = (w / 2);
-   Evas_Coord center_y = (h / 2);
+   double center_x = ((double)w / 2);
+   double center_y = ((double)h / 2);
 
    evas_vg_shape_shape_reset(vd->shape[2]);
    evas_vg_shape_shape_reset(vd->shape[3]);
@@ -780,8 +781,8 @@ check_default_vg_resize_cb(void *data, Evas *e EINA_UNUSED,
 
    Evas_Coord w, h;
    evas_object_geometry_get(vd->vg[0], NULL, NULL, &w, &h);
-   Evas_Coord center_x = (w / 2);
-   Evas_Coord center_y = (h / 2);
+   double center_x = ((double)w / 2);
+   double center_y = ((double)h / 2);
 
    //Update Outline Shape
    evas_vg_shape_shape_reset(vd->shape[0]);
@@ -858,10 +859,9 @@ transit_check_default_bg_scale_op(Elm_Transit_Effect *effect,
    check_default *vd = effect;
 
    Evas_Coord w, h;
-   Evas_Coord center_x, center_y;
    evas_object_geometry_get(vd->vg[0], NULL, NULL, &w, &h);
-   center_x = (w/2);
-   center_y = (h/2);
+   double center_x = ((double)w / 2);
+   double center_y = ((double)h / 2);
 
    Eina_Matrix3 m;
    eina_matrix3_identity(&m);
@@ -887,8 +887,8 @@ transit_check_default_line_op(Elm_Transit_Effect *effect,
 
    Evas_Coord w, h;
    evas_object_geometry_get(vd->vg[1], NULL, NULL, &w, &h);
-   Evas_Coord center_x = (w/2);
-   Evas_Coord center_y = (h/2);
+   double center_x = ((double)w / 2);
+   double center_y = ((double)h / 2);
 
    //Update Line Shape
    if (!elm_check_state_get(vd->obj)) progress = 1 - progress;
