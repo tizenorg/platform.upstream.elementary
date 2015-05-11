@@ -10,14 +10,19 @@
 #include "elm_priv.h"
 
 
+typedef struct
+{
+   int highlight_index;
+} Elm_Interface_Atspi_Componenet_Data;
+
 EOLIAN static void
-_elm_interface_atspi_component_position_get(Eo *obj EINA_UNUSED, void *_pd EINA_UNUSED, Eina_Bool type, int *x, int *y)
+_elm_interface_atspi_component_position_get(Eo *obj EINA_UNUSED, Elm_Interface_Atspi_Componenet_Data *_pd EINA_UNUSED, Eina_Bool type, int *x, int *y)
 {
    eo_do(obj, elm_interface_atspi_component_extents_get(type, x, y, NULL, NULL));
 }
 
 EOLIAN static Eina_Bool
-_elm_interface_atspi_component_position_set(Eo *obj EINA_UNUSED, void *_pd EINA_UNUSED, Eina_Bool type, int x, int y)
+_elm_interface_atspi_component_position_set(Eo *obj EINA_UNUSED, Elm_Interface_Atspi_Componenet_Data *_pd EINA_UNUSED, Eina_Bool type, int x, int y)
 {
    Eina_Bool ret = EINA_FALSE;
    int c_w, c_h;
@@ -29,7 +34,7 @@ _elm_interface_atspi_component_position_set(Eo *obj EINA_UNUSED, void *_pd EINA_
 }
 
 EOLIAN static Eina_Bool
-_elm_interface_atspi_component_size_set(Eo *obj EINA_UNUSED, void *_pd EINA_UNUSED, int w, int h)
+_elm_interface_atspi_component_size_set(Eo *obj EINA_UNUSED, Elm_Interface_Atspi_Componenet_Data *_pd EINA_UNUSED, int w, int h)
 {
    Eina_Bool ret;
    int c_x = 0, c_y = 0;
@@ -40,13 +45,13 @@ _elm_interface_atspi_component_size_set(Eo *obj EINA_UNUSED, void *_pd EINA_UNUS
 }
 
 EOLIAN static void
-_elm_interface_atspi_component_size_get(Eo *obj EINA_UNUSED, void *_pd EINA_UNUSED, int *w, int *h)
+_elm_interface_atspi_component_size_get(Eo *obj EINA_UNUSED, Elm_Interface_Atspi_Componenet_Data *_pd EINA_UNUSED, int *w, int *h)
 {
    eo_do(obj, elm_interface_atspi_component_extents_get(EINA_FALSE, NULL,  NULL, w, h));
 }
 
 EOLIAN static Eina_Bool
-_elm_interface_atspi_component_contains(Eo *obj EINA_UNUSED, void *_pd EINA_UNUSED, Eina_Bool type, int x, int y)
+_elm_interface_atspi_component_contains(Eo *obj EINA_UNUSED, Elm_Interface_Atspi_Componenet_Data *_pd EINA_UNUSED, Eina_Bool type, int x, int y)
 {
    int w_x = 0, w_y = 0, w_w = 0, w_h = 0;
 
@@ -58,7 +63,7 @@ _elm_interface_atspi_component_contains(Eo *obj EINA_UNUSED, void *_pd EINA_UNUS
 }
 
 EOLIAN static double
-_elm_interface_atspi_component_alpha_get(Eo *obj, void *_pd EINA_UNUSED)
+_elm_interface_atspi_component_alpha_get(Eo *obj, Elm_Interface_Atspi_Componenet_Data *_pd EINA_UNUSED)
 {
    int alpha;
 
@@ -66,8 +71,8 @@ _elm_interface_atspi_component_alpha_get(Eo *obj, void *_pd EINA_UNUSED)
    return (double)alpha / 255.0;
 }
 
-EOLIAN static Eo *
-_elm_interface_atspi_component_accessible_at_point_get(Eo *obj, void *_pd EINA_UNUSED, Eina_Bool screen_coords, int x, int y)
+EOLIAN static Evas_Object *
+_elm_interface_atspi_component_accessible_at_point_get(Eo *obj, Elm_Interface_Atspi_Componenet_Data *_pd EINA_UNUSED, Eina_Bool screen_coords, int x, int y)
 {
    Eina_List *l, *children;
    Eo *ret = NULL, *child;
@@ -93,7 +98,7 @@ _elm_interface_atspi_component_accessible_at_point_get(Eo *obj, void *_pd EINA_U
 }
 
 EOLIAN static void
-_elm_interface_atspi_component_extents_get(Eo *obj, void *_pd EINA_UNUSED, Eina_Bool screen_coords, int *x, int *y, int *w, int *h)
+_elm_interface_atspi_component_extents_get(Eo *obj, Elm_Interface_Atspi_Componenet_Data *_pd EINA_UNUSED, Eina_Bool screen_coords, int *x, int *y, int *w, int *h)
 {
    int ee_x, ee_y;
 
@@ -109,7 +114,7 @@ _elm_interface_atspi_component_extents_get(Eo *obj, void *_pd EINA_UNUSED, Eina_
 }
 
 EOLIAN static Eina_Bool
-_elm_interface_atspi_component_extents_set(Eo *obj, void *_pd EINA_UNUSED, Eina_Bool screen_coords, int x, int y, int w, int h)
+_elm_interface_atspi_component_extents_set(Eo *obj, Elm_Interface_Atspi_Componenet_Data *_pd EINA_UNUSED, Eina_Bool screen_coords, int x, int y, int w, int h)
 {
    int wx, wy;
 
@@ -130,20 +135,20 @@ _elm_interface_atspi_component_extents_set(Eo *obj, void *_pd EINA_UNUSED, Eina_
 }
 
 EOLIAN static int
-_elm_interface_atspi_component_layer_get(Eo *obj, void *_pd EINA_UNUSED)
+_elm_interface_atspi_component_layer_get(Eo *obj, Elm_Interface_Atspi_Componenet_Data *_pd EINA_UNUSED)
 {
    return evas_object_layer_get(obj);
 }
 
 EOLIAN static int
-_elm_interface_atspi_component_z_order_get(Eo *obj EINA_UNUSED, void *_pd EINA_UNUSED)
+_elm_interface_atspi_component_z_order_get(Eo *obj EINA_UNUSED, Elm_Interface_Atspi_Componenet_Data *_pd EINA_UNUSED)
 {
    // Currently not used.
    return 0;
 }
 
 EOLIAN static Eina_Bool
-_elm_interface_atspi_component_focus_grab(Eo *obj EINA_UNUSED, void *_pd EINA_UNUSED)
+_elm_interface_atspi_component_focus_grab(Eo *obj EINA_UNUSED, Elm_Interface_Atspi_Componenet_Data *_pd EINA_UNUSED)
 {
    evas_object_focus_set(obj, EINA_TRUE);
    return evas_object_focus_get(obj);
@@ -151,7 +156,7 @@ _elm_interface_atspi_component_focus_grab(Eo *obj EINA_UNUSED, void *_pd EINA_UN
 
 //TIZEN_ONLY(20160329): atspi: implement HighlightGrab and HighlightClear methods (29e253e2f7ef3c632ac3a64c489bf569df407f30)
 EOLIAN static Eina_Bool
-_elm_interface_atspi_component_highlight_grab(Eo *obj EINA_UNUSED, void *_pd EINA_UNUSED)
+_elm_interface_atspi_component_highlight_grab(Eo *obj EINA_UNUSED, Elm_Interface_Atspi_Componenet_Data *_pd EINA_UNUSED)
 {
    WRN("The %s object does not implement the \"component_highlight_grab\" function.",
        eo_class_name_get(eo_class_get(obj)));
@@ -159,12 +164,24 @@ _elm_interface_atspi_component_highlight_grab(Eo *obj EINA_UNUSED, void *_pd EIN
 }
 
 EOLIAN static Eina_Bool
-_elm_interface_atspi_component_highlight_clear(Eo *obj EINA_UNUSED, void *_pd EINA_UNUSED)
+_elm_interface_atspi_component_highlight_clear(Eo *obj EINA_UNUSED, Elm_Interface_Atspi_Componenet_Data *_pd EINA_UNUSED)
 {
    WRN("The %s object does not implement the \"component_highlight_clear\" function.",
        eo_class_name_get(eo_class_get(obj)));
    return EINA_FALSE;
 }
 //
+
+EOLIAN static int
+_elm_interface_atspi_component_highlight_index_get(Eo *obj EINA_UNUSED, Elm_Interface_Atspi_Componenet_Data *_pd)
+{
+   return _pd->highlight_index;
+}
+
+EOLIAN static void
+_elm_interface_atspi_component_highlight_index_set(Eo *obj EINA_UNUSED, Elm_Interface_Atspi_Componenet_Data *_pd, int index)
+{
+   _pd->highlight_index = index;
+}
 
 #include "elm_interface_atspi_component.eo.c"

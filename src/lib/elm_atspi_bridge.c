@@ -2125,6 +2125,15 @@ _selection_property_get(const Eldbus_Service_Interface *interface, const char *p
 }
 
 static Eina_Bool
+_component_highlight_index_get(const Eldbus_Service_Interface *interface, const char *property,
+                               Eldbus_Message_Iter *iter, const Eldbus_Message *request_msg EINA_UNUSED,
+                               Eldbus_Message **error EINA_UNUSED)
+{
+   //TODO cherry pick conflict
+   return EINA_FALSE;
+}
+
+static Eina_Bool
 _action_property_get(const Eldbus_Service_Interface *interface, const char *property,
                          Eldbus_Message_Iter *iter, const Eldbus_Message *request_msg,
                          Eldbus_Message **error)
@@ -2371,6 +2380,17 @@ static const Eldbus_Property application_properties[] = {
    { "Version", "s", NULL, NULL, 0 },
    { "Id", "i", NULL, NULL, 0 },
    { NULL, NULL, NULL, NULL, 0 }
+};
+
+//TIZEN_ONLY(20160404) atspi: add highlight index property
+static const Eldbus_Property component_properties[] = {
+   { "HighlightIndex", "i", _component_highlight_index_get, NULL, 0 },
+   { NULL, NULL, NULL, NULL, 0 }
+};
+//
+
+static const Eldbus_Service_Interface_Desc event_iface_desc = {
+   ATSPI_DBUS_INTERFACE_EVENT_OBJECT, NULL, _event_obj_signals, NULL, NULL, NULL
 };
 
 static const Eldbus_Service_Interface_Desc accessible_iface_desc = {
@@ -3647,7 +3667,7 @@ static const Eldbus_Method component_methods[] = {
 };
 
 static const Eldbus_Service_Interface_Desc component_iface_desc = {
-   ATSPI_DBUS_INTERFACE_COMPONENT, component_methods, NULL, NULL, NULL, NULL
+   ATSPI_DBUS_INTERFACE_COMPONENT, component_methods, NULL, component_properties, NULL, NULL
 };
 
 static void

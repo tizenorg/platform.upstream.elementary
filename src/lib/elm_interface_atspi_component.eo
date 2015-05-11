@@ -2,7 +2,9 @@ mixin Elm_Interface_Atspi_Component ()
 {
    legacy_prefix: null;
    eo_prefix: elm_interface_atspi_component;
-   data: null;
+//TIZEN_ONLY(20160404) atspi: add highlight index property.
+   data: Elm_Interface_Atspi_Componenet_Data;
+//
    methods {
       @property size @protected {
          set {
@@ -75,6 +77,19 @@ mixin Elm_Interface_Atspi_Component ()
             y: int;
          }
       }
+//TIZEN_ONLY(20160404) atspi: add highlight index property.
+      @property highlight_index {
+         set {
+            [[Sets highlight index of accessible widget.]]
+         }
+         get {
+            [[Gets highlight idex of accessible widget.]]
+         }
+         values {
+            idex: int;
+         }
+      }
+//
       contains @protected {
          params {
             screen_coords: bool; [[If true x and y values will be relative to screen origin, otherwise relative to canvas]]
