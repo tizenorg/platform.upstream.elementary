@@ -185,14 +185,14 @@ tizen_vg_radio_set(Elm_Radio *obj)
                                   radio_del_cb, vd);
    evas_object_event_callback_add(vd->vg[0], EVAS_CALLBACK_RESIZE,
                                   radio_base_resize_cb, vd);
-   elm_object_part_content_set(obj, "tizen_vg_shape", vd->vg[0]);
-
    //Center Circle
    vd->vg[1] = evas_object_vg_add(e);
-   elm_object_part_content_set(obj, "tizen_vg_shape2", vd->vg[1]);
 
    //Iconic Circle
    vd->vg[2] = evas_object_vg_add(e);
+
+   elm_object_part_content_set(obj, "tizen_vg_shape", vd->vg[0]);
+   elm_object_part_content_set(obj, "tizen_vg_shape2", vd->vg[1]);
    elm_object_part_content_set(obj, "tizen_vg_shape3", vd->vg[2]);
 
    vd->obj = obj;
@@ -367,12 +367,12 @@ tizen_vg_check_favorite_set(Elm_Check *obj)
                                   check_favorite_del_cb, vd);
    evas_object_event_callback_add(vd->vg[0], EVAS_CALLBACK_RESIZE,
                                   check_favorite_vg_resize_cb, vd);
-   elm_object_part_content_set(obj, "tizen_vg_shape", vd->vg[0]);
-
    //Inner Body Star
    vd->vg[1] = evas_object_vg_add(evas_object_evas_get(obj));
    evas_object_event_callback_add(vd->vg[1], EVAS_CALLBACK_RESIZE,
                                   check_favorite_vg2_resize_cb, vd);
+
+   elm_object_part_content_set(obj, "tizen_vg_shape", vd->vg[0]);
    elm_object_part_content_set(obj, "tizen_vg_shape2", vd->vg[1]);
 
    vd->obj = obj;
@@ -690,18 +690,17 @@ tizen_vg_check_onoff_set(Elm_Check *obj)
                                   check_onoff_del_cb, vd);
    evas_object_event_callback_add(vd->vg[0], EVAS_CALLBACK_RESIZE,
                                   check_onoff_vg_resize_cb, vd);
-   elm_object_part_content_set(obj, "tizen_vg_shape", vd->vg[0]);
-
    //Overlapped Circle VG
    vd->vg[1] = evas_object_vg_add(evas_object_evas_get(obj));
    evas_object_event_callback_add(vd->vg[1], EVAS_CALLBACK_RESIZE,
                                   check_onoff_vg2_resize_cb, vd);
-   elm_object_part_content_set(obj, "tizen_vg_shape2", vd->vg[1]);
-
    //Line-Circle VG
    vd->vg[2] = evas_object_vg_add(evas_object_evas_get(obj));
    evas_object_event_callback_add(vd->vg[2], EVAS_CALLBACK_RESIZE,
                                   check_onoff_vg3_resize_cb, vd);
+
+   elm_object_part_content_set(obj, "tizen_vg_shape", vd->vg[0]);
+   elm_object_part_content_set(obj, "tizen_vg_shape2", vd->vg[1]);
    elm_object_part_content_set(obj, "tizen_vg_shape3", vd->vg[2]);
 
    vd->obj = obj;
@@ -1139,12 +1138,12 @@ tizen_vg_button_set(Elm_Button *obj)
                                   button_del_cb, vd);
    evas_object_event_callback_add(vd->vg[0], EVAS_CALLBACK_RESIZE,
                                   button_base_resize_cb, vd);
-   elm_object_part_content_set(obj, "tizen_vg_shape", vd->vg[0]);
-
    //Effect VG
    vd->vg[1] = evas_object_vg_add(e);
    evas_object_event_callback_add(vd->vg[1], EVAS_CALLBACK_RESIZE,
                                   button_effect_resize_cb, vd);
+
+   elm_object_part_content_set(obj, "tizen_vg_shape", vd->vg[0]);
    elm_object_part_content_set(obj, "tizen_vg_shape2", vd->vg[1]);
 
    vd->obj = obj;
