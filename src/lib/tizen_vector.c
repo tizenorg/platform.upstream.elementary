@@ -793,7 +793,7 @@ check_default_vg_resize_cb(void *data, Evas *e EINA_UNUSED,
    if (elm_check_state_get(vd->obj))
      evas_vg_node_color_set(vd->shape[1], 255, 255, 255, 255);
    else
-     evas_vg_node_color_set(vd->shape[1], 255, 255, 255, 0);
+     evas_vg_node_color_set(vd->shape[1], 0, 0, 0, 0);
 
    //Update Line Shape
    if (elm_check_state_get(vd->obj))
@@ -835,11 +835,12 @@ transit_check_default_bg_color_op(Elm_Transit_Effect *effect,
                                   double progress)
 {
    check_default *vd = effect;
+   int color;
 
-   if (elm_check_state_get(vd->obj))
-     evas_vg_node_color_set(vd->shape[1], 255, 255, 255, 255 * progress);
-   else
-     evas_vg_node_color_set(vd->shape[1], 255, 255, 255, 255 * (1 - progress));
+   if (elm_check_state_get(vd->obj)) color = 255 * progress;
+   else color = 255 * (1 - progress);
+
+   evas_vg_node_color_set(vd->shape[1], color, color, color, color);
 }
 
 static void
