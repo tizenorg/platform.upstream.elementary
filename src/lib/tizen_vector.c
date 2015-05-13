@@ -913,10 +913,14 @@ transit_check_default_line_op(Elm_Transit_Effect *effect,
 }
 
 static void
-check_default_changed_cb(void *data, Evas_Object *obj,
-                         void *event_info EINA_UNUSED)
+check_default_changed_cb(void *data, Evas_Object *obj EINA_UNUSED,
+                         const char *emission EINA_UNUSED,
+                         const char *source EINA_UNUSED)
 {
    check_default *vd = data;
+
+   if (!source) return;
+   if (strcmp(source, "tizen_vg")) return;
 
    check_default_init(vd);
 
@@ -983,7 +987,7 @@ check_default_del_cb(void *data, Evas *e EINA_UNUSED,
 {
    check_default *vd = data;
    evas_object_data_set(vd->obj, vg_key, NULL);
-   evas_object_smart_callback_del(vd->obj, "changed", check_default_changed_cb);
+   elm_object_signal_callback_del(vd->obj, "elm,check,action,toggle", "tizen_vg", check_default_changed_cb);
    elm_transit_del(vd->transit[0]);
    elm_transit_del(vd->transit[1]);
    elm_transit_del(vd->transit[2]);
@@ -1002,7 +1006,7 @@ tizen_vg_check_default_set(Elm_Check *obj)
      }
    evas_object_data_set(obj, vg_key, vd);
 
-   evas_object_smart_callback_add(obj, "changed", check_default_changed_cb, vd);
+   elm_object_signal_callback_add(obj, "elm,check,action,toggle", "tizen_vg", check_default_changed_cb, vd);
 
    vd->obj = obj;
 
