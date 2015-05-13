@@ -179,6 +179,8 @@ tizen_vg_radio_set(Elm_Radio *obj)
    //Vector Graphics Object
    Evas *e = evas_object_evas_get(obj);
 
+   vd->obj = obj;
+
    //Outline VG
    vd->vg[0] = evas_object_vg_add(e);
    evas_object_event_callback_add(vd->vg[0], EVAS_CALLBACK_DEL,
@@ -194,8 +196,6 @@ tizen_vg_radio_set(Elm_Radio *obj)
    elm_object_part_content_set(obj, "tizen_vg_shape", vd->vg[0]);
    elm_object_part_content_set(obj, "tizen_vg_shape2", vd->vg[1]);
    elm_object_part_content_set(obj, "tizen_vg_shape3", vd->vg[2]);
-
-   vd->obj = obj;
 }
 
 
@@ -361,6 +361,8 @@ tizen_vg_check_favorite_set(Elm_Check *obj)
    evas_object_data_set(obj, vg_key, vd);
    evas_object_smart_callback_add(obj, "changed", check_favorite_changed_cb,
                                   vd);
+   vd->obj = obj;
+
    //Outline Star
    vd->vg[0] = evas_object_vg_add(evas_object_evas_get(obj));
    evas_object_event_callback_add(vd->vg[0], EVAS_CALLBACK_DEL,
@@ -374,8 +376,6 @@ tizen_vg_check_favorite_set(Elm_Check *obj)
 
    elm_object_part_content_set(obj, "tizen_vg_shape", vd->vg[0]);
    elm_object_part_content_set(obj, "tizen_vg_shape2", vd->vg[1]);
-
-   vd->obj = obj;
 }
 
 
@@ -684,6 +684,8 @@ tizen_vg_check_onoff_set(Elm_Check *obj)
    evas_object_data_set(obj, vg_key, vd);
    evas_object_smart_callback_add(obj, "changed", check_onoff_changed_cb, vd);
 
+   vd->obj = obj;
+
    //Base (BG) VG
    vd->vg[0] = evas_object_vg_add(evas_object_evas_get(obj));
    evas_object_event_callback_add(vd->vg[0], EVAS_CALLBACK_DEL,
@@ -702,8 +704,6 @@ tizen_vg_check_onoff_set(Elm_Check *obj)
    elm_object_part_content_set(obj, "tizen_vg_shape", vd->vg[0]);
    elm_object_part_content_set(obj, "tizen_vg_shape2", vd->vg[1]);
    elm_object_part_content_set(obj, "tizen_vg_shape3", vd->vg[2]);
-
-   vd->obj = obj;
 }
 
 
@@ -739,10 +739,6 @@ check_default_init(check_default *vd)
 
    //BG Shape
    vd->shape[1] = evas_vg_shape_add(base_root);
-
-   //Check Line VG
-   vd->vg[1] = evas_object_vg_add(evas_object_evas_get(vd->obj));
-   elm_object_part_content_set(vd->obj, "tizen_vg_shape2", vd->vg[1]);
 
    Efl_VG *line_root = evas_object_vg_root_node_get(vd->vg[1]);
 
@@ -1008,15 +1004,19 @@ tizen_vg_check_default_set(Elm_Check *obj)
 
    evas_object_smart_callback_add(obj, "changed", check_default_changed_cb, vd);
 
+   vd->obj = obj;
+
    //Base VG
    vd->vg[0] = evas_object_vg_add(evas_object_evas_get(obj));
    evas_object_event_callback_add(vd->vg[0], EVAS_CALLBACK_DEL,
                                   check_default_del_cb, vd);
    evas_object_event_callback_add(vd->vg[0], EVAS_CALLBACK_RESIZE,
                                   check_default_vg_resize_cb, vd);
-   elm_object_part_content_set(obj, "tizen_vg_shape", vd->vg[0]);
+   //Check Line VG
+   vd->vg[1] = evas_object_vg_add(evas_object_evas_get(obj));
 
-   vd->obj = obj;
+   elm_object_part_content_set(obj, "tizen_vg_shape", vd->vg[0]);
+   elm_object_part_content_set(obj, "tizen_vg_shape2", vd->vg[1]);
 }
 
 void
@@ -1133,6 +1133,8 @@ tizen_vg_button_set(Elm_Button *obj)
    //Vector Graphics Object
    Evas *e = evas_object_evas_get(obj);
 
+   vd->obj = obj;
+
    //Base VG
    vd->vg[0] = evas_object_vg_add(e);
    evas_object_event_callback_add(vd->vg[0], EVAS_CALLBACK_DEL,
@@ -1146,8 +1148,6 @@ tizen_vg_button_set(Elm_Button *obj)
 
    elm_object_part_content_set(obj, "tizen_vg_shape", vd->vg[0]);
    elm_object_part_content_set(obj, "tizen_vg_shape2", vd->vg[1]);
-
-   vd->obj = obj;
 }
 
 #endif
