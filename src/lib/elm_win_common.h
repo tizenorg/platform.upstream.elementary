@@ -143,6 +143,21 @@ typedef enum
 } Elm_Illume_Command;
 
 /**
+ * Define the mode of keygrab.
+ *
+ * A window may send commands to the Keyrouter according this mode,
+ * and perform different actions.
+ */
+typedef enum
+{
+   ELM_WIN_KEYGRAB_UNKNOWN = 0, /**< Unknown keygrab mode */
+   ELM_WIN_KEYGRAB_SHARED = (1 << 8), /**< Getting the grabbed-key together with the other client windows */
+   ELM_WIN_KEYGRAB_TOPMOST = (1 << 9), /**< Getting the grabbed-key only when window is top of the stack */
+   ELM_WIN_KEYGRAB_EXCLUSIVE = (1 << 10), /**< Getting the grabbed-key exclusively regardless of window's position */
+   ELM_WIN_KEYGRAB_OVERRIDE_EXCLUSIVE = (1 << 11) /**< Getting the grabbed-key exclusively regardless of window's position. Being overrided the grab by the other client window  */
+} Elm_Win_Keygrab_Mode;
+
+/**
  * @typedef Elm_Win_Trap
  *
  * Trap can be set with elm_win_trap_set() and will intercept the
