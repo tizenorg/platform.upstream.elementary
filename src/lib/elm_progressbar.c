@@ -178,6 +178,10 @@ _elm_progressbar_elm_widget_theme_apply(Eo *obj, Elm_Progressbar_Data *sd)
    eo_do_super(obj, MY_CLASS, int_ret = elm_obj_widget_theme_apply());
    if (!int_ret) return EINA_FALSE;
 
+#ifdef TIZEN_VECTOR_UX
+   tizen_vg_progressbar_set(obj);
+#endif
+
    if (sd->pulse)
      elm_layout_signal_emit(obj, "elm,state,pulse", "elm");
    else
@@ -272,6 +276,10 @@ _elm_progressbar_evas_object_smart_add(Eo *obj, Elm_Progressbar_Data *priv)
    evas_object_pass_events_set(priv->spacer, EINA_TRUE);
 
    elm_layout_content_set(obj, "elm.swallow.bar", priv->spacer);
+
+#ifdef TIZEN_VECTOR_UX
+   tizen_vg_progressbar_set(obj);
+#endif
 
    _units_set(obj);
    _val_set(obj);

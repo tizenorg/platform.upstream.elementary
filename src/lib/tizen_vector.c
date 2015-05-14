@@ -1149,4 +1149,437 @@ tizen_vg_button_set(Elm_Button *obj)
    elm_object_part_content_set(obj, "tizen_vg_shape2", vd->vg[1]);
 }
 
+/////////////////////////////////////////////////////////////////////////
+/* Progressbar */
+/////////////////////////////////////////////////////////////////////////
+
+typedef struct vg_progressbar_s
+{
+   Evas_Object *vg[3];       //0: base, 1: layer1, 2:layer2
+   Efl_VG_Shape *shape[3];   //0: base, 1: layer1, 2: layer2
+   Evas_Object *obj;
+   Evas_Coord x, w, h;       // for normal style animation data
+   double stroke_width;
+   double shrink;
+   double shift;
+} vg_progressbar;
+
+static void
+progressbar_del_cb(void *data EINA_UNUSED, Evas *e EINA_UNUSED, Evas_Object *obj,
+              void *event_info EINA_UNUSED)
+{
+   vg_progressbar *vd = evas_object_data_get(obj, vg_key);
+   if (vd)
+     {
+        evas_object_data_set(obj, vg_key, NULL);
+        free(vd);
+     }
+}
+
+static void
+transit_progressbar_normal_op1(Elm_Transit_Effect *effect, Elm_Transit *transit EINA_UNUSED, double progress)
+{
+   vg_progressbar *vd = effect;
+
+   evas_vg_node_color_set(vd->shape[1], 255, 255, 255, 255);
+   evas_vg_shape_shape_reset(vd->shape[1]);
+   Evas_Coord start_width = vd->x + vd->h;
+   evas_vg_shape_shape_append_rect(vd->shape[1], 0, 0, start_width + (vd->w - start_width)* progress, vd->h, vd->h/2, vd->h/2);
+
+   evas_vg_node_color_set(vd->shape[2], 255, 255, 255, 255);
+   evas_vg_shape_shape_reset(vd->shape[2]);
+   Evas_Coord delta_width = (vd->w - vd->x - vd->h) * progress;
+   evas_vg_shape_shape_append_rect(vd->shape[2], vd->x, 0, vd->h + delta_width, vd->h, vd->h/2, vd->h/2);
+
+}
+
+static void
+transit_progressbar_normal_op2(Elm_Transit_Effect *effect, Elm_Transit *transit EINA_UNUSED, double progress)
+{
+   vg_progressbar *vd = effect;
+   evas_vg_node_color_set(vd->shape[2], 255, 255, 255, 255);
+   evas_vg_shape_shape_reset(vd->shape[2]);
+   Evas_Coord delta_move =  (vd->w - vd->x - vd->h) * progress;
+   evas_vg_shape_shape_append_rect(vd->shape[2], vd->x + delta_move, 0, vd->w - vd->x - delta_move, vd->h, vd->h/2, vd->h/2);
+}
+
+static void
+transit_progressbar_normal_op3(Elm_Transit_Effect *effect, Elm_Transit *transit EINA_UNUSED, double progress)
+{
+   vg_progressbar *vd = effect;
+   int c = 255 - 255*progress;
+   evas_vg_node_color_set(vd->shape[2], c, c, c, c);
+}
+
+static void
+progressbar_normal_bg_resize_cb(void *data , Evas *e EINA_UNUSED,
+                                Evas_Object *obj EINA_UNUSED,
+                                void *event_info EINA_UNUSED)
+{
+   Evas_Coord x, y, w, h;
+   vg_progressbar *vd = data;
+   evas_object_geometry_get(vd->vg[0], &x, &y, &w, &h);
+   evas_vg_node_color_set(vd->shape[0], 255, 255, 255, 255);
+   evas_vg_shape_shape_reset(vd->shape[0]);
+   evas_vg_shape_shape_append_rect(vd->shape[0], 0, 0, w, h, h/2, h/2);
+}
+
+static void
+progressbar_normal_fg_resize_cb(void *data, Evas *e EINA_UNUSED,
+                                Evas_Object *obj EINA_UNUSED,
+                                void *event_info EINA_UNUSED)
+{
+   Evas_Coord x, y, w, h;
+   vg_progressbar *vd = data;
+   evas_object_geometry_get(vd->vg[1], &x, &y, &w, &h);
+   if (w < 2) return;
+
+   if (vd->w >= w) vd->x = 0;
+   else vd->x = vd->w - vd->h;
+   vd->w = w;
+   vd->h = h;
+   Elm_Transit *transit1 = elm_transit_add();
+   elm_transit_object_add(transit1, obj);
+   elm_transit_effect_add(transit1, transit_progressbar_normal_op1, vd, NULL);
+   elm_transit_duration_set(transit1, 0.4);
+   elm_transit_objects_final_state_keep_set(transit1, EINA_TRUE);
+
+
+   Elm_Transit *transit2 = elm_transit_add();
+   elm_transit_object_add(transit2, obj);
+   elm_transit_effect_add(transit2, transit_progressbar_normal_op2, vd, NULL);
+   elm_transit_duration_set(transit2, 0.3);
+   elm_transit_objects_final_state_keep_set(transit2, EINA_TRUE);
+
+   Elm_Transit *transit3 = elm_transit_add();
+   elm_transit_object_add(transit3, obj);
+   elm_transit_effect_add(transit3, transit_progressbar_normal_op3, vd, NULL);
+   elm_transit_duration_set(transit3, 0.3);
+   elm_transit_objects_final_state_keep_set(transit3, EINA_TRUE);
+
+   elm_transit_chain_transit_add(transit1, transit2);
+   elm_transit_chain_transit_add(transit2, transit3);
+
+   elm_transit_go(transit1);
+
+}
+
+static void
+_progressbar_normal_style(vg_progressbar *vd)
+{
+   Efl_VG *root;
+   int i;
+   Evas *e = evas_object_evas_get(vd->obj);
+
+   for(i=0; i < 3; i++)
+     {
+        vd->vg[i] = evas_object_vg_add(e);
+        root = evas_object_vg_root_node_get(vd->vg[i]);
+        vd->shape[i] = evas_vg_shape_add(root);
+     }
+
+   evas_object_event_callback_add(vd->vg[0], EVAS_CALLBACK_RESIZE,
+                                  progressbar_normal_bg_resize_cb, vd);
+   evas_object_event_callback_add(vd->vg[1], EVAS_CALLBACK_RESIZE,
+                                  progressbar_normal_fg_resize_cb, vd);
+
+   //unset
+   elm_object_part_content_unset(vd->obj, "elm.swallow.tizen_vg_shape1");
+   elm_object_part_content_unset(vd->obj, "elm.swallow.tizen_vg_shape2");
+   elm_object_part_content_unset(vd->obj, "elm.swallow.tizen_vg_shape3");
+
+   elm_object_part_content_set(vd->obj, "elm.swallow.tizen_vg_shape1", vd->vg[0]);
+   elm_object_part_content_set(vd->obj, "elm.swallow.tizen_vg_shape2", vd->vg[1]);
+   elm_object_part_content_set(vd->obj, "elm.swallow.tizen_vg_shape3", vd->vg[2]);
+}
+
+static void
+progressbar_process_resize_cb(void *data , Evas *e EINA_UNUSED,
+                                Evas_Object *obj EINA_UNUSED,
+                                void *event_info EINA_UNUSED)
+{
+   Evas_Coord x, y, w, h,i;
+   vg_progressbar *vd = data;
+   evas_object_geometry_get(vd->vg[0], &x, &y, &w, &h);
+   for(i=0; i < 3; i++)
+     {
+        evas_vg_shape_shape_reset(vd->shape[i]);
+        evas_vg_shape_stroke_color_set(vd->shape[i], 255, 255, 255, 255);
+        evas_vg_shape_shape_append_arc(vd->shape[i], 0, 0, w - vd->shrink, h - vd->shrink, 90.5, -1);
+        evas_vg_shape_stroke_width_set(vd->shape[i], vd->stroke_width);
+        evas_vg_node_origin_set(vd->shape[i], vd->shift, vd->shift);
+     }
+}
+
+static void
+transit_progressbar_process_A_op1(Elm_Transit_Effect *effect, Elm_Transit *transit EINA_UNUSED, double progress)
+{
+   vg_progressbar *vd = effect;
+   Evas_Coord x, y, w, h;
+   double s_a = 90.5, e_a = 90.5, s_l = -1 , e_l = -126;
+   evas_object_geometry_get(vd->vg[0], &x, &y, &w, &h);
+   double start_angle = s_a + (e_a - s_a) * progress;
+   double sweep_length = s_l + (e_l - s_l) * progress;
+   evas_vg_shape_shape_reset(vd->shape[2]);
+   evas_vg_shape_shape_append_arc(vd->shape[2], 0, 0, w - vd->shrink, h - vd->shrink, start_angle, sweep_length);
+}
+
+static void
+transit_progressbar_process_A_op2(Elm_Transit_Effect *effect, Elm_Transit *transit EINA_UNUSED, double progress)
+{
+   vg_progressbar *vd = effect;
+   Evas_Coord x, y, w, h;
+   double s_a = 90.5, e_a = -170, s_l = -126 , e_l = -100;
+   evas_object_geometry_get(vd->vg[0], &x, &y, &w, &h);
+   double start_angle = s_a + (e_a - s_a) * progress;
+   double sweep_length = s_l + (e_l - s_l) * progress;
+   evas_vg_shape_shape_reset(vd->shape[2]);
+   evas_vg_shape_shape_append_arc(vd->shape[2], 0, 0, w - vd->shrink, h - vd->shrink, start_angle, sweep_length);
+}
+
+static void
+transit_progressbar_process_A_op3(Elm_Transit_Effect *effect, Elm_Transit *transit EINA_UNUSED, double progress)
+{
+   vg_progressbar *vd = effect;
+   Evas_Coord x, y, w, h;
+   double s_a = -170, e_a = -269.5, s_l = -100 , e_l = -1;
+   evas_object_geometry_get(vd->vg[0], &x, &y, &w, &h);
+   double start_angle = s_a + (e_a - s_a) * progress;
+   double sweep_length = s_l + (e_l - s_l) * progress;
+   evas_vg_shape_shape_reset(vd->shape[2]);
+   evas_vg_shape_shape_append_arc(vd->shape[2], 0, 0, w - vd->shrink, h - vd->shrink, start_angle, sweep_length);
+}
+
+static void
+transit_progressbar_process_B_op1(Elm_Transit_Effect *effect, Elm_Transit *transit EINA_UNUSED, double progress)
+{
+   vg_progressbar *vd = effect;
+   Evas_Coord x, y, w, h;
+   double s_a = 90.5, e_a = 90.5, s_l = -1 , e_l = -172.8;
+   evas_object_geometry_get(vd->vg[0], &x, &y, &w, &h);
+   double start_angle = s_a + (e_a - s_a) * progress;
+   double sweep_length = s_l + (e_l - s_l) * progress;
+   evas_vg_shape_shape_reset(vd->shape[1]);
+   evas_vg_shape_shape_append_arc(vd->shape[1], 0, 0, w - vd->shrink, h - vd->shrink, start_angle, sweep_length);
+}
+
+static void
+transit_progressbar_process_B_op2(Elm_Transit_Effect *effect, Elm_Transit *transit EINA_UNUSED, double progress)
+{
+   vg_progressbar *vd = effect;
+   Evas_Coord x, y, w, h;
+   double s_a = 90.5, e_a = -129.7, s_l = -172.8 , e_l = -140.3;
+   evas_object_geometry_get(vd->vg[0], &x, &y, &w, &h);
+   double start_angle = s_a + (e_a - s_a) * progress;
+   double sweep_length = s_l + (e_l - s_l) * progress;
+   evas_vg_shape_shape_reset(vd->shape[1]);
+   evas_vg_shape_shape_append_arc(vd->shape[1], 0, 0, w - vd->shrink, h - vd->shrink, start_angle, sweep_length);
+}
+
+static void
+transit_progressbar_process_B_op3(Elm_Transit_Effect *effect, Elm_Transit *transit EINA_UNUSED, double progress)
+{
+   vg_progressbar *vd = effect;
+   Evas_Coord x, y, w, h;
+   double s_a = -129.7, e_a = -269.5, s_l = -140.3 , e_l = -1;
+   evas_object_geometry_get(vd->vg[0], &x, &y, &w, &h);
+   double start_angle = s_a + (e_a - s_a) * progress;
+   double sweep_length = s_l + (e_l - s_l) * progress;
+   evas_vg_shape_shape_reset(vd->shape[1]);
+   evas_vg_shape_shape_append_arc(vd->shape[1], 0, 0, w - vd->shrink, h - vd->shrink, start_angle, sweep_length);
+}
+
+static void
+transit_progressbar_process_C_op1(Elm_Transit_Effect *effect, Elm_Transit *transit EINA_UNUSED, double progress)
+{
+   vg_progressbar *vd = effect;
+   Evas_Coord x, y, w, h;
+   double s_a = 89.5, e_a = -270.5, s_l = -1 , e_l = -1;
+   evas_object_geometry_get(vd->vg[0], &x, &y, &w, &h);
+   double start_angle = s_a + (e_a - s_a) * progress;
+   double sweep_length = s_l + (e_l - s_l) * progress;
+   evas_vg_shape_shape_reset(vd->shape[0]);
+   evas_vg_shape_shape_append_arc(vd->shape[0], 0, 0, w - vd->shrink, h - vd->shrink, start_angle, sweep_length);
+}
+
+static void _transit_progreassbar_process_end(Elm_Transit_Effect *effect, Elm_Transit *transit);
+
+static void
+_progressbar_process_pulse_start_helper(vg_progressbar *vd)
+{
+   // For Layer A animation
+   Elm_Transit *transit1 = elm_transit_add();
+   elm_transit_object_add(transit1, vd->obj);
+   elm_transit_effect_add(transit1, transit_progressbar_process_A_op1, vd, NULL);
+   elm_transit_duration_set(transit1, 0.35);
+   elm_transit_objects_final_state_keep_set(transit1, EINA_TRUE);
+
+   Elm_Transit *transit2 = elm_transit_add();
+   elm_transit_object_add(transit2, vd->obj);
+   elm_transit_effect_add(transit2, transit_progressbar_process_A_op2, vd, NULL);
+   elm_transit_duration_set(transit2, 0.65);
+   elm_transit_objects_final_state_keep_set(transit2, EINA_TRUE);
+
+   Elm_Transit *transit3 = elm_transit_add();
+   elm_transit_object_add(transit3, vd->obj);
+   elm_transit_effect_add(transit3, transit_progressbar_process_A_op3, vd, NULL);
+   elm_transit_duration_set(transit3, 0.25);
+   elm_transit_objects_final_state_keep_set(transit3, EINA_TRUE);
+
+   elm_transit_chain_transit_add(transit1, transit2);
+   elm_transit_chain_transit_add(transit2, transit3);
+
+   elm_transit_go(transit1);
+
+   // For Layer B Animation
+   transit1 = elm_transit_add();
+   elm_transit_object_add(transit1, vd->obj);
+   elm_transit_effect_add(transit1, transit_progressbar_process_B_op1, vd, NULL);
+   elm_transit_duration_set(transit1, 0.48);
+   elm_transit_objects_final_state_keep_set(transit1, EINA_TRUE);
+
+   transit2 = elm_transit_add();
+   elm_transit_object_add(transit2, vd->obj);
+   elm_transit_effect_add(transit2, transit_progressbar_process_B_op2, vd, NULL);
+   elm_transit_duration_set(transit2, 0.52);
+   elm_transit_objects_final_state_keep_set(transit2, EINA_TRUE);
+
+   transit3 = elm_transit_add();
+   elm_transit_object_add(transit3, vd->obj);
+   elm_transit_effect_add(transit3, transit_progressbar_process_B_op3, vd, NULL);
+   elm_transit_duration_set(transit3, 0.33);
+   elm_transit_objects_final_state_keep_set(transit3, EINA_TRUE);
+
+   elm_transit_chain_transit_add(transit1, transit2);
+   elm_transit_chain_transit_add(transit2, transit3);
+
+   elm_transit_go(transit1);
+
+   // For Layer C Animation
+   transit1 = elm_transit_add();
+   elm_transit_object_add(transit1, vd->obj);
+   elm_transit_effect_add(transit1, transit_progressbar_process_C_op1, vd, _transit_progreassbar_process_end);
+   elm_transit_duration_set(transit1, 0.85);
+   elm_transit_objects_final_state_keep_set(transit1, EINA_TRUE);
+
+   elm_transit_go_in(transit1, .54);
+}
+
+static void
+_transit_progreassbar_process_end(Elm_Transit_Effect *effect, Elm_Transit *transit EINA_UNUSED)
+{
+  _progressbar_process_pulse_start_helper(effect);
+}
+
+static void
+_progressbar_process_pulse_start(void *data,
+                       Evas_Object *obj EINA_UNUSED,
+                       const char *emission EINA_UNUSED,
+                       const char *source EINA_UNUSED)
+{
+   _progressbar_process_pulse_start_helper(data);
+}
+
+static void
+_progressbar_process_pulse_stop(void *data,
+                       Evas_Object *obj EINA_UNUSED,
+                       const char *emission EINA_UNUSED,
+                       const char *source EINA_UNUSED)
+{
+   //TODO stop the animation
+}
+
+static void
+_progressbar_process_style(vg_progressbar *vd)
+{
+   Efl_VG *root;
+   int i;
+   Evas *e = evas_object_evas_get(vd->obj);
+
+   for(i=0; i < 3; i++)
+     {
+        vd->vg[i] = evas_object_vg_add(e);
+        root = evas_object_vg_root_node_get(vd->vg[i]);
+        vd->shape[i] = evas_vg_shape_add(root);
+        evas_vg_shape_stroke_color_set(vd->shape[i], 255, 255, 255, 255);
+        evas_vg_shape_stroke_cap_set(vd->shape[i], EFL_GFX_CAP_ROUND);
+     }
+
+   evas_object_event_callback_add(vd->vg[0], EVAS_CALLBACK_RESIZE,
+                                  progressbar_process_resize_cb, vd);
+
+   elm_object_part_content_set(vd->obj, "elm.swallow.tizen_vg_shape1", vd->vg[0]);
+   elm_object_part_content_set(vd->obj, "elm.swallow.tizen_vg_shape2", vd->vg[1]);
+   elm_object_part_content_set(vd->obj, "elm.swallow.tizen_vg_shape3", vd->vg[2]);
+
+   elm_object_signal_callback_add(vd->obj, "elm,state,pulse,start",
+                                  "*", _progressbar_process_pulse_start, vd);
+
+   elm_object_signal_callback_add(vd->obj, "elm,state,pulse,stop",
+                                   "*", _progressbar_process_pulse_stop, vd);
+
+}
+
+void
+tizen_vg_progressbar_set(Elm_Progressbar *obj)
+{
+   vg_progressbar *vd = evas_object_data_get(obj, vg_key);
+   if (vd)
+     {
+        if (vd->vg[0]) evas_object_del(vd->vg[0]);
+        if (vd->vg[1]) evas_object_del(vd->vg[1]);
+        if (vd->vg[2]) evas_object_del(vd->vg[2]);
+        vd->x = 0;
+     }
+
+   //Apply vector ux only theme has "vector_ux"
+   const char *str = elm_layout_data_get(obj, "vector_ux");
+   if (!str) return;
+
+   if (!vd)
+     {
+        vd = calloc(1, sizeof(vg_progressbar));
+        evas_object_data_set(obj, vg_key, vd);
+        vd->obj = obj;
+        // callback to free vd data
+        evas_object_event_callback_add(vd->obj, EVAS_CALLBACK_DEL,
+                                       progressbar_del_cb, NULL);
+     }
+   if (!vd)
+     {
+        ERR("Failed to allocate vector graphics data memory");
+        return;
+     }
+
+
+   if (!strcmp(str, "default") ||
+       !strcmp(str, "custom"))
+     {
+        _progressbar_normal_style(vd);
+        return;
+     }
+   if (!strcmp(str, "process_large") ||
+       !strcmp(str, "process_medium") ||
+       !strcmp(str, "process_small"))
+     {
+        vd->stroke_width = 3;
+        vd->shrink = 6;
+        vd->shift = 3;
+        if (!strcmp(str, "process_medium"))
+          {
+             vd->stroke_width = 2;
+             vd->shrink = 4;
+             vd->shift = 2;
+          }
+        if (!strcmp(str, "process_small"))
+          {
+             vd->stroke_width = 1.5;
+             vd->shrink = 4;
+             vd->shift = 2;
+          }
+        _progressbar_process_style(vd);
+        return;
+     }
+}
+
 #endif
