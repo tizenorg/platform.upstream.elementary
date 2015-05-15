@@ -542,11 +542,9 @@ void                  _elm_win_focus_highlight_in_theme_update(Evas_Object *obj,
 Evas_Object          *_elm_win_focus_highlight_object_get(Evas_Object *obj);
 void                  _elm_win_focus_auto_show(Evas_Object *obj);
 void                  _elm_win_focus_auto_hide(Evas_Object *obj);
-//TIZEN_ONLY(20160329): win: add accessibility highlight (d4753268ad02d0c25c16f815003c70b158879ca7)
-void                  _elm_win_accessibility_highlight_set(Evas_Object *win, Evas_Object *obj);
-Evas_Object          *_elm_win_accessibility_highlight_get(Evas_Object *win);
+//TIZEN_ONLY(20160404) Accessibility Highlight Frame added (99248ce)
+void                  _elm_win_object_set_accessibility_highlight(Evas_Object *win, Evas_Object *obj);
 //
-
 EAPI void             _elm_access_clear(Elm_Access_Info *ac);
 EAPI void             _elm_access_text_set(Elm_Access_Info *ac, int type, const char *text);
 EAPI void             _elm_access_callback_set(Elm_Access_Info *ac, int type, Elm_Access_Info_Cb func, const void *data);
