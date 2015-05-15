@@ -162,10 +162,9 @@ tizen_vg_radio_set(Elm_Radio *obj)
    vg_radio *vd = evas_object_data_get(obj, vg_key);
    if (vd) evas_object_del(vd->vg[0]);
 
-   //Apply vector ux only theme has "vector_ux" "on"
+   //Apply vector ux only theme has "vector_ux"
    const char *str = elm_layout_data_get(obj, "vector_ux");
    if (!str) return;
-   if (strcmp(str, "on")) return;
 
    vd = calloc(1, sizeof(vg_radio));
    if (!vd)
@@ -1029,18 +1028,15 @@ tizen_vg_check_set(Elm_Check *obj)
    check_default *vd = evas_object_data_get(obj, vg_key);
    if (vd) evas_object_del(vd->vg[0]);
 
-   //Apply vector ux only theme has "vector_ux" "on"
+   //Apply vector ux only theme has "vector_ux"
    const char *str = elm_layout_data_get(obj, "vector_ux");
    if (!str) return;
-   if (strcmp(str, "on")) return;
 
-   const char *style = elm_object_style_get(obj);
-
-   if (!strcmp(style, "default"))
+   if (!strcmp(str, "default"))
      tizen_vg_check_default_set(obj);
-   else if (!strcmp(style, "on&off"))
+   else if (!strcmp(str, "on&off"))
      tizen_vg_check_onoff_set(obj);
-   else if (!strcmp(style, "favorite"))
+   else if (!strcmp(str, "favorite"))
      tizen_vg_check_favorite_set(obj);
 }
 
@@ -1121,10 +1117,9 @@ tizen_vg_button_set(Elm_Button *obj)
    vg_button *vd = evas_object_data_get(obj, vg_key);
    if (vd) evas_object_del(vd->vg[0]);
 
-   //Apply vector ux only theme has "vector_ux" "on"
+   //Apply vector ux only theme has "vector_ux"
    const char *str = elm_layout_data_get(obj, "vector_ux");
    if (!str) return;
-   if (strcmp(str, "on")) return;
 
    vd = calloc(1, sizeof(vg_button));
    if (!vd)
