@@ -3354,8 +3354,7 @@ _elm_list_elm_interface_scrollable_content_pos_set(Eo *obj EINA_UNUSED, Elm_List
    delta_y = old_y - y;
 
    //check if highlighted item is list descendant
-   Evas_Object *win = elm_widget_top_get(obj);
-   Evas_Object * highlighted_obj = _elm_win_accessibility_highlight_get(win);
+   Evas_Object * highlighted_obj = NULL; //TODO: cherry pick conflict. _elm_object_accessibility_currently_highlighted_get();
    Evas_Object * parent = highlighted_obj;
    if (eo_isa(highlighted_obj, ELM_WIDGET_CLASS))
      {
