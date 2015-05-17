@@ -6100,22 +6100,35 @@ _elm_widget_item_elm_interface_atspi_component_focus_grab(Eo *obj EINA_UNUSED, E
    return elm_object_item_focus_get(obj);
 }
 
-//TIZEN_ONLY(20160329): atspi: implement HighlightGrab and HighlightClear methods (29e253e2f7ef3c632ac3a64c489bf569df407f30)
+//TIZEN_ONLY(20160329): atspi: implement HighlightGrab and HighlightClear methods
 EOLIAN static Eina_Bool
-_elm_widget_item_elm_interface_atspi_component_highlight_grab(Eo *obj, Elm_Widget_Item_Data *sd)
+_elm_widget_item_elm_interface_atspi_component_highlight_grab(Eo *obj EINA_UNUSED, Elm_Widget_Item_Data *sd EINA_UNUSED)
 {
-   Evas_Object *win = elm_widget_top_get(sd->widget);
-   if (win && eo_isa(win, ELM_WIN_CLASS))
+
+   if (!obj) return EINA_FALSE;
+
+   Evas_Object *o = elm_object_parent_widget_get(sd->view);
+   if (_elm_scrollable_is(o))
      {
-        elm_object_accessibility_highlight_set(sd->view, EINA_TRUE);
-        elm_interface_atspi_accessible_state_changed_signal_emit(obj, ELM_ATSPI_STATE_HIGHLIGHTED, EINA_TRUE);
-        return EINA_TRUE;
+        Evas_Coord bx, by, bw, bh;
+        Evas_Coord x, y, w, h;
+        Evas_Object *w1 = elm_object_parent_widget_get(o);
+        evas_object_geometry_get(sd->view, &x, &y, &w, &h);
+        evas_object_geometry_get(o, &bx, &by, &bw, &bh);
+        x -= bx;
+        y -= by;
+        eo_do(w1, elm_interface_scrollable_content_region_show(x, y, w, h));
      }
-   return EINA_FALSE;
+
+   elm_object_accessibility_highlight_set(sd->view, EINA_TRUE);
+   elm_interface_atspi_accessible_state_changed_signal_emit(obj, ELM_ATSPI_STATE_HIGHLIGHTED, EINA_TRUE);
+
+   return EINA_TRUE;
+
 }
 
 EOLIAN static Eina_Bool
-_elm_widget_item_elm_interface_atspi_component_highlight_clear(Eo *obj, Elm_Widget_Item_Data *sd)
+_elm_widget_item_elm_interface_atspi_component_highlight_clear(Eo *obj, Elm_Widget_Item_Data *sd EINA_UNUSED)
 {
    if (!obj) return EINA_FALSE;
    elm_object_accessibility_highlight_set(sd->view, EINA_FALSE);
