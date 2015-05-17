@@ -993,6 +993,25 @@ _elm_win_focus_prev_target_del(void *data,
 }
 
 static void
+_elm_win_accessibility_highlight_hide(void *data)
+{
+   ELM_WIN_DATA_GET(data, sd);
+   _elm_win_accessibility_highlight_visible_set(sd, EINA_FALSE);
+}
+
+static void
+_elm_win_accessibility_highlight_show(void *data)
+{
+   ELM_WIN_DATA_GET(data, sd);
+   Evas_Object *target = sd->accessibility_highlight.cur.target;
+   Evas_Object *fobj = sd->accessibility_highlight.fobj;
+   elm_widget_theme_object_set (sd->obj, fobj, "accessibility_highlight", "top", "default");
+   evas_object_raise(fobj);
+   _elm_win_accessibility_highlight_simple_setup(sd, fobj);
+   _elm_win_accessibility_highlight_visible_set(sd, EINA_TRUE);
+}
+
+static void
 _elm_win_focus_highlight_reconfigure_job(void *data)
 {
    ELM_WIN_DATA_GET(data, sd);
