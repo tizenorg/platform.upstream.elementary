@@ -50,6 +50,9 @@ struct _Elm_Entry_Data
    /* Only for clipboard */
    const char                           *cut_sel;
    const char                           *text;
+   // TIZEN_ONLY(20150519): when password mode is enabled, elm_object_text_get returns utf8 string.
+   const char                           *password_text;
+   //
    const char                           *file;
    Elm_Text_Format                       format;
    Evas_Coord                            last_w, ent_mw, ent_mh;

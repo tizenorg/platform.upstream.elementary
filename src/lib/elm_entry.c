@@ -718,7 +718,19 @@ _elm_entry_elm_widget_theme_apply(Eo *obj, Elm_Entry_Data *sd)
 
    _mirrored_set(obj, elm_widget_mirrored_get(obj));
 
-   t = eina_stringshare_add(elm_object_text_get(obj));
+   // TIZEN_ONLY(20150519): when password mode is enabled, elm_object_text_get returns utf8 string.
+   elm_entry_imf_context_reset(obj);
+   if (sd->password)
+     {
+        char *tmp = elm_entry_utf8_to_markup(elm_object_text_get(obj));
+        t = eina_stringshare_add(tmp);
+        if (tmp) free(tmp);
+     }
+   else
+     {
+        t = eina_stringshare_add(elm_object_text_get(obj));
+     }
+   //
 
    elm_widget_theme_object_set
      (obj, sd->entry_edje, "entry", _elm_entry_theme_group_get(obj), style);
@@ -1857,6 +1869,9 @@ _entry_changed_handle(void *data,
 
    elm_layout_sizing_eval(data);
    ELM_SAFE_FREE(sd->text, eina_stringshare_del);
+   // TIZEN_ONLY(20150519): when password mode is enabled, elm_object_text_get returns utf8 string.
+   ELM_SAFE_FREE(sd->password_text, eina_stringshare_del);
+   //
    ELM_SAFE_FREE(sd->delay_write, ecore_timer_del);
    evas_event_thaw(evas_object_evas_get(data));
    evas_event_thaw_eval(evas_object_evas_get(data));
@@ -2590,6 +2605,9 @@ _text_append_idler(void *data)
 
    evas_event_freeze(evas_object_evas_get(obj));
    ELM_SAFE_FREE(sd->text, eina_stringshare_del);
+   // TIZEN_ONLY(20150519): when password mode is enabled, elm_object_text_get returns utf8 string.
+   ELM_SAFE_FREE(sd->password_text, eina_stringshare_del);
+   //
    sd->changed = EINA_TRUE;
 
    start = sd->append_text_position;
@@ -2866,6 +2884,9 @@ _elm_entry_elm_layout_text_set(Eo *obj, Elm_Entry_Data *sd, const char *part, co
 
    evas_event_freeze(evas_object_evas_get(obj));
    ELM_SAFE_FREE(sd->text, eina_stringshare_del);
+   // TIZEN_ONLY(20150519): when password mode is enabled, elm_object_text_get returns utf8 string.
+   ELM_SAFE_FREE(sd->password_text, eina_stringshare_del);
+   //
    sd->changed = EINA_TRUE;
 
    /* Clear currently pending job if there is one */
@@ -2970,6 +2991,20 @@ proceed:
      {
         eina_stringshare_replace(&sd->text, text);
      }
+
+   // TIZEN_ONLY(20150519): when password mode is enabled, elm_object_text_get returns utf8 string.
+   if (sd->password)
+     {
+        char *pw_text;
+        pw_text = elm_entry_markup_to_utf8(sd->text);
+        if (pw_text)
+          {
+             eina_stringshare_replace(&sd->password_text, pw_text);
+             free(pw_text);
+             return sd->password_text;
+          }
+     }
+   /////
 
    return sd->text;
 }
@@ -3588,6 +3623,10 @@ _elm_entry_evas_object_smart_del(Eo *obj, Elm_Entry_Data *sd)
    ELM_SAFE_FREE(sd->delay_write, ecore_timer_del);
    free(sd->input_panel_imdata);
    eina_stringshare_del(sd->anchor_hover.hover_style);
+
+   // TIZEN_ONLY(20150519): when password mode is enabled, elm_object_text_get returns utf8 string.
+   ELM_SAFE_FREE(sd->password_text, eina_stringshare_del);
+   //
 
    evas_event_thaw(evas_object_evas_get(obj));
    evas_event_thaw_eval(evas_object_evas_get(obj));
