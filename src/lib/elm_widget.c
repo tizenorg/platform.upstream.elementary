@@ -5967,8 +5967,38 @@ static Eina_List *_lines_split(Eina_List *children)
 }
 //
 
+// TIZEN ONLY
+static void
+_ewk_view_load_finished(Eo *plug,
+                        Evas_Object *obj,
+                        const char *addr)
+{
+   char *bus, *path;
+
+   if (addr && !evas_object_data_get(obj, "__plug_connected"))
+     {
+       if (_elm_atspi_bridge_plug_id_split(addr, &bus, &path))
+         {
+            eo_do(plug, elm_obj_atspi_proxy_address_set(bus, path));
+            elm_atspi_bridge_utils_proxy_connect(plug);
+            evas_object_data_set(obj, "__plug_connected", (void*)1);
+            free(bus);
+            free(path);
+        }
+     }
+}
+
+static Eina_Bool
+_on_ewk_del(void *data, Eo *obj EINA_UNUSED, const Eo_Event_Description *desc EINA_UNUSED, void *event_info EINA_UNUSED)
+{
+   Eo *plug = data;
+   eo_del(plug);
+   return EINA_TRUE;
+}
+// TIZEN ONLY - END
+
 EOLIAN static Eina_List*
-_elm_widget_elm_interface_atspi_accessible_children_get(Eo *obj EINA_UNUSED, Elm_Widget_Smart_Data *pd EINA_UNUSED)
+_elm_widget_elm_interface_atspi_accessible_children_get(Eo *obj, Elm_Widget_Smart_Data *pd EINA_UNUSED)
 {
    Eina_List *l, *accs = NULL;
    Elm_Widget_Smart_Data *wd;
@@ -5979,6 +6009,28 @@ _elm_widget_elm_interface_atspi_accessible_children_get(Eo *obj EINA_UNUSED, Elm
 
    EINA_LIST_FOREACH(wd->subobjs, l, widget)
      {
+        // TIZEN ONLY
+        // Ugly Tizen hack to integrate AT-SPI2 accessibility provided by WebKit with
+        // elementary one. Due to problematic cross dependencies between Webkit
+        // and elementary, instead of directly using ewk API to integrate accessibility
+        // we use evas_object_data_set with pre defined key to share data
+        // between webkit and elemetary libraries.
+        const char *plug_id;
+        if ((plug_id = evas_object_data_get(widget, "__PlugID")) != NULL)
+          {
+             Eo *plug = evas_object_data_get(widget, "__ewk_proxy");
+             if (!plug)
+               {
+                  plug = eo_add(ELM_ATSPI_PROXY_CLASS, obj, elm_obj_atspi_proxy_constructor(ELM_ATSPI_PROXY_TYPE_PLUG));
+                  evas_object_data_set(widget, "__ewk_proxy", plug);
+                  eo_do(widget, eo_event_callback_add(EO_EV_DEL, _on_ewk_del, plug));
+                  _ewk_view_load_finished(plug, widget, plug_id);
+               }
+             if (plug && evas_object_data_get(widget, "__plug_connected"))
+                accs = eina_list_append(accs, plug);
+             continue;
+          }
+        // TIZEN ONLY - END
         if (!elm_object_widget_check(widget)) continue;
         if (eo_isa(widget, ELM_INTERFACE_ATSPI_ACCESSIBLE_MIXIN))
           accs = eina_list_append(accs, widget);

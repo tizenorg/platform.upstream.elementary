@@ -532,6 +532,7 @@ void                *_elm_icon_signal_callback_del(Evas_Object *obj,
                                                    const char *emission,
                                                    const char *source,
                                                    Edje_Signal_Cb func_cb);
+Eina_Bool            _elm_atspi_bridge_plug_id_split(const char *plug_id, char **bus, char **path);
 /* end of DEPRECATED */
 
 
