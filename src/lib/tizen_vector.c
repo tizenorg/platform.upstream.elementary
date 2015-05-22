@@ -1157,6 +1157,7 @@ typedef struct vg_progressbar_s
 {
    Evas_Object *vg[3];       //0: base, 1: layer1, 2:layer2
    Efl_VG_Shape *shape[3];   //0: base, 1: layer1, 2: layer2
+   Elm_Transit  *transit;
    Evas_Object *obj;
    Evas_Coord x, w, h;       // for normal style animation data
    double stroke_width;
@@ -1169,6 +1170,10 @@ progressbar_del_cb(void *data EINA_UNUSED, Evas *e EINA_UNUSED, Evas_Object *obj
               void *event_info EINA_UNUSED)
 {
    vg_progressbar *vd = evas_object_data_get(obj, vg_key);
+   Elm_Transit *cur_transit = vd->transit;
+   vd->transit = NULL;
+   if (cur_transit)
+     elm_transit_del(cur_transit);
    if (vd)
      {
         evas_object_data_set(obj, vg_key, NULL);
@@ -1461,14 +1466,17 @@ _progressbar_process_pulse_start_helper(vg_progressbar *vd)
    elm_transit_effect_add(transit1, transit_progressbar_process_C_op1, vd, _transit_progreassbar_process_end);
    elm_transit_duration_set(transit1, 0.85);
    elm_transit_objects_final_state_keep_set(transit1, EINA_TRUE);
-
+   vd->transit = transit1;
    elm_transit_go_in(transit1, .54);
 }
 
 static void
 _transit_progreassbar_process_end(Elm_Transit_Effect *effect, Elm_Transit *transit EINA_UNUSED)
 {
-  _progressbar_process_pulse_start_helper(effect);
+   vg_progressbar *vd = effect;
+   if (!vd->transit) return;
+   vd->transit = NULL;
+   _progressbar_process_pulse_start_helper(vd);
 }
 
 static void
@@ -1486,7 +1494,11 @@ _progressbar_process_pulse_stop(void *data,
                        const char *emission EINA_UNUSED,
                        const char *source EINA_UNUSED)
 {
-   //TODO stop the animation
+   vg_progressbar *vd = data;
+   Elm_Transit *cur_transit = vd->transit;
+   vd->transit = NULL;
+   if (cur_transit)
+     elm_transit_del(cur_transit);
 }
 
 static void
