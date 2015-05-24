@@ -1107,7 +1107,7 @@ button_del_cb(void *data, Evas *e EINA_UNUSED, Evas_Object *obj EINA_UNUSED,
               void *event_info EINA_UNUSED)
 {
    vg_button *vd = data;
-   evas_object_data_set(vd->obj, vg_key, NULL);
+   evas_object_data_del(vd->obj, vg_key);
    free(vd);
 }
 
@@ -1115,7 +1115,13 @@ void
 tizen_vg_button_set(Elm_Button *obj)
 {
    vg_button *vd = evas_object_data_get(obj, vg_key);
-   if (vd) evas_object_del(vd->vg[0]);
+   if (vd)
+     {
+        elm_object_part_content_unset(obj, "tizen_vg_shape");
+        elm_object_part_content_unset(obj, "tizen_vg_shape2");
+        evas_object_del(vd->vg[0]);
+        evas_object_del(vd->vg[1]);
+     }
 
    //Apply vector ux only theme has "vector_ux"
    const char *str = elm_layout_data_get(obj, "vector_ux");
