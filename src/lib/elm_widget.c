@@ -6085,14 +6085,33 @@ _elm_widget_item_elm_interface_atspi_component_focus_grab(Eo *obj EINA_UNUSED, E
 EOLIAN static Eina_Bool
 _elm_widget_item_elm_interface_atspi_component_highlight_grab(Eo *obj, Elm_Widget_Item_Data *sd)
 {
-   Evas_Object *win = elm_widget_top_get(sd->widget);
-   if (win && eo_isa(win, ELM_WIN_CLASS))
+
+   if (!obj) return EINA_FALSE;
+
+   Evas_Object *o = elm_object_parent_widget_get(sd->view);
+   Evas_Object *widget= elm_object_parent_widget_get(o);
+   if (_elm_scrollable_is(widget))
      {
-        _elm_win_accessibility_highlight_set(win, sd->view);
-        elm_interface_atspi_accessible_state_changed_signal_emit(obj, ELM_ATSPI_STATE_HIGHLIGHTED, EINA_TRUE);
-        return EINA_TRUE;
+        Evas_Coord bx, by, bw, bh;
+        Evas_Coord x, y, w, h;
+        evas_object_geometry_get(sd->view, &x, &y, &w, &h);
+        evas_object_geometry_get(o, &bx, &by, &bw, &bh);
+        x -= bx;
+        y -= by;
+        switch (_elm_config->focus_autoscroll_mode)
+          {
+           case ELM_FOCUS_AUTOSCROLL_MODE_SHOW:
+              eo_do(widget, elm_interface_scrollable_content_region_show(x, y, w, h));
+              break;
+           case ELM_FOCUS_AUTOSCROLL_MODE_BRING_IN:
+              eo_do(widget, elm_interface_scrollable_region_bring_in(x, y, w, h));
+              break;
+           default:
+              break;
+          }
      }
-   return EINA_FALSE;
+   elm_object_accessibility_highlight_set(sd->view, EINA_TRUE);
+   return EINA_TRUE;
 }
 
 EOLIAN static Eina_Bool
