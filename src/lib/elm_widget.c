@@ -6145,6 +6145,17 @@ _elm_widget_item_elm_interface_atspi_component_highlight_grab(Eo *obj, Elm_Widge
         x -= bx;
         y -= by;
         eo_do(w1, elm_interface_scrollable_content_region_show(x, y, w, h));
+        switch (_elm_config->focus_autoscroll_mode)
+          {
+           case ELM_FOCUS_AUTOSCROLL_MODE_SHOW:
+              eo_do(w1, elm_interface_scrollable_content_region_show(x, y, w, h));
+              break;
+           case ELM_FOCUS_AUTOSCROLL_MODE_BRING_IN:
+              eo_do(w1, elm_interface_scrollable_region_bring_in(x, y, w, h));
+              break;
+           default:
+              break;
+          }
      }
 
    elm_object_accessibility_highlight_set(sd->view, EINA_TRUE);
