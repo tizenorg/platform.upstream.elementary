@@ -1596,4 +1596,218 @@ tizen_vg_progressbar_set(Elm_Progressbar *obj)
      }
 }
 
+/////////////////////////////////////////////////////////////////////////
+/* Slider */
+/////////////////////////////////////////////////////////////////////////
+
+typedef struct vg_slider_s
+{
+   Evas_Object *vg[7];
+   Efl_VG_Shape *shape[7];
+   Evas_Object *obj;
+   Eina_Stringshare *style;
+} vg_slider;
+
+static int slider_base = 0;
+static int slider_level = 1;
+static int slider_level2 = 2;
+static int slider_level_rest = 3;
+static int slider_center = 4;
+static int slider_handle = 5;
+static int slider_handle_pressed = 6;
+
+static void
+slider_del_cb(void *data EINA_UNUSED, Evas *e EINA_UNUSED, Evas_Object *obj,
+              void *event_info EINA_UNUSED)
+{
+   vg_slider *vd = evas_object_data_get(obj, vg_key);
+   if (vd)
+     {
+        evas_object_data_set(obj, vg_key, NULL);
+        free(vd);
+     }
+}
+
+static void
+_append_circle(Efl_VG *shape, int w, int h)
+{
+   Evas_Coord center_x = (w / 2);
+   Evas_Coord center_y = (h / 2);
+   double radius = ELM_SCALE_SIZE((center_x > center_y ? center_x : center_y) - 2);
+   evas_vg_shape_shape_reset(shape);
+   evas_vg_shape_shape_append_circle(shape, center_x, center_y, radius);
+}
+
+static void
+_append_round_rect(Efl_VG *shape, int w, int h)
+{
+   double radius = w/2 > h/2 ? h/2 : w/2;
+   evas_vg_shape_shape_reset(shape);
+   evas_vg_shape_shape_append_rect(shape, 0, 0, w, h, radius, radius);
+}
+
+static void
+slider_vg_handle_normal_resize_cb(void *data , Evas *e EINA_UNUSED,
+                                  Evas_Object *obj EINA_UNUSED,
+                                  void *event_info EINA_UNUSED)
+{
+   Evas_Coord w, h;
+   vg_slider *vd = data;
+   evas_object_geometry_get(vd->vg[slider_handle], NULL, NULL, &w, &h);
+   _append_circle(vd->shape[slider_handle], w, h);
+}
+
+static void
+slider_vg_handle_pressed_resize_cb(void *data , Evas *e EINA_UNUSED,
+                            Evas_Object *obj EINA_UNUSED,
+                            void *event_info EINA_UNUSED)
+{
+   Evas_Coord w, h;
+   vg_slider *vd = data;
+   evas_object_geometry_get(vd->vg[slider_handle_pressed], NULL, NULL, &w, &h);
+   if (w == h)
+     _append_circle(vd->shape[slider_handle_pressed], w, h);
+   else
+     _append_round_rect(vd->shape[slider_handle_pressed], w, h);
+}
+
+static void
+slider_base_resize_cb(void *data , Evas *e EINA_UNUSED,
+                            Evas_Object *obj EINA_UNUSED,
+                            void *event_info EINA_UNUSED)
+{
+   Evas_Coord w, h;
+   vg_slider *vd = data;
+   evas_object_geometry_get(vd->vg[slider_base], NULL, NULL, &w, &h);
+   _append_round_rect(vd->shape[slider_base], w, h);
+}
+
+static void
+slider_center_resize_cb(void *data , Evas *e EINA_UNUSED,
+                            Evas_Object *obj EINA_UNUSED,
+                            void *event_info EINA_UNUSED)
+{
+   Evas_Coord w, h;
+   vg_slider *vd = data;
+   evas_object_geometry_get(vd->vg[slider_center], NULL, NULL, &w, &h);
+   _append_round_rect(vd->shape[slider_center], w, h);
+}
+
+static void
+slider_level_resize_cb(void *data , Evas *e EINA_UNUSED,
+                            Evas_Object *obj EINA_UNUSED,
+                            void *event_info EINA_UNUSED)
+{
+   Evas_Coord w, h;
+   vg_slider *vd = data;
+   evas_object_geometry_get(vd->vg[slider_level], NULL, NULL, &w, &h);
+   _append_round_rect(vd->shape[slider_level], w, h);
+}
+
+static void
+slider_level2_resize_cb(void *data , Evas *e EINA_UNUSED,
+                            Evas_Object *obj EINA_UNUSED,
+                            void *event_info EINA_UNUSED)
+{
+   Evas_Coord w, h;
+   vg_slider *vd = data;
+   evas_object_geometry_get(vd->vg[slider_level2], NULL, NULL, &w, &h);
+   _append_round_rect(vd->shape[slider_level2], w, h);
+}
+
+static void
+slider_level_rest_resize_cb(void *data , Evas *e EINA_UNUSED,
+                            Evas_Object *obj EINA_UNUSED,
+                            void *event_info EINA_UNUSED)
+{
+   Evas_Coord w, h;
+   vg_slider *vd = data;
+   evas_object_geometry_get(vd->vg[slider_level_rest], NULL, NULL, &w, &h);
+   _append_round_rect(vd->shape[slider_level_rest], w, h);
+}
+
+static void
+_slider_create_handle(vg_slider *vd)
+{
+   Efl_VG *root;
+   int i;
+   Evas *e = evas_object_evas_get(vd->obj);
+   for(i=0; i < 7; i++)
+     {
+        vd->vg[i] = evas_object_vg_add(e);
+        root = evas_object_vg_root_node_get(vd->vg[i]);
+        vd->shape[i] = evas_vg_shape_add(root);
+        evas_vg_node_color_set(vd->shape[i], 255, 255, 255, 255);
+
+     }
+   // slider base
+   evas_object_event_callback_add(vd->vg[slider_base], EVAS_CALLBACK_RESIZE,
+                                  slider_base_resize_cb, vd);
+   elm_object_part_content_set(vd->obj, "elm.swallow.tizen_vg_shape1", vd->vg[slider_base]);
+
+   // level
+   evas_object_event_callback_add(vd->vg[slider_level], EVAS_CALLBACK_RESIZE,
+                                  slider_level_resize_cb, vd);
+   elm_object_part_content_set(vd->obj, "elm.swallow.tizen_vg_shape2", vd->vg[slider_level]);
+
+   // level2
+   evas_object_event_callback_add(vd->vg[slider_level2], EVAS_CALLBACK_RESIZE,
+                                  slider_level2_resize_cb, vd);
+   elm_object_part_content_set(vd->obj, "elm.swallow.tizen_vg_shape3", vd->vg[slider_level2]);
+
+   // level rest only for warning type
+   evas_object_event_callback_add(vd->vg[slider_level_rest], EVAS_CALLBACK_RESIZE,
+                                  slider_level_rest_resize_cb, vd);
+   elm_object_part_content_set(vd->obj, "elm.swallow.tizen_vg_shape4", vd->vg[slider_level_rest]);
+
+   // center point
+   evas_object_event_callback_add(vd->vg[slider_center], EVAS_CALLBACK_RESIZE,
+                                  slider_center_resize_cb, vd);
+   elm_object_part_content_set(vd->obj, "elm.swallow.tizen_vg_shape5", vd->vg[slider_center]);
+
+   // slider handle
+   evas_object_event_callback_add(vd->vg[slider_handle], EVAS_CALLBACK_RESIZE,
+                                  slider_vg_handle_normal_resize_cb, vd);
+   evas_object_event_callback_add(vd->vg[slider_handle_pressed], EVAS_CALLBACK_RESIZE,
+                                  slider_vg_handle_pressed_resize_cb, vd);
+   elm_object_part_content_set(vd->obj, "elm.dragable.slider:elm.swallow.tizen_vg_shape1", vd->vg[slider_handle]);
+   elm_object_part_content_set(vd->obj, "elm.dragable.slider:elm.swallow.tizen_vg_shape2", vd->vg[slider_handle_pressed]);
+}
+
+void
+tizen_vg_slider_set(Elm_Slider *obj)
+{
+   EINA_LOG_CRIT("slider VG creation");
+   vg_slider *vd = evas_object_data_get(obj, vg_key);
+   if (vd)
+     {
+        int i;
+        for(i=0; i < 7; i++)
+          if (vd->vg[i]) evas_object_del(vd->vg[i]);
+        eina_stringshare_del(vd->style);
+     }
+
+   //Apply vector ux only theme has "vector_ux" "on"
+   const char *str = elm_layout_data_get(obj, "vector_ux");
+   if (!str) return;
+
+   if (!vd)
+     {
+        vd = calloc(1, sizeof(vg_slider));
+        evas_object_data_set(obj, vg_key, vd);
+        vd->obj = obj;
+        // callback to free vd data
+        evas_object_event_callback_add(vd->obj, EVAS_CALLBACK_DEL,
+                                       slider_del_cb, NULL);
+     }
+   if (!vd)
+     {
+        ERR("Failed to allocate vector graphics data memory");
+        return;
+     }
+
+   vd->style = eina_stringshare_add(str);
+
+   _slider_create_handle(vd);
+}
 #endif

@@ -575,6 +575,7 @@ void tizen_vg_button_set(Elm_Button *obj);
 void tizen_vg_check_set(Elm_Check *obj);
 void tizen_vg_radio_set(Elm_Radio *obj);
 void tizen_vg_progressbar_set(Elm_Button *obj);
+void tizen_vg_slider_set(Elm_Slider *obj);
 #endif
 
 
