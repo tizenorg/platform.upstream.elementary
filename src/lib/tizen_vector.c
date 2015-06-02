@@ -1570,8 +1570,7 @@ tizen_vg_progressbar_set(Elm_Progressbar *obj)
      }
 
 
-   if (!strcmp(str, "default") ||
-       !strcmp(str, "custom"))
+   if (!strcmp(str, "list_progress"))
      {
         _progressbar_normal_style(vd);
         return;
