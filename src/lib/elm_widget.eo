@@ -434,6 +434,17 @@ abstract Elm_Widget (Evas.Object_Smart, Elm_Interface_Atspi_Accessible, Elm_Inte
             const(char)* label;
          }
       }
+      focus_move_policy {
+         set {
+            /*@ No description supplied by the EAPI. */
+         }
+         get {
+            /*@ No description supplied by the EAPI. */
+         }
+         values {
+            Elm_Focus_Move_Policy policy;
+         }
+      }
    }
    methods {
       newest_focus_order_get @const {
