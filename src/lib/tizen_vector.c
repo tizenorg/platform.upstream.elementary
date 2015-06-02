@@ -1474,6 +1474,11 @@ _progressbar_process_pulse_start_helper(vg_progressbar *vd)
    elm_transit_objects_final_state_keep_set(transit1, EINA_TRUE);
    vd->transit = transit1;
    elm_transit_go_in(transit1, .54);
+
+   evas_object_event_callback_del(vd->obj, EVAS_CALLBACK_DEL,
+                                  progressbar_del_cb);
+   evas_object_event_callback_add(vd->obj, EVAS_CALLBACK_DEL,
+                                  progressbar_del_cb, NULL);
 }
 
 static void
