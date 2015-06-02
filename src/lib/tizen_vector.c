@@ -1295,13 +1295,13 @@ _progressbar_normal_style(vg_progressbar *vd)
                                   progressbar_normal_fg_resize_cb, vd);
 
    //unset
-   elm_object_part_content_unset(vd->obj, "elm.swallow.tizen_vg_shape1");
-   elm_object_part_content_unset(vd->obj, "elm.swallow.tizen_vg_shape2");
-   elm_object_part_content_unset(vd->obj, "elm.swallow.tizen_vg_shape3");
+   elm_object_part_content_unset(vd->obj, "tizen_vg_shape1");
+   elm_object_part_content_unset(vd->obj, "tizen_vg_shape2");
+   elm_object_part_content_unset(vd->obj, "tizen_vg_shape3");
 
-   elm_object_part_content_set(vd->obj, "elm.swallow.tizen_vg_shape1", vd->vg[0]);
-   elm_object_part_content_set(vd->obj, "elm.swallow.tizen_vg_shape2", vd->vg[1]);
-   elm_object_part_content_set(vd->obj, "elm.swallow.tizen_vg_shape3", vd->vg[2]);
+   elm_object_part_content_set(vd->obj, "tizen_vg_shape1", vd->vg[0]);
+   elm_object_part_content_set(vd->obj, "tizen_vg_shape2", vd->vg[1]);
+   elm_object_part_content_set(vd->obj, "tizen_vg_shape3", vd->vg[2]);
 }
 
 static void
@@ -1526,9 +1526,9 @@ _progressbar_process_style(vg_progressbar *vd)
    evas_object_event_callback_add(vd->vg[0], EVAS_CALLBACK_RESIZE,
                                   progressbar_process_resize_cb, vd);
 
-   elm_object_part_content_set(vd->obj, "elm.swallow.tizen_vg_shape1", vd->vg[0]);
-   elm_object_part_content_set(vd->obj, "elm.swallow.tizen_vg_shape2", vd->vg[1]);
-   elm_object_part_content_set(vd->obj, "elm.swallow.tizen_vg_shape3", vd->vg[2]);
+   elm_object_part_content_set(vd->obj, "tizen_vg_shape1", vd->vg[0]);
+   elm_object_part_content_set(vd->obj, "tizen_vg_shape2", vd->vg[1]);
+   elm_object_part_content_set(vd->obj, "tizen_vg_shape3", vd->vg[2]);
 
    elm_object_signal_callback_add(vd->obj, "elm,state,pulse,start",
                                   "*", _progressbar_process_pulse_start, vd);
