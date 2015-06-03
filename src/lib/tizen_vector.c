@@ -1474,11 +1474,6 @@ _progressbar_process_pulse_start_helper(vg_progressbar *vd)
    elm_transit_objects_final_state_keep_set(transit1, EINA_TRUE);
    vd->transit = transit1;
    elm_transit_go_in(transit1, .54);
-
-   evas_object_event_callback_del(vd->obj, EVAS_CALLBACK_DEL,
-                                  progressbar_del_cb);
-   evas_object_event_callback_add(vd->obj, EVAS_CALLBACK_DEL,
-                                  progressbar_del_cb, NULL);
 }
 
 static void
@@ -1565,8 +1560,15 @@ tizen_vg_progressbar_set(Elm_Progressbar *obj)
         evas_object_data_set(obj, vg_key, vd);
         vd->obj = obj;
         // callback to free vd data
-        evas_object_event_callback_add(vd->obj, EVAS_CALLBACK_DEL,
-                                       progressbar_del_cb, NULL);
+        // Note: we need progressbar_del_cb() to be called first so that we can stop the
+        // transition properly in case of process style.
+        // As the elm_transition also adds the EVAS_CALLBACK_DEL callback on the same object (vd->obj)
+        // for deleting the transition it causes problem when elm_transition's cb called before our
+        // deletion callback (as we restart the transition loop again).
+        // to fix the above issue we add our callback as a priority one to make sure it is called first.
+        evas_object_event_callback_priority_add(vd->obj, EVAS_CALLBACK_DEL,
+                                                EVAS_CALLBACK_PRIORITY_BEFORE,
+                                                progressbar_del_cb, NULL);
      }
    if (!vd)
      {
