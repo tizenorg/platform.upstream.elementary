@@ -1639,13 +1639,10 @@ slider_del_cb(void *data EINA_UNUSED, Evas *e EINA_UNUSED, Evas_Object *obj,
 }
 
 static void
-_append_circle(Efl_VG *shape, int w, int h)
+_append_circle(Efl_VG *shape, int cx, int cy, int r)
 {
-   Evas_Coord center_x = (w / 2);
-   Evas_Coord center_y = (h / 2);
-   double radius = ELM_SCALE_SIZE((center_x > center_y ? center_x : center_y) - 2);
    evas_vg_shape_shape_reset(shape);
-   evas_vg_shape_shape_append_circle(shape, center_x, center_y, radius);
+   evas_vg_shape_shape_append_circle(shape, cx, cy, r);
 }
 
 static void
@@ -1664,7 +1661,7 @@ slider_vg_handle_normal_resize_cb(void *data , Evas *e EINA_UNUSED,
    Evas_Coord w, h;
    vg_slider *vd = data;
    evas_object_geometry_get(vd->vg[slider_handle], NULL, NULL, &w, &h);
-   _append_circle(vd->shape[slider_handle], w, h);
+   _append_circle(vd->shape[slider_handle], w/2, h/2, w/2);
 }
 
 static void
@@ -1676,9 +1673,15 @@ slider_vg_handle_pressed_resize_cb(void *data , Evas *e EINA_UNUSED,
    vg_slider *vd = data;
    evas_object_geometry_get(vd->vg[slider_handle_pressed], NULL, NULL, &w, &h);
    if (w == h)
-     _append_circle(vd->shape[slider_handle_pressed], w, h);
+     _append_circle(vd->shape[slider_handle_pressed], w/2, h/2, w/2);
    else
-     _append_round_rect(vd->shape[slider_handle_pressed], w, h);
+     {
+        if (elm_slider_indicator_show_get(vd->obj) &&
+            elm_slider_indicator_format_get(vd->obj))
+          _append_round_rect(vd->shape[slider_handle_pressed], w, h);
+        else
+          _append_circle(vd->shape[slider_handle_pressed], w/2, h - w/2, w/2);
+     }
 }
 
 static void
@@ -1787,7 +1790,6 @@ _slider_create_handle(vg_slider *vd)
 void
 tizen_vg_slider_set(Elm_Slider *obj)
 {
-   EINA_LOG_CRIT("slider VG creation");
    vg_slider *vd = evas_object_data_get(obj, vg_key);
    if (vd)
      {
