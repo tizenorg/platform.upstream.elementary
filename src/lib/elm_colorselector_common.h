@@ -20,6 +20,26 @@ struct _Elm_Custom_Palette
    Eina_List  *color_list;
 };
 
+/**
+ * @enum Elm_Colorselector_Mode
+ *
+ * Different modes supported by Colorselector
+ *
+ * @see elm_colorselector_mode_set()
+ * @see elm_colorselector_mode_get()
+ */
+typedef enum
+{
+   ELM_COLORSELECTOR_PALETTE = 0, /**< only color palette is displayed */
+   ELM_COLORSELECTOR_COMPONENTS, /**< only color selector is displayed */
+   ELM_COLORSELECTOR_BOTH, /**< Both Palette and selector is displayed, default */
+   ELM_COLORSELECTOR_PICKER, /**< only color picker is displayed */
+   ELM_COLORSELECTOR_PLANE, /**< @DEPRECATED: This mode is not supported. If you use this, nothing will be shown */
+   ELM_COLORSELECTOR_PALETTE_PLANE, /**< @DEPRECATED: This mode is not supported. If you use this, it will be shown same with ELM_COLORSELECTOR_PALETTE mode */
+   ELM_COLORSELECTOR_ALL /**< all possible color selector is displayed */
+} Elm_Colorselector_Mode;
+
+
 EAPI void elm_colorselector_palette_item_color_get(const Elm_Object_Item *it, int *r, int *g, int *b, int *a);
 
 EAPI void elm_colorselector_palette_item_color_set(Elm_Object_Item *it, int r, int g, int b, int a);
