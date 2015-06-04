@@ -1600,7 +1600,7 @@ tizen_vg_progressbar_set(Elm_Progressbar *obj)
              vd->stroke_width = ELM_SCALE_SIZE(1.5);
           }
         vd->shrink = 2 * vd->stroke_width;
-        vd->shift = vd->stroke_width + 1;
+        vd->shift = vd->stroke_width + 0.5;
         _progressbar_process_style(vd);
         return;
      }
