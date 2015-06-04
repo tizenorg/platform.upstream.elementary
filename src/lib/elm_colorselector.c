@@ -1476,6 +1476,9 @@ _elm_colorselector_elm_layout_sizing_eval(Eo *obj, Elm_Colorselector_Data *sd)
    switch (sd->mode)
      {
       case ELM_COLORSELECTOR_PALETTE:
+      // TIZEN_ONLY(20150604): Support Tizen 2.3 Compatibility
+      case ELM_COLORSELECTOR_PALETTE_PLANE:
+      //
         _palette_sizing_eval(sd);
         break;
 
@@ -2356,6 +2359,9 @@ _elm_colorselector_mode_set(Eo *obj, Elm_Colorselector_Data *sd, Elm_Colorselect
    switch (sd->mode)
      {
       case ELM_COLORSELECTOR_PALETTE:
+      // TIZEN_ONLY(20150604): Support Tizen 2.3 Compatibility
+      case ELM_COLORSELECTOR_PALETTE_PLANE:
+      //
         if (!elm_layout_content_set(obj, "elm.palette", sd->palette_box))
           elm_layout_content_set(obj, "palette", sd->palette_box);
         elm_layout_signal_emit(obj, "elm,state,palette", "elm");
