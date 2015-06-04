@@ -1,17 +1,3 @@
-enum Elm.Colorselector.Mode
-{
-   [[Different modes supported by Colorselector
-
-      See also @Elm.Colorselector.mode.set, @Elm.Colorselector.mode.get.
-   ]]
-   legacy: elm_colorselector;
-   palette = 0, [[Only color palette is displayed.]]
-   components, [[Only color selector is displayed.]]
-   both, [[Both Palette and selector is displayed, default.]]
-   picker, [[Only color picker is displayed.]]
-   all [[All possible color selector is displayed.]]
-}
-
 class Elm.Colorselector (Elm.Layout, Elm_Interface_Atspi_Widget_Action,
                          Evas.Clickable_Interface)
 {
