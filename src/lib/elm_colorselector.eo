@@ -1,3 +1,6 @@
+/* TIZEN_ONLY(20160705): Move Elm_Colorselector_Mode enum to
+                         elm_colorselector_common.h to mark enum members
+                         as deprecated.
 enum Elm.Colorselector.Mode
 {
    [[Different modes supported by Colorselector
@@ -11,6 +14,8 @@ enum Elm.Colorselector.Mode
    picker, [[Only color picker is displayed.]]
    all [[All possible color selector is displayed.]]
 }
+ */
+/* END */
 
 class Elm.Colorselector (Elm.Layout, Elm_Interface_Atspi_Widget_Action,
                          Evas.Clickable_Interface)
