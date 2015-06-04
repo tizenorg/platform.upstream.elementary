@@ -88,6 +88,8 @@ radio_del_cb(void *data, Evas *e EINA_UNUSED, Evas_Object *obj EINA_UNUSED,
    evas_object_smart_callback_del(vd->obj, "changed",
                                   radio_changed_cb);
    elm_transit_del(vd->transit);
+   evas_object_del(vd->vg[1]);
+   evas_object_del(vd->vg[2]);
    free(vd);
 }
 
@@ -345,6 +347,7 @@ check_favorite_del_cb(void *data, Evas *e EINA_UNUSED,
    evas_object_smart_callback_del(vd->obj, "changed",
                                   check_favorite_changed_cb);
    elm_transit_del(vd->transit);
+   evas_object_del(vd->vg[1]);
    free(vd);
 }
 
@@ -595,6 +598,7 @@ check_onoff_del_cb(void *data, Evas *e EINA_UNUSED,
    elm_transit_del(vd->transit[0]);
    elm_transit_del(vd->transit[1]);
    elm_transit_del(vd->transit[2]);
+   evas_object_del(vd->vg[1]);
    free(vd);
 }
 
@@ -990,7 +994,7 @@ check_default_del_cb(void *data, Evas *e EINA_UNUSED,
    elm_transit_del(vd->transit[0]);
    elm_transit_del(vd->transit[1]);
    elm_transit_del(vd->transit[2]);
-
+   evas_object_del(vd->vg[1]);
    free(vd);
 }
 
@@ -1108,6 +1112,7 @@ button_del_cb(void *data, Evas *e EINA_UNUSED, Evas_Object *obj EINA_UNUSED,
 {
    vg_button *vd = data;
    evas_object_data_del(vd->obj, vg_key);
+   evas_object_del(vd->vg[1]);
    free(vd);
 }
 
@@ -1120,7 +1125,6 @@ tizen_vg_button_set(Elm_Button *obj)
         elm_object_part_content_unset(obj, "tizen_vg_shape");
         elm_object_part_content_unset(obj, "tizen_vg_shape2");
         evas_object_del(vd->vg[0]);
-        evas_object_del(vd->vg[1]);
      }
 
    //Apply vector ux only theme has "vector_ux"
