@@ -4682,8 +4682,13 @@ _elm_win_conformant_set(Eo *obj EINA_UNUSED, Elm_Win_Data *sd, Eina_Bool conform
    _internal_elm_win_xwindow_get(sd);
    if (sd->x.xwin)
      ecore_x_e_illume_conformant_set(sd->x.xwin, conformant);
+#elif HAVE_ELEMENTARY_WAYLAND
+   _elm_win_wlwindow_get(sd);
+   if (sd->wl.win)
+     ecore_wl_conformant_set(sd->wl.win, conformant);
 #else
    (void)conformant;
+
 #endif
 }
 
@@ -4694,6 +4699,11 @@ _elm_win_conformant_get(Eo *obj EINA_UNUSED, Elm_Win_Data *sd)
    _internal_elm_win_xwindow_get(sd);
    if (sd->x.xwin)
      return ecore_x_e_illume_conformant_get(sd->x.xwin);
+#endif
+#if HAVE_ELEMENTARY_WAYLAND
+   _elm_win_wlwindow_get(sd);
+   if (sd->wl.win)
+     return ecore_wl_conformant_get(sd->wl.win);
 #endif
 
    return EINA_FALSE;
