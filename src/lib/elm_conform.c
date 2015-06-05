@@ -125,15 +125,18 @@ _conformant_part_sizing_eval(Evas_Object *obj,
 {
 #ifdef HAVE_ELEMENTARY_X
    Ecore_X_Window zone = 0;
-   Evas_Object *top;
    Ecore_X_Window xwin;
 #endif
+#ifdef HAVE_ELEMENTARY_WAYLAND
+   Ecore_Wl_Window *wlwin;
+#endif
+   Evas_Object *top;
    int sx = -1, sy = -1, sw = -1, sh = -1;
 
    ELM_CONFORMANT_DATA_GET(obj, sd);
 
-#ifdef HAVE_ELEMENTARY_X
    top = elm_widget_top_get(obj);
+#ifdef HAVE_ELEMENTARY_X
    xwin = elm_win_xwindow_get(top);
 
    if (xwin)
@@ -152,6 +155,11 @@ _conformant_part_sizing_eval(Evas_Object *obj,
                    (zone, &sx, &sy, &sw, &sh)))
                sx = sy = sw = sh = 0;
           }
+#endif
+#ifdef HAVE_ELEMENTARY_WAYLAND
+        wlwin = elm_win_wl_window_get(top);
+        if (wlwin)
+          ecore_wl_indicator_geometry_get(wlwin, &sx, &sy, &sw, &sh);
 #endif
         if (((sd->rot == 90) || (sd->rot == 270)) && sd->landscape_indicator)
           _conformant_part_size_hints_set(obj, sd->landscape_indicator, sx, sy, sw, sh);
@@ -181,6 +189,11 @@ _conformant_part_sizing_eval(Evas_Object *obj,
                }
           }
 #endif
+#ifdef HAVE_ELEMENTARY_WAYLAND
+        wlwin = elm_win_wl_window_get(top);
+        if (wlwin)
+          ecore_wl_keyboard_geometry_get(wlwin, &sx, &sy, &sw, &sh);
+#endif
         DBG("[KEYPAD]: size(%d,%d, %dx%d).", sx, sy, sw, sh);
         _conformant_part_size_hints_set
           (obj, sd->virtualkeypad, sx, sy, sw, sh);
@@ -198,6 +211,11 @@ _conformant_part_sizing_eval(Evas_Object *obj,
                      (zone, &sx, &sy, &sw, &sh)))
                sx = sy = sw = sh = 0;
           }
+#endif
+#ifdef HAVE_ELEMENTARY_WAYLAND
+        wlwin = elm_win_wl_window_get(top);
+        if (wlwin)
+          ecore_wl_softkey_geometry_get(wlwin, &sx, &sy, &sw, &sh);
 #endif
         _conformant_part_size_hints_set(obj, sd->softkey, sx, sy, sw, sh);
      }
