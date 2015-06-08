@@ -227,6 +227,7 @@ typedef struct check_favorite_s
    Elm_Transit *transit;
    Evas_Object *obj;
    Eina_Bool init : 1;
+   Eina_Bool animate;
 } check_favorite;
 
 static void
@@ -305,10 +306,8 @@ transit_check_favorite_del_cb(void *data, Elm_Transit *transit EINA_UNUSED)
 }
 
 static void
-transit_check_favorite_op(Elm_Transit_Effect *effect,
-                          Elm_Transit *transit EINA_UNUSED, double progress)
+_check_favorite(check_favorite *vd, double progress)
 {
-   check_favorite *vd = effect;
    check_favorite_shape_do(vd, 1);
 
    if (!elm_check_state_get(vd->obj)) progress = 1 - progress;
@@ -327,11 +326,31 @@ transit_check_favorite_op(Elm_Transit_Effect *effect,
 }
 
 static void
-check_favorite_changed_cb(void *data, Evas_Object *obj,
-                          void *event_info EINA_UNUSED)
+transit_check_favorite_op(Elm_Transit_Effect *effect,
+                          Elm_Transit *transit EINA_UNUSED, double progress)
+{
+   check_favorite *vd = effect;
+   _check_favorite(vd, progress);
+}
+
+static void
+check_favorite_toggle_cb(void *data, Evas_Object *obj EINA_UNUSED,
+                         const char *emission EINA_UNUSED,
+                         const char *source EINA_UNUSED)
 {
    check_favorite *vd = data;
+   if (!source) return;
+   if (strcmp(source, "tizen_vg")) return;
 
+   check_favorite_init(vd);
+
+   if (!vd->animate)
+     {
+        _check_favorite(vd, 1.0);
+        return;
+     }
+
+   vd->animate = EINA_FALSE;
    Eina_Bool check = elm_check_state_get(obj);
 
    //Circle Effect
@@ -355,14 +374,22 @@ check_favorite_changed_cb(void *data, Evas_Object *obj,
 }
 
 static void
+check_favorite_changed_cb(void *data, Evas_Object *obj EINA_UNUSED,
+                         void *event_info EINA_UNUSED)
+{
+   check_favorite *vd = data;
+   vd->animate = EINA_TRUE;
+}
+
+static void
 check_favorite_del_cb(void *data, Evas *e EINA_UNUSED,
                       Evas_Object *obj EINA_UNUSED,
                       void *event_info EINA_UNUSED)
 {
    check_favorite *vd = data;
    evas_object_data_set(vd->obj, vg_key, NULL);
-   evas_object_smart_callback_del(vd->obj, "changed",
-                                  check_favorite_changed_cb);
+   elm_object_signal_callback_del(vd->obj, "elm,check,action,toggle", "tizen_vg", check_favorite_toggle_cb);
+   evas_object_smart_callback_del(vd->obj, "changed", check_favorite_changed_cb);
    elm_transit_del(vd->transit);
    evas_object_del(vd->vg[1]);
    free(vd);
@@ -378,8 +405,8 @@ tizen_vg_check_favorite_set(Elm_Check *obj)
         return;
      }
    evas_object_data_set(obj, vg_key, vd);
-   evas_object_smart_callback_add(obj, "changed", check_favorite_changed_cb,
-                                  vd);
+   elm_object_signal_callback_add(obj, "elm,check,action,toggle", "tizen_vg", check_favorite_toggle_cb, vd);
+   evas_object_smart_callback_add(obj, "changed", check_favorite_changed_cb, vd);
    vd->obj = obj;
 
    //Outline Star
@@ -408,6 +435,7 @@ typedef struct check_onoff_s
    Elm_Transit *transit[3];  //0: circle, 1: line, 2: overlapped circle
    Evas_Object *obj;
    Eina_Bool init : 1;
+   Eina_Bool animate;
 } check_onoff;
 
 
@@ -438,11 +466,8 @@ check_onoff_init(check_onoff *vd)
 }
 
 static void
-transit_check_onoff_circle_op(Elm_Transit_Effect *effect,
-                              Elm_Transit *transit EINA_UNUSED, double progress)
+_check_onoff_circle(check_onoff *vd, double progress)
 {
-   check_onoff *vd = effect;
-
    Evas_Coord w, h;
    evas_object_geometry_get(vd->vg[2], NULL, NULL, &w, &h);
    double center_x = ((double)w / 2);
@@ -467,6 +492,14 @@ transit_check_onoff_circle_op(Elm_Transit_Effect *effect,
 }
 
 static void
+transit_check_onoff_circle_op(Elm_Transit_Effect *effect,
+                              Elm_Transit *transit EINA_UNUSED, double progress)
+{
+   check_onoff *vd = effect;
+   _check_onoff_circle(vd, progress);
+}
+
+static void
 transit_check_onoff_circle_del_cb(void *data, Elm_Transit *transit EINA_UNUSED)
 {
    check_onoff *vd = data;
@@ -474,11 +507,8 @@ transit_check_onoff_circle_del_cb(void *data, Elm_Transit *transit EINA_UNUSED)
 }
 
 static void
-transit_check_onoff_line_op(void *data, Elm_Transit *transit EINA_UNUSED,
-                            double progress)
+_check_onoff_line(check_onoff *vd, double progress)
 {
-   check_onoff *vd = data;
-
    Evas_Coord w, h;
    evas_object_geometry_get(vd->vg[2], NULL, NULL, &w, &h);
    double center_x = ((double)w / 2);
@@ -497,19 +527,23 @@ transit_check_onoff_line_op(void *data, Elm_Transit *transit EINA_UNUSED,
 }
 
 static void
+transit_check_onoff_line_op(void *data, Elm_Transit *transit EINA_UNUSED,
+                            double progress)
+{
+   check_onoff *vd = data;
+   _check_onoff_line(vd, progress);
+}
+
+static void
 transit_check_onoff_line_del_cb(void *data, Elm_Transit *transit EINA_UNUSED)
 {
    check_onoff *vd = data;
    vd->transit[1] = NULL;
 }
 
-
 static void
-transit_check_onoff_sizing_op(void *data, Elm_Transit *transit EINA_UNUSED,
-                              double progress)
+_check_onoff_sizing(check_onoff *vd, double progress)
 {
-   check_onoff *vd = data;
-
    check_onoff_init(vd);
 
    Evas_Coord w, h;
@@ -535,6 +569,14 @@ transit_check_onoff_sizing_op(void *data, Elm_Transit *transit EINA_UNUSED,
 }
 
 static void
+transit_check_onoff_sizing_op(void *data, Elm_Transit *transit EINA_UNUSED,
+                              double progress)
+{
+   check_onoff *vd = data;
+   _check_onoff_sizing(vd, progress);
+}
+
+static void
 transit_check_onoff_sizing_del_cb(void *data,
                                   Elm_Transit *transit EINA_UNUSED)
 {
@@ -543,15 +585,27 @@ transit_check_onoff_sizing_del_cb(void *data,
 }
 
 static void
-check_onoff_changed_cb(void *data, Evas_Object *obj,
-                       void *event_info EINA_UNUSED)
+check_onoff_toggle_cb(void *data, Evas_Object *obj EINA_UNUSED,
+                      const char *emission EINA_UNUSED,
+                      const char *source EINA_UNUSED)
 {
    check_onoff *vd = data;
+   if (!source) return;
+   if (strcmp(source, "tizen_vg")) return;
 
    check_onoff_init(vd);
 
    Eina_Bool check = elm_check_state_get(obj);
 
+   if (!vd->animate)
+     {
+        _check_onoff_circle(vd, 1.0);
+        _check_onoff_line(vd, 1.0);
+        _check_onoff_sizing(vd, 1.0);
+        return;
+     }
+
+   vd->animate = EINA_FALSE;
    //Circle Effect
    elm_transit_del(vd->transit[0]);
    vd->transit[0] = elm_transit_add();
@@ -606,11 +660,20 @@ check_onoff_changed_cb(void *data, Evas_Object *obj,
 }
 
 static void
+check_onoff_changed_cb(void *data, Evas_Object *obj EINA_UNUSED,
+                       void *event_info EINA_UNUSED)
+{
+   check_onoff *vd = data;
+   vd->animate = EINA_TRUE;
+}
+
+static void
 check_onoff_del_cb(void *data, Evas *e EINA_UNUSED,
                    Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    check_onoff *vd = data;
    evas_object_data_set(vd->obj, vg_key, NULL);
+   elm_object_signal_callback_del(vd->obj, "elm,check,action,toggle", "tizen_vg", check_onoff_toggle_cb);
    evas_object_smart_callback_del(vd->obj, "changed", check_onoff_changed_cb);
    elm_transit_del(vd->transit[0]);
    elm_transit_del(vd->transit[1]);
@@ -702,6 +765,7 @@ tizen_vg_check_onoff_set(Elm_Check *obj)
         return;
      }
    evas_object_data_set(obj, vg_key, vd);
+   elm_object_signal_callback_add(obj, "elm,check,action,toggle", "tizen_vg", check_onoff_toggle_cb, vd);
    evas_object_smart_callback_add(obj, "changed", check_onoff_changed_cb, vd);
 
    vd->obj = obj;
@@ -742,6 +806,7 @@ typedef struct check_default_s
    double right_move_to[2];
    double right_line_to[2];
    Eina_Bool init : 1;
+   Eina_Bool animate;
 } check_default;
 
 static void
@@ -850,18 +915,25 @@ transit_check_default_bg_color_del_cb(Elm_Transit_Effect *effect,
    vd->transit[0] = NULL;
 }
 
+
 static void
-transit_check_default_bg_color_op(Elm_Transit_Effect *effect,
-                                  Elm_Transit *transit EINA_UNUSED,
-                                  double progress)
+_check_default_bg_color(check_default *vd, double progress)
 {
-   check_default *vd = effect;
    int color;
 
    if (elm_check_state_get(vd->obj)) color = 255 * progress;
    else color = 255 * (1 - progress);
 
    evas_vg_node_color_set(vd->shape[1], color, color, color, color);
+}
+
+static void
+transit_check_default_bg_color_op(Elm_Transit_Effect *effect,
+                                  Elm_Transit *transit EINA_UNUSED,
+                                  double progress)
+{
+   check_default *vd = effect;
+   _check_default_bg_color(vd, progress);
 }
 
 static void
@@ -873,12 +945,8 @@ transit_check_default_bg_scale_del_cb(Elm_Transit_Effect *effect,
 }
 
 static void
-transit_check_default_bg_scale_op(Elm_Transit_Effect *effect,
-                                  Elm_Transit *transit EINA_UNUSED,
-                                  double progress)
+_check_default_bg_scale(check_default *vd, double progress)
 {
-   check_default *vd = effect;
-
    Evas_Coord w, h;
    evas_object_geometry_get(vd->vg[0], NULL, NULL, &w, &h);
    double center_x = ((double)w / 2);
@@ -891,6 +959,14 @@ transit_check_default_bg_scale_op(Elm_Transit_Effect *effect,
    eina_matrix3_translate(&m, -center_x, -center_y);
    evas_vg_node_transformation_set(vd->shape[1], &m);
 }
+static void
+transit_check_default_bg_scale_op(Elm_Transit_Effect *effect,
+                                  Elm_Transit *transit EINA_UNUSED,
+                                  double progress)
+{
+   check_default *vd = effect;
+   _check_default_bg_scale(vd, progress);
+}
 
 static void
 transit_check_default_line_del_cb(Elm_Transit_Effect *effect,
@@ -901,11 +977,8 @@ transit_check_default_line_del_cb(Elm_Transit_Effect *effect,
 }
 
 static void
-transit_check_default_line_op(Elm_Transit_Effect *effect,
-                              Elm_Transit *transit EINA_UNUSED, double progress)
+_check_default_line(check_default *vd, double progress)
 {
-   check_default *vd = effect;
-
    Evas_Coord w, h;
    evas_object_geometry_get(vd->vg[1], NULL, NULL, &w, &h);
    double center_x = ((double)w / 2);
@@ -938,17 +1011,32 @@ transit_check_default_line_op(Elm_Transit_Effect *effect,
 }
 
 static void
-check_default_changed_cb(void *data, Evas_Object *obj EINA_UNUSED,
+transit_check_default_line_op(Elm_Transit_Effect *effect,
+                              Elm_Transit *transit EINA_UNUSED, double progress)
+{
+   check_default *vd = effect;
+   _check_default_line(vd, progress);
+}
+
+static void
+check_default_toggle_cb(void *data, Evas_Object *obj EINA_UNUSED,
                          const char *emission EINA_UNUSED,
                          const char *source EINA_UNUSED)
 {
    check_default *vd = data;
-
    if (!source) return;
    if (strcmp(source, "tizen_vg")) return;
 
    check_default_init(vd);
 
+   if (!vd->animate)
+     {
+        _check_default_bg_color(vd, 1.0);
+        _check_default_bg_scale(vd, 1.0);
+        _check_default_line(vd, 1.0);
+        return;
+     }
+   vd->animate = EINA_FALSE;
    Eina_Bool check = elm_check_state_get(obj);
 
    //BG Color Effect
@@ -1007,12 +1095,21 @@ check_default_changed_cb(void *data, Evas_Object *obj EINA_UNUSED,
 }
 
 static void
+check_default_changed_cb(void *data, Evas_Object *obj EINA_UNUSED,
+                         void *event_info EINA_UNUSED)
+{
+   check_default *vd = data;
+   vd->animate = EINA_TRUE;
+}
+
+static void
 check_default_del_cb(void *data, Evas *e EINA_UNUSED,
                      Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    check_default *vd = data;
    evas_object_data_set(vd->obj, vg_key, NULL);
-   elm_object_signal_callback_del(vd->obj, "elm,check,action,toggle", "tizen_vg", check_default_changed_cb);
+   elm_object_signal_callback_del(vd->obj, "elm,check,action,toggle", "tizen_vg", check_default_toggle_cb);
+   evas_object_smart_callback_del(vd->obj, "changed", check_default_changed_cb);
    elm_transit_del(vd->transit[0]);
    elm_transit_del(vd->transit[1]);
    elm_transit_del(vd->transit[2]);
@@ -1031,7 +1128,8 @@ tizen_vg_check_default_set(Elm_Check *obj)
      }
    evas_object_data_set(obj, vg_key, vd);
 
-   elm_object_signal_callback_add(obj, "elm,check,action,toggle", "tizen_vg", check_default_changed_cb, vd);
+   elm_object_signal_callback_add(obj, "elm,check,action,toggle", "tizen_vg", check_default_toggle_cb, vd);
+   evas_object_smart_callback_add(obj, "changed", check_default_changed_cb, vd);
 
    vd->obj = obj;
 
