@@ -1,3 +1,4 @@
+#ifdef EFL_BETA_API_SUPPORT
 
 enum _Elm_Atspi_Proxy_Type
 {
@@ -9,7 +10,4 @@ typedef enum _Elm_Atspi_Proxy_Type Elm_Atspi_Proxy_Type;
 #ifdef EFL_EO_API_SUPPORT
 #include "elm_atspi_proxy.eo.h"
 #endif
-#ifndef EFL_NOLEGACY_API_SUPPORT
-#include "elm_atspi_proxy.eo.legacy.h"
 #endif
-
