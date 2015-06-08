@@ -191,14 +191,6 @@ _elm_plug_connect(Eo *obj, void *sd EINA_UNUSED, const char *svcname, int svcnum
    return EINA_FALSE;
 }
 
-EOLIAN static Eina_List*
-_elm_plug_elm_interface_atspi_accessible_children_get(Eo *obj, void *sd EINA_UNUSED)
-{
-   Eina_List *ret;
-   eo_do_super(obj, ELM_WIDGET_CLASS, ret = elm_interface_atspi_accessible_children_get());
-   return ret;
-}
-
 EOLIAN static void
 _elm_plug_class_constructor(Eo_Class *klass)
 {
