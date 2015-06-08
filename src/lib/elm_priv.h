@@ -532,7 +532,6 @@ void                *_elm_icon_signal_callback_del(Evas_Object *obj,
                                                    const char *emission,
                                                    const char *source,
                                                    Edje_Signal_Cb func_cb);
-Eo*                  _elm_atspi_bridge_utils_proxy_create(Eo *parent, const char *svcname, int svcnum, Elm_Atspi_Proxy_Type type);
 void                 elm_atspi_bridge_utils_proxy_listen(Eo *proxy);
 void                 elm_atspi_bridge_utils_proxy_connect(Eo *proxy);
 /* end of DEPRECATED */
