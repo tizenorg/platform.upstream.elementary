@@ -4,6 +4,7 @@
 
 #define ELM_INTERFACE_ATSPI_ACCESSIBLE_PROTECTED
 #define ELM_INTERFACE_ATSPI_WIDGET_ACTION_PROTECTED
+#define ELM_ATSPI_BRIDGE_PROTECTED
 #define ELM_WIN_PROTECTED
 
 #include <Elementary.h>
@@ -4359,8 +4360,19 @@ _elm_win_finalize_internal(Eo *obj, Elm_Win_Data *sd, const char *name, Elm_Win_
          eo_event_callback_add(EO_EV_CALLBACK_DEL, _cb_deled, sd));
    if (type == ELM_WIN_FAKE)
      {
+<<<<<<< HEAD
         _elm_win_resize_job(obj);
         _elm_win_move(sd->ee);
+=======
+        eo_do(obj, eo_event_callback_call(ELM_INTERFACE_ATSPI_WINDOW_EVENT_WINDOW_CREATED, NULL));
+        Eo *bridge = _elm_atspi_bridge_get();
+        if (bridge)
+          {
+             Eo *root;
+             eo_do(bridge, root = elm_obj_atspi_bridge_root_get());
+             elm_interface_atspi_accessible_children_changed_added_signal_emit(root, obj);
+          }
+>>>>>>> 0126ccf... Backport from mainline
      }
    return obj;
 }
@@ -6157,7 +6169,11 @@ elm_win_window_id_get(const Evas_Object *obj)
 }
 
 static Eina_Bool
+<<<<<<< HEAD
 _on_atspi_bus_connected(void *data EINA_UNUSED, Eo *obj EINA_UNUSED, const Eo_Event_Description *desc EINA_UNUSED, void *event_info EINA_UNUSED)
+=======
+_on_atspi_bus_connected(void *data EINA_UNUSED, Eo *obj EINA_UNUSED, const Eo_Event_Description *event EINA_UNUSED, void *event_info EINA_UNUSED)
+>>>>>>> 0126ccf... Backport from mainline
 {
    Evas_Object *win;
    Eina_List *l;
@@ -6192,6 +6208,7 @@ EOLIAN static void
 _elm_win_class_constructor(Eo_Class *klass)
 {
    evas_smart_legacy_type_register(MY_CLASS_NAME_LEGACY, klass);
+<<<<<<< HEAD
 
    if (_elm_config->atspi_mode)
      {
@@ -6199,14 +6216,26 @@ _elm_win_class_constructor(Eo_Class *klass)
         if (bridge)
            eo_do(bridge, eo_event_callback_add(ELM_ATSPI_BRIDGE_EVENT_CONNECTED, _on_atspi_bus_connected, NULL));
      }
+=======
+   Eo *bridge = _elm_atspi_bridge_get();
+   if (_elm_config->atspi_mode)
+      eo_do(bridge, eo_event_callback_add(ELM_ATSPI_BRIDGE_EVENT_CONNECTED, _on_atspi_bus_connected, NULL));
+>>>>>>> 0126ccf... Backport from mainline
 }
 
 EOLIAN static Eo*
 _elm_win_elm_interface_atspi_accessible_parent_get(Eo *obj EINA_UNUSED, Elm_Win_Data *sd EINA_UNUSED)
 {
+<<<<<<< HEAD
    // attach all kinds of windows directly to ATSPI application root object
    Eo *bridge = _elm_atspi_bridge_get();
    return elm_atspi_bridge_root_get(bridge);
+=======
+   Eo *bridge = _elm_atspi_bridge_get();
+   Eo *root;
+   eo_do(bridge, root = elm_obj_atspi_bridge_root_get());
+   return root;
+>>>>>>> 0126ccf... Backport from mainline
 }
 
 EOLIAN static const Elm_Atspi_Action*
