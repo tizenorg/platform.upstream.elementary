@@ -33,7 +33,6 @@ class Elm.Plug (Elm.Widget, Evas.Clickable_Interface)
       Evas.Object_Smart.add;
       Elm.Widget.theme_apply;
       Elm.Widget.on_focus;
-      Elm_Interface_Atspi_Accessible.children.get;
    }
    events {
       image,deleted;
