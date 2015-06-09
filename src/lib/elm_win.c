@@ -4867,9 +4867,24 @@ _elm_win_keygrab_set(Eo *obj EINA_UNUSED, Elm_Win_Data *sd, const char *key, Eva
           ret = ecore_x_window_keygrab_set(sd->x.xwin, key, 0, 0, 0, ECORE_X_WIN_KEYGRAB_EXCLUSIVE);
      }
    return ret;
-#else
+#endif
+#ifdef HAVE_ELEMENTARY_WAYLAND
+   _elm_win_wlwindow_get(sd);
+
+   if (sd->wl.win)
+     {
+        if (grab_mode == ELM_WIN_KEYGRAB_SHARED)
+          ret = ecore_wl_window_keygrab_set(sd->wl.win, key, 0, 0, 0, ECORE_WL_WINDOW_KEYGRAB_SHARED);
+        else if (grab_mode == ELM_WIN_KEYGRAB_TOPMOST)
+          ret = ecore_wl_window_keygrab_set(sd->wl.win, key, 0, 0, 0, ECORE_WL_WINDOW_KEYGRAB_TOPMOST);
+        else if (grab_mode == ELM_WIN_KEYGRAB_EXCLUSIVE)
+          ret = ecore_wl_window_keygrab_set(sd->wl.win, key, 0, 0, 0, ECORE_WL_WINDOW_KEYGRAB_EXCLUSIVE);
+        else if (grab_mode == ELM_WIN_KEYGRAB_OVERRIDE_EXCLUSIVE)
+          ret = ecore_wl_window_keygrab_set(sd->wl.win, key, 0, 0, 0, ECORE_WL_WINDOW_KEYGRAB_EXCLUSIVE);
+     }
    return ret;
 #endif
+   return ret;
 }
 
 EOLIAN static Eina_Bool
