@@ -22,12 +22,12 @@ static const char *vg_key = "_tizen_vg";
   the base scale properly.
 */
 static double
-ELM_VG_SCALE_SIZE(double x)
+ELM_VG_SCALE_SIZE(Evas_Object* obj, double x)
 {
    if (elm_app_base_scale_get() > 1)
-     return ELM_SCALE_SIZE(x);
+     return (ELM_SCALE_SIZE(x) * elm_object_scale_get(obj));
    else
-     return (((x) / 1.7) * elm_config_scale_get());
+     return (((x) / 1.7) * elm_config_scale_get() * elm_object_scale_get(obj));
 }
 /////////////////////////////////////////////////////////////////////////
 /* Radio */
@@ -56,11 +56,11 @@ transit_radio_op(Elm_Transit_Effect *effect, Elm_Transit *transit EINA_UNUSED,
      progress = 1 - progress;
 
    double radius = (center_x > center_y ? center_x : center_y)
-      - (2 * ELM_VG_SCALE_SIZE(1.5));
+      - (2 * ELM_VG_SCALE_SIZE(vd->obj, 1.5));
 
    //Iconic Circle (Outline)
    evas_vg_shape_stroke_width_set(vd->shape[2],
-                                  (1 + progress * ELM_VG_SCALE_SIZE(1.5)));
+                                  (1 + progress * ELM_VG_SCALE_SIZE(vd->obj, 1.5)));
    //Iconic Circle (Outline)
    evas_vg_shape_shape_reset(vd->shape[2]);
    evas_vg_shape_shape_append_circle(vd->shape[2], center_x, center_y,
@@ -119,7 +119,7 @@ radio_init(vg_radio *vd)
    //Outline Shape
    vd->shape[0] = evas_vg_shape_add(evas_object_vg_root_node_get(vd->vg[0]));
    evas_vg_shape_stroke_color_set(vd->shape[0], 255, 255, 255, 255);
-   evas_vg_shape_stroke_width_set(vd->shape[0], ELM_VG_SCALE_SIZE(1));
+   evas_vg_shape_stroke_width_set(vd->shape[0], ELM_VG_SCALE_SIZE(vd->obj, 1));
 
    //Center Circle
    vd->shape[1] = evas_vg_shape_add(evas_object_vg_root_node_get(vd->vg[1]));
@@ -128,7 +128,7 @@ radio_init(vg_radio *vd)
    //Iconic Circle (Outline)
    vd->shape[2] = evas_vg_shape_add(evas_object_vg_root_node_get(vd->vg[2]));
    evas_vg_shape_stroke_color_set(vd->shape[2], 255, 255, 255, 255);
-   evas_vg_shape_stroke_width_set(vd->shape[2], ELM_VG_SCALE_SIZE(1.5));
+   evas_vg_shape_stroke_width_set(vd->shape[2], ELM_VG_SCALE_SIZE(vd->obj, 1.5));
 
    //Iconic Circle (Center Point)
    vd->shape[3] = evas_vg_shape_add(evas_object_vg_root_node_get(vd->vg[2]));
@@ -150,7 +150,7 @@ radio_base_resize_cb(void *data, Evas *e EINA_UNUSED,
    Evas_Coord center_y = (h / 2);
 
    double radius = (center_x > center_y ? center_x : center_y)
-      -(2 * ELM_VG_SCALE_SIZE(1.5));
+      -(2 * ELM_VG_SCALE_SIZE(vd->obj, 1.5));
 
    //Outline
    evas_vg_shape_shape_reset(vd->shape[0]);
@@ -239,7 +239,7 @@ check_favorite_init(check_favorite *vd)
    //Outline Star
    vd->shape[0] = evas_vg_shape_add(evas_object_vg_root_node_get(vd->vg[0]));
    evas_vg_shape_stroke_color_set(vd->shape[0], 255, 255, 255, 255);
-   evas_vg_shape_stroke_width_set(vd->shape[0], ELM_VG_SCALE_SIZE(1.5));
+   evas_vg_shape_stroke_width_set(vd->shape[0], ELM_VG_SCALE_SIZE(vd->obj, 1.5));
    evas_vg_shape_stroke_join_set(vd->shape[0], EFL_GFX_JOIN_ROUND);
 
    //Inner Body Star
@@ -266,14 +266,14 @@ check_favorite_shape_do(check_favorite *vd, int idx)
    //Inner Star Body
    evas_vg_shape_shape_reset(vd->shape[idx]);
    evas_vg_shape_shape_append_move_to(vd->shape[idx],
-                                      center_x + ELM_VG_SCALE_SIZE(STAR_PT[0][0]),
-                                      center_y + ELM_VG_SCALE_SIZE(STAR_PT[0][1]));
+                                      center_x + ELM_VG_SCALE_SIZE(vd->obj, STAR_PT[0][0]),
+                                      center_y + ELM_VG_SCALE_SIZE(vd->obj, STAR_PT[0][1]));
    int i;
    for (i = 1; i < PT_CNT; i++)
      {
         evas_vg_shape_shape_append_line_to(vd->shape[idx],
-                                      center_x + ELM_VG_SCALE_SIZE(STAR_PT[i][0]),
-                                      center_y + ELM_VG_SCALE_SIZE(STAR_PT[i][1]));
+                                      center_x + ELM_VG_SCALE_SIZE(vd->obj, STAR_PT[i][0]),
+                                      center_y + ELM_VG_SCALE_SIZE(vd->obj, STAR_PT[i][1]));
      }
    evas_vg_shape_shape_append_close(vd->shape[idx]);
 
@@ -456,13 +456,13 @@ check_onoff_init(check_onoff *vd)
    //Line Shape
    vd->shape[2] = evas_vg_shape_add(evas_object_vg_root_node_get(vd->vg[2]));
    evas_vg_shape_stroke_color_set(vd->shape[2], 255, 255, 255, 255);
-   evas_vg_shape_stroke_width_set(vd->shape[2], ELM_VG_SCALE_SIZE(2));
+   evas_vg_shape_stroke_width_set(vd->shape[2], ELM_VG_SCALE_SIZE(vd->obj, 2));
    evas_vg_shape_stroke_cap_set(vd->shape[2], EFL_GFX_CAP_ROUND);
 
    //Circle Shape
    vd->shape[3] = evas_vg_shape_add(evas_object_vg_root_node_get(vd->vg[2]));
    evas_vg_shape_stroke_color_set(vd->shape[3], 255, 255, 255, 255);
-   evas_vg_shape_stroke_width_set(vd->shape[3], ELM_VG_SCALE_SIZE(2));
+   evas_vg_shape_stroke_width_set(vd->shape[3], ELM_VG_SCALE_SIZE(vd->obj, 2));
 }
 
 static void
@@ -476,7 +476,7 @@ _check_onoff_circle(check_onoff *vd, double progress)
    evas_vg_shape_shape_reset(vd->shape[3]);
 
    double radius = (center_x > center_y ? center_x : center_y) -
-      (2 * ELM_VG_SCALE_SIZE(2));
+      (2 * ELM_VG_SCALE_SIZE(vd->obj, 2));
 
    evas_vg_shape_shape_append_circle(vd->shape[3], center_x, center_y,
                                      radius);
@@ -518,7 +518,7 @@ _check_onoff_line(check_onoff *vd, double progress)
 
    if (!elm_check_state_get(vd->obj)) progress = 1 - progress;
 
-   double diff = center_y - ELM_VG_SCALE_SIZE(2);
+   double diff = center_y - ELM_VG_SCALE_SIZE(vd->obj, 2);
 
    evas_vg_shape_shape_append_move_to(vd->shape[2], center_x,
                                       (center_y - (diff * progress)));
@@ -741,7 +741,7 @@ check_onoff_vg3_resize_cb(void *data, Evas *e EINA_UNUSED,
    //Line
    if (elm_check_state_get(vd->obj))
      {
-        double diff = ELM_VG_SCALE_SIZE(2);
+        double diff = ELM_VG_SCALE_SIZE(vd->obj, 2);
 
         evas_vg_shape_shape_append_move_to(vd->shape[2], center_x, diff);
         evas_vg_shape_shape_append_line_to(vd->shape[2], center_x, h - diff);
@@ -749,7 +749,7 @@ check_onoff_vg3_resize_cb(void *data, Evas *e EINA_UNUSED,
    //Circle
    else
      {
-        double radius = center_x - (2 * ELM_VG_SCALE_SIZE(2));
+        double radius = center_x - (2 * ELM_VG_SCALE_SIZE(vd->obj, 2));
         evas_vg_shape_shape_append_circle(vd->shape[3],
                                           center_x, center_y, radius);
      }
@@ -820,7 +820,7 @@ check_default_init(check_default *vd)
    //Outline Shape
    vd->shape[0] = evas_vg_shape_add(base_root);
    evas_vg_shape_stroke_color_set(vd->shape[0], 255, 255, 255, 255);
-   evas_vg_shape_stroke_width_set(vd->shape[0], ELM_VG_SCALE_SIZE(1.25));
+   evas_vg_shape_stroke_width_set(vd->shape[0], ELM_VG_SCALE_SIZE(vd->obj, 1.25));
 
    //BG Shape
    vd->shape[1] = evas_vg_shape_add(base_root);
@@ -829,25 +829,25 @@ check_default_init(check_default *vd)
 
    //Left Line Shape
    vd->shape[2] = evas_vg_shape_add(line_root);
-   evas_vg_shape_stroke_width_set(vd->shape[2], ELM_VG_SCALE_SIZE(1.75));
+   evas_vg_shape_stroke_width_set(vd->shape[2], ELM_VG_SCALE_SIZE(vd->obj, 1.75));
    evas_vg_shape_stroke_color_set(vd->shape[2], 255, 255, 255, 255);
    evas_vg_shape_stroke_cap_set(vd->shape[2], EFL_GFX_CAP_ROUND);
 
    //Right Line Shape
    vd->shape[3] = evas_vg_shape_add(line_root);
-   evas_vg_shape_stroke_width_set(vd->shape[3], ELM_VG_SCALE_SIZE(1.75));
+   evas_vg_shape_stroke_width_set(vd->shape[3], ELM_VG_SCALE_SIZE(vd->obj, 1.75));
    evas_vg_shape_stroke_color_set(vd->shape[3], 255, 255, 255, 255);
    evas_vg_shape_stroke_cap_set(vd->shape[3], EFL_GFX_CAP_ROUND);
 
-   vd->left_move_to[0] = ELM_VG_SCALE_SIZE(-5);
-   vd->left_move_to[1] = ELM_VG_SCALE_SIZE(10);
-   vd->left_line_to[0] = ELM_VG_SCALE_SIZE(-8);
-   vd->left_line_to[1] = ELM_VG_SCALE_SIZE(-8);
+   vd->left_move_to[0] = ELM_VG_SCALE_SIZE(vd->obj, -5);
+   vd->left_move_to[1] = ELM_VG_SCALE_SIZE(vd->obj, 10);
+   vd->left_line_to[0] = ELM_VG_SCALE_SIZE(vd->obj, -8);
+   vd->left_line_to[1] = ELM_VG_SCALE_SIZE(vd->obj, -8);
 
-   vd->right_move_to[0] = ELM_VG_SCALE_SIZE(-5);
-   vd->right_move_to[1] = ELM_VG_SCALE_SIZE(10);
-   vd->right_line_to[0] = ELM_VG_SCALE_SIZE(18);
-   vd->right_line_to[1] = ELM_VG_SCALE_SIZE(-18);
+   vd->right_move_to[0] = ELM_VG_SCALE_SIZE(vd->obj, -5);
+   vd->right_move_to[1] = ELM_VG_SCALE_SIZE(vd->obj, 10);
+   vd->right_line_to[0] = ELM_VG_SCALE_SIZE(vd->obj, 18);
+   vd->right_line_to[1] = ELM_VG_SCALE_SIZE(vd->obj, -18);
 }
 
 static void
@@ -868,14 +868,14 @@ check_default_vg_resize_cb(void *data, Evas *e EINA_UNUSED,
    evas_vg_shape_shape_reset(vd->shape[0]);
    evas_vg_shape_shape_append_rect(vd->shape[0], 1, 1,
                                    w - 2, h - 2,
-                                   ELM_VG_SCALE_SIZE(5),
-                                   ELM_VG_SCALE_SIZE(5));
+                                   ELM_VG_SCALE_SIZE(vd->obj, 5),
+                                   ELM_VG_SCALE_SIZE(vd->obj, 5));
 
    //Update BG Shape
    evas_vg_shape_shape_reset(vd->shape[1]);
    evas_vg_shape_shape_append_rect(vd->shape[1], 0, 0, w, h,
-                                   ELM_VG_SCALE_SIZE(5),
-                                   ELM_VG_SCALE_SIZE(5));
+                                   ELM_VG_SCALE_SIZE(vd->obj, 5),
+                                   ELM_VG_SCALE_SIZE(vd->obj, 5));
    if (elm_check_state_get(vd->obj))
      evas_vg_node_color_set(vd->shape[1], 255, 255, 255, 255);
    else
@@ -1207,7 +1207,7 @@ button_effect_resize_cb(void *data, Evas *e EINA_UNUSED,
    Evas_Coord x, y, w, h;
    evas_object_geometry_get(vd->vg[1], &x, &y, &w, &h);
    evas_vg_shape_shape_reset(vd->shape[1]);
-   evas_vg_shape_shape_append_rect(vd->shape[1], 0, 0, w, h, ELM_VG_SCALE_SIZE(35),
+   evas_vg_shape_shape_append_rect(vd->shape[1], 0, 0, w, h, ELM_VG_SCALE_SIZE(vd->obj, 35),
                                    100);
 }
 
@@ -1224,7 +1224,7 @@ button_base_resize_cb(void *data, Evas *e EINA_UNUSED,
    Evas_Coord w, h;
    evas_object_geometry_get(vd->vg[0], NULL, NULL, &w, &h);
    evas_vg_shape_shape_reset(vd->shape[0]);
-   evas_vg_shape_shape_append_rect(vd->shape[0], 0, 0, w, h, ELM_VG_SCALE_SIZE(35),
+   evas_vg_shape_shape_append_rect(vd->shape[0], 0, 0, w, h, ELM_VG_SCALE_SIZE(vd->obj, 35),
                                    100);
 }
 
@@ -1712,14 +1712,14 @@ tizen_vg_progressbar_set(Elm_Progressbar *obj)
        !strcmp(str, "process_medium") ||
        !strcmp(str, "process_small"))
      {
-        vd->stroke_width = ELM_VG_SCALE_SIZE(3);
+        vd->stroke_width = ELM_VG_SCALE_SIZE(vd->obj, 3);
         if (!strcmp(str, "process_medium"))
           {
-             vd->stroke_width = ELM_VG_SCALE_SIZE(2);
+             vd->stroke_width = ELM_VG_SCALE_SIZE(vd->obj, 2);
           }
         if (!strcmp(str, "process_small"))
           {
-             vd->stroke_width = ELM_VG_SCALE_SIZE(1.5);
+             vd->stroke_width = ELM_VG_SCALE_SIZE(vd->obj, 1.5);
           }
         vd->shrink = 2 * vd->stroke_width;
         vd->shift = vd->stroke_width + 0.5;
