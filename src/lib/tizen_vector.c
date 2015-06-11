@@ -1418,11 +1418,8 @@ progressbar_del_cb(void *data EINA_UNUSED, Evas *e EINA_UNUSED, Evas_Object *obj
    vd->transit = NULL;
    if (cur_transit)
      elm_transit_del(cur_transit);
-   if (vd)
-     {
-        evas_object_data_set(obj, vg_key, NULL);
-        free(vd);
-     }
+   evas_object_data_set(obj, vg_key, NULL);
+   free(vd);
 }
 
 static void
@@ -1795,6 +1792,11 @@ tizen_vg_progressbar_set(Elm_Progressbar *obj)
    if (!vd)
      {
         vd = calloc(1, sizeof(vg_progressbar));
+        if (!vd)
+          {
+             ERR("Failed to allocate vector graphics data memory");
+             return;
+          }
         evas_object_data_set(obj, vg_key, vd);
         vd->obj = obj;
         // callback to free vd data
@@ -1808,12 +1810,6 @@ tizen_vg_progressbar_set(Elm_Progressbar *obj)
                                                 EVAS_CALLBACK_PRIORITY_BEFORE,
                                                 progressbar_del_cb, NULL);
      }
-   if (!vd)
-     {
-        ERR("Failed to allocate vector graphics data memory");
-        return;
-     }
-
 
    if (!strcmp(str, "default"))
      {
