@@ -4855,21 +4855,49 @@ _elm_win_keygrab_set(Eo *obj EINA_UNUSED, Elm_Win_Data *sd, const char *key, Eva
    Eina_Bool ret = EINA_FALSE;
 #ifdef HAVE_ELEMENTARY_X
    _internal_elm_win_xwindow_get(sd);
-   if (sd->x.xwin)
+   if (!sd->x.xwin) return EINA_FALSE;
+
+   switch (grab_mode)
      {
-        if (grab_mode == ELM_WIN_KEYGRAB_SHARED)
-          ret = ecore_x_window_keygrab_set(sd->x.xwin, key, 0, 0, 0, ECORE_X_WIN_KEYGRAB_SHARED);
-        else if (grab_mode == ELM_WIN_KEYGRAB_TOPMOST)
-          ret = ecore_x_window_keygrab_set(sd->x.xwin, key, 0, 0, 0, ECORE_X_WIN_KEYGRAB_TOPMOST);
-        else if (grab_mode == ELM_WIN_KEYGRAB_EXCLUSIVE)
-          ret = ecore_x_window_keygrab_set(sd->x.xwin, key, 0, 0, 0, ECORE_X_WIN_KEYGRAB_EXCLUSIVE);
-        else if (grab_mode == ELM_WIN_KEYGRAB_OVERRIDE_EXCLUSIVE)
-          ret = ecore_x_window_keygrab_set(sd->x.xwin, key, 0, 0, 0, ECORE_X_WIN_KEYGRAB_EXCLUSIVE);
+      case ELM_WIN_KEYGRAB_SHARED:
+        ret = ecore_x_window_keygrab_set(sd->x.xwin, key, 0, 0, 0, ECORE_X_WIN_KEYGRAB_SHARED);
+        break;
+      case ELM_WIN_KEYGRAB_TOPMOST:
+        ret = ecore_x_window_keygrab_set(sd->x.xwin, key, 0, 0, 0, ECORE_X_WIN_KEYGRAB_TOPMOST);
+        break;
+      case ELM_WIN_KEYGRAB_EXCLUSIVE:
+        ret = ecore_x_window_keygrab_set(sd->x.xwin, key, 0, 0, 0, ECORE_X_WIN_KEYGRAB_EXCLUSIVE);
+        break;
+      case ELM_WIN_KEYGRAB_OVERRIDE_EXCLUSIVE:
+        ret = ecore_x_window_keygrab_set(sd->x.xwin, key, 0, 0, 0, ECORE_X_WIN_KEYGRAB_OVERRIDE_EXCLUSIVE);
+        break;
+      default:
+        break;
      }
-   return ret;
-#else
-   return ret;
 #endif
+#ifdef HAVE_ELEMENTARY_WAYLAND
+   _elm_win_wlwindow_get(sd);
+   if (!sd->wl.win) return EINA_FALSE;
+
+   switch (grab_mode)
+     {
+      case ELM_WIN_KEYGRAB_SHARED:
+        ret = ecore_wl_window_keygrab_set(sd->wl.win, key, 0, 0, 0, ECORE_WL_WINDOW_KEYGRAB_SHARED);
+        break;
+      case ELM_WIN_KEYGRAB_TOPMOST:
+        ret = ecore_wl_window_keygrab_set(sd->wl.win, key, 0, 0, 0, ECORE_WL_WINDOW_KEYGRAB_TOPMOST);
+        break;
+      case ELM_WIN_KEYGRAB_EXCLUSIVE:
+        ret = ecore_wl_window_keygrab_set(sd->wl.win, key, 0, 0, 0, ECORE_WL_WINDOW_KEYGRAB_EXCLUSIVE);
+        break;
+      case ELM_WIN_KEYGRAB_OVERRIDE_EXCLUSIVE:
+        ret = ecore_wl_window_keygrab_set(sd->wl.win, key, 0, 0, 0, ECORE_WL_WINDOW_KEYGRAB_OVERRIDE_EXCLUSIVE);
+        break;
+      default:
+        break;
+     }
+#endif
+   return ret;
 }
 
 EOLIAN static Eina_Bool
