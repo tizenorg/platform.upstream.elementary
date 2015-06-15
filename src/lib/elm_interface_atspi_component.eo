@@ -1,6 +1,6 @@
 mixin Elm_Interface_Atspi_Component ()
 {
-   legacy_prefix: null;
+   legacy_prefix: elm_atspi_component;
    eo_prefix: elm_interface_atspi_component;
    data: null;
    properties {
