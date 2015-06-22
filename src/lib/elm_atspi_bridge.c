@@ -4996,6 +4996,11 @@ _plug_address_discover(Eldbus_Connection *conn, Eo *proxy, const char *svc_bus, 
 {
    Eldbus_Object *dobj;
    dobj = eldbus_object_get(conn, svc_bus, svc_path);
+   if (!dobj)
+     {
+        ERR("Unable to get eldbus object from: %s %s", svc_bus, svc_path);
+        return;
+     }
 
    Eldbus_Message *msg = eldbus_object_method_call_new(dobj, ELDBUS_FDO_INTERFACE_PROPERTIES, "Get");
    eldbus_message_arguments_append(msg, "ss", ELM_ATSPI_DBUS_INTERFACE_PROXY, "Object");
@@ -5059,16 +5064,62 @@ EAPI void elm_atspi_bridge_utils_proxy_connect(Eo *proxy)
    _plug_connect(pd->a11y_bus, proxy);
 }
 
+/**
+ * @brief Service name sanitizer according to specs:
+ * http://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-names
+ * http://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-marshaling-object-path
+ */
+char *_sanitize_service_name(const char *name)
+{
+   char ret[256] = "\0";
+
+   if (!name) return NULL;
+
+   const char *tmp = name;
+   char *dst = ret;
+
+   // name element should not begin with digit. Swallow non-charater prefix
+   while ((*tmp != '\0') && !isalpha(*tmp)) tmp++;
+
+   // append rest of character valid charactes [A-Z][a-z][0-9]_
+   while ((*tmp != '\0') && (dst < &ret[sizeof(ret) - 1]))
+     {
+        if (isalpha(*tmp) || isdigit(*tmp) || (*tmp == '_'))
+          *dst++ = *tmp;
+        tmp++;
+     }
+
+   *++dst = '\0';
+   return strdup(ret);
+}
+
 Eo* _elm_atspi_bridge_utils_proxy_create(Eo *parent, const char *svcname, int svcnum, Elm_Atspi_Proxy_Type type)
 {
    Eo *ret;
-   char bus[64], path[64];
+   char bus[256], path[256], *name;
+   int res;
+
+   name = _sanitize_service_name(svcname);
+   if (!name) return NULL;
+
+   res = snprintf(bus, sizeof(bus), "elm.atspi.proxy.socket.%s-%d", name, svcnum);
+   if (res < 0 || (res >= (int)sizeof(bus)))
+     {
+        free(name);
+        return NULL;
+     }
+
+   res = snprintf(path, sizeof(path), "/elm/atspi/proxy/socket/%s/%d", name, svcnum);
+   if (res < 0 || (res >= (int)sizeof(path)))
+     {
+        free(name);
+        return NULL;
+     }
+
+   free(name);
 
    ret = eo_add(ELM_ATSPI_PROXY_CLASS, parent, elm_obj_atspi_proxy_constructor(type));
    if (!ret) return NULL;
-
-   snprintf(bus, sizeof(bus), "elm.atspi.proxy.socket.%s-%d", svcname, svcnum);
-   snprintf(path, sizeof(path), "/elm/atspi/proxy/socket/%s/%d", svcname, svcnum);
 
    eo_do(ret, eo_key_data_set("__svc_bus", eina_stringshare_add(bus), _free_stringshared));
    eo_do(ret, eo_key_data_set("__svc_path", eina_stringshare_add(path), _free_stringshared));
