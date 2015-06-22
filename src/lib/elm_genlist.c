@@ -466,12 +466,12 @@ _item_state_realize(Elm_Gen_Item *it, Evas_Object *target, const char *parts)
 /**
  * Apply the right style for the created item view.
  */
-static void
-_view_style_update(Elm_Gen_Item *it, Evas_Object *view, const char *style)
+//TIZEN_ONLY(20150622): genlist : update genlist style set
+static Eina_Bool
+_view_style_find(Elm_Gen_Item *it, Evas_Object *view, const char *style)
 {
    char buf[1024];
-   const char *stacking_even;
-   const char *stacking;
+   char buf2[1024];
    ELM_GENLIST_DATA_GET_FROM_ITEM(it, sd);
 
    // FIXME:  There exists
@@ -507,6 +507,29 @@ _view_style_update(Elm_Gen_Item *it, Evas_Object *view, const char *style)
    if (!elm_widget_theme_object_set(WIDGET(it), view,
                                     "genlist", buf,
                                     elm_widget_style_get(WIDGET(it))))
+    {
+       snprintf(buf2, sizeof(buf2), "item/%s", style ? : "default");
+       ERR("%s is not a valid genlist item style. fallback to %s", buf, buf2);
+       if (!strcmp(buf, buf2)) return EINA_FALSE;
+       if (!elm_widget_theme_object_set(WIDGET(it), view,
+                                       "genlist", buf2,
+                                       elm_widget_style_get(WIDGET(it))))
+         return EINA_FALSE;
+    }
+
+  return EINA_TRUE;
+}
+//END-ONLY
+
+static void
+_view_style_update(Elm_Gen_Item *it, Evas_Object *view, const char *style)
+{
+   const char *stacking_even;
+   const char *stacking;
+
+   //TIZEN_ONLY(20150622): genlist : update genlist style set
+   if (!_view_style_find(it, view, style))
+   //END-ONLY
      {
         ERR("%s is not a valid genlist item style. "
             "Automatically falls back into default style.",
