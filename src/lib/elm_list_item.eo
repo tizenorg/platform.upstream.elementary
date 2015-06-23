@@ -121,6 +121,7 @@ class Elm.List_Item(Elm.Widget_Item)
            Elm_Interface_Atspi_Accessible.children.get;
            //TIZEN_ONLY(20160329): list: enhance accessibility scroll and highlight (02c20ee39a0ebbe67b9e1491ccfc46dd681821c9)
            Elm_Interface_Atspi_Component.highlight_grab;
+           Elm_Interface_Atspi_Component.highlight_clear;
            //
       }
 }

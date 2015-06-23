@@ -3,6 +3,7 @@
 #endif
 
 #define ELM_INTERFACE_ATSPI_ACCESSIBLE_PROTECTED
+#define ELM_INTERFACE_ATSPI_COMPONENT_PROTECTED
 #define ELM_INTERFACE_ATSPI_WIDGET_ACTION_PROTECTED
 #define ELM_INTERFACE_ATSPI_SELECTION_PROTECTED
 //TIZEN_ONLY(20160329): list: enhance accessibility scroll and highlight (02c20ee39a0ebbe67b9e1491ccfc46dd681821c9)
@@ -2171,6 +2172,14 @@ _elm_list_item_elm_interface_atspi_accessible_children_get(Eo *eo_it EINA_UNUSED
      ret = eina_list_append(ret, data->end);
 
    return ret;
+}
+
+EOLIAN static Eina_Bool
+_elm_list_item_elm_interface_atspi_component_highlight_clear(Eo *eo_it, Elm_List_Item_Data *it)
+{
+   elm_object_accessibility_highlight_set(VIEW(it), EINA_FALSE);
+
+   return EINA_TRUE;
 }
 
 static char *
