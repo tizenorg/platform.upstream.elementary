@@ -5,9 +5,13 @@
 #include <fnmatch.h>
 
 #define ELM_INTERFACE_ATSPI_ACCESSIBLE_PROTECTED
+<<<<<<< HEAD
 //TIZEN_ONLY(20160329): genlist: enhance accessibility scroll & highlight (30d9a6012e629cd9ea60eae8d576f3ebb94ada86)
 #define ELM_INTERFACE_ATSPI_COMPONENT_PROTECTED
 //
+=======
+#define ELM_INTERFACE_ATSPI_COMPONENT_PROTECTED
+>>>>>>> bf1f469... Region show on item elements fixed
 #define ELM_INTERFACE_ATSPI_SELECTION_PROTECTED
 #define ELM_INTERFACE_ATSPI_WIDGET_ACTION_PROTECTED
 #define ELM_WIDGET_ITEM_PROTECTED
