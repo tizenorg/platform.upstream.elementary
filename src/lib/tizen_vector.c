@@ -456,13 +456,13 @@ check_onoff_init(check_onoff *vd)
    //Line Shape
    vd->shape[2] = evas_vg_shape_add(evas_object_vg_root_node_get(vd->vg[2]));
    evas_vg_shape_stroke_color_set(vd->shape[2], 255, 255, 255, 255);
-   evas_vg_shape_stroke_width_set(vd->shape[2], ELM_VG_SCALE_SIZE(vd->obj, 2));
+   evas_vg_shape_stroke_width_set(vd->shape[2], ELM_VG_SCALE_SIZE(vd->obj, 3));
    evas_vg_shape_stroke_cap_set(vd->shape[2], EFL_GFX_CAP_ROUND);
 
    //Circle Shape
    vd->shape[3] = evas_vg_shape_add(evas_object_vg_root_node_get(vd->vg[2]));
    evas_vg_shape_stroke_color_set(vd->shape[3], 255, 255, 255, 255);
-   evas_vg_shape_stroke_width_set(vd->shape[3], ELM_VG_SCALE_SIZE(vd->obj, 2));
+   evas_vg_shape_stroke_width_set(vd->shape[3], ELM_VG_SCALE_SIZE(vd->obj, 3));
 }
 
 static void
@@ -475,20 +475,13 @@ _check_onoff_circle(check_onoff *vd, double progress)
 
    evas_vg_shape_shape_reset(vd->shape[3]);
 
-   double radius = (center_x > center_y ? center_x : center_y) -
-      (2 * ELM_VG_SCALE_SIZE(vd->obj, 2));
-
-   evas_vg_shape_shape_append_circle(vd->shape[3], center_x, center_y,
-                                     radius);
+   double radius = (center_x < center_y ? center_x : center_y) -
+                   (ELM_VG_SCALE_SIZE(vd->obj, 3));
 
    if (elm_check_state_get(vd->obj)) progress = 1 - progress;
 
-   Eina_Matrix3 m;
-   eina_matrix3_identity(&m);
-   eina_matrix3_translate(&m, center_x, center_y);
-   eina_matrix3_scale(&m, progress, progress);
-   eina_matrix3_translate(&m, -center_x, -center_y);
-   evas_vg_node_transformation_set(vd->shape[3], &m);
+   evas_vg_shape_shape_append_circle(vd->shape[3], center_x, center_y,
+                                     radius * progress);
 }
 
 static void
@@ -518,7 +511,7 @@ _check_onoff_line(check_onoff *vd, double progress)
 
    if (!elm_check_state_get(vd->obj)) progress = 1 - progress;
 
-   double diff = center_y - ELM_VG_SCALE_SIZE(vd->obj, 2);
+   double diff = center_y - ELM_VG_SCALE_SIZE(vd->obj, 3) - 1;
 
    evas_vg_shape_shape_append_move_to(vd->shape[2], center_x,
                                       (center_y - (diff * progress)));
@@ -551,21 +544,13 @@ _check_onoff_sizing(check_onoff *vd, double progress)
    double center_x = ((double)w / 2);
    double center_y = ((double)h / 2);
 
+   if (!elm_check_state_get(vd->obj)) progress = 1 - progress;
+   progress *= 0.3;
 
    evas_vg_shape_shape_reset(vd->shape[1]);
    evas_vg_shape_shape_append_circle(vd->shape[1],
                                      center_x, center_y,
-                                     center_x);
-
-   if (!elm_check_state_get(vd->obj)) progress = 1 - progress;
-   progress *= 0.3;
-
-   Eina_Matrix3 m;
-   eina_matrix3_identity(&m);
-   eina_matrix3_translate(&m, center_x, center_y);
-   eina_matrix3_scale(&m, 0.7 + progress, 0.7 + progress);
-   eina_matrix3_translate(&m, -center_x, -center_y);
-   evas_vg_node_transformation_set(vd->shape[1], &m);
+                                     (0.7 + progress) * center_x);
 }
 
 static void
@@ -741,7 +726,7 @@ check_onoff_vg3_resize_cb(void *data, Evas *e EINA_UNUSED,
    //Line
    if (elm_check_state_get(vd->obj))
      {
-        double diff = ELM_VG_SCALE_SIZE(vd->obj, 2);
+        double diff = ELM_VG_SCALE_SIZE(vd->obj, 3) - 1;
 
         evas_vg_shape_shape_append_move_to(vd->shape[2], center_x, diff);
         evas_vg_shape_shape_append_line_to(vd->shape[2], center_x, h - diff);
@@ -749,7 +734,8 @@ check_onoff_vg3_resize_cb(void *data, Evas *e EINA_UNUSED,
    //Circle
    else
      {
-        double radius = center_x - (2 * ELM_VG_SCALE_SIZE(vd->obj, 2));
+        double radius = (center_x < center_y ? center_x : center_y) -
+                        (ELM_VG_SCALE_SIZE(vd->obj, 3));
         evas_vg_shape_shape_append_circle(vd->shape[3],
                                           center_x, center_y, radius);
      }
