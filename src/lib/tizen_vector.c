@@ -55,7 +55,7 @@ transit_radio_op(Elm_Transit_Effect *effect, Elm_Transit *transit EINA_UNUSED,
    if (elm_radio_selected_object_get(vd->obj) != vd->obj)
      progress = 1 - progress;
 
-   double radius = (center_x > center_y ? center_x : center_y)
+   double radius = (center_x < center_y ? center_x : center_y)
       - (2 * ELM_VG_SCALE_SIZE(vd->obj, 1.5));
 
    //Iconic Circle (Outline)
@@ -64,11 +64,11 @@ transit_radio_op(Elm_Transit_Effect *effect, Elm_Transit *transit EINA_UNUSED,
    //Iconic Circle (Outline)
    evas_vg_shape_shape_reset(vd->shape[2]);
    evas_vg_shape_shape_append_circle(vd->shape[2], center_x, center_y,
-                                     radius);
+                                     radius - 1);
    //Iconic Circle (Center)
    evas_vg_shape_shape_reset(vd->shape[3]);
    evas_vg_shape_shape_append_circle(vd->shape[3], center_x, center_y,
-                                     radius * 0.5 * progress);
+                                     radius * 0.6 * progress);
 }
 
 static void
@@ -128,7 +128,7 @@ radio_init(vg_radio *vd)
    //Iconic Circle (Outline)
    vd->shape[2] = evas_vg_shape_add(evas_object_vg_root_node_get(vd->vg[2]));
    evas_vg_shape_stroke_color_set(vd->shape[2], 255, 255, 255, 255);
-   evas_vg_shape_stroke_width_set(vd->shape[2], ELM_VG_SCALE_SIZE(vd->obj, 1.5));
+   evas_vg_shape_stroke_width_set(vd->shape[2], 1 + ELM_VG_SCALE_SIZE(vd->obj, 1.5));
 
    //Iconic Circle (Center Point)
    vd->shape[3] = evas_vg_shape_add(evas_object_vg_root_node_get(vd->vg[2]));
@@ -167,12 +167,12 @@ radio_base_resize_cb(void *data, Evas *e EINA_UNUSED,
    //Iconic Circle (Outline)
    evas_vg_shape_shape_reset(vd->shape[2]);
    evas_vg_shape_shape_append_circle(vd->shape[2], center_x, center_y,
-                                     radius);
+                                     radius -1);
 
    //Iconic Circle (Center)
    evas_vg_shape_shape_reset(vd->shape[3]);
    evas_vg_shape_shape_append_circle(vd->shape[3], center_x, center_y,
-                                     radius * 0.5);
+                                     radius * 0.6);
 }
 
 void
