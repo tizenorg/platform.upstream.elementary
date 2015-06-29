@@ -5465,8 +5465,21 @@ _elm_genlist_looping_up_cb(void *data,
    ELM_GENLIST_DATA_GET(genlist, sd);
 
    Elm_Object_Item *eo_it = elm_genlist_last_item_get(genlist);
-
-   elm_genlist_item_show(eo_it, ELM_GENLIST_ITEM_SCROLLTO_IN);
+   // TIZEN_ONLY (20150629): add checking item bring in enable on item looping
+   switch (_elm_config->focus_autoscroll_mode)
+     {
+      case ELM_FOCUS_AUTOSCROLL_MODE_SHOW:
+         elm_genlist_item_show(eo_it,
+                               ELM_GENLIST_ITEM_SCROLLTO_IN);
+         break;
+      case ELM_FOCUS_AUTOSCROLL_MODE_BRING_IN:
+         elm_genlist_item_bring_in(eo_it,
+                                   ELM_GENLIST_ITEM_SCROLLTO_IN);
+         break;
+      default:
+         break;
+     }
+   // END-ONLY
    elm_layout_signal_emit(genlist, "elm,action,looping,up,end", "elm");
    sd->item_looping_on = EINA_FALSE;
 
@@ -5487,8 +5500,21 @@ _elm_genlist_looping_down_cb(void *data,
    ELM_GENLIST_DATA_GET(genlist, sd);
 
    Elm_Object_Item *eo_it = elm_genlist_first_item_get(genlist);
-
-   elm_genlist_item_show(eo_it, ELM_GENLIST_ITEM_SCROLLTO_IN);
+   // TIZEN_ONLY (20150629): add checking item bring in enable on item looping
+   switch (_elm_config->focus_autoscroll_mode)
+     {
+      case ELM_FOCUS_AUTOSCROLL_MODE_SHOW:
+         elm_genlist_item_show(eo_it,
+                               ELM_GENLIST_ITEM_SCROLLTO_IN);
+         break;
+      case ELM_FOCUS_AUTOSCROLL_MODE_BRING_IN:
+         elm_genlist_item_bring_in(eo_it,
+                                   ELM_GENLIST_ITEM_SCROLLTO_IN);
+         break;
+      default:
+         break;
+     }
+   // END-ONLY
    elm_layout_signal_emit(genlist, "elm,action,looping,down,end", "elm");
    sd->item_looping_on = EINA_FALSE;
 
