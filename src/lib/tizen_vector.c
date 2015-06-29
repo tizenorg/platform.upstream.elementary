@@ -1207,8 +1207,10 @@ button_effect_resize_cb(void *data, Evas *e EINA_UNUSED,
    Evas_Coord x, y, w, h;
    evas_object_geometry_get(vd->vg[1], &x, &y, &w, &h);
    evas_vg_shape_shape_reset(vd->shape[1]);
-   evas_vg_shape_shape_append_rect(vd->shape[1], 0, 0, w, h, ELM_VG_SCALE_SIZE(vd->obj, 35),
-                                   100);
+   if (w == h)
+     evas_vg_shape_shape_append_circle(vd->shape[1], w/2, h/2, w/2);
+   else
+     evas_vg_shape_shape_append_rect(vd->shape[1], 0, 0, w, h, h/2, h/2);
 }
 
 static void
@@ -1224,8 +1226,10 @@ button_base_resize_cb(void *data, Evas *e EINA_UNUSED,
    Evas_Coord w, h;
    evas_object_geometry_get(vd->vg[0], NULL, NULL, &w, &h);
    evas_vg_shape_shape_reset(vd->shape[0]);
-   evas_vg_shape_shape_append_rect(vd->shape[0], 0, 0, w, h, ELM_VG_SCALE_SIZE(vd->obj, 35),
-                                   100);
+   if (w == h)
+     evas_vg_shape_shape_append_circle(vd->shape[0], w/2, h/2, w/2);
+   else
+     evas_vg_shape_shape_append_rect(vd->shape[0], 0, 0, w, h, h/2, h/2);
 }
 
 static void
