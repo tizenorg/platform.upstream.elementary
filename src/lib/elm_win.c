@@ -3746,6 +3746,9 @@ _elm_win_role_set(Eo *obj EINA_UNUSED, Elm_Win_Data *sd, const char *role)
 #ifdef HAVE_ELEMENTARY_X
    _elm_win_xwin_update(sd);
 #endif
+#ifdef HAVE_ELEMENTARY_WAYLAND
+   ecore_wl_window_role_set(sd->wl.win, role);
+#endif
 }
 
 EOLIAN static const char*
