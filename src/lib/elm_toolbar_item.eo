@@ -305,5 +305,7 @@ class Elm.Toolbar_Item(Elm.Widget_Item)
            Elm.Widget_Item.part_content_unset;
            Elm_Interface_Atspi_Accessible.name.get;
            Elm_Interface_Atspi_Accessible.state_set.get;
+           Elm_Interface_Atspi_Component.highlight_grab;
+           Elm_Interface_Atspi_Component.highlight_clear;
       }
 }
