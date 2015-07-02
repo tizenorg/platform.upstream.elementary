@@ -203,6 +203,10 @@ struct _Elm_Genlist_Data
    /**< value whether item loop feature is enabled or not. */
    Eina_Bool                             item_loop_enable : 1;
    Eina_Bool                             item_looping_on : 1;
+   // TIZNE_ONLY(20150702): genlist : fix key_action_select to act key_up and longpress
+   Elm_Object_Item                       *key_down_item;
+   Eina_Bool                             key_multi_select;
+   // END-ONLY
 };
 
 typedef struct _Item_Block Item_Block;
