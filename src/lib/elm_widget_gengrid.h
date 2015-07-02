@@ -141,6 +141,8 @@ struct _Elm_Gengrid_Data
    int                                   item_cache_count;
    int                                   item_cache_max;
    Elm_Gen_Item                         *atspi_item_to_highlight;
+   // TIZEN_ONLY(20150702) : fix key_action_select to act key_up and longpress
+   Elm_Object_Item                       *key_down_item;
 };
 
 struct Elm_Gen_Item_Type

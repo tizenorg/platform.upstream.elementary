@@ -617,11 +617,9 @@ _item_mouse_move_cb(void *data,
     {
        ELM_SAFE_FREE(it->long_timer, ecore_timer_del);
        if (!sd->was_selected)
-         {
-            it->unhighlight_cb(it);
-            it->unsel_cb(it);
-         }
-        it->base->still_in = EINA_FALSE;
+        // TIZEN_ONLY(20150702) : fix key_action_select to act key_up and longpress
+          it->unsel_cb(it);
+        // END_ONLY
     }
 
    if ((it->dragging) && (it->down))
@@ -738,9 +736,21 @@ _long_press_cb(void *data)
    it->long_timer = NULL;
    if (eo_do_ret(EO_OBJ(it), tmp, elm_wdg_item_disabled_get()) || (it->dragging))
      return ECORE_CALLBACK_CANCEL;
+
+   // TIZEN_ONLY(20150702) : fix key_action_select to act key_up and longpress
+   edje_object_signal_emit
+      (VIEW(it), "elm,action,longpressed,sound", "elm");
+   // END_ONLY
+
    sd->longpressed = EINA_TRUE;
+   // TIZEN_ONLY(20150702) : fix key_action_select to act key_up and longpress
+   evas_object_smart_callback_call(WIDGET(it), SIG_LONGPRESSED, EO_OBJ(it));
+   // END_ONLY
    eo_do(WIDGET(it), eo_event_callback_call
      (EVAS_CLICKABLE_INTERFACE_EVENT_LONGPRESSED, EO_OBJ(it)));
+   // TIZEN_ONLY(20150702) : fix key_action_select to act key_up and longpress
+   if (sd->key_down_item) return ECORE_CALLBACK_CANCEL;
+   // END_ONLY
 
    if (sd->reorder_mode)
      {
@@ -793,6 +803,9 @@ _item_unhighlight(Elm_Gen_Item *it)
    edje_object_signal_emit(VIEW(it), "elm,state,unselected", "elm");
    eo_do(WIDGET(it), eo_event_callback_call(
             ELM_GENGRID_EVENT_UNHIGHLIGHTED, eo_it));
+   // TIZEN_ONLY(20150702) : fix key_action_select to act key_up and longpress
+   evas_object_smart_callback_call(WIDGET(it), SIG_UNHIGHLIGHTED, eo_it);
+   // END_ONLY
 
    evas_object_stack_below(VIEW(it), sd->stack);
 
@@ -1133,6 +1146,9 @@ _item_mouse_up_cb(void *data,
         it->dragging = EINA_FALSE;
         eo_do(WIDGET(it), eo_event_callback_call
           (EVAS_DRAGGABLE_INTERFACE_EVENT_DRAG_STOP, eo_it));
+        // TIZEN_ONLY(20150702) : fix key_action_select to act key_up and longpress
+        evas_object_smart_callback_call(WIDGET(it), SIG_DRAG_STOP, eo_it);
+        // END_ONLY
         dragged = EINA_TRUE;
      }
 
@@ -2122,6 +2138,10 @@ _elm_gengrid_item_unfocused(Elm_Object_Item *eo_it)
    ELM_GENGRID_ITEM_DATA_GET(eo_it, it);
    Evas_Object *obj = WIDGET(it);
    ELM_GENGRID_DATA_GET(obj, sd);
+
+   // TIZEN_ONLY(20150702) : fix key_action_select to act key_up and longpress
+   if (sd->key_down_item) sd->key_down_item = NULL;
+   // END-ONLY
 
    if (it->generation < sd->generation)
      return;
@@ -3587,55 +3607,110 @@ _key_action_move(Evas_Object *obj, const char *params)
    return EINA_TRUE;
 }
 
+// TIZEN_ONLY(20150702) : fix key_action_select to act key_up and longpress
 static Eina_Bool
-_key_action_select(Evas_Object *obj, const char *params)
+_key_action_select_end(Evas_Object *obj)
 {
    ELM_GENGRID_DATA_GET(obj, sd);
-   Elm_Object_Item *eo_it = elm_object_focused_item_get(obj);
-   if (!eo_it) return EINA_TRUE;
-   ELM_GENGRID_ITEM_DATA_GET(eo_it, it);
+   if (!sd->key_down_item) return EINA_FALSE;
 
-   if (sd->multi &&
-       ((sd->multi_select_mode != ELM_OBJECT_MULTI_SELECT_MODE_WITH_CONTROL) ||
-        (!strcmp(params, "multi"))))
+   ELM_GENGRID_ITEM_DATA_GET(sd->key_down_item, it);
+   Eina_Bool tmp;
+
+   if (it->long_timer)
      {
-        if (!it->selected)
+        ELM_SAFE_FREE(it->long_timer, ecore_timer_del);
+        edje_object_signal_emit
+           (VIEW(it), "elm,action,selected,sound", "elm");
+        /* timer to play sound before selected callback called */
+     }
+   if (sd->longpressed)
+     {
+        sd->longpressed = EINA_FALSE;
+        if (!sd->was_selected)
           {
-             it->highlight_cb(it);
-             it->sel_cb(it);
+             it->unhighlight_cb(it);
+             it->unsel_cb(it);
           }
-        else it->unsel_cb(it);
+        sd->was_selected = EINA_FALSE;
+        goto end;
+     }
+   if (_is_no_select(it) ||
+         eo_do_ret(EO_OBJ(it), tmp, elm_wdg_item_disabled_get()))
+     goto end;
+
+   evas_object_ref(sd->obj);
+
+   if (!it->selected)
+     {
+        while (sd->selected)
+          {
+             Elm_Object_Item *eo_sel = sd->selected->data;
+             Elm_Gen_Item *sel = eo_data_scope_get(eo_sel, ELM_GENGRID_ITEM_CLASS);
+             it->unhighlight_cb(sel);
+             it->unsel_cb(sel);
+          }
      }
    else
      {
-        if (!it->selected)
-          {
-             while (sd->selected)
-               {
-                  Elm_Object_Item *eo_sel = sd->selected->data;
-                  Elm_Gen_Item *sel = eo_data_scope_get(eo_sel, ELM_GENGRID_ITEM_CLASS);
-                  it->unsel_cb(sel);
-               }
-          }
-        else
-          {
-             const Eina_List *l, *l_next;
-             Elm_Object_Item *eo_item2;
+        const Eina_List *l, *l_next;
+        Elm_Object_Item *eo_it2;
 
-             EINA_LIST_FOREACH_SAFE(sd->selected, l, l_next, eo_item2)
+        EINA_LIST_FOREACH_SAFE(sd->selected, l, l_next, eo_it2)
+          {
+             ELM_GENGRID_ITEM_DATA_GET(eo_it2, it2);
+             if (it2 != it)
                {
-                  ELM_GENGRID_ITEM_DATA_GET(eo_item2, item2);
-                  if (item2 != it) it->unsel_cb(item2);
+                  it->unhighlight_cb(it2);
+                  it->unsel_cb(it2);
                }
           }
-        it->highlight_cb(it);
-        it->sel_cb(it);
      }
+   it->highlight_cb(it);
+   it->sel_cb(it);
 
-   if (!sd->multi)
-     eo_do(WIDGET(it), eo_event_callback_call(ELM_GENGRID_EVENT_ACTIVATED, eo_it));
-
+end:
+   sd->key_down_item = NULL;
    return EINA_TRUE;
+}
+// END-ONLY
+
+static Eina_Bool
+_key_action_select(Evas_Object *obj, const char *params)
+{
+   // TIZEN_ONLY(20150702) : fix key_action_select to act key_up and longpress
+   ELM_GENGRID_DATA_GET(obj, sd);
+   if (!sd) return EINA_FALSE;
+   Elm_Object_Item *eo_it = NULL;
+   Eina_Bool tmp;
+
+   if (!sd->key_down_item)
+     {
+        eo_it = elm_object_focused_item_get(obj);
+        if (!eo_it) return EINA_TRUE;
+        ELM_GENGRID_ITEM_DATA_GET(eo_it, it);
+        sd->key_down_item = eo_it;
+
+        sd->longpressed = EINA_FALSE;
+        sd->was_selected = it->selected;
+
+        if (it->long_timer)
+          ecore_timer_del(it->long_timer);
+        it->long_timer = ecore_timer_add(_elm_config->longpress_timeout,
+                                         _long_press_cb,
+                                         it);
+        if (_is_no_select(it) ||
+            eo_do_ret(EO_OBJ(it), tmp, elm_wdg_item_disabled_get()))
+          return EINA_TRUE;
+
+        // and finally call the user callbacks.
+        // NOTE: keep this code at the bottom, as the user can change the
+        //       list at this point (clear, delete, etc...)
+        it->highlight_cb(it);
+        return EINA_TRUE;
+     }
+   return EINA_FALSE;
+   // END-ONLY
 }
 
 static Eina_Bool
@@ -3653,9 +3728,32 @@ _elm_gengrid_elm_widget_event(Eo *obj, Elm_Gengrid_Data *sd, Evas_Object *src, E
    Evas_Event_Key_Down *ev = event_info;
    (void) src;
 
-   if (type != EVAS_CALLBACK_KEY_DOWN) return EINA_FALSE;
    if (ev->event_flags & EVAS_EVENT_FLAG_ON_HOLD) return EINA_FALSE;
    if (!sd->items) return EINA_FALSE;
+
+   // TIZEN_ONLY(20150702) : fix key_action_select to act key_up and longpress
+   // NOTE : When looping happen, other event make scroll postion incorrectly.
+   //if (sd->item_loop_enable && sd->item_looping_on) return EINA_TRUE;
+
+   // NOTE : For support longpress, select must decided <key up> not <key down>
+   // FIXME : Current <key-binding> are impossible to porting key informations
+   // like Callback_Type or Event_Info to key action funcitons.
+   if ((sd->key_down_item) &&
+       (type == EVAS_CALLBACK_KEY_UP) &&
+       ((!strcmp(ev->keyname, "Return")) ||
+        (!strcmp(ev->keyname, "KP_Enter")) ||
+        (!strcmp(ev->keyname, "space"))))
+     {
+
+        if (_key_action_select_end(obj))
+          {
+             ev->event_flags |= EVAS_EVENT_FLAG_ON_HOLD;
+             return EINA_TRUE;
+          }
+     }
+
+   if (type != EVAS_CALLBACK_KEY_DOWN) return EINA_FALSE;
+   // END-ONLY
 
    if (!_elm_config_key_binding_call(obj, ev, key_actions))
      return EINA_FALSE;
