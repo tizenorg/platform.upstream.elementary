@@ -151,7 +151,15 @@ static void _item_unrealize(Elm_Gen_Item *it);
 static Eina_Bool _item_select(Elm_Gen_Item *it);
 static void _item_unselect(Elm_Gen_Item *it);
 static void _item_highlight(Elm_Gen_Item *it);
+// TIZEN_ONLY(20150702): genlist : fix key_action_select to act key_up and longpress
+static void _item_unhighlight(Elm_Gen_Item *it);
+static Eina_Bool _long_press_cb(void *data);
+// END-ONLY
 static Eina_Bool _key_action_move(Evas_Object *obj, const char *params);
+// TIZEN_ONLY(20150702): genlist : fix key_action_select to act key_up and longpress
+static Eina_Bool _key_action_select_up(Evas_Object *obj);
+static Eina_Bool _key_action_select_down(Evas_Object *obj, const char *params);
+// END-ONLY
 static Eina_Bool _key_action_select(Evas_Object *obj, const char *params);
 static Eina_Bool _key_action_escape(Evas_Object *obj, const char *params);
 static void  _calc_job(void *data);
@@ -168,7 +176,7 @@ static Eina_Bool _item_filtered_get(Elm_Gen_Item *it);
 
 static const Elm_Action key_actions[] = {
    {"move", _key_action_move},
-   {"select", _key_action_select},
+   {"select", _key_action_select_down},
    {"escape", _key_action_escape},
    {NULL, NULL}
 };
@@ -2732,6 +2740,10 @@ _elm_genlist_item_unfocused(Elm_Object_Item *eo_it)
        (eo_it != sd->focused_item))
      return;
 
+   // TIZEN_ONLY(20150702): genlist : fix key_action_select to act key_up and longpress
+   sd->key_down_item = NULL;
+   // END-ONLY
+
    if (elm_widget_focus_highlight_enabled_get(obj))
      {
         ELM_GENLIST_ITEM_DATA_GET(sd->focused_item, focus_it);
@@ -3049,20 +3061,46 @@ _key_action_move(Evas_Object *obj, const char *params)
    return EINA_TRUE;
 }
 
+// TIZEN_ONLY(20150702): genlist : fix key_action_select to act key_up and longpress
 static Eina_Bool
-_key_action_select(Evas_Object *obj, const char *params)
+_key_action_select_up(Evas_Object *obj)
 {
-   Elm_Object_Item *eo_it = NULL;
+   Eina_Bool tmp;
+   ELM_GENLIST_DATA_GET(obj, sd);
+   if (!sd->key_down_item) return EINA_FALSE;
 
-   eo_it = elm_object_focused_item_get(obj);
-   if (!eo_it) return EINA_TRUE;
-   elm_genlist_item_expanded_set(eo_it, !elm_genlist_item_expanded_get(eo_it));
-   ELM_GENLIST_ITEM_DATA_GET(eo_it, it);
-   ELM_GENLIST_DATA_GET_FROM_ITEM(it, sd);
+   ELM_GENLIST_ITEM_DATA_GET(sd->key_down_item, it);
+
+   if (it->long_timer)
+      ELM_SAFE_FREE(it->long_timer, ecore_timer_del);
+   if (sd->longpressed)
+     {
+        if (!sd->wasselected && !it->selected) _item_unhighlight(it);
+
+        if (!(sd->multi &&
+              ((sd->multi_select_mode != ELM_OBJECT_MULTI_SELECT_MODE_WITH_CONTROL) ||
+               (sd->key_multi_select))))
+          {
+             if (sd->last_selected_item)
+               {
+                  Elm_Gen_Item *sel = eo_data_scope_get(sd->last_selected_item, ELM_GENLIST_ITEM_CLASS);
+                  edje_object_signal_emit(VIEW(sel), SIGNAL_SELECTED, "elm");
+               }
+          }
+
+        sd->longpressed = EINA_FALSE;
+        sd->wasselected = EINA_FALSE;
+        goto end;
+     }
+   if (_is_no_select(it) ||
+      (eo_do_ret(sd->key_down_item, tmp, elm_wdg_item_disabled_get())))
+     goto end;
+
+   evas_object_ref(sd->obj);
 
    if (sd->multi &&
        ((sd->multi_select_mode != ELM_OBJECT_MULTI_SELECT_MODE_WITH_CONTROL) ||
-        (!strcmp(params, "multi"))))
+        (sd->key_multi_select)))
      {
         if (!it->selected)
           {
@@ -3099,12 +3137,71 @@ _key_action_select(Evas_Object *obj, const char *params)
         if (_item_select(it)) goto deleted;
      }
 
-   eo_do(WIDGET(it), eo_event_callback_call(ELM_GENLIST_EVENT_ACTIVATED, EO_OBJ(it)));
+deleted:
+   evas_object_smart_callback_call(sd->obj, SIG_ACTIVATED, sd->key_down_item);
+   evas_object_unref(sd->obj);
+
+end:
+   sd->key_multi_select = EINA_FALSE;
+   sd->key_down_item = NULL;
 
    return EINA_TRUE;
+}
 
-deleted:
-   return EINA_FALSE;
+static Eina_Bool
+_key_action_select_down(Evas_Object *obj, const char *params)
+{
+   Eina_Bool tmp;
+   ELM_GENLIST_DATA_GET(obj, sd);
+   if (!sd) return EINA_FALSE;
+   Elm_Object_Item *eo_it = NULL;
+
+   if (!strcmp(params, "multi")) sd->key_multi_select = EINA_TRUE;
+
+   if (sd->key_down_item) return EINA_FALSE;
+
+   eo_it = elm_object_focused_item_get(obj);
+   if (!eo_it) return EINA_TRUE;
+   ELM_GENLIST_ITEM_DATA_GET(eo_it, it);
+   sd->key_down_item = eo_it;
+
+   sd->longpressed = EINA_FALSE;
+   sd->wasselected = it->selected;
+
+   if (it->long_timer) ecore_timer_del(it->long_timer);
+   it->long_timer = ecore_timer_add(sd->longpress_timeout, _long_press_cb, it);
+
+   if (_is_no_select(it) || eo_do_ret(eo_it, tmp, elm_wdg_item_disabled_get()))
+     return EINA_TRUE;
+
+   if (!(sd->multi &&
+         ((sd->multi_select_mode != ELM_OBJECT_MULTI_SELECT_MODE_WITH_CONTROL) ||
+          (sd->key_multi_select))))
+     {
+        if (sd->last_selected_item && sd->last_selected_item != eo_it)
+          {
+             Elm_Gen_Item *unsel = eo_data_scope_get(sd->last_selected_item, ELM_GENLIST_ITEM_CLASS);
+             edje_object_signal_emit(VIEW(unsel), SIGNAL_UNSELECTED, "elm");
+          }
+     }
+
+   // and finally call the user callbacks.
+   // NOTE: keep this code at the bottom, as the user can change the
+   //       list at this point (clear, delete, etc...)
+   _item_highlight(it);
+
+   return EINA_TRUE;
+}
+// END-ONLY
+
+static Eina_Bool
+_key_action_select(Evas_Object *obj, const char *params)
+{
+   // TIZEN_ONLY(20150702): genlist : fix key_action_select to act key_up and longpress
+   if (!_key_action_select_down(obj, params)) return EINA_FALSE;
+   if (!_key_action_select_up(obj)) return EINA_FALSE;
+   return EINA_TRUE;
+   // END-ONLY
 }
 
 static Eina_Bool
@@ -3122,9 +3219,32 @@ _elm_genlist_elm_widget_event(Eo *obj, Elm_Genlist_Data *sd, Evas_Object *src, E
    (void) src;
    Evas_Event_Key_Down *ev = event_info;
 
-   if (type != EVAS_CALLBACK_KEY_DOWN) return EINA_FALSE;
+   if (elm_widget_disabled_get(obj)) return EINA_FALSE;
    if (ev->event_flags & EVAS_EVENT_FLAG_ON_HOLD) return EINA_FALSE;
    if (!sd->items) return EINA_FALSE;
+
+   // TIZEN_ONLY(20150702): genlist : fix key_action_select to act key_up and longpress
+   // NOTE : When looping happen, other event make scroll postion incorrectly.
+   if (sd->item_loop_enable && sd->item_looping_on) return EINA_TRUE;
+
+   // NOTE : For support longpress, select must decided <key up> not <key down>
+   // FIXME : Current <key-binding> are impossible to porting key informations
+   // like Callback_Type or Event_Info to key action funcitons.
+   if ((sd->key_down_item) &&
+       (type == EVAS_CALLBACK_KEY_UP) &&
+       ((!strcmp(ev->keyname, "Return")) ||
+        (!strcmp(ev->keyname, "KP_Enter")) ||
+        (!strcmp(ev->keyname, "space"))))
+     {
+        if (_key_action_select_up(obj))
+          {
+             ev->event_flags |= EVAS_EVENT_FLAG_ON_HOLD;
+             return EINA_TRUE;
+          }
+     }
+
+   if (type != EVAS_CALLBACK_KEY_DOWN) return EINA_FALSE;
+   // END-ONLY
 
    if (!_elm_config_key_binding_call(obj, ev, key_actions))
      return EINA_FALSE;
@@ -3663,6 +3783,10 @@ _elm_genlist_item_del_not_serious(Elm_Gen_Item *it)
      sd->focused_item = NULL;
    if (sd->last_selected_item == eo_it)
      sd->last_selected_item = NULL;
+   // TIZEN_ONLY(20150702): genlist : fix key_action_select to act key_up and longpress
+   if (sd->key_down_item == eo_it)
+     sd->key_down_item = NULL;
+   // END-ONLY
 
    if (it->itc->func.del)
      it->itc->func.del((void *)WIDGET_ITEM_DATA_GET(EO_OBJ(it)), WIDGET(it));
@@ -3959,8 +4083,12 @@ _long_press_cb(void *data)
      goto end;
 
    sd->longpressed = EINA_TRUE;
-   eo_do(WIDGET(it), eo_event_callback_call
-         (EVAS_CLICKABLE_INTERFACE_EVENT_LONGPRESSED, EO_OBJ(it)));
+
+   // TIZEN_ONLY(20150702): genlist : fix key_action_select to act key_up and longpress
+   evas_object_smart_callback_call(WIDGET(it), SIG_LONGPRESSED, EO_OBJ(it));
+   if (sd->key_down_item) return ECORE_CALLBACK_CANCEL;
+   // END-ONLY
+
    if ((sd->reorder_mode) && !(GL_IT(it)->type & ELM_GENLIST_ITEM_GROUP))
      {
         sd->reorder_it = it;
