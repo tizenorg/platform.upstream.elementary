@@ -914,6 +914,11 @@ _on_conformant_changed(void *data,
    part_type = (ELM_CONFORMANT_INDICATOR_PART |
                 ELM_CONFORMANT_VIRTUAL_KEYPAD_PART);
 
+   ELM_CONFORMANT_DATA_GET(data, sd);
+
+   /* object is already freed */
+   if (!sd) return;
+
    _conformant_part_sizing_eval(data, part_type);
 }
 
