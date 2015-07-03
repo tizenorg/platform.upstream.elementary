@@ -125,15 +125,18 @@ _conformant_part_sizing_eval(Evas_Object *obj,
 {
 #ifdef HAVE_ELEMENTARY_X
    Ecore_X_Window zone = 0;
-   Evas_Object *top;
    Ecore_X_Window xwin;
 #endif
+#ifdef HAVE_ELEMENTARY_WAYLAND
+   Ecore_Wl_Window *wlwin;
+#endif
+   Evas_Object *top;
    int sx = -1, sy = -1, sw = -1, sh = -1;
 
    ELM_CONFORMANT_DATA_GET(obj, sd);
+   top = elm_widget_top_get(obj);
 
 #ifdef HAVE_ELEMENTARY_X
-   top = elm_widget_top_get(obj);
    xwin = elm_win_xwindow_get(top);
 
    if (xwin)
@@ -152,6 +155,11 @@ _conformant_part_sizing_eval(Evas_Object *obj,
                    (zone, &sx, &sy, &sw, &sh)))
                sx = sy = sw = sh = 0;
           }
+#endif
+#ifdef HAVE_ELEMENTARY_WAYLAND
+        wlwin = elm_win_wl_window_get(top);
+        if (wlwin)
+          ecore_wl_window_indicator_geometry_get(wlwin, &sx, &sy, &sw, &sh);
 #endif
         if (((sd->rot == 90) || (sd->rot == 270)) && sd->landscape_indicator)
           _conformant_part_size_hints_set(obj, sd->landscape_indicator, sx, sy, sw, sh);
@@ -180,6 +188,11 @@ _conformant_part_sizing_eval(Evas_Object *obj,
                     }
                }
           }
+#endif
+#ifdef HAVE_ELEMENTARY_WAYLAND
+        wlwin = elm_win_wl_window_get(top);
+        if (wlwin)
+          ecore_wl_window_keyboard_geometry_get(wlwin, &sx, &sy, &sw, &sh);
 #endif
         DBG("[KEYPAD]: size(%d,%d, %dx%d).", sx, sy, sw, sh);
         _conformant_part_size_hints_set
@@ -891,6 +904,19 @@ _on_prop_change(void *data,
 
 #endif
 
+static void
+_on_conformant_changed(void *data,
+                     Evas_Object *obj,
+                     void *event_info EINA_UNUSED)
+{
+   Conformant_Part_Type part_type;
+
+   part_type = (ELM_CONFORMANT_INDICATOR_PART |
+                ELM_CONFORMANT_VIRTUAL_KEYPAD_PART);
+
+   _conformant_part_sizing_eval(data, part_type);
+}
+
 EOLIAN static void
 _elm_conformant_evas_object_smart_add(Eo *obj, Elm_Conformant_Data *_pd EINA_UNUSED)
 {
@@ -990,6 +1016,8 @@ _elm_conformant_eo_base_constructor(Eo *obj, Elm_Conformant_Data *sd)
      (top, "indicator,prop,changed", _on_indicator_mode_changed, obj);
    evas_object_smart_callback_add
      (top, "rotation,changed", _on_rotation_changed, obj);
+   evas_object_smart_callback_add
+     (top, "conformant,changed", _on_conformant_changed, obj);
 }
 
 static void

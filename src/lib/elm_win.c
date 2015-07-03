@@ -126,6 +126,8 @@ struct _Elm_Win_Data
    Elm_Win_Keyboard_Mode          kbdmode;
    Elm_Win_Indicator_Mode         indmode;
    Elm_Win_Indicator_Opacity_Mode ind_o_mode;
+   Eina_Rectangle kbd;
+   Eina_Rectangle ind;
    struct
    {
       const char  *info;
@@ -234,6 +236,7 @@ static const char SIG_ROTATION_CHANGED[] = "rotation,changed";
 static const char SIG_PROFILE_CHANGED[] = "profile,changed";
 static const char SIG_WM_ROTATION_CHANGED[] = "wm,rotation,changed";
 static const char SIG_THEME_CHANGED[] = "theme,changed";
+static const char SIG_CONFORMANT_CHANGED[] = "conformant,changed";
 
 static const Evas_Smart_Cb_Description _smart_callbacks[] = {
    {SIG_DELETE_REQUEST, ""},
@@ -256,6 +259,7 @@ static const Evas_Smart_Cb_Description _smart_callbacks[] = {
    {SIG_WM_ROTATION_CHANGED, ""},
    {SIG_WIDGET_FOCUSED, ""}, /**< handled by elm_widget */
    {SIG_WIDGET_UNFOCUSED, ""}, /**< handled by elm_widget */
+   {SIG_CONFORMANT_CHANGED, ""},
    {NULL, NULL}
 };
 
@@ -1168,6 +1172,7 @@ _elm_win_state_change(Ecore_Evas *ee)
    Eina_Bool ch_maximized = EINA_FALSE;
    Eina_Bool ch_profile = EINA_FALSE;
    Eina_Bool ch_wm_rotation = EINA_FALSE;
+   Eina_Bool ch_conformant  = EINA_FALSE;
    const char *profile;
 
    if (!sd) return;
@@ -1214,6 +1219,41 @@ _elm_win_state_change(Ecore_Evas *ee)
              ch_wm_rotation = EINA_TRUE;
           }
      }
+#ifdef HAVE_ELEMENTARY_WAYLAND
+   int x = 0, y = 0, w = 0, h = 0;
+   if (sd->indmode != (Elm_Win_Indicator_Mode)ecore_wl_window_indicator_state_get(sd->wl.win))
+     {
+        sd->indmode = ecore_wl_window_indicator_state_get(sd->wl.win);
+        ch_conformant = EINA_TRUE;
+     }
+   if (sd->kbdmode != (Elm_Win_Keyboard_Mode)ecore_wl_window_keyboard_state_get(sd->wl.win))
+     {
+        sd->kbdmode = ecore_wl_window_keyboard_state_get(sd->wl.win);
+        ch_conformant = EINA_TRUE;
+     }
+   if (ecore_wl_window_indicator_geometry_get(sd->wl.win, &x, &y, &w, &h))
+     {
+        if ((sd->ind.x != x) || (sd->ind.y != y) || (sd->ind.w != w) || (sd->ind.h != h))
+          {
+             sd->ind.x = x;
+             sd->ind.y = y;
+             sd->ind.w = w;
+             sd->ind.h = h;
+             ch_conformant  = EINA_TRUE;
+          }
+     }
+   if (ecore_wl_window_keyboard_geometry_get(sd->wl.win, &x, &y, &w, &h))
+     {
+        if ((sd->ind.x != x) || (sd->ind.y != y) || (sd->ind.w != w) || (sd->ind.h != h))
+          {
+             sd->kbd.x = x;
+             sd->kbd.y = y;
+             sd->kbd.w = w;
+             sd->kbd.h = h;
+             ch_conformant  = EINA_TRUE;
+          }
+     }
+#endif
 
    _elm_win_state_eval_queue();
 
@@ -1261,6 +1301,10 @@ _elm_win_state_change(Ecore_Evas *ee)
         elm_widget_orientation_set(obj, sd->rot);
         evas_object_smart_callback_call(obj, SIG_ROTATION_CHANGED, NULL);
         evas_object_smart_callback_call(obj, SIG_WM_ROTATION_CHANGED, NULL);
+     }
+   if (ch_conformant)
+     {
+        evas_object_smart_callback_call(obj, SIG_CONFORMANT_CHANGED, NULL);
      }
 }
 
@@ -4685,8 +4729,13 @@ _elm_win_conformant_set(Eo *obj EINA_UNUSED, Elm_Win_Data *sd, Eina_Bool conform
    _internal_elm_win_xwindow_get(sd);
    if (sd->x.xwin)
      ecore_x_e_illume_conformant_set(sd->x.xwin, conformant);
+#elif HAVE_ELEMENTARY_WAYLAND
+   _elm_win_wlwindow_get(sd);
+   if (sd->wl.win)
+     ecore_wl_window_conformant_set(sd->wl.win, conformant);
 #else
    (void)conformant;
+
 #endif
 }
 
@@ -4697,6 +4746,11 @@ _elm_win_conformant_get(Eo *obj EINA_UNUSED, Elm_Win_Data *sd)
    _internal_elm_win_xwindow_get(sd);
    if (sd->x.xwin)
      return ecore_x_e_illume_conformant_get(sd->x.xwin);
+#endif
+#if HAVE_ELEMENTARY_WAYLAND
+   _elm_win_wlwindow_get(sd);
+   if (sd->wl.win)
+     return ecore_wl_window_conformant_get(sd->wl.win);
 #endif
 
    return EINA_FALSE;
