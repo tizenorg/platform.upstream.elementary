@@ -18,6 +18,9 @@
 static const char SIG_CLICKED[] = "clicked";
 static const char SIG_REPEATED[] = "repeated";
 static const char SIG_PRESSED[] = "pressed";
+// TIZEN_ONLY(20150706) : add longpress callback
+static const char SIG_LONGPRESSED[] = "longpressed";
+// END-ONLY
 static const char SIG_UNPRESSED[] = "unpressed";
 
 /* smart callbacks coming from elm button objects (besides the ones
@@ -27,6 +30,9 @@ static const Evas_Smart_Cb_Description _smart_callbacks[] = {
    {SIG_REPEATED, ""},
    {SIG_PRESSED, ""},
    {SIG_UNPRESSED, ""},
+   // TIZEN_ONLY(20150706) : add longpress callback
+   {SIG_LONGPRESSED, ""},
+   // END-ONLY
    {SIG_LAYOUT_FOCUSED, ""}, /**< handled by elm_layout */
    {SIG_LAYOUT_UNFOCUSED, ""}, /**< handled by elm_layout */
    {NULL, NULL}
@@ -226,6 +232,19 @@ _autorepeat_initial_send(void *data)
    return ECORE_CALLBACK_CANCEL;
 }
 
+// TIZEN_ONLY(20150706) : add longpress callback
+static Eina_Bool
+_on_longpress_signal(void *data)
+{
+   ELM_BUTTON_DATA_GET_OR_RETURN_VAL(data, sd, ECORE_CALLBACK_CANCEL);
+
+   sd->longpress_timer = NULL;
+   evas_object_smart_callback_call(data, SIG_LONGPRESSED, NULL);
+
+   return ECORE_CALLBACK_CANCEL;
+}
+// END-ONLY
+
 static void
 _on_pressed_signal(void *data,
                    Evas_Object *obj EINA_UNUSED,
@@ -245,6 +264,12 @@ _on_pressed_signal(void *data,
 
    eo_do(data, eo_event_callback_call
      (EVAS_CLICKABLE_INTERFACE_EVENT_PRESSED, NULL));
+
+   // TIZEN_ONLY(20150706) : add longpress callback
+   if (!sd->longpress_timer)
+     sd->longpress_timer = ecore_timer_add
+        (_elm_config->longpress_timeout, _on_longpress_signal, data);
+   // END-ONLY
 }
 
 static void
@@ -257,6 +282,11 @@ _on_unpressed_signal(void *data,
 
    ELM_SAFE_FREE(sd->timer, ecore_timer_del);
    sd->repeating = EINA_FALSE;
+
+   // TIZEN_ONLY(20150706) : add longpress callback
+   ELM_SAFE_FREE(sd->longpress_timer, ecore_timer_del);
+   // END-ONLY
+
    eo_do(data, eo_event_callback_call
      (EVAS_CLICKABLE_INTERFACE_EVENT_UNPRESSED, NULL));
 }
@@ -311,6 +341,16 @@ _elm_button_evas_object_smart_add(Eo *obj, Elm_Button_Data *_pd EINA_UNUSED)
    if (!elm_layout_theme_set(obj, "button", "base", elm_widget_style_get(obj)))
      CRI("Failed to set layout!");
 }
+
+// TIZEN_ONLY(20150706) : add longpress callback
+static void
+_elm_button_evas_object_smart_del(Eo *obj, Elm_Button_Data *sd)
+{
+   ELM_SAFE_FREE(sd->longpress_timer, ecore_timer_del);
+
+   eo_do_super(obj, MY_CLASS, evas_obj_smart_del());
+}
+// END-ONLY
 
 EOLIAN static const Elm_Layout_Part_Alias_Description*
 _elm_button_elm_layout_content_aliases_get(Eo *obj EINA_UNUSED, Elm_Button_Data *_pd EINA_UNUSED)
