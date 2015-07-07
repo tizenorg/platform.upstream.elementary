@@ -116,6 +116,9 @@ selected.]]
       Elm.Widget.event;
       Elm.Layout.sizing_eval;
       Elm_Interface_Atspi_Widget_Action.elm_actions.get;
+      //TIZEN_ONLY(20150707) : improve colorselctor atspi support
+      Elm_Interface_Atspi_Accessible.children.get;
+      ///
    }
    events {
       color,item,selected;

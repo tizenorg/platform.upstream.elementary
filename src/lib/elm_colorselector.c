@@ -3,6 +3,7 @@
 #endif
 
 #define ELM_INTERFACE_ATSPI_ACCESSIBLE_PROTECTED
+#define ELM_INTERFACE_ATSPI_COMPONENT_PROTECTED
 #define ELM_INTERFACE_ATSPI_WIDGET_ACTION_PROTECTED
 
 #include <Elementary.h>
@@ -1520,6 +1521,37 @@ _elm_color_item_elm_widget_item_signal_emit(Eo *eo_it EINA_UNUSED,
    elm_object_signal_emit(VIEW(it), emission, source);
 }
 
+// TIZEN ONLY : "elm,state,selected" signal is handled by _on_color_selected()
+static Eina_Bool
+_item_action_activate(Evas_Object *obj, const char *params EINA_UNUSED)
+{
+   Eina_List *l;
+   ELM_COLOR_ITEM_DATA_GET(obj, item);
+   ELM_COLORSELECTOR_DATA_GET(WIDGET(item), sd);
+
+   elm_object_signal_emit(VIEW(item), "elm,state,selected", "elm");
+   elm_colorselector_color_set(WIDGET(item), item->color->r, item->color->g,
+                               item->color->b, item->color->a);
+   evas_object_smart_callback_call(WIDGET(item), SIG_COLOR_ITEM_SELECTED,
+                                   EO_OBJ(item));
+
+   Eo *eo_temp_item = eina_list_data_get(sd->selected);
+   if (eo_temp_item && (eo_temp_item != EO_OBJ(item)))
+     {
+        ELM_COLOR_ITEM_DATA_GET(eo_temp_item, temp_item);
+        elm_object_signal_emit(VIEW(temp_item), "elm,state,unselected", "elm");
+     }
+
+   EINA_LIST_FOREACH(sd->items, l, eo_temp_item)
+     {
+        ELM_COLOR_ITEM_DATA_GET(eo_temp_item, temp_item);
+        if (item == temp_item) sd->selected = l;
+     }
+   sd->focused = ELM_COLORSELECTOR_PALETTE;
+
+   return EINA_TRUE;
+}
+
 EOLIAN static Eo *
 _elm_color_item_eo_base_constructor(Eo *eo_item, Elm_Color_Item_Data *item)
 {
@@ -1561,6 +1593,10 @@ _elm_color_item_eo_base_constructor(Eo *eo_item, Elm_Color_Item_Data *item)
    // ACCESS
    if (_elm_config->access_mode == ELM_ACCESS_MODE_ON)
      eo_do(eo_item, elm_wdg_item_access_register());
+
+   //TIZEN_ONLY(20150707) : improve colorselctor atspi support
+   eo_do(eo_item, elm_interface_atspi_accessible_role_set(ELM_ATSPI_ROLE_RADIO_BUTTON));
+   ///
 
    return eo_item;
 }
@@ -2364,6 +2400,70 @@ _elm_colorselector_elm_interface_atspi_widget_action_elm_actions_get(Eo *obj EIN
    };
    return &atspi_actions[0];
 }
+
+//TIZEN_ONLY(20150707) : improve colorselctor atspi support
+EOLIAN static Eina_List*
+_elm_colorselector_elm_interface_atspi_accessible_children_get(Eo *obj EINA_UNUSED, Elm_Colorselector_Data *sd EINA_UNUSED)
+{
+   Eina_List *ret = NULL;
+
+   eo_do_super(obj, ELM_COLORSELECTOR_CLASS, ret = elm_interface_atspi_accessible_children_get());
+
+   // filter - out box contiainer
+   ret = eina_list_remove(ret, sd->palette_box);
+
+   // append items as colorselector children
+   ret = eina_list_merge(ret, eina_list_clone(sd->items));
+
+   return ret;
+}
+
+EOLIAN static Elm_Atspi_State_Set
+_elm_color_item_elm_interface_atspi_accessible_state_set_get(Eo *obj EINA_UNUSED, Elm_Color_Item_Data *sd EINA_UNUSED)
+{
+   Elm_Atspi_State_Set ret;
+
+   eo_do_super(obj, ELM_COLOR_ITEM_CLASS, ret = elm_interface_atspi_accessible_state_set_get());
+
+   Evas_Object *widget = WIDGET(sd);
+   if (!widget) return ret;
+
+   ELM_COLORSELECTOR_DATA_GET_OR_RETURN_VAL(widget, wd, ret);
+
+   if (eina_list_data_get(wd->selected) == obj)
+     STATE_TYPE_SET(ret, ELM_ATSPI_STATE_CHECKED);
+
+   return ret;
+}
+
+EOLIAN static Eina_Bool
+_elm_color_item_elm_interface_atspi_component_highlight_grab(Eo *eo_it, Elm_Color_Item_Data *it)
+{
+   elm_genlist_item_show(eo_it, ELM_GENLIST_ITEM_SCROLLTO_IN);
+
+   elm_object_accessibility_highlight_set(VIEW(it), EINA_TRUE);
+
+   return EINA_TRUE;
+}
+
+EOLIAN static Eina_Bool
+_elm_color_item_elm_interface_atspi_component_highlight_clear(Eo *eo_it EINA_UNUSED, Elm_Color_Item_Data *it)
+{
+   elm_object_accessibility_highlight_set(VIEW(it), EINA_FALSE);
+
+   return EINA_TRUE;
+}
+
+EOLIAN static const Elm_Atspi_Action*
+_elm_color_item_elm_interface_atspi_widget_action_elm_actions_get(Eo *eo_it EINA_UNUSED, Elm_Color_Item_Data *it EINA_UNUSED)
+{
+   static Elm_Atspi_Action atspi_actions[] = {
+          { "activate", "activate", NULL, _item_action_activate},
+          { NULL, NULL, NULL, NULL }
+   };
+   return &atspi_actions[0];
+}
+/////
 
 #include "elm_colorselector.eo.c"
 #include "elm_color_item.eo.c"
