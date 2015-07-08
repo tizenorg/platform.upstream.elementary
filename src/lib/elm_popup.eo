@@ -184,6 +184,8 @@ class Elm.Popup (Elm.Layout, Elm_Interface_Atspi_Widget_Action)
       Elm.Layout.signal_emit;
       Elm_Interface_Atspi_Widget_Action.elm_actions.get;
       Elm_Interface_Atspi_Accessible.state_set.get;
+      Elm_Interface_Atspi_Component.highlight_grab;
+      Elm_Interface_Atspi_Component.highlight_clear;
    }
    events {
       block,clicked;
