@@ -34,6 +34,9 @@ typedef struct _Elm_Button_Data
 
    Eina_Bool             autorepeat : 1; /**< Whether auto-repetition of clicks is enabled or not (bound to _Elm_Button_Smart_Class::admits_autorepeat) */
    Eina_Bool             repeating : 1; /**< Whether auto-repetition is going on */
+   // TIZEN_ONLY(20150730) : add button key longpress concept
+   Eina_Bool             key_down : 1; /**< Whether key down event occurred or not;if key down and key up both occurred, then only 'clicked' smart callback is called */
+   // END-ONLY
    // TIZEN_ONLY(20150706) : add longpress callback
    Ecore_Timer           *longpress_timer;
    // END-ONLY
