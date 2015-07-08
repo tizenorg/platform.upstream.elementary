@@ -3,6 +3,7 @@
 #endif
 
 #define ELM_INTERFACE_ATSPI_ACCESSIBLE_PROTECTED
+#define ELM_INTERFACE_ATSPI_COMPONENT_PROTECTED
 #define ELM_INTERFACE_ATSPI_WIDGET_ACTION_PROTECTED
 #define ELM_WIDGET_ITEM_PROTECTED
 
@@ -1979,5 +1980,28 @@ _elm_popup_elm_interface_atspi_accessible_state_set_get(Eo *obj, Elm_Popup_Data 
    return ret;
 }
 
+//TIZEN ONLY(20150708): popup and ctxpopup accessibility highlight impementation
+EOLIAN static Eina_Bool
+_elm_popup_elm_interface_atspi_component_highlight_grab(Eo *obj EINA_UNUSED, Elm_Popup_Data *sd)
+{
+   if (sd->scr)
+     {
+        elm_object_accessibility_highlight_set(sd->main_layout, EINA_TRUE);
+        return EINA_TRUE;
+     }
+   return EINA_FALSE;
+}
+
+EOLIAN static Eina_Bool
+_elm_popup_elm_interface_atspi_component_highlight_clear(Eo *obj EINA_UNUSED, Elm_Popup_Data *sd)
+{
+   if (sd->scr)
+     {
+        elm_object_accessibility_highlight_set(sd->main_layout, EINA_FALSE);
+        return EINA_TRUE;
+     }
+   return EINA_FALSE;
+}
+//
 #include "elm_popup.eo.c"
 #include "elm_popup_item.eo.c"
