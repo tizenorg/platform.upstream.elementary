@@ -50,10 +50,14 @@ static const Elm_Layout_Part_Alias_Description _text_aliases[] =
    {NULL, NULL}
 };
 
-static Eina_Bool _key_action_activate(Evas_Object *obj, const char *params);
+// TIZEN_ONLY(20150730) : add button key longpress concept
+static void _on_pressed_signal(void *data, Evas_Object *obj, const char *emission, const char *source);
+static void _on_unpressed_signal(void *data, Evas_Object *obj, const char *emission, const char *source);
+static Eina_Bool _key_action_activate_down(Evas_Object *obj, const char *params);
+// END-ONLY
 
 static const Elm_Action key_actions[] = {
-   {"activate", _key_action_activate},
+   {"activate", _key_action_activate_down},
    {NULL, NULL}
 };
 
@@ -170,12 +174,47 @@ _elm_button_elm_container_content_set(Eo *obj, Elm_Button_Data *_pd EINA_UNUSED,
    return EINA_TRUE;
 }
 
+// TIZEN_ONLY(20150730) : add button key longpress concept
 static Eina_Bool
-_key_action_activate(Evas_Object *obj, const char *params EINA_UNUSED)
+_key_action_activate_up(Evas_Object *obj)
 {
-   elm_layout_signal_emit(obj, "elm,anim,activate", "elm");
+   ELM_BUTTON_DATA_GET_OR_RETURN_VAL(obj, sd, EINA_FALSE);
+   if (!sd->key_down) return EINA_FALSE;
+   sd->key_down = EINA_FALSE;
+
+   elm_layout_signal_emit(obj, "elm,action,unpressed", "elm");
+   _on_unpressed_signal(obj, NULL, NULL, NULL);
    _activate(obj);
+
    return EINA_TRUE;
+}
+
+static Eina_Bool
+_key_action_activate_down(Evas_Object *obj, const char *params EINA_UNUSED)
+{
+   // Key down is coming on another widget and key up is coming on button,
+   // but smart callback of button in  application for 'clicked' is getting called.
+   // This function will be called for Return, KP_Enter, space keys
+   ELM_BUTTON_DATA_GET_OR_RETURN_VAL(obj, sd, EINA_FALSE);
+   sd->key_down = EINA_TRUE;
+
+   elm_layout_signal_emit(obj, "elm,anim,activate", "elm");
+   elm_layout_signal_emit(obj, "elm,action,pressed", "elm");
+   _on_pressed_signal(obj, NULL, NULL, NULL);
+
+   return EINA_TRUE;
+}
+// END-ONLY
+
+static Eina_Bool
+_key_action_activate(Evas_Object *obj, const char *params)
+{
+   // TIZEN_ONLY(20150730) : add button key longpress concept
+   _key_action_activate_down(obj, params);
+   _key_action_activate_up(obj);
+
+   return EINA_TRUE;
+   // END-ONLY
 }
 
 EOLIAN static Eina_Bool
@@ -183,9 +222,25 @@ _elm_button_elm_widget_event(Eo *obj, Elm_Button_Data *_pd EINA_UNUSED, Evas_Obj
 {
    (void) src;
    Evas_Event_Key_Down *ev = event_info;
-
-   if (type != EVAS_CALLBACK_KEY_DOWN) return EINA_FALSE;
    if (ev->event_flags & EVAS_EVENT_FLAG_ON_HOLD) return EINA_FALSE;
+
+   // TIZEN_ONLY(20150730) : add button key longpress concept
+   // NOTE : For support longpress, select must decided <key up> not <key down>
+   // FIXME : Current <key-binding> are impossible to porting key informations
+   // like Callback_Type or Event_Info to key action funcitons.
+   if ((type == EVAS_CALLBACK_KEY_UP) &&
+       ((!strcmp(ev->keyname, "Return")) ||
+        (!strcmp(ev->keyname, "KP_Enter")) ||
+        (!strcmp(ev->keyname, "space"))))
+     {
+        if (_key_action_activate_up(obj))
+          {
+             ev->event_flags |= EVAS_EVENT_FLAG_ON_HOLD;
+             return EINA_TRUE;
+          }
+     }
+   // END-ONLY
+   if (type != EVAS_CALLBACK_KEY_DOWN) return EINA_FALSE;
 
    if (!_elm_config_key_binding_call(obj, ev, key_actions))
      return EINA_FALSE;
