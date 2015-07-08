@@ -1801,6 +1801,11 @@ _item_realize(Elm_Gen_Item *it,
           it->item->nocache_once = EINA_FALSE;
      }
 
+   //TIZEN_ONLY(20150709) Do not register children of MANAGES_DESCENDATS objects
+   if (_elm_config->atspi_mode)
+     elm_interface_atspi_accessible_children_changed_added_signal_emit(sd->obj, EO_OBJ(it));
+   //
+
    /* access */
    if (_elm_config->access_mode) _access_widget_item_register(it);
 
@@ -6167,9 +6172,6 @@ _elm_genlist_item_append(Eo *obj EINA_UNUSED, Elm_Genlist_Data *sd, const Elm_Ge
    it->item->before = EINA_FALSE;
    _item_queue(sd, it, NULL);
 
-   if (_elm_config->atspi_mode)
-     elm_interface_atspi_accessible_children_changed_added_signal_emit(sd->obj, EO_OBJ(it));
-
    return EO_OBJ(it);
 }
 
@@ -6216,9 +6218,6 @@ _elm_genlist_item_prepend(Eo *obj EINA_UNUSED, Elm_Genlist_Data *sd, const Elm_G
      }
    it->item->before = EINA_TRUE;
    _item_queue(sd, it, NULL);
-
-   if (_elm_config->atspi_mode)
-     elm_interface_atspi_accessible_children_changed_added_signal_emit(sd->obj, EO_OBJ(it));
 
    return EO_OBJ(it);
 }
@@ -6267,9 +6266,6 @@ _elm_genlist_item_insert_after(Eo *obj EINA_UNUSED, Elm_Genlist_Data *sd, const 
    it->item->before = EINA_FALSE;
    _item_queue(sd, it, NULL);
 
-   if (_elm_config->atspi_mode)
-     elm_interface_atspi_accessible_children_changed_added_signal_emit(sd->obj, EO_OBJ(it));
-
    return EO_OBJ(it);
 }
 
@@ -6316,9 +6312,6 @@ _elm_genlist_item_insert_before(Eo *obj, Elm_Genlist_Data *sd, const Elm_Genlist
    GL_IT(before)->rel_revs = eina_list_append(GL_IT(before)->rel_revs, it);
    it->item->before = EINA_TRUE;
    _item_queue(sd, it, NULL);
-
-   if (_elm_config->atspi_mode)
-     elm_interface_atspi_accessible_children_changed_added_signal_emit(sd->obj, EO_OBJ(it));
 
    return EO_OBJ(it);
 }
@@ -6422,9 +6415,6 @@ _elm_genlist_item_sorted_insert(Eo *obj, Elm_Genlist_Data *sd, const Elm_Genlist
      }
 
    _item_queue(sd, it, _elm_genlist_item_list_compare);
-
-   if (_elm_config->atspi_mode)
-     elm_interface_atspi_accessible_children_changed_added_signal_emit(sd->obj, eo_it);
 
    return eo_it;
 }

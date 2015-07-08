@@ -3253,15 +3253,22 @@ _cache_item_reference_append_cb(Eo *bridge, Eo *data, Eldbus_Message_Iter *iter_
   Eina_List *children_list = NULL, *l;
   Eo *child;
 
-  eo_do(data, children_list = elm_interface_atspi_accessible_children_get());
+  Elm_Atspi_State_Set ss;
+  eo_do(data, ss = elm_interface_atspi_accessible_state_set_get());
   iter_sub_array = eldbus_message_iter_container_new(iter_struct, 'a', "(so)");
   EINA_SAFETY_ON_NULL_GOTO(iter_sub_array, fail);
 
-  EINA_LIST_FOREACH(children_list, l, child)
-     _bridge_iter_object_reference_append(bridge, iter_sub_array, child);
+  if (!STATE_TYPE_GET(ss, ELM_ATSPI_STATE_MANAGES_DESCENDANTS))
+    {
+       eo_do(data, children_list = elm_interface_atspi_accessible_children_get());
+
+       EINA_LIST_FOREACH(children_list, l, child)
+          _bridge_iter_object_reference_append(bridge, iter_sub_array, child);
+
+       eina_list_free(children_list);
+    }
 
   eldbus_message_iter_container_close(iter_struct, iter_sub_array);
-  eina_list_free(children_list);
 
   /* Marshall interfaces */
   _iter_interfaces_append(iter_struct, data);

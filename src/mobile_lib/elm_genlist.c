@@ -1614,6 +1614,11 @@ _item_realize(Elm_Gen_Item *it,
         if (it->mouse_cursor)
            eo_do(EO_OBJ(it), elm_wdg_item_cursor_set(it->mouse_cursor));
 
+        //TIZEN_ONLY(20150709) Do not register children of MANAGES_DESCENDATS objects
+        if (_elm_config->atspi_mode)
+          elm_interface_atspi_accessible_children_changed_added_signal_emit(sd->obj, EO_OBJ(it));
+        //
+
         // Register accessibility before realized callback
         // because user can customize accessibility.
         _access_widget_item_register(it);
