@@ -195,12 +195,14 @@ _elm_interface_atspi_accessible_role_get(Eo *obj EINA_UNUSED, Elm_Interface_Atsp
 }
 
 EOLIAN static void
-_elm_interface_atspi_accessible_role_set(Eo *obj, Elm_Interface_Atspi_Accessible_Data *pd EINA_UNUSED, Elm_Atspi_Role role)
+_elm_interface_atspi_accessible_role_set(Eo *obj EINA_UNUSED, Elm_Interface_Atspi_Accessible_Data *pd EINA_UNUSED, Elm_Atspi_Role role)
 {
    if (pd->role != role)
      {
         pd->role = role;
-        elm_interface_atspi_accessible_role_changed_signal_emit(obj);
+        //TIZEN_ONLY(20160708) Do not send role changed signal - 10000 list items send 10000 IPC.
+        //elm_interface_atspi_accessible_role_changed_signal_emit(obj);
+        //
      }
 }
 

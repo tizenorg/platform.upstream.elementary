@@ -1332,8 +1332,6 @@ _elm_widget_sub_object_del(Eo *obj, Elm_Widget_Smart_Data *sd, Evas_Object *sobj
 
    sd->subobjs = eina_list_remove(sd->subobjs, sobj);
 
-   if (_elm_config->atspi_mode)
-     elm_interface_atspi_accessible_children_changed_del_signal_emit(obj, sobj);
    _callbacks_del(sobj, obj);
 
    return EINA_TRUE;
@@ -4625,11 +4623,6 @@ _elm_widget_item_eo_base_destructor(Eo *eo_item, Elm_Widget_Item_Data *item)
 
    if (item->name)
      eina_stringshare_del(item->name);
-
-   if (_elm_config->atspi_mode && item->widget)
-     elm_interface_atspi_accessible_children_changed_del_signal_emit(item->widget, eo_item);
-
-   elm_interface_atspi_accessible_removed(eo_item);
 
    if (item->atspi_custom_relations)
      elm_atspi_relation_set_free(&item->atspi_custom_relations);
