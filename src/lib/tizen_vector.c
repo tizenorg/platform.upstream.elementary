@@ -12,23 +12,12 @@
 
 static const char *vg_key = "_tizen_vg";
 
-
-/*
-  This api is required for tizen2.3 compatibility.
-  As elm_app_base_scale_set() in introduced in tizen 2.4 and
-  used in the calculation of scaling. For appliaction's thats
-  written on tizen2.3 the default value is 1 , but we need 1.7
-  for qHD display hence the hack.
-  From tizen2.4 onwards its the application responsibility to set
-  the base scale properly.
-*/
 static double
 ELM_VG_SCALE_SIZE(Evas_Object* obj, double x)
 {
-   if (elm_app_base_scale_get() > 1)
-     return (ELM_SCALE_SIZE(x) * elm_object_scale_get(obj));
-   else
-     return (((x) / 1.7) * elm_config_scale_get() * elm_object_scale_get(obj));
+   Evas_Object *edje = elm_layout_edje_get(obj);
+
+   return ((x) * elm_config_scale_get() / edje_object_base_scale_get(edje) * elm_widget_scale_get(obj));
 }
 /////////////////////////////////////////////////////////////////////////
 /* Radio */
