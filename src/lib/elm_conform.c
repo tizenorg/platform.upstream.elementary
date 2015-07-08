@@ -425,6 +425,130 @@ _port_indicator_disconnected(void *data,
    return EINA_TRUE;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
+//TIZEN_ONLY(20150708): indicator could start after some applications started.
+static Eina_Bool
+_port_indicator_create_cb(void *obj)
+{
+   Evas_Object *win;
+   Evas_Object *port_indicator = NULL;
+   const char *port_indicator_serv_name;
+
+   ELM_CONFORMANT_DATA_GET(obj, sd);
+
+   port_indicator_serv_name = elm_config_indicator_service_get(sd->rot);
+   if (!port_indicator_serv_name)
+     {
+        DBG("Conformant cannot get portrait indicator service name\n");
+        sd->port_indi_timer = NULL;
+        return ECORE_CALLBACK_CANCEL;
+     }
+   if (strchr(port_indicator_serv_name, '/'))
+     {
+        sd->port_indi_timer = NULL;
+        return ECORE_CALLBACK_CANCEL;
+     }
+
+   port_indicator = elm_plug_add(obj);
+   if (!port_indicator)
+     {
+        DBG("Conformant cannot create plug to server[%s]\n", port_indicator_serv_name);
+        sd->port_indi_timer = NULL;
+        return ECORE_CALLBACK_CANCEL;
+     }
+
+   if (!elm_plug_connect(port_indicator, port_indicator_serv_name, 0, EINA_FALSE))
+     {
+        DBG("Conformant cannot connect to server[%s]\n", port_indicator_serv_name);
+        evas_object_del(port_indicator);
+        return ECORE_CALLBACK_RENEW;
+     }
+
+   //TIZEN_ONLY(20150205): ecore evas msg handle callback add.
+   evas_object_smart_callback_add(port_indicator, "message.received", (Evas_Smart_Cb)_plug_msg_handle, obj);
+   //
+
+   elm_widget_sub_object_add(obj, port_indicator);
+   evas_object_smart_callback_add(port_indicator, "image.deleted", _port_indicator_disconnected, obj);
+
+   evas_object_size_hint_min_set(port_indicator, -1, 0);
+   evas_object_size_hint_max_set(port_indicator, -1, 0);
+
+   sd->portrait_indicator = port_indicator;
+   elm_layout_content_set(obj, INDICATOR_PART, sd->portrait_indicator);
+
+   win = elm_widget_top_get(obj);
+   if (elm_win_indicator_mode_get(win) == ELM_WIN_INDICATOR_SHOW)
+     elm_object_signal_emit(obj, "elm,state,indicator,show", "elm");
+   else
+     elm_object_signal_emit(obj, "elm,state,indicator,hide", "elm");
+
+   sd->port_indi_timer = NULL;
+   return ECORE_CALLBACK_CANCEL;
+}
+
+static Eina_Bool
+_land_indicator_create_cb(void *obj)
+{
+   Evas_Object *win;
+   Evas_Object *land_indicator = NULL;
+   const char *land_indicator_serv_name;
+
+   ELM_CONFORMANT_DATA_GET(obj, sd);
+
+   land_indicator_serv_name = elm_config_indicator_service_get(sd->rot);
+   if (!land_indicator_serv_name)
+     {
+        DBG("Conformant cannot get landscape indicator service name\n");
+        sd->land_indi_timer = NULL;
+        return ECORE_CALLBACK_CANCEL;
+     }
+   if (strchr(land_indicator_serv_name, '/'))
+     {
+        sd->land_indi_timer = NULL;
+        return ECORE_CALLBACK_CANCEL;
+     }
+
+   land_indicator = elm_plug_add(obj);
+   if (!land_indicator)
+     {
+        DBG("Conformant cannot create plug to server[%s]\n", land_indicator_serv_name);
+        sd->land_indi_timer = NULL;
+        return ECORE_CALLBACK_CANCEL;
+     }
+
+   if (!elm_plug_connect(land_indicator, land_indicator_serv_name, 0, EINA_FALSE))
+     {
+        DBG("Conformant cannot connect to server[%s]\n", land_indicator_serv_name);
+        evas_object_del(land_indicator);
+        return ECORE_CALLBACK_RENEW;
+     }
+
+   //TIZEN_ONLY(20150205): ecore evas msg handle callback add.
+   evas_object_smart_callback_add(land_indicator, "message.received", (Evas_Smart_Cb)_plug_msg_handle, obj);
+   //
+
+   elm_widget_sub_object_add(obj, land_indicator);
+   evas_object_smart_callback_add(land_indicator, "image.deleted", _land_indicator_disconnected, obj);
+
+   evas_object_size_hint_min_set(land_indicator, -1, 0);
+   evas_object_size_hint_max_set(land_indicator, -1, 0);
+
+   sd->landscape_indicator = land_indicator;
+   elm_layout_content_set(obj, INDICATOR_PART, sd->landscape_indicator);
+
+   win = elm_widget_top_get(obj);
+   if (elm_win_indicator_mode_get(win) == ELM_WIN_INDICATOR_SHOW)
+     elm_object_signal_emit(obj, "elm,state,indicator,show", "elm");
+   else
+     elm_object_signal_emit(obj, "elm,state,indicator,hide", "elm");
+
+   sd->land_indi_timer = NULL;
+   return ECORE_CALLBACK_CANCEL;
+}
+//
+
 static Evas_Object *
 _create_portrait_indicator(Evas_Object *obj)
 {
@@ -454,8 +578,12 @@ _create_portrait_indicator(Evas_Object *obj)
    if (!elm_plug_connect(port_indicator, port_indicator_serv_name, 0, EINA_FALSE))
      {
         DBG("Conformant cannot connect to server[%s]\n", port_indicator_serv_name);
+        //TIZEN_ONLY(20150708): indicator could start after some applications started.
+        evas_object_del(port_indicator);
         sd->port_indi_timer = ecore_timer_add(ELM_CONFORM_INDICATOR_TIME,
-                                          _port_indicator_connect_cb, obj);
+                                          _port_indicator_create_cb, obj);
+        //
+        return NULL;
      }
 
    elm_widget_sub_object_add(obj, port_indicator);
@@ -496,8 +624,12 @@ _create_landscape_indicator(Evas_Object *obj)
    if (!elm_plug_connect(land_indicator, land_indicator_serv_name, 0, EINA_FALSE))
      {
         DBG("Conformant cannot connect to server[%s]\n", land_indicator_serv_name);
+        //TIZEN_ONLY(20150708): indicator could start after some applications started.
+        evas_object_del(land_indicator);
         sd->land_indi_timer = ecore_timer_add(ELM_CONFORM_INDICATOR_TIME,
-                                          _land_indicator_connect_cb, obj);
+                                          _land_indicator_create_cb, obj);
+        //
+        return NULL;
      }
 
    elm_widget_sub_object_add(obj, land_indicator);
