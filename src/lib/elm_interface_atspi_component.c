@@ -74,11 +74,17 @@ _elm_interface_atspi_component_accessible_at_point_get(Eo *obj, void *_pd EINA_U
 
    eo_do(obj, children = elm_interface_atspi_accessible_children_get());
 
-   EINA_LIST_FOREACH(children, l, child)
+   EINA_LIST_REVERSE_FOREACH(children, l, child)
      {
         Eina_Bool contains;
         if (eo_isa(child, ELM_INTERFACE_ATSPI_COMPONENT_MIXIN))
           {
+              //TIZEN_ONLY (20150709) imporove object at xy get function
+              Elm_Atspi_Role role;
+              eo_do(child, role = elm_interface_atspi_accessible_role_get());
+              if (role == ELM_ATSPI_ROLE_REDUNDANT_OBJECT)
+                continue;
+              //
               eo_do(child, contains = elm_interface_atspi_component_contains(screen_coords, x, y));
               if (contains)
                 {
