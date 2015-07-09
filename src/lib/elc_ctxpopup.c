@@ -1303,9 +1303,6 @@ _item_wrap_cb(void *data, Evas_Object *obj, void *event_info EINA_UNUSED)
    Elm_Ctxpopup_Item_Data *item = data;
    if (!item->wcb.org_func_cb) return;
    item->wcb.org_func_cb((void *)item->wcb.org_data, item->wcb.cobj, EO_OBJ(item));
-//TIZEN ONLY(20150710)ctxpopup: Accessible methods for children_get, extents_get and item name_get
-   eo_do(obj, elm_interface_atspi_accessible_role_set(ELM_ATSPI_ROLE_MENU_ITEM));
-//
 }
 
 EOLIAN static Eo *
@@ -1313,7 +1310,9 @@ _elm_ctxpopup_item_eo_base_constructor(Eo *obj, Elm_Ctxpopup_Item_Data *it)
 {
    obj = eo_do_super_ret(obj, ELM_CTXPOPUP_ITEM_CLASS, obj, eo_constructor());
    it->base = eo_data_scope_get(obj, ELM_WIDGET_ITEM_CLASS);
-
+   //TIZEN ONLY(20150710)ctxpopup: Accessible methods for children_get, extents_get and item name_get
+   eo_do(obj, elm_interface_atspi_accessible_role_set(ELM_ATSPI_ROLE_LIST_ITEM));
+   //
    return obj;
 }
 
@@ -1531,6 +1530,33 @@ _elm_ctxpopup_elm_interface_atspi_accessible_state_set_get(Eo *obj, Elm_Ctxpopup
    return ret;
 }
 
+//TIZEN ONLY(20150710): ctxpopup: Accessible methods for children_get, extents_get and item name_get
+EOLIAN static void
+_elm_ctxpopup_elm_interface_atspi_component_extents_get(Eo *obj EINA_UNUSED, Elm_Ctxpopup_Data *sd, Eina_Bool screen_coords, int *x, int *y, int *w, int *h)
+{
+   int ee_x, ee_y;
+
+   if (!sd->box)
+     {
+        if (x) *x = -1;
+        if (y) *y = -1;
+        if (w) *w = -1;
+        if (h) *h = -1;
+        return;
+     }
+   evas_object_geometry_get(sd->box, x, y, w, h);
+
+   if (screen_coords)
+     {
+        Ecore_Evas *ee = ecore_evas_ecore_evas_get(evas_object_evas_get(sd->box));
+        if (!ee) return;
+        ecore_evas_geometry_get(ee, &ee_x, &ee_y, NULL, NULL);
+        if (x) *x += ee_x;
+        if (y) *y += ee_y;
+     }
+}
+//
+
 static Eina_Bool
 _item_action_activate(Evas_Object *obj, const char *params EINA_UNUSED)
 {
@@ -1572,6 +1598,14 @@ _elm_ctxpopup_elm_interface_atspi_component_highlight_clear(Eo *obj EINA_UNUSED,
         return EINA_TRUE;
      }
    return EINA_FALSE;
+}
+//
+
+//TIZEN ONLY(20150710)ctxpopup: Accessible methods for children_get, extents_get and item name_get
+EOLIAN char *
+_elm_ctxpopup_item_elm_interface_atspi_accessible_name_get(Eo *eo_it EINA_UNUSED, Elm_Ctxpopup_Item_Data *item)
+{
+   return strdup(elm_object_item_text_get(item->list_item));
 }
 //
 

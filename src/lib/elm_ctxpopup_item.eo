@@ -49,5 +49,6 @@ class Elm.Ctxpopup_Item(Elm.Widget_Item, Elm_Interface_Atspi_Widget_Action)
         Elm.Widget_Item.focus.set;
         Elm.Widget_Item.focus.get;
         Elm_Interface_Atspi_Widget_Action.elm_actions.get;
+         Elm_Interface_Atspi_Accessible.name.get;
    }
 }
