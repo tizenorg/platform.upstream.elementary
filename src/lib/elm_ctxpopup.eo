@@ -234,6 +234,8 @@ class Elm.Ctxpopup (Elm.Layout, Elm_Interface_Atspi_Widget_Action)
       Elm.Layout.sizing_eval;
       Elm_Interface_Atspi_Widget_Action.elm_actions.get;
       Elm_Interface_Atspi_Accessible.state_set.get;
+      Elm_Interface_Atspi_Accessible.children.get;
+      Elm_Interface_Atspi_Component.extents.get;
       Elm_Interface_Atspi_Component.highlight_grab;
       Elm_Interface_Atspi_Component.highlight_clear;
    }

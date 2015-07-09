@@ -1530,6 +1530,45 @@ _elm_ctxpopup_elm_interface_atspi_accessible_state_set_get(Eo *obj, Elm_Ctxpopup
 
    return ret;
 }
+//TIZEN ONLY(20150710): ctxpopup: Accessible methods for children_get, extents_get and item name_get
+EOLIAN Eina_List*
+_elm_ctxpopup_elm_interface_atspi_accessible_children_get(Eo *eo_item EINA_UNUSED, Elm_Ctxpopup_Data *sd)
+{
+   Eina_List *ret = NULL;
+   Eina_List *l = NULL;
+   Elm_Ctxpopup_Item_Data *it;
+
+   EINA_LIST_FOREACH(sd->items, l, it)
+      ret = eina_list_append(ret, EO_OBJ(it));
+
+   return ret;
+}
+
+EOLIAN static void
+_elm_ctxpopup_elm_interface_atspi_component_extents_get(Eo *obj EINA_UNUSED, Elm_Ctxpopup_Data *sd, Eina_Bool screen_coords, int *x, int *y, int *w, int *h)
+{
+   int ee_x, ee_y;
+
+   if (!sd->box)
+     {
+        if (x) *x = -1;
+        if (y) *y = -1;
+        if (w) *w = -1;
+        if (h) *h = -1;
+        return;
+     }
+   evas_object_geometry_get(sd->box, x, y, w, h);
+
+   if (screen_coords)
+     {
+        Ecore_Evas *ee = ecore_evas_ecore_evas_get(evas_object_evas_get(sd->box));
+        if (!ee) return;
+        ecore_evas_geometry_get(ee, &ee_x, &ee_y, NULL, NULL);
+        if (x) *x += ee_x;
+        if (y) *y += ee_y;
+     }
+}
+//
 
 static Eina_Bool
 _item_action_activate(Evas_Object *obj, const char *params EINA_UNUSED)
