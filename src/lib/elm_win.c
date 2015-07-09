@@ -1223,12 +1223,12 @@ _elm_win_state_change(Ecore_Evas *ee)
    int x = 0, y = 0, w = 0, h = 0;
    if (sd->indmode != (Elm_Win_Indicator_Mode)ecore_wl_window_indicator_state_get(sd->wl.win))
      {
-        sd->indmode = ecore_wl_window_indicator_state_get(sd->wl.win);
+        sd->indmode = (Elm_Win_Indicator_Mode)ecore_wl_window_indicator_state_get(sd->wl.win);
         ch_conformant = EINA_TRUE;
      }
    if (sd->kbdmode != (Elm_Win_Keyboard_Mode)ecore_wl_window_keyboard_state_get(sd->wl.win))
      {
-        sd->kbdmode = ecore_wl_window_keyboard_state_get(sd->wl.win);
+        sd->kbdmode = (Elm_Win_Indicator_Mode)ecore_wl_window_keyboard_state_get(sd->wl.win);
         ch_conformant = EINA_TRUE;
      }
    if (ecore_wl_window_indicator_geometry_get(sd->wl.win, &x, &y, &w, &h))
@@ -1244,7 +1244,7 @@ _elm_win_state_change(Ecore_Evas *ee)
      }
    if (ecore_wl_window_keyboard_geometry_get(sd->wl.win, &x, &y, &w, &h))
      {
-        if ((sd->ind.x != x) || (sd->ind.y != y) || (sd->ind.w != w) || (sd->ind.h != h))
+        if ((sd->kbd.x != x) || (sd->kbd.y != y) || (sd->kbd.w != w) || (sd->kbd.h != h))
           {
              sd->kbd.x = x;
              sd->kbd.y = y;
