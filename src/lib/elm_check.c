@@ -401,6 +401,9 @@ _elm_check_state_set(Eo *obj, Elm_Check_Data *sd, Eina_Bool state)
      }
 
    edje_object_message_signal_process(wd->resize_obj);
+#ifdef TIZEN_VECTOR_UX
+   tizen_vg_check_state_set(obj);
+#endif
 }
 
 EOLIAN static Eina_Bool

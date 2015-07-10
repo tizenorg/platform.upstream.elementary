@@ -1150,7 +1150,16 @@ tizen_vg_check_set(Elm_Check *obj)
      tizen_vg_check_favorite_set(obj);
 }
 
-
+void
+tizen_vg_check_state_set(Elm_Check *obj)
+{
+   // Fix for the state change visual change skips one frame.
+   // For vector enabled checkbox , state change visual change is handled in the
+   // code and it depends on "elm,check,action,toggle" signal.
+   // as edje signal emit is asyn force one more message_signal to make sure
+   // state change related visual change occurs in the same frame.
+   edje_object_message_signal_process(elm_layout_edje_get(obj));
+}
 
 /////////////////////////////////////////////////////////////////////////
 /* Button */
