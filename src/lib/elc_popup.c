@@ -43,6 +43,7 @@ static const Evas_Smart_Cb_Description _smart_callbacks[] = {
 };
 
 static Eina_Bool _key_action_move(Evas_Object *obj, const char *params);
+
 static void _parent_geom_cb(void *data, Evas *e EINA_UNUSED, Evas_Object *obj, void *event_info EINA_UNUSED);
 static Eina_Bool
 _block_clicked_cb(void *data, Eo *obj EINA_UNUSED,
@@ -55,8 +56,15 @@ static Eina_Bool
 _hide_effect_finished_cb(void *data, Eo *obj EINA_UNUSED,
             const Eo_Event_Description *desc EINA_UNUSED, void *event_info EINA_UNUSED);
 
+//TIZEN_ONLY(20150709) : add keybinding for elm_popup "block,clicked" action
+static Eina_Bool _key_action_escape(Evas_Object *obj, const char *params);
+///
+
 static const Elm_Action key_actions[] = {
    {"move", _key_action_move},
+//TIZEN_ONLY(20150709) : add keybinding for elm_popup "block,clicked" action
+   {"escape", _key_action_escape},
+///
    {NULL, NULL}
 };
 
@@ -1518,6 +1526,15 @@ _elm_popup_elm_widget_focus_direction(Eo *obj EINA_UNUSED, Elm_Popup_Data *sd, c
    return EINA_TRUE;
 }
 
+//TIZEN_ONLY(20150709) : add keybinding for elm_popup "block,clicked" action
+static Eina_Bool
+_key_action_escape(Evas_Object *obj, const char *params EINA_UNUSED)
+{
+   evas_object_smart_callback_call(obj, SIG_BLOCK_CLICKED, NULL);
+   return EINA_TRUE;
+}
+//
+
 static Eina_Bool
 _key_action_move(Evas_Object *obj, const char *params)
 {
@@ -1957,6 +1974,9 @@ EOLIAN const Elm_Atspi_Action *
 _elm_popup_elm_interface_atspi_widget_action_elm_actions_get(Eo *obj EINA_UNUSED, Elm_Popup_Data *pd EINA_UNUSED)
 {
    static Elm_Atspi_Action atspi_actions[] = {
+//TIZEN_ONLY(20150709) : add keybinding for elm_popup "block,clicked" action
+          { "escape", "escape", NULL, _key_action_escape},
+//
           { "move,previous", "move", "previous", _key_action_move},
           { "move,next", "move", "next", _key_action_move},
           { "move,left", "move", "left", _key_action_move},
