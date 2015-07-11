@@ -1706,6 +1706,13 @@ _elm_entry_elm_widget_theme_apply(Eo *obj, Elm_Entry_Data *sd)
 
    eo_do(obj, eo_event_callback_call(ELM_LAYOUT_EVENT_THEME_CHANGED, NULL));
 
+   // TIZEN_ONLY(20150711): add scroller enable/disable signal
+   if (sd->scroll)
+     edje_object_signal_emit(sd->entry_edje, "elm,scroll,enable", "elm");
+   else
+     edje_object_signal_emit(sd->entry_edje, "elm,scroll,disable", "elm");
+   // END-ONLY
+
    evas_object_unref(obj);
 
    return EINA_TRUE;
@@ -6256,6 +6263,9 @@ _elm_entry_scrollable_set(Eo *obj, Elm_Entry_Data *sd, Eina_Bool scroll)
         eo_do(obj, elm_interface_scrollable_content_set(sd->entry_edje));
         eo_do(obj, elm_interface_scrollable_content_viewport_resize_cb_set(_elm_entry_content_viewport_resize_cb));
         elm_widget_on_show_region_hook_set(obj, _show_region_hook, NULL);
+        // TIZEN_ONLY(20150711): add scroller enable/disable signal
+        edje_object_signal_emit(sd->entry_edje, "elm,scroll,enable", "elm");
+        // END-ONLY
      }
    else
      {
@@ -6272,6 +6282,9 @@ _elm_entry_scrollable_set(Eo *obj, Elm_Entry_Data *sd, Eina_Bool scroll)
         eo_do(obj, elm_interface_scrollable_objects_set(sd->entry_edje, sd->hit_rect));
 
         elm_widget_on_show_region_hook_set(obj, NULL, NULL);
+        // TIZEN_ONLY(20150711): add scroller enable/disalbe signal
+        edje_object_signal_emit(sd->entry_edje, "elm,scroll,disable", "elm");
+        // END-ONLY
      }
    sd->last_w = -1;
    eo_do(obj, elm_obj_widget_theme_apply());
