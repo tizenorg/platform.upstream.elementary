@@ -633,6 +633,7 @@ struct _Elm_Widget_Item_Data
    /**< A11Y info */
    const char                    *description;
    int                            role;
+   const char                    *name;
 
    Eina_Bool                      disabled : 1;
    Eina_Bool                      on_deletion : 1;
