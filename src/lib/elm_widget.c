@@ -4483,6 +4483,9 @@ _elm_widget_item_eo_base_destructor(Eo *eo_item, Elm_Widget_Item_Data *item)
          elm_interface_atspi_accessible_relationships_clear()
          );
 
+   if (item->name)
+     eina_stringshare_del(item->name);
+
    if (_elm_config->atspi_mode && item->widget)
      elm_interface_atspi_accessible_children_changed_del_signal_emit(item->widget, eo_item);
 
@@ -5901,6 +5904,26 @@ _elm_widget_elm_interface_atspi_accessible_name_get(Eo *obj EINA_UNUSED, Elm_Wid
 
    return _elm_util_mkup_to_text(ret);
 }
+
+//TIZEN_ONLY(20150713) : add atspi name setter to widget_item
+EOLIAN void
+_elm_widget_item_elm_interface_atspi_accessible_name_set(Eo *obj EINA_UNUSED, Elm_Widget_Item_Data* _pd EINA_UNUSED, char *name)
+{
+   if (_pd->name)
+     eina_stringshare_del(_pd->name);
+
+   _pd->name = eina_stringshare_add(name);
+}
+
+EOLIAN char*
+_elm_widget_item_elm_interface_atspi_accessible_name_get(Eo *obj EINA_UNUSED, Elm_Widget_Item_Data *_pd EINA_UNUSED)
+{
+   if (_pd->name)
+     return strdup(_pd->name);
+
+   return NULL;
+}
+///
 
 //TIZEN_ONLY(20160329): widget: sort accessible children spatially (d940068e1f7cc5cfc6208245a1fb0e92f1a813d4)
 static int _sort_vertically(const void *data1, const void *data2)
