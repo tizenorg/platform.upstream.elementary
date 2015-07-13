@@ -41,6 +41,7 @@ class Elm.Color_Item(Elm.Widget_Item, Elm_Interface_Atspi_Widget_Action)
       Elm.Widget_Item.signal_emit;
       //TIZEN_ONLY(20150707) : improve colorselctor atspi support
       Elm_Interface_Atspi_Accessible.state_set.get;
+      Elm_Interface_Atspi_Accessible.name.get;
       Elm_Interface_Atspi_Component.highlight_grab;
       Elm_Interface_Atspi_Component.highlight_clear;
       Elm_Interface_Atspi_Widget_Action.elm_actions.get;
