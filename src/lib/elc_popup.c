@@ -1974,15 +1974,12 @@ _elm_popup_elm_interface_atspi_widget_action_elm_actions_get(Eo *obj EINA_UNUSED
    static Elm_Atspi_Action atspi_actions[] = {
 //TIZEN_ONLY(20150709) : add keybinding for elm_popup "block,clicked" action
           { "escape", "escape", NULL, _key_action_escape},
-//
-          { "move,previous", "move", "previous", _key_action_move},
-          { "move,next", "move", "next", _key_action_move},
-          { "move,left", "move", "left", _key_action_move},
-          { "move,right", "move", "right", _key_action_move},
-          { "move,up", "move", "up", _key_action_move},
-          { "move,down", "move", "down", _key_action_move},
           { NULL, NULL, NULL, NULL }
    };
+   if (pd->action_area)
+     return NULL;
+///
+
    return &atspi_actions[0];
 }
 
