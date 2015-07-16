@@ -1373,14 +1373,14 @@ progressbar_normal_fg_resize_cb(void *data, Evas *e EINA_UNUSED,
    Elm_Transit *transit1 = elm_transit_add();
    elm_transit_object_add(transit1, obj);
    elm_transit_effect_add(transit1, transit_progressbar_normal_op1, vd, NULL);
-   elm_transit_duration_set(transit1, 0.4);
+   elm_transit_duration_set(transit1, 0.8);
    elm_transit_objects_final_state_keep_set(transit1, EINA_TRUE);
 
 
    Elm_Transit *transit2 = elm_transit_add();
    elm_transit_object_add(transit2, obj);
    elm_transit_effect_add(transit2, transit_progressbar_normal_op2, vd, NULL);
-   elm_transit_duration_set(transit2, 0.3);
+   elm_transit_duration_set(transit2, 0.7);
    elm_transit_objects_final_state_keep_set(transit2, EINA_TRUE);
 
    Elm_Transit *transit3 = elm_transit_add();
