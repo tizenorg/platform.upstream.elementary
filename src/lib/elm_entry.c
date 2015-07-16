@@ -785,6 +785,10 @@ _elm_entry_elm_widget_theme_apply(Eo *obj, Elm_Entry_Data *sd)
 
    evas_event_freeze(evas_object_evas_get(obj));
 
+   // TIZEN_ONLY(150716) : Currently, for freezing cursor movement only.
+   edje_object_part_text_freeze(sd->entry_edje, "elm.text");
+   //
+
    edje_object_mirrored_set
      (wd->resize_obj, elm_widget_mirrored_get(obj));
 
@@ -895,6 +899,10 @@ _elm_entry_elm_widget_theme_apply(Eo *obj, Elm_Entry_Data *sd)
    _elm_entry_guide_update(obj, !sd->has_text);
    evas_event_thaw(evas_object_evas_get(obj));
    evas_event_thaw_eval(evas_object_evas_get(obj));
+
+   // TIZEN_ONLY(150716) : Currently, for freezing cursor movement only.
+   edje_object_part_text_thaw(sd->entry_edje, "elm.text");
+   //
 
    eo_do(obj, eo_event_callback_call(ELM_LAYOUT_EVENT_THEME_CHANGED, NULL));
 
