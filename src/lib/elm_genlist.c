@@ -988,6 +988,26 @@ _item_position(Elm_Gen_Item *it,
    if (!view) return;
    ELM_GENLIST_DATA_GET_FROM_ITEM(it, sd);
 
+   if ((void*)view == _elm_object_accessibility_currently_highlighted_get())
+     {
+        Elm_Genlist_Data * sd = it->item->wsd;
+        int x,y,w,h;
+        evas_object_geometry_get(sd->obj, &x, &y, &w, &h);
+
+        Elm_Gen_Item * next_previous_item = NULL;
+        if ((it_y + GL_IT(it)->h/2) < y)
+          {
+             next_previous_item = ELM_GEN_ITEM_FROM_INLIST(EINA_INLIST_GET(it)->next);
+          }
+        else if ((it_y + GL_IT(it)->h/2) > y + h)
+          {
+             next_previous_item = ELM_GEN_ITEM_FROM_INLIST(EINA_INLIST_GET(it)->prev);
+          }
+
+        if (next_previous_item)
+          eo_do(EO_OBJ(next_previous_item), elm_interface_atspi_component_highlight_grab());
+     }
+
    evas_event_freeze
      (evas_object_evas_get(sd->obj));
    evas_object_resize(view, it->item->w, it->item->h);

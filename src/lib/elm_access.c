@@ -1484,6 +1484,9 @@ _elm_access_elm_interface_atspi_component_highlight_grab(Eo *obj, void *pd EINA_
    if (!_access_action_callback_call(obj, ELM_ACCESS_ACTION_HIGHLIGHT, NULL))
      eo_do_super(obj, ELM_ACCESS_CLASS, elm_interface_atspi_component_highlight_grab());
 
+///TIZEN_ONLY(20170717) : expose highlight information on atspi
+   elm_interface_atspi_accessible_state_changed_signal_emit(obj, ELM_ATSPI_STATE_HIGHLIGHTED, EINA_TRUE);
+///
    return EINA_TRUE;
 }
 
@@ -1493,6 +1496,9 @@ _elm_access_elm_interface_atspi_component_highlight_clear(Eo *obj, void *pd EINA
    if (!_access_action_callback_call(obj, ELM_ACCESS_ACTION_UNHIGHLIGHT, NULL))
      eo_do_super(obj, ELM_ACCESS_CLASS, elm_interface_atspi_component_highlight_clear());
 
+///TIZEN_ONLY(20170717) : expose highlight information on atspi
+   elm_interface_atspi_accessible_state_changed_signal_emit(obj, ELM_ATSPI_STATE_HIGHLIGHTED, EINA_FALSE);
+///
    return EINA_TRUE;
 }
 

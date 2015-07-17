@@ -5593,6 +5593,9 @@ _elm_gengrid_item_elm_interface_atspi_component_highlight_grab(Eo *eo_it, Elm_Ge
    elm_gengrid_item_show(eo_it, ELM_GENGRID_ITEM_SCROLLTO_IN);
 
    elm_object_accessibility_highlight_set(VIEW(it), EINA_TRUE);
+///TIZEN_ONLY(20170717) : expose highlight information on atspi
+   eo_do(WIDGET(it), eo_event_callback_call(ELM_INTERFACE_ATSPI_ACCESSIBLE_EVENT_ACTIVE_DESCENDANT_CHANGED, eo_it));
+///
 
    return EINA_TRUE;
 }
@@ -5601,6 +5604,9 @@ EOLIAN static Eina_Bool
 _elm_gengrid_item_elm_interface_atspi_component_highlight_clear(Eo *eo_it, Elm_Gen_Item *it)
 {
    elm_object_accessibility_highlight_set(VIEW(it), EINA_FALSE);
+///TIZEN_ONLY(20170717) : expose highlight information on atspi
+   eo_do(WIDGET(it), eo_event_callback_call(ELM_INTERFACE_ATSPI_ACCESSIBLE_EVENT_ACTIVE_DESCENDANT_CHANGED, eo_it));
+///
 
    return EINA_TRUE;
 }

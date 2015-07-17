@@ -4444,6 +4444,10 @@ _elm_widget_item_eo_base_constructor(Eo *eo_item, Elm_Widget_Item_Data *item)
 
    item->widget = widget;
    item->eo_obj = eo_item;
+///TIZEN_ONLY(20170717) : expose highlight information on atspi
+   item->can_highlight = EINA_TRUE;
+///
+
    eo_do(eo_item, eo_event_callback_add(EO_BASE_EVENT_DEL, _eo_del_cb, NULL));
 
    return eo_item;
@@ -4673,7 +4677,7 @@ _elm_widget_item_onscreen_is(Elm_Object_Item *item)
 
 EOLIAN static Elm_Atspi_State_Set
 _elm_widget_item_elm_interface_atspi_accessible_state_set_get(Eo *eo_item,
-                                                              Elm_Widget_Item_Data *item EINA_UNUSED)
+                                                              Elm_Widget_Item_Data *item)
 {
    Elm_Atspi_State_Set states = 0;
 
@@ -4690,6 +4694,13 @@ _elm_widget_item_elm_interface_atspi_accessible_state_set_get(Eo *eo_item,
    if (_elm_widget_item_onscreen_is(eo_item))
      STATE_TYPE_SET(states, ELM_ATSPI_STATE_SHOWING);
 
+///TIZEN_ONLY(20170717) : expose highlight information on atspi
+   if (item->can_highlight)
+     STATE_TYPE_SET(states, ELM_ATSPI_STATE_HIGHLIGHTABLE);
+
+   if (_elm_object_accessibility_currently_highlighted_get() == (void*)item->view)
+     STATE_TYPE_SET(states, ELM_ATSPI_STATE_HIGHLIGHTED);
+///
    return states;
 }
 
@@ -5752,6 +5763,9 @@ _elm_widget_eo_base_constructor(Eo *obj, Elm_Widget_Smart_Data *sd EINA_UNUSED)
          parent = eo_parent_get());
    eo_do(obj, elm_obj_widget_parent_set(parent));
    sd->on_create = EINA_FALSE;
+///TIZEN_ONLY(20170717) : expose highlight information on atspi
+   sd->can_highlight = EINA_TRUE;
+///
 
    eo_do(obj, elm_interface_atspi_accessible_role_set(ELM_ATSPI_ROLE_UNKNOWN));
    return obj;
@@ -6004,7 +6018,7 @@ _elm_widget_elm_interface_atspi_accessible_parent_get(Eo *obj EINA_UNUSED, Elm_W
 }
 
 EOLIAN static Elm_Atspi_State_Set
-_elm_widget_elm_interface_atspi_accessible_state_set_get(Eo *obj, Elm_Widget_Smart_Data *pd EINA_UNUSED)
+_elm_widget_elm_interface_atspi_accessible_state_set_get(Eo *obj, Elm_Widget_Smart_Data *pd)
 {
    Elm_Atspi_State_Set states = 0;
 
@@ -6028,6 +6042,14 @@ _elm_widget_elm_interface_atspi_accessible_state_set_get(Eo *obj, Elm_Widget_Sma
         STATE_TYPE_SET(states, ELM_ATSPI_STATE_ENABLED);
         STATE_TYPE_SET(states, ELM_ATSPI_STATE_SENSITIVE);
      }
+
+///TIZEN_ONLY(20170717) : expose highlight information on atspi
+   if (pd->can_highlight)
+     STATE_TYPE_SET(states, ELM_ATSPI_STATE_HIGHLIGHTABLE);
+
+   if (_elm_object_accessibility_currently_highlighted_get() == (void*)pd->obj)
+     STATE_TYPE_SET(states, ELM_ATSPI_STATE_HIGHLIGHTED);
+///
 
    return states;
 }
