@@ -5770,6 +5770,12 @@ _elm_widget_eo_base_destructor(Eo *obj, Elm_Widget_Smart_Data *sd EINA_UNUSED)
          elm_interface_atspi_accessible_translation_domain_set(NULL),
          elm_interface_atspi_accessible_relationships_clear()
          );
+
+   //TIZEN_ONLY(20150717) add widget name setter
+   if (sd->name)
+     eina_stringshare_del(sd->name);
+   ///
+
    eo_do_super(obj, ELM_WIDGET_CLASS, eo_destructor());
    sd->on_destroy = EINA_FALSE;
 
@@ -5884,10 +5890,10 @@ EOLIAN static char*
 _elm_widget_elm_interface_atspi_accessible_name_get(Eo *obj EINA_UNUSED, Elm_Widget_Smart_Data *_pd EINA_UNUSED)
 {
    const char *ret;
-   char *name;
-   eo_do_super(obj, ELM_WIDGET_CLASS, name = elm_interface_atspi_accessible_name_get());
-
-   if (name) return name;
+   //TIZEN_ONLY(20150717) add widget name setter
+   if (_pd->name)
+     return strdup(_pd->name);
+   ///
 
    ret = elm_object_text_get(obj);
    if (!ret) return NULL;
@@ -6122,7 +6128,20 @@ _elm_widget_item_elm_interface_atspi_component_alpha_get(Eo *obj EINA_UNUSED, El
    return (double)alpha / 255.0;
 }
 
+///////////////////////////////////
+//TIZEN_ONLY(20150717) add widget name setter
+EOLIAN void
+_elm_widget_elm_interface_atspi_accessible_name_set(Eo *obj EINA_UNUSED, Elm_Widget_Smart_Data* _pd EINA_UNUSED, char *name)
+{
+   if (_pd->name)
+     eina_stringshare_del(_pd->name);
+
+   _pd->name = eina_stringshare_add(name);
+}
+///
+
 //TIZEN_ONLY(20160329): widget: improve accessibile_at_point getter (a8aff0423202b9a55dbb3843205875226678fbd6)
+>>>>>>> 07f01fe... widget: add atspi name setter
 EOLIAN static Eo *
 _elm_widget_elm_interface_atspi_component_accessible_at_point_get(Eo *obj, Elm_Widget_Smart_Data *_pd EINA_UNUSED, Eina_Bool screen_coords, int x, int y)
 {

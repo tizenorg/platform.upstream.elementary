@@ -413,6 +413,9 @@ typedef struct _Elm_Widget_Smart_Data
 
    int                          role;         /**< Accessibility role */
    const char                   *description; /**< Accessibility description */
+   //TIZEN_ONLY(20150717) add widget name setter
+   const char                   *name;
+   ///
    Eo                           *atspi_custom_parent; /**< Accessibility parent if different then parent_obj */
 
    /* this is a hook to be set on-the-fly on widgets. this is code

@@ -767,6 +767,9 @@ abstract Elm.Widget (Evas.Object_Smart, Elm_Interface_Atspi_Accessible, Elm_Inte
       @virtual .focus_next;
       @virtual .parent_widget.get;
       Elm_Interface_Atspi_Accessible.name.get;
+      //TIZEN_ONLY(20150717) add widget name setter
+      Elm_Interface_Atspi_Accessible.name.set;
+      ///
       Elm_Interface_Atspi_Accessible.state_set.get;
       Elm_Interface_Atspi_Accessible.children.get;
       Elm_Interface_Atspi_Accessible.parent.get;
