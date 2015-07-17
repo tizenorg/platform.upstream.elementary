@@ -2037,6 +2037,9 @@ _elm_popup_elm_interface_atspi_component_highlight_grab(Eo *obj EINA_UNUSED, Elm
    if (sd->scr)
      {
         elm_object_accessibility_highlight_set(sd->main_layout, EINA_TRUE);
+        ///TIZEN_ONLY(20170717) : expose highlight information on atspi
+        elm_interface_atspi_accessible_state_changed_signal_emit(obj, ELM_ATSPI_STATE_HIGHLIGHTED, EINA_TRUE);
+        ///
         return EINA_TRUE;
      }
    return EINA_FALSE;
@@ -2048,6 +2051,9 @@ _elm_popup_elm_interface_atspi_component_highlight_clear(Eo *obj EINA_UNUSED, El
    if (sd->scr)
      {
         elm_object_accessibility_highlight_set(sd->main_layout, EINA_FALSE);
+        ///TIZEN_ONLY(20170717) : expose highlight information on atspi
+        elm_interface_atspi_accessible_state_changed_signal_emit(obj, ELM_ATSPI_STATE_HIGHLIGHTED, EINA_FALSE);
+        ///
         return EINA_TRUE;
      }
    return EINA_FALSE;
