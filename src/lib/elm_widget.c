@@ -375,6 +375,7 @@ _elm_widget_evas_object_smart_add(Eo *obj, Elm_Widget_Smart_Data *priv)
    priv->obj = obj;
    priv->mirrored_auto_mode = EINA_TRUE; /* will follow system locale
                                           * settings */
+   priv->focus_region_show_item = EINA_FALSE;
    elm_widget_can_focus_set(obj, EINA_TRUE);
    priv->is_mirrored = elm_config_mirrored_get();
 
@@ -4001,6 +4002,18 @@ EOLIAN static Elm_Object_Item*
 _elm_widget_focused_item_get(Eo *obj EINA_UNUSED, Elm_Widget_Smart_Data *_pd EINA_UNUSED)
 {
    return NULL;
+}
+
+EOLIAN static void
+_elm_widget_focus_region_show_item_set(Eo *obj EINA_UNUSED, Elm_Widget_Smart_Data *_pd, Eina_Bool item)
+{
+   _pd->focus_region_show_item = item;
+}
+
+EOLIAN static Eina_Bool
+_elm_widget_focus_region_show_item_get(Eo *obj EINA_UNUSED, Elm_Widget_Smart_Data *_pd)
+{
+   return _pd->focus_region_show_item;
 }
 
 EAPI void

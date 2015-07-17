@@ -426,6 +426,7 @@ typedef struct _Elm_Widget_Smart_Data
    Eina_Bool                     can_focus : 1;
    Eina_Bool                     child_can_focus : 1;
    Eina_Bool                     focused : 1;
+   Eina_Bool                     focus_region_show_item : 1;
    Eina_Bool                     top_win_focused : 1;
    Eina_Bool                     tree_unfocusable : 1;
    Eina_Bool                     highlight_ignore : 1;
@@ -770,6 +771,8 @@ EAPI void             elm_widget_access_info_set(Evas_Object *obj, const char *t
 EAPI const char      *elm_widget_access_info_get(const Evas_Object *obj);
 EAPI void             elm_widget_orientation_set(Evas_Object *obj, int rotation);
 EAPI Elm_Object_Item *elm_widget_focused_item_get(const Evas_Object *obj);
+EAPI void             elm_widget_focus_region_show_item_set(Evas_Object *obj, Eina_Bool item);
+EAPI Eina_Bool        elm_widget_focus_region_show_item_get(const Evas_Object *obj);
 EAPI void             elm_widget_orientation_mode_disabled_set(Evas_Object *obj, Eina_Bool disabled);
 EAPI Eina_Bool        elm_widget_orientation_mode_disabled_get(const Evas_Object *obj);
 EAPI void             elm_widget_focus_highlight_geometry_get(const Evas_Object *obj, Evas_Coord *x, Evas_Coord *y, Evas_Coord *w, Evas_Coord *h);

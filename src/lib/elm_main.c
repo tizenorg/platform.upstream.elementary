@@ -1726,3 +1726,15 @@ elm_object_focused_item_get(const Evas_Object *obj)
    return elm_widget_focused_item_get(obj);
 }
 
+EAPI void
+elm_object_focus_region_show_item_set(const Evas_Object *obj, Eina_Bool item)
+{
+   elm_widget_focus_region_show_item_set(obj, item);
+}
+
+EAPI Eina_Bool
+elm_object_focus_region_show_item_get(const Evas_Object *obj)
+{
+   return elm_widget_focus_region_show_item_get(obj);
+}
+

@@ -409,6 +409,17 @@ abstract Elm_Widget (Evas.Object_Smart, Elm_Interface_Atspi_Accessible, Elm_Inte
             return: Evas_Object *;
          }
       }
+      focus_region_show_item {
+         set {
+            /*@ No description supplied by the EAPI. */
+         }
+         get {
+            /*@ No description supplied by the EAPI. */
+         }
+         values {
+            Eina_Bool item;
+         }
+      }
       parent2 {
          set {
             /*@ No description supplied by the EAPI. */
@@ -434,6 +445,8 @@ abstract Elm_Widget (Evas.Object_Smart, Elm_Interface_Atspi_Accessible, Elm_Inte
             const(char)* label;
          }
       }
+
+
    }
    methods {
       newest_focus_order_get @const {

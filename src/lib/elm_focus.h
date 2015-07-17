@@ -335,3 +335,7 @@ EAPI const char  *elm_object_focus_highlight_style_get(const Evas_Object *obj);
  * @since 1.10
  */
 EAPI Elm_Object_Item             *elm_object_focused_item_get(const Evas_Object *obj);
+
+EAPI void      elm_object_focus_region_show_item_set(const Evas_Object *obj, Eina_Bool item);
+EAPI Eina_Bool elm_object_focus_region_show_item_get(const Evas_Object *obj);
+
