@@ -4647,6 +4647,18 @@ _elm_win_indicator_mode_set(Eo *obj EINA_UNUSED, Elm_Win_Data *sd, Elm_Win_Indic
             (sd->x.xwin, ECORE_X_ILLUME_INDICATOR_STATE_OFF);
      }
 #endif
+#if HAVE_ELEMENTARY_WAYLAND
+   _elm_win_wlwindow_get(sd);
+   if (sd->wl.win)
+     {
+        if (sd->indmode == ELM_WIN_INDICATOR_SHOW)
+          ecore_wl_window_indicator_state_set
+            (sd->wl.win, ECORE_WL_INDICATOR_STATE_ON);
+        else if (sd->indmode == ELM_WIN_INDICATOR_HIDE)
+          ecore_wl_window_indicator_state_set
+            (sd->wl.win, ECORE_WL_INDICATOR_STATE_OFF);
+     }
+#endif
    evas_object_smart_callback_call(obj, SIG_INDICATOR_PROP_CHANGED, NULL);
 }
 
@@ -4674,6 +4686,21 @@ _elm_win_indicator_opacity_set(Eo *obj EINA_UNUSED, Elm_Win_Data *sd, Elm_Win_In
         else if (sd->ind_o_mode == ELM_WIN_INDICATOR_TRANSPARENT)
           ecore_x_e_illume_indicator_opacity_set
             (sd->x.xwin, ECORE_X_ILLUME_INDICATOR_TRANSPARENT);
+     }
+#endif
+#if HAVE_ELEMENTARY_WAYLAND
+   _elm_win_wlwindow_get(sd);
+   if (sd->wl.win)
+     {
+        if (sd->ind_o_mode == ELM_WIN_INDICATOR_OPAQUE)
+          ecore_wl_window_indicator_opacity_set
+            (sd->wl.win, ECORE_WL_INDICATOR_OPAQUE);
+        else if (sd->ind_o_mode == ELM_WIN_INDICATOR_TRANSLUCENT)
+          ecore_wl_window_indicator_opacity_set
+            (sd->wl.win, ECORE_WL_INDICATOR_TRANSLUCENT);
+        else if (sd->ind_o_mode == ELM_WIN_INDICATOR_TRANSPARENT)
+          ecore_wl_window_indicator_opacity_set
+            (sd->wl.win, ECORE_WL_INDICATOR_TRANSPARENT);
      }
 #endif
    evas_object_smart_callback_call(obj, SIG_INDICATOR_PROP_CHANGED, NULL);
