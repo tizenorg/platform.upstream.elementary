@@ -1727,7 +1727,7 @@ elm_object_focused_item_get(const Evas_Object *obj)
 }
 
 EAPI void
-elm_object_focus_region_show_item_set(const Evas_Object *obj, Eina_Bool item)
+elm_object_focus_region_show_item_set(Evas_Object *obj, Eina_Bool item)
 {
    elm_widget_focus_region_show_item_set(obj, item);
 }

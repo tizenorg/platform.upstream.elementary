@@ -532,6 +532,8 @@ void                  _elm_widget_highlight_in_theme_update(Eo *obj);
 void                  _elm_widget_focus_highlight_signal_emit(Evas_Object *obj, const char *emission, const char *source);
 void                  _elm_widget_focus_highlight_signal_callback_add(Evas_Object *obj, const char *emission, const char *source, Edje_Signal_Cb _focus_highlight_signal_cb, void *data);
 void                  _elm_widget_focus_highlight_signal_callback_del(Evas_Object *obj, const char *emission, const char *source, Edje_Signal_Cb _focus_highlight_signal_cb);
+Evas_Object          *_elm_widget_focus_highlight_object_get(const Evas_Object *obj);
+double                _elm_widget_focus_direction_weight_get(const Evas_Object *obj1, const Evas_Object *obj2, double degree);
 
 // win focus highlight
 void                  _elm_win_focus_highlight_start(Evas_Object *obj);
@@ -539,6 +541,7 @@ void                  _elm_win_focus_highlight_in_theme_update(Evas_Object *obj,
 void                  _elm_win_focus_highlight_signal_emit(Evas_Object *obj, const char *emission, const char *source);
 void                  _elm_win_focus_highlight_signal_callback_add(Evas_Object *obj, const char *emission, const char *source, Edje_Signal_Cb _focus_highlight_signal_cb, void *data);
 void                  _elm_win_focus_highlight_signal_callback_del(Evas_Object *obj, const char *emission, const char *source, Edje_Signal_Cb _focus_highlight_signal_cb);
+Evas_Object          *_elm_win_focus_highlight_object_get(Evas_Object *obj);
 
 EAPI void             _elm_access_clear(Elm_Access_Info *ac);
 EAPI void             _elm_access_text_set(Elm_Access_Info *ac, int type, const char *text);
@@ -771,6 +774,7 @@ EAPI void             elm_widget_access_info_set(Evas_Object *obj, const char *t
 EAPI const char      *elm_widget_access_info_get(const Evas_Object *obj);
 EAPI void             elm_widget_orientation_set(Evas_Object *obj, int rotation);
 EAPI Elm_Object_Item *elm_widget_focused_item_get(const Evas_Object *obj);
+EAPI Elm_Focus_Direction elm_widget_focus_origin_get(const Evas_Object *obj);
 EAPI void             elm_widget_focus_region_show_item_set(Evas_Object *obj, Eina_Bool item);
 EAPI Eina_Bool        elm_widget_focus_region_show_item_get(const Evas_Object *obj);
 EAPI void             elm_widget_orientation_mode_disabled_set(Evas_Object *obj, Eina_Bool disabled);

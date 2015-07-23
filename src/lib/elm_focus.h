@@ -45,7 +45,8 @@ typedef enum
    ELM_FOCUS_UP,       /**< up direction */
    ELM_FOCUS_DOWN,     /**< down direction */
    ELM_FOCUS_RIGHT,    /**< right direction */
-   ELM_FOCUS_LEFT      /**< left direction */
+   ELM_FOCUS_LEFT,      /**< left direction */
+   ELM_FOCUS_REVERT
 } Elm_Focus_Direction;
 
 /**
@@ -336,6 +337,6 @@ EAPI const char  *elm_object_focus_highlight_style_get(const Evas_Object *obj);
  */
 EAPI Elm_Object_Item             *elm_object_focused_item_get(const Evas_Object *obj);
 
-EAPI void      elm_object_focus_region_show_item_set(const Evas_Object *obj, Eina_Bool item);
+EAPI void      elm_object_focus_region_show_item_set(Evas_Object *obj, Eina_Bool item);
 EAPI Eina_Bool elm_object_focus_region_show_item_get(const Evas_Object *obj);
 
