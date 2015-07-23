@@ -41,6 +41,15 @@ typedef struct vg_radio_s
    Eina_Bool init : 1;
 } vg_radio;
 
+static int
+adjust_radius(int radius)
+{
+   //FIXME: remove once ector backend
+   // draws perfect circle for odd radius value.
+   if (radius & 1) radius -= 1;
+   return radius;
+}
+
 static void
 transit_radio_op(Elm_Transit_Effect *effect, Elm_Transit *transit EINA_UNUSED,
                  double progress)
@@ -55,20 +64,18 @@ transit_radio_op(Elm_Transit_Effect *effect, Elm_Transit *transit EINA_UNUSED,
    if (elm_radio_selected_object_get(vd->obj) != vd->obj)
      progress = 1 - progress;
 
-   double radius = (center_x < center_y ? center_x : center_y)
+   int radius = (center_x < center_y ? center_x : center_y)
       - (2 * ELM_VG_SCALE_SIZE(vd->obj, 1.5));
 
    //Iconic Circle (Outline)
    evas_vg_shape_stroke_width_set(vd->shape[2],
                                   (1 + progress * ELM_VG_SCALE_SIZE(vd->obj, 1.5)));
-   //Iconic Circle (Outline)
-   evas_vg_shape_shape_reset(vd->shape[2]);
-   evas_vg_shape_shape_append_circle(vd->shape[2], center_x, center_y,
-                                     radius - 1);
+
    //Iconic Circle (Center)
+   radius = radius * 0.6 * progress;
+   radius = adjust_radius(radius);
    evas_vg_shape_shape_reset(vd->shape[3]);
-   evas_vg_shape_shape_append_circle(vd->shape[3], center_x, center_y,
-                                     radius * 0.6 * progress);
+   evas_vg_shape_shape_append_circle(vd->shape[3], center_x, center_y, radius);
 }
 
 static void
@@ -149,8 +156,10 @@ radio_base_resize_cb(void *data, Evas *e EINA_UNUSED,
    Evas_Coord center_x = (w / 2);
    Evas_Coord center_y = (h / 2);
 
-   double radius = (center_x > center_y ? center_x : center_y)
+   int radius = (center_x < center_y ? center_x : center_y)
       -(2 * ELM_VG_SCALE_SIZE(vd->obj, 1.5));
+
+   radius = adjust_radius(radius);
 
    //Outline
    evas_vg_shape_shape_reset(vd->shape[0]);
@@ -167,12 +176,14 @@ radio_base_resize_cb(void *data, Evas *e EINA_UNUSED,
    //Iconic Circle (Outline)
    evas_vg_shape_shape_reset(vd->shape[2]);
    evas_vg_shape_shape_append_circle(vd->shape[2], center_x, center_y,
-                                     radius -1);
+                                     radius);
 
    //Iconic Circle (Center)
+   radius = radius * 0.6;
+   radius = adjust_radius(radius);
    evas_vg_shape_shape_reset(vd->shape[3]);
    evas_vg_shape_shape_append_circle(vd->shape[3], center_x, center_y,
-                                     radius * 0.6);
+                                     radius);
 }
 
 void
