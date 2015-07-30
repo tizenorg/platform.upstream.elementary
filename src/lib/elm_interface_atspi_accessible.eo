@@ -199,6 +199,8 @@ mixin Elm_Interface_Atspi_Accessible ()
    implements {
       @virtual .relationship_append;
       @virtual .relationship_remove;
+      @virtual .translation_domain.get;
+      @virtual .translation_domain.set;
    }
    //////////
 }
