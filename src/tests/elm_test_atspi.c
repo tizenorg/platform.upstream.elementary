@@ -312,7 +312,6 @@ START_TEST (elm_atspi_children_and_parent2)
 }
 END_TEST
 
-<<<<<<< HEAD
 /* Initial value of translation domain should be NULL */
 START_TEST (elm_atspi_translation_domain_get)
 {
@@ -356,37 +355,19 @@ START_TEST (elm_atspi_relationship_append)
    elm_init(0, NULL);
    generate_app();
 
-=======
-START_TEST (elm_atspi_elm_widget_custom_relations)
-{
->>>>>>> 876f95b... atspi: add new APIs for setting atspi relationship.
    Elm_Atspi_Relation_Set set;
    Elm_Atspi_Relation *rel, *rel_to, *rel_from;
    Eina_List *l;
 
-<<<<<<< HEAD
    eo_do(g_btn, elm_interface_atspi_accessible_relationship_append(ELM_ATSPI_RELATION_FLOWS_TO, g_bg));
    eo_do(g_btn, elm_interface_atspi_accessible_relationship_append(ELM_ATSPI_RELATION_FLOWS_FROM, g_win));
    eo_do(g_btn, set = elm_interface_atspi_accessible_relation_set_get());
 
-=======
-   elm_init(0, NULL);
-   generate_app2();
-
-   eo_do(g_btn, set = elm_interface_atspi_accessible_relation_set_get());
-   ck_assert(set == NULL);
-
-   eo_do(g_btn, elm_interface_atspi_accessible_relationship_append(ELM_ATSPI_RELATION_FLOWS_TO, g_lbl));
-   eo_do(g_btn, elm_interface_atspi_accessible_relationship_append(ELM_ATSPI_RELATION_FLOWS_FROM, g_win));
-
-   eo_do(g_btn, set = elm_interface_atspi_accessible_relation_set_get());
->>>>>>> 876f95b... atspi: add new APIs for setting atspi relationship.
    ck_assert(set != NULL);
    ck_assert(eina_list_count(set) >= 2);
 
    rel_to = rel_from = NULL;
    EINA_LIST_FOREACH(set, l, rel)
-<<<<<<< HEAD
    {
       if (rel->type == ELM_ATSPI_RELATION_FLOWS_TO)
         rel_to = rel;
@@ -447,30 +428,11 @@ START_TEST (elm_atspi_relationship_remove)
    eo_do(g_btn, elm_interface_atspi_accessible_relationship_remove(ELM_ATSPI_RELATION_FLOWS_TO, g_bg));
    eo_do(g_btn, set = elm_interface_atspi_accessible_relation_set_get());
 
-=======
-     {
-        if (rel->type == ELM_ATSPI_RELATION_FLOWS_TO)
-          rel_to = rel;
-        if (rel->type == ELM_ATSPI_RELATION_FLOWS_FROM)
-          rel_from = rel;
-     }
-
-   ck_assert(rel_to != NULL);
-   ck_assert(rel_from != NULL);
-   ck_assert(eina_list_data_find(rel_to->objects, g_lbl) != NULL);
-   ck_assert(eina_list_data_find(rel_from->objects, g_win) != NULL);
-
-   elm_atspi_relation_set_free(&set);
-
-   eo_do(g_btn, elm_interface_atspi_accessible_relationship_remove(ELM_ATSPI_RELATION_FLOWS_TO, g_lbl));
-   eo_do(g_btn, set = elm_interface_atspi_accessible_relation_set_get());
->>>>>>> 876f95b... atspi: add new APIs for setting atspi relationship.
    ck_assert(set != NULL);
    ck_assert(eina_list_count(set) >= 1);
 
    rel_to = rel_from = NULL;
    EINA_LIST_FOREACH(set, l, rel)
-<<<<<<< HEAD
    {
       if (rel->type == ELM_ATSPI_RELATION_FLOWS_TO)
         rel_to = rel;
@@ -554,15 +516,6 @@ START_TEST (elm_atspi_relationships_clear)
    }
 
    elm_atspi_relation_set_free(set);
-=======
-     {
-        if (rel->type == ELM_ATSPI_RELATION_FLOWS_TO)
-          ck_assert(EINA_FALSE);
-     }
-
-   elm_atspi_relation_set_free(&set);
-
->>>>>>> 876f95b... atspi: add new APIs for setting atspi relationship.
    elm_shutdown();
 }
 END_TEST
@@ -580,13 +533,9 @@ void elm_test_atspi(TCase *tc)
    tcase_add_test(tc, elm_atspi_description_get);
    tcase_add_test(tc, elm_atspi_children_and_parent);
    tcase_add_test(tc, elm_atspi_children_and_parent2);
-<<<<<<< HEAD
    tcase_add_test(tc, elm_atspi_translation_domain_get);
    tcase_add_test(tc, elm_atspi_translation_domain_set);
    tcase_add_test(tc, elm_atspi_relationship_append);
    tcase_add_test(tc, elm_atspi_relationship_remove);
    tcase_add_test(tc, elm_atspi_relationships_clear);
-=======
-   tcase_add_test(tc, elm_atspi_elm_widget_custom_relations);
->>>>>>> 876f95b... atspi: add new APIs for setting atspi relationship.
 }
