@@ -567,6 +567,33 @@ START_TEST (elm_atspi_relationships_clear)
 }
 END_TEST
 
+//TIZEN_ONLY(20150731) : add i18n support for name and description
+START_TEST (elm_atspi_elm_widget_translation_domain)
+{
+   elm_init(0, NULL);
+   generate_app();
+   const char *domain;
+
+   // Initially domain shuld not be set
+   eo_do(g_btn, domain = elm_interface_atspi_accessible_translation_domain_get());
+   ck_assert(domain == NULL);
+
+   eo_do(g_btn, elm_interface_atspi_accessible_translation_domain_set("Test domain"));
+
+   eo_do(g_btn, domain = elm_interface_atspi_accessible_translation_domain_get());
+   ck_assert(domain != NULL);
+   ck_assert_str_eq(domain, "Test domain");
+
+   eo_do(g_btn, elm_interface_atspi_accessible_translation_domain_set(NULL));
+
+   eo_do(g_btn, domain = elm_interface_atspi_accessible_translation_domain_get());
+   ck_assert(domain == NULL);
+
+   elm_shutdown();
+}
+END_TEST
+///
+
 void elm_test_atspi(TCase *tc)
 {
    tcase_add_test(tc, elm_atspi_app_obj_name_get);
@@ -588,5 +615,11 @@ void elm_test_atspi(TCase *tc)
    tcase_add_test(tc, elm_atspi_relationships_clear);
 =======
    tcase_add_test(tc, elm_atspi_elm_widget_custom_relations);
+<<<<<<< HEAD
 >>>>>>> 876f95b... atspi: add new APIs for setting atspi relationship.
+=======
+//TIZEN_ONLY(20150731) : add i18n support for name and description
+   tcase_add_test(tc, elm_atspi_elm_widget_translation_domain);
+///
+>>>>>>> 81c4bda... atspi: add i18n support for name and description
 }

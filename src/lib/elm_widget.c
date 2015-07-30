@@ -4494,6 +4494,11 @@ _elm_widget_item_eo_base_destructor(Eo *eo_item, Elm_Widget_Item_Data *item)
    if (item->atspi_custom_relations)
      elm_atspi_relation_set_free(&item->atspi_custom_relations);
 
+   //TIZEN_ONLY(20150731) : add i18n support for name and description
+   if (item->atspi_translation_domain)
+     eina_stringshare_del(item->atspi_translation_domain);
+   ///
+
    EINA_MAGIC_SET(item, EINA_MAGIC_NONE);
 
    eo_do_super(eo_item, ELM_WIDGET_ITEM_CLASS, eo_destructor());
@@ -4616,6 +4621,43 @@ _elm_widget_item_widget_get(const Eo *eo_item EINA_UNUSED, Elm_Widget_Item_Data 
    return item->widget;
 }
 
+<<<<<<< HEAD
+=======
+EOLIAN static const char*
+_elm_widget_item_elm_interface_atspi_accessible_description_get(Eo *eo_item EINA_UNUSED,
+                                                                Elm_Widget_Item_Data *item)
+{
+//TIZEN_ONLY(20150718) : i18n support
+#ifdef HAVE_GETTEXT
+   if (item->atspi_translation_domain)
+      return dgettext(item->atspi_translation_domain, item->description);
+#endif
+   return item->description;
+//
+}
+
+EOLIAN static void
+_elm_widget_item_elm_interface_atspi_accessible_description_set(Eo *eo_item EINA_UNUSED,
+                                                                Elm_Widget_Item_Data *item,
+                                                                const char *descr)
+{
+   eina_stringshare_replace(&item->description, descr);
+}
+
+EOLIAN static Elm_Atspi_Role
+_elm_widget_item_elm_interface_atspi_accessible_role_get(Eo *eo_item EINA_UNUSED, Elm_Widget_Item_Data *item)
+{
+   return item->role;
+}
+
+EOLIAN static void
+_elm_widget_item_elm_interface_atspi_accessible_role_set(Eo *eo_item EINA_UNUSED, Elm_Widget_Item_Data *item,
+                                                         Elm_Atspi_Role role)
+{
+   item->role = role;
+}
+
+>>>>>>> 81c4bda... atspi: add i18n support for name and description
 EAPI Eina_Bool
 _elm_widget_onscreen_is(Evas_Object *widget)
 {
@@ -5770,7 +5812,21 @@ _elm_widget_eo_base_destructor(Eo *obj, Elm_Widget_Smart_Data *sd EINA_UNUSED)
    // TIZEN_ONLY(20150709) : atspi relations api
    if (sd->atspi_custom_relations)
      elm_atspi_relation_set_free(&sd->atspi_custom_relations);
+<<<<<<< HEAD
    //
+=======
+
+   //TIZEN_ONLY(20150717) add widget name setter
+   if (sd->name)
+     eina_stringshare_del(sd->name);
+   ///
+
+   //TIZEN_ONLY(20150731) : add i18n support for name and description
+   if (sd->atspi_translation_domain)
+     eina_stringshare_del(sd->atspi_translation_domain);
+   ///
+
+>>>>>>> 81c4bda... atspi: add i18n support for name and description
    eo_do_super(obj, ELM_WIDGET_CLASS, eo_destructor());
    sd->on_destroy = EINA_FALSE;
 
@@ -5885,10 +5941,26 @@ EOLIAN static char*
 _elm_widget_elm_interface_atspi_accessible_name_get(Eo *obj EINA_UNUSED, Elm_Widget_Smart_Data *_pd EINA_UNUSED)
 {
    const char *ret;
+<<<<<<< HEAD
    char *name;
    eo_do_super(obj, ELM_WIDGET_CLASS, name = elm_interface_atspi_accessible_name_get());
 
    if (name) return name;
+=======
+   //TIZEN_ONLY(20150717) add widget name setter
+   if (_pd->name)
+     {
+#ifdef HAVE_GETTEXT
+        if (_pd->atspi_translation_domain)
+          return strdup(dgettext(_pd->atspi_translation_domain, _pd->name));
+        else
+          return strdup(_pd->name);
+#else
+        return strdup(_pd->name);
+#endif
+     }
+   ///
+>>>>>>> 81c4bda... atspi: add i18n support for name and description
 
    ret = elm_object_text_get(obj);
    if (!ret) return NULL;
@@ -5910,13 +5982,87 @@ EOLIAN char*
 _elm_widget_item_elm_interface_atspi_accessible_name_get(Eo *obj EINA_UNUSED, Elm_Widget_Item_Data *_pd EINA_UNUSED)
 {
    if (_pd->name)
-     return strdup(_pd->name);
+     {
+#ifdef HAVE_GETTEXT
+        if (_pd->atspi_translation_domain)
+          return strdup(dgettext(_pd->atspi_translation_domain, _pd->name));
+        else
+          return strdup(_pd->name);
+#else
+        return strdup(_pd->name);
+#endif
+     }
+   ///
 
    return NULL;
 }
 ///
 
+<<<<<<< HEAD
 //TIZEN_ONLY(20160329): widget: sort accessible children spatially (d940068e1f7cc5cfc6208245a1fb0e92f1a813d4)
+=======
+EOLIAN static const char*
+_elm_widget_elm_interface_atspi_accessible_description_get(Eo *obj EINA_UNUSED, Elm_Widget_Smart_Data *_pd)
+{
+//TIZEN_ONLY(20150718) : i18n support
+#ifdef HAVE_GETTEXT
+   if (_pd->atspi_translation_domain)
+      return dgettext(_pd->atspi_translation_domain, _pd->description);
+#endif
+   return _pd->description;
+//
+}
+
+EOLIAN static void
+_elm_widget_elm_interface_atspi_accessible_description_set(Eo *obj EINA_UNUSED, Elm_Widget_Smart_Data *_pd, const char *descr)
+{
+   eina_stringshare_replace(&_pd->description, descr);
+}
+
+EOLIAN static Elm_Atspi_Role
+_elm_widget_elm_interface_atspi_accessible_role_get(Eo *obj EINA_UNUSED, Elm_Widget_Smart_Data *pd EINA_UNUSED)
+{
+   return pd->role;
+}
+
+EOLIAN static void
+_elm_widget_elm_interface_atspi_accessible_role_set(Eo *obj EINA_UNUSED, Elm_Widget_Smart_Data *pd, Elm_Atspi_Role role)
+{
+   pd->role = role;
+}
+
+// TIZEN ONLY
+static void
+_ewk_view_load_finished(Eo *plug,
+                        Evas_Object *obj,
+                        const char *addr)
+{
+   char *bus, *path;
+
+   if (addr && !evas_object_data_get(obj, "__plug_connected"))
+     {
+       if (_elm_atspi_bridge_plug_id_split(addr, &bus, &path))
+         {
+            eo_do(plug, elm_obj_atspi_proxy_address_set(bus, path));
+            elm_atspi_bridge_utils_proxy_connect(plug);
+            evas_object_data_set(obj, "__plug_connected", (void*)1);
+            free(bus);
+            free(path);
+        }
+     }
+}
+
+static Eina_Bool
+_on_ewk_del(void *data, Eo *obj EINA_UNUSED, const Eo_Event_Description *desc EINA_UNUSED, void *event_info EINA_UNUSED)
+{
+   Eo *plug = data;
+   eo_del(plug);
+   return EINA_TRUE;
+}
+// TIZEN ONLY - END
+
+//TIZEN_ONLY(20150709) : spatially sort atspi children
+>>>>>>> 81c4bda... atspi: add i18n support for name and description
 static int _sort_vertically(const void *data1, const void *data2)
 {
    Evas_Coord y1, y2;
@@ -6227,6 +6373,32 @@ _elm_widget_item_elm_interface_atspi_accessible_relationship_remove(Eo *obj EINA
    elm_atspi_relation_set_relation_remove(&sd->atspi_custom_relations, type, relation_obj);
 }
 ///////////////////////////////////
+
+//TIZEN_ONLY(20150731) : add i18n support for name and description
+EOLIAN static void
+_elm_widget_elm_interface_atspi_accessible_translation_domain_set(Eo *obj EINA_UNUSED, Elm_Widget_Smart_Data *_pd, const char *domain)
+{
+   eina_stringshare_replace(&_pd->atspi_translation_domain, domain);
+}
+
+EOLIAN static const char*
+_elm_widget_elm_interface_atspi_accessible_translation_domain_get(Eo *obj EINA_UNUSED, Elm_Widget_Smart_Data *_pd)
+{
+   return _pd->atspi_translation_domain;
+}
+
+EOLIAN static void
+_elm_widget_item_elm_interface_atspi_accessible_translation_domain_set(Eo *obj EINA_UNUSED, Elm_Widget_Item_Data *_pd, const char *domain)
+{
+   eina_stringshare_replace(&_pd->atspi_translation_domain, domain);
+}
+
+EOLIAN static const char*
+_elm_widget_item_elm_interface_atspi_accessible_translation_domain_get(Eo *obj EINA_UNUSED, Elm_Widget_Item_Data *_pd)
+{
+   return _pd->atspi_translation_domain;
+}
+///
 
 #include "elm_widget_item.eo.c"
 #include "elm_widget.eo.c"

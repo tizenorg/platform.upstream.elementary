@@ -149,6 +149,25 @@ mixin Elm_Interface_Atspi_Accessible ()
             domain: const(char)*; [[ translation domain ]]
          }
       }
+<<<<<<< HEAD
+=======
+      //TIZEN_ONLY(20150731) : add i18n support for name and description
+      translation_domain {
+         get {
+            /*@ Gets the translation domain of name and description. */
+         }
+         set {
+            /*@ Sets the translation domain of name and description. */
+         }
+         values {
+            const(char) *domain;
+         }
+      }
+      ///
+   }
+   //TIZEN_ONLY(20150709) : atspi relations api
+   methods {
+>>>>>>> 81c4bda... atspi: add i18n support for name and description
       relationship_append {
          [[Defines the relationship between two accessible objects.
 
@@ -199,6 +218,8 @@ mixin Elm_Interface_Atspi_Accessible ()
    implements {
       @virtual .relationship_append;
       @virtual .relationship_remove;
+      @virtual .translation_domain.get;
+      @virtual .translation_domain.set;
    }
    //////////
 }

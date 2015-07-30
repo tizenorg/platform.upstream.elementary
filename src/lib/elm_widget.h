@@ -417,6 +417,9 @@ typedef struct _Elm_Widget_Smart_Data
    //TIZEN_ONLY(20150709) add relations atpi
    Elm_Atspi_Relation_Set       atspi_custom_relations; /**< Developer-defined accessiblity relations */
    ///////////////////////////////////
+   //TIZEN_ONLY(20150731) : add i18n support for name and description
+   const char                   *atspi_translation_domain;
+   ///
 
    /* this is a hook to be set on-the-fly on widgets. this is code
     * handling the request of showing a specific region from an inner
@@ -637,7 +640,13 @@ struct _Elm_Widget_Item_Data
    //TIZEN_ONLY(20150709) add relations atpi
    Elm_Atspi_Relation_Set        atspi_custom_relations; /**< Developer-defined accessiblity relations */
    ///////////////////////////////////
+<<<<<<< HEAD
    const char                    *name;
+=======
+   //TIZEN_ONLY(20150731) : add i18n support for name and description
+   const char                    *atspi_translation_domain;
+   ///
+>>>>>>> 81c4bda... atspi: add i18n support for name and description
 
    Eina_Bool                      disabled : 1;
    Eina_Bool                      on_deletion : 1;
