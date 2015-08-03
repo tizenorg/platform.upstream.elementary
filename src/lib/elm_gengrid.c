@@ -3143,16 +3143,35 @@ _elm_gengrid_nearest_visible_item_get(Evas_Object *obj, Elm_Object_Item *eo_it)
 static Elm_Object_Item *
 _elm_gengrid_direction_item_get(Evas_Object *obj, Elm_Focus_Direction dir)
 {
+   ELM_WIDGET_DATA_GET_OR_RETURN(obj, wd, NULL);
+
    double max_weight = 0.0, weight = 0.0;
+   double degree = 0.0;
    Eina_List *item_list = NULL, *l = NULL;
    Elm_Object_Item *eo_item = NULL, *best_item = NULL;
    Evas_Object *fobj = _elm_widget_focus_highlight_object_get(obj);
+   Elm_Focus_Weight *efw = NULL;
 
-   double degree = 0.0;
-   if (dir == ELM_FOCUS_UP) degree = 0.0;
-   else if (dir == ELM_FOCUS_DOWN) degree = 180.0;
-   else if (dir == ELM_FOCUS_RIGHT) degree = 90.0;
-   else if (dir == ELM_FOCUS_LEFT) degree = 270.0;
+   if (dir == ELM_FOCUS_UP)
+     {
+        degree = 0.0;
+        efw = &(wd->focus_up_weight);
+     }
+   else if (dir == ELM_FOCUS_DOWN)
+     {
+        degree = 180.0;
+        efw = &(wd->focus_down_weight);
+     }
+   else if (dir == ELM_FOCUS_RIGHT)
+     {
+        degree = 90.0;
+        efw = &(wd->focus_right_weight);
+     }
+   else if (dir == ELM_FOCUS_LEFT)
+     {
+        degree = 270.0;
+        efw = &(wd->focus_left_weight);
+     }
 
    item_list = elm_gengrid_realized_items_get(obj);
    best_item = elm_gengrid_first_item_get(obj);
@@ -3160,7 +3179,7 @@ _elm_gengrid_direction_item_get(Evas_Object *obj, Elm_Focus_Direction dir)
    EINA_LIST_FOREACH(item_list, l, eo_item)
      {
         ELM_GENGRID_ITEM_DATA_GET(eo_item, item);
-        weight = _elm_widget_focus_direction_weight_get(fobj, VIEW(item), degree);
+        weight = _elm_widget_focus_direction_weight_get(fobj, VIEW(item), degree, efw);
         if ((weight == -1.0) ||
             ((weight != 0.0) && (max_weight != -1.0) &&
              ((int)(max_weight * 100000000) < (int)(weight * 100000000))))

@@ -380,6 +380,7 @@ typedef struct _Elm_Widget_Smart_Data
    Eina_List                    *tooltips, *cursors;
    Evas_Object                  *focus_previous, *focus_next;
    Evas_Object                  *focus_up, *focus_down, *focus_right, *focus_left;
+   Elm_Focus_Weight              focus_up_weight, focus_down_weight, focus_right_weight, focus_left_weight;
 
    /* "show region" coordinates. all widgets got those because this
     * info may be set and queried recursively through the widget
@@ -533,7 +534,8 @@ void                  _elm_widget_focus_highlight_signal_emit(Evas_Object *obj, 
 void                  _elm_widget_focus_highlight_signal_callback_add(Evas_Object *obj, const char *emission, const char *source, Edje_Signal_Cb _focus_highlight_signal_cb, void *data);
 void                  _elm_widget_focus_highlight_signal_callback_del(Evas_Object *obj, const char *emission, const char *source, Edje_Signal_Cb _focus_highlight_signal_cb);
 Evas_Object          *_elm_widget_focus_highlight_object_get(const Evas_Object *obj);
-double                _elm_widget_focus_direction_weight_get(const Evas_Object *obj1, const Evas_Object *obj2, double degree);
+double                _elm_widget_focus_direction_weight_get(const Evas_Object *obj1, const Evas_Object *obj2, double degree, Elm_Focus_Weight *efw);
+
 
 // win focus highlight
 void                  _elm_win_focus_highlight_start(Evas_Object *obj);
@@ -677,7 +679,8 @@ EAPI void             elm_widget_focus_custom_chain_append(Evas_Object *obj, Eva
 EAPI void             elm_widget_focus_custom_chain_prepend(Evas_Object *obj, Evas_Object *child, Evas_Object *relative_child);
 EAPI void             elm_widget_focus_cycle(Evas_Object *obj, Elm_Focus_Direction dir);
 EAPI Eina_Bool        elm_widget_focus_direction_go(Evas_Object *obj, double degree);
-EAPI Eina_Bool        elm_widget_focus_direction_get(const Evas_Object *obj, const Evas_Object *base, double degree, Evas_Object **direction, double *weight);
+EAPI Eina_Bool        elm_widget_focus_direction_get(const Evas_Object *obj, const Evas_Object *base, double degree, Elm_Focus_Weight *efw, Evas_Object **direction, double *weight);
+EAPI Eina_Bool        elm_widget_focus_weight_set(Evas_Object *obj, Elm_Focus_Direction dir, double up_weight, double down_weight, double right_weight, double left_weight);
 EAPI Eina_Bool        elm_widget_focus_next_get(const Evas_Object *obj, Elm_Focus_Direction dir, Evas_Object **next);
 EAPI Eina_Bool        elm_widget_focus_list_direction_get(const Evas_Object  *obj, const Evas_Object *base, const Eina_List *items, void *(*list_data_get)(const Eina_List *list), double degree, Evas_Object **direction, double *weight);
 EAPI Eina_Bool        elm_widget_focus_list_next_get(const Evas_Object *obj, const Eina_List *items, void *(*list_data_get)(const Eina_List *list), Elm_Focus_Direction dir, Evas_Object **next);

@@ -49,6 +49,14 @@ typedef enum
    ELM_FOCUS_REVERT
 } Elm_Focus_Direction;
 
+typedef struct _Elm_Focus_Weight
+{
+   double up;
+   double down;
+   double right;
+   double left;
+} Elm_Focus_Weight;
+
 /**
  * Get the whether an Elementary object has the focus or not.
  *
@@ -340,3 +348,4 @@ EAPI Elm_Object_Item             *elm_object_focused_item_get(const Evas_Object 
 EAPI void      elm_object_focus_region_show_item_set(Evas_Object *obj, Eina_Bool item);
 EAPI Eina_Bool elm_object_focus_region_show_item_get(const Evas_Object *obj);
 
+EAPI void      elm_object_focus_weight_set(Evas_Object *obj, Elm_Focus_Direction dir, double up_weight, double down_weight, double right_weight, double left_weight);

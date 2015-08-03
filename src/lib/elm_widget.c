@@ -386,7 +386,24 @@ _elm_widget_evas_object_smart_add(Eo *obj, Elm_Widget_Smart_Data *priv)
    priv->obj = obj;
    priv->mirrored_auto_mode = EINA_TRUE; /* will follow system locale
                                           * settings */
-   priv->focus_region_show_item = EINA_TRUE; //temporary
+   priv->focus_region_show_item = EINA_TRUE;
+   priv->focus_up_weight.up = 1.0;
+   priv->focus_up_weight.down = 1.0;
+   priv->focus_up_weight.right = 1.0;
+   priv->focus_up_weight.left = 1.0;
+   priv->focus_down_weight.up = 1.0;
+   priv->focus_down_weight.down = 1.0;
+   priv->focus_down_weight.right = 1.0;
+   priv->focus_down_weight.left = 1.0;
+   priv->focus_right_weight.up = 1.0;
+   priv->focus_right_weight.down = 1.0;
+   priv->focus_right_weight.right = 1.0;
+   priv->focus_right_weight.left = 1.0;
+   priv->focus_left_weight.up = 1.0;
+   priv->focus_left_weight.down = 1.0;
+   priv->focus_left_weight.right = 1.0;
+   priv->focus_left_weight.left = 1.0;
+
    elm_widget_can_focus_set(obj, EINA_TRUE);
    priv->is_mirrored = elm_config_mirrored_get();
 
@@ -1912,7 +1929,7 @@ _elm_widget_focus_direction_go(Eo *obj, Elm_Widget_Smart_Data *_pd EINA_UNUSED, 
    current_focused = elm_widget_focused_object_get(obj);
 
    if (elm_widget_focus_direction_get
-         (obj, current_focused, degree, &target, &weight))
+         (obj, current_focused, degree, NULL, &target, &weight))
      {
         elm_widget_focus_steal(target);
         return EINA_TRUE;
@@ -1923,13 +1940,14 @@ _elm_widget_focus_direction_go(Eo *obj, Elm_Widget_Smart_Data *_pd EINA_UNUSED, 
 
 double
 _elm_widget_focus_direction_weight_get(const Evas_Object *obj1,
-                      const Evas_Object *obj2,
-                      double degree)
+                      const Evas_Object *obj2, double degree,
+                      Elm_Focus_Weight *efw)
 {
    Evas_Coord obj_x1, obj_y1, w1, h1, obj_x2, obj_y2, w2, h2;
    double x1, yy1, x2, yy2, xx1, yyy1, xx2, yyy2;
    double ax, ay, cx, cy;
    double weight = -1.0, g = 0.0;
+   double up_weight = 0.0, down_weight = 0.0, right_weight = 0.0, left_weight = 0.0;
 
    if (obj1 == obj2) return 0.0;
 
@@ -1947,6 +1965,15 @@ _elm_widget_focus_direction_weight_get(const Evas_Object *obj1,
    /* For overlapping cases. */
    if (ELM_RECTS_INTERSECT(obj_x1, obj_y1, w1, h1, obj_x2, obj_y2, w2, h2))
      return 0.0;
+
+   if (efw)
+     {
+        up_weight = efw->up;
+        down_weight = efw->down;
+        right_weight = efw->right;
+        left_weight = efw->left;
+     }
+   up_weight = 2.0; //temporary
 
    /* Change all points to relative one. */
    x1 = obj_x1 - cx;
@@ -2126,45 +2153,45 @@ _elm_widget_focus_direction_weight_get(const Evas_Object *obj1,
      {
         if (_R(xx1) > _R(x2)) weight = -1.0;
         else if ((_R(yy2) >= _R(yy1)) && (_R(yyy2) <= _R(yyy1)))
-          weight = (x2 - xx1) * (x2 - xx1);
+          weight = (x2 - xx1) * (x2 - xx1) / right_weight;
         else if (_R(yy2) > 0)
-          weight = ((x2 - xx1) * (x2 - xx1)) + (yy2 * yy2);
+          weight = ((x2 - xx1) * (x2 - xx1)) / right_weight + (yy2 * yy2) / down_weight;
         else if (_R(yyy2) < 0)
-          weight = ((x2 - xx1) * (x2 - xx1)) + (yyy2 * yyy2);
-        else weight = (x2 - xx1) * (x2 - xx1);
+          weight = ((x2 - xx1) * (x2 - xx1)) / right_weight + (yyy2 * yyy2) / up_weight;
+        else weight = (x2 - xx1) * (x2 - xx1) / right_weight;
      }
    else if (degree == 90.0)
      {
         if (_R(yyy1) > _R(yy2)) weight = -1.0;
         else if ((_R(x2) >= _R(x1)) && (_R(xx2) <= _R(xx1)))
-          weight = (yy2 - yyy1) * (yy2 - yyy1);
+          weight = (yy2 - yyy1) * (yy2 - yyy1) / down_weight;
         else if (_R(x2) > 0)
-          weight = (x2 * x2) + ((yy2 - yyy1) * (yy2 - yyy1));
+          weight = (x2 * x2) / right_weight + ((yy2 - yyy1) * (yy2 - yyy1)) / down_weight;
         else if (_R(xx2) < 0)
-          weight = (xx2 * xx2) + ((yy2 - yyy1) * (yy2 - yyy1));
-        else weight = (yy2 - yyy1) * (yy2 - yyy1);
+          weight = (xx2 * xx2) / left_weight + ((yy2 - yyy1) * (yy2 - yyy1)) / down_weight;
+        else weight = (yy2 - yyy1) * (yy2 - yyy1) / down_weight;
      }
    else if (degree == 180.0)
      {
         if (_R(x1) < _R(xx2)) weight = -1.0;
         else if ((_R(yy2) >= _R(yy1)) && (_R(yyy2) <= _R(yyy1)))
-          weight = (x1 - xx2) * (x1 - xx2);
+          weight = (x1 - xx2) * (x1 - xx2) / left_weight;
         else if (_R(yy2) > 0)
-          weight = ((x1 - xx2) * (x1 - xx2)) + (yy2 * yy2);
+          weight = ((x1 - xx2) * (x1 - xx2)) / left_weight + (yy2 * yy2) / down_weight;
         else if (_R(yyy2) < 0)
-          weight = ((x1 - xx2) * (x1 - xx2)) + (yyy2 * yyy2);
-        else weight = (x1 - xx2) * (x1 - xx2);
+          weight = ((x1 - xx2) * (x1 - xx2)) / left_weight + (yyy2 * yyy2) / up_weight;
+        else weight = (x1 - xx2) * (x1 - xx2) / left_weight;
      }
    else if (degree == 270.0)
      {
         if (_R(yy1) < _R(yyy2)) weight = -1.0;
         else if ((_R(x2) >= _R(x1)) && (_R(xx2) <= _R(xx1)))
-          weight = (yy1 - yyy2) * (yy1 - yyy2);
+          weight = (yy1 - yyy2) * (yy1 - yyy2) / up_weight;
         else if (_R(x2) > 0)
-          weight = (x2 * x2) + ((yy1 - yyy2) * (yy1 - yyy2));
+          weight = (x2 * x2) / right_weight + ((yy1 - yyy2) * (yy1 - yyy2)) / up_weight;
         else if (_R(xx2) < 0)
-          weight = (xx2 * xx2) + ((yy1 - yyy2) * (yy1 - yyy2));
-        else weight = (yy1 - yyy2) * (yy1 - yyy2);
+          weight = (xx2 * xx2) / left_weight + ((yy1 - yyy2) * (yy1 - yyy2)) / up_weight;
+        else weight = (yy1 - yyy2) * (yy1 - yyy2) / up_weight;
      }
    else
      {
@@ -2264,7 +2291,7 @@ _elm_widget_focus_direction_weight_get(const Evas_Object *obj1,
  */
 
 EOLIAN static Eina_Bool
-_elm_widget_focus_direction_get(Eo *obj, Elm_Widget_Smart_Data *sd, const Evas_Object *base, double degree, Evas_Object **direction, double *weight)
+_elm_widget_focus_direction_get(Eo *obj, Elm_Widget_Smart_Data *sd, const Evas_Object *base, double degree, Elm_Focus_Weight *efw, Evas_Object **direction, double *weight)
 {
    double c_weight;
 
@@ -2289,7 +2316,7 @@ _elm_widget_focus_direction_get(Eo *obj, Elm_Widget_Smart_Data *sd, const Evas_O
    if (!elm_widget_can_focus_get(obj) || elm_widget_focus_get(obj))
      return EINA_FALSE;
 
-   c_weight = _elm_widget_focus_direction_weight_get(base, obj, degree);
+   c_weight = _elm_widget_focus_direction_weight_get(base, obj, degree, efw);
    if ((c_weight == -1.0) ||
        ((c_weight != 0.0) && (*weight != -1.0) &&
         ((int)(*weight * 1000000) <= (int)(c_weight * 1000000))))
@@ -2345,15 +2372,49 @@ _elm_widget_focus_list_direction_get(Eo *obj EINA_UNUSED, Elm_Widget_Smart_Data 
    const Eina_List *l = items;
    Evas_Object *current_best = *direction;
 
+   Elm_Focus_Weight *efw = NULL;
+
+   if (degree == 0.0) efw = &(_pd->focus_up_weight);
+   else if (degree == 180.0) efw = &(_pd->focus_down_weight);
+   else if (degree == 90.0) efw = &(_pd->focus_right_weight);
+   else if (degree == 270.0) efw = &(_pd->focus_left_weight);
+
    for (; l; l = eina_list_next(l))
      {
         Evas_Object *cur = list_data_get(l);
         if (cur && _elm_widget_is(cur))
-          elm_widget_focus_direction_get(cur, base, degree, direction, weight);
+          elm_widget_focus_direction_get(cur, base, degree, efw, direction, weight);
      }
    if (current_best != *direction) return EINA_TRUE;
 
    return EINA_FALSE;
+}
+
+EOLIAN static Eina_Bool
+_elm_widget_focus_weight_set(Eo *obj EINA_UNUSED, Elm_Widget_Smart_Data *sd, Elm_Focus_Direction dir, double up_weight, double down_weight, double right_weight, double left_weight)
+{
+   Elm_Focus_Weight *efw = NULL;
+
+   if (dir == ELM_FOCUS_UP)
+     efw = &(sd->focus_up_weight);
+   else if (dir == ELM_FOCUS_DOWN)
+     efw = &(sd->focus_down_weight);
+   else if (dir == ELM_FOCUS_RIGHT)
+     efw = &(sd->focus_right_weight);
+   else if (dir == ELM_FOCUS_LEFT)
+     efw = &(sd->focus_left_weight);
+   else
+     return EINA_FALSE;
+
+   if (!efw)
+     return EINA_FALSE;
+
+   efw->up = up_weight;
+   efw->down = down_weight;
+   efw->right = right_weight;
+   efw->left = left_weight;
+
+   return EINA_TRUE;
 }
 
 /**

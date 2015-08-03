@@ -108,7 +108,7 @@ _elm_bubble_elm_widget_focus_direction(Eo *obj, Elm_Bubble_Data *_pd EINA_UNUSED
 
    /* Try Focus cycle in subitem */
    return elm_widget_focus_direction_get
-            (content, base, degree, direction, weight);
+            (content, base, degree, NULL, direction, weight);
 }
 
 EOLIAN static Eina_Bool

@@ -367,7 +367,7 @@ _elm_notify_elm_widget_focus_direction(Eo *obj EINA_UNUSED, Elm_Notify_Data *sd,
 
    cur = sd->content;
 
-   return elm_widget_focus_direction_get(cur, base, degree, direction, weight);
+   return elm_widget_focus_direction_get(cur, base, degree, NULL, direction, weight);
 }
 
 EOLIAN static Eina_Bool

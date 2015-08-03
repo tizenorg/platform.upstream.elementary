@@ -763,8 +763,20 @@ abstract Elm_Widget (Evas.Object_Smart, Elm_Interface_Atspi_Accessible, Elm_Inte
          params {
             @in const(Evas_Object)* base;
             @in double degree;
+            @in Elm_Focus_Weight *efw;
             @out Evas_Object *direction;
             @out double weight;
+         }
+      }
+      focus_weight_set {
+         /*@ No description supplied by the EAPI. */
+         return: bool;
+         params {
+            @in Elm_Focus_Direction dir;
+            @in double up_weight;
+            @in double down_weight;
+            @in double right_weight;
+            @in double left_weight;
          }
       }
       signal_callback_del {

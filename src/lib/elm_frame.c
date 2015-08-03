@@ -92,7 +92,7 @@ _elm_frame_elm_widget_focus_direction(Eo *obj EINA_UNUSED, Elm_Frame_Data *_pd E
      {
         /* Try to cycle focus on content */
         return elm_widget_focus_direction_get
-           (content, base, degree, direction, weight);
+           (content, base, degree, NULL, direction, weight);
      }
 }
 

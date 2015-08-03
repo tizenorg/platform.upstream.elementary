@@ -1738,3 +1738,8 @@ elm_object_focus_region_show_item_get(const Evas_Object *obj)
    return elm_widget_focus_region_show_item_get(obj);
 }
 
+EAPI void
+elm_object_focus_weight_set(Evas_Object *obj, Elm_Focus_Direction dir, double up_weight, double down_weight, double right_weight, double left_weight)
+{
+   elm_widget_focus_weight_set(obj, dir, up_weight, down_weight, right_weight, left_weight);
+}
