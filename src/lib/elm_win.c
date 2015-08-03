@@ -925,8 +925,10 @@ _elm_win_focus_highlight_reconfigure_job(void *data)
    Eina_Bool visible_changed;
    Eina_Bool common_visible;
    const char *sig = NULL;
+   const char *dsig = NULL;
    const char *focus_style_target = NULL;
    const char *focus_style_previous = NULL;
+   Elm_Focus_Direction focus_origin;
 
    _elm_win_focus_highlight_reconfigure_job_stop(sd);
 
@@ -944,6 +946,18 @@ _elm_win_focus_highlight_reconfigure_job(void *data)
            (previous, EVAS_CALLBACK_DEL, _elm_win_focus_prev_target_del, data);
         elm_widget_signal_emit
            (previous, "elm,action,focus_highlight,hide", "elm");
+
+        focus_origin = elm_widget_focus_origin_get(previous);
+        if (focus_origin == ELM_FOCUS_UP)
+          dsig = "elm,action,focus_highlight,hide,up";
+        else if (focus_origin == ELM_FOCUS_DOWN)
+          dsig = "elm,action,focus_highlight,hide,down";
+        else if (focus_origin == ELM_FOCUS_RIGHT)
+          dsig = "elm,action,focus_highlight,hide,right";
+        else if (focus_origin == ELM_FOCUS_LEFT)
+          dsig = "elm,action,focus_highlight,hide,left";
+        if (dsig)
+          elm_widget_signal_emit(previous, dsig, "elm");
      }
 
    if (!target)
@@ -952,7 +966,18 @@ _elm_win_focus_highlight_reconfigure_job(void *data)
      {
         common_visible = EINA_FALSE;
         if (sd->focus_highlight.cur.visible)
-          sig = "elm,action,focus_highlight,show";
+          {
+             sig = "elm,action,focus_highlight,show";
+             focus_origin = elm_widget_focus_origin_get(target);
+             if (focus_origin == ELM_FOCUS_UP)
+               dsig = "elm,action,focus_highlight,show,up";
+             else if (focus_origin == ELM_FOCUS_DOWN)
+               dsig = "elm,action,focus_highlight,show,down";
+             else if (focus_origin == ELM_FOCUS_RIGHT)
+               dsig = "elm,action,focus_highlight,show,right";
+             else if (focus_origin == ELM_FOCUS_LEFT)
+               dsig = "elm,action,focus_highlight,show,left";
+          }
         else
           sig = "elm,action,focus_highlight,hide";
      }
@@ -961,6 +986,8 @@ _elm_win_focus_highlight_reconfigure_job(void *data)
 
    if (sig)
      elm_widget_signal_emit(target, sig, "elm");
+   if (dsig)
+     elm_widget_signal_emit(target, dsig, "elm");
 
    if ((!target) || (!common_visible) || (sd->focus_highlight.cur.in_theme))
      {

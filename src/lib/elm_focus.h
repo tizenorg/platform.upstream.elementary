@@ -46,7 +46,8 @@ typedef enum
    ELM_FOCUS_DOWN,     /**< down direction */
    ELM_FOCUS_RIGHT,    /**< right direction */
    ELM_FOCUS_LEFT,      /**< left direction */
-   ELM_FOCUS_REVERT
+   ELM_FOCUS_REVERT,
+   ELM_FOCUS_MOUSE
 } Elm_Focus_Direction;
 
 typedef struct _Elm_Focus_Weight

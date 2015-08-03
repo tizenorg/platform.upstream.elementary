@@ -383,6 +383,8 @@ _item_mouse_in_cb(void *data,
                   void *event_info EINA_UNUSED)
 {
    Elm_Gen_Item *it = data;
+   ELM_GENGRID_DATA_GET_FROM_ITEM(it, sd);
+   sd->focus_origin = ELM_FOCUS_MOUSE;
    if (!elm_object_item_disabled_get(EO_OBJ(it)) &&
        (_elm_config->focus_move_policy == ELM_FOCUS_MOVE_POLICY_IN))
      elm_object_item_focus_set(EO_OBJ(it), EINA_TRUE);
@@ -721,6 +723,7 @@ _item_mouse_up_cb(void *data,
 
    if (eo_do(eo_it, elm_wdg_item_disabled_get()) || (dragged)) return;
 
+   sd->focus_origin = ELM_FOCUS_MOUSE;
    if (sd->focused_item != eo_it)
      elm_object_item_focus_set(eo_it, EINA_TRUE);
 
@@ -1673,6 +1676,15 @@ _elm_gengrid_item_unfocused(Elm_Object_Item *eo_it)
         ELM_GENGRID_ITEM_DATA_GET(sd->focused_item, focus_it);
         edje_object_signal_emit
            (VIEW(focus_it), "elm,state,unfocused", "elm");
+
+        if (sd->focus_origin == ELM_FOCUS_UP)
+          edje_object_signal_emit(VIEW(it), "elm,action,focus_highlight,hide,up", "elm");
+        else if (sd->focus_origin == ELM_FOCUS_DOWN)
+          edje_object_signal_emit(VIEW(it), "elm,action,focus_highlight,hide,down", "elm");
+        else if (sd->focus_origin == ELM_FOCUS_RIGHT)
+          edje_object_signal_emit(VIEW(it), "elm,action,focus_highlight,hide,right", "elm");
+        else if (sd->focus_origin == ELM_FOCUS_LEFT)
+          edje_object_signal_emit(VIEW(it), "elm,action,focus_highlight,hide,left", "elm");
      }
 
    sd->focused_item = NULL;
@@ -2662,6 +2674,7 @@ _key_action_move(Evas_Object *obj, const char *params)
    if ((!strcmp(dir, "left") && !mirrored) ||
        (!strcmp(dir, "right") && mirrored))
      {
+        sd->focus_origin = ELM_FOCUS_LEFT;
         if (sd->reorder_mode)
           {
              Elm_Object_Item *eo_left;
@@ -2744,6 +2757,7 @@ _key_action_move(Evas_Object *obj, const char *params)
    else if ((!strcmp(dir, "right") && !mirrored) ||
             (!strcmp(dir, "left") && mirrored))
      {
+        sd->focus_origin = ELM_FOCUS_RIGHT;
         if (sd->reorder_mode)
           {
              Elm_Object_Item *eo_right;
@@ -2829,6 +2843,7 @@ _key_action_move(Evas_Object *obj, const char *params)
      }
    else if (!strcmp(dir, "up"))
      {
+        sd->focus_origin = ELM_FOCUS_UP;
         if (sd->reorder_mode)
           {
              Elm_Object_Item *eo_up;
@@ -2886,6 +2901,7 @@ _key_action_move(Evas_Object *obj, const char *params)
      }
    else if (!strcmp(dir, "down"))
      {
+        sd->focus_origin = ELM_FOCUS_DOWN;
         if (sd->reorder_mode)
           {
              Elm_Object_Item *eo_down;
@@ -3211,6 +3227,7 @@ _elm_gengrid_elm_widget_on_focus(Eo *obj, Elm_Gengrid_Data *sd)
         sd->last_selected_item = eo_data_scope_get(sel, ELM_GENGRID_ITEM_CLASS);
      }
 
+   sd->focus_origin = elm_widget_focus_origin_get(obj);
    if (elm_widget_focus_get(obj) && !sd->mouse_down)
      {
         focus_origin = elm_widget_focus_origin_get(obj);
@@ -3570,6 +3587,15 @@ _elm_gengrid_item_elm_widget_item_focus_set(Eo *eo_it, Elm_Gen_Item *it, Eina_Bo
                     {
                        edje_object_signal_emit
                           (VIEW(it), "elm,state,focused", "elm");
+
+                       if (sd->focus_origin == ELM_FOCUS_UP)
+                         edje_object_signal_emit(VIEW(it), "elm,action,focus_highlight,show,up", "elm");
+                       else if (sd->focus_origin == ELM_FOCUS_DOWN)
+                         edje_object_signal_emit(VIEW(it), "elm,action,focus_highlight,show,down", "elm");
+                       else if (sd->focus_origin == ELM_FOCUS_RIGHT)
+                         edje_object_signal_emit(VIEW(it), "elm,action,focus_highlight,show,right", "elm");
+                       else if (sd->focus_origin == ELM_FOCUS_LEFT)
+                         edje_object_signal_emit(VIEW(it), "elm,action,focus_highlight,show,left", "elm");
                     }
 
                   focus_raise = edje_object_data_get(VIEW(it), "focusraise");
