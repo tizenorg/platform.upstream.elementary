@@ -1781,16 +1781,25 @@ elm_object_accessibility_highlight_set(Evas_Object *obj, Eina_Bool visible)
    EINA_SAFETY_ON_NULL_RETURN(obj);
    Evas_Object *win = NULL;
 
-   if (!elm_object_widget_check(obj))
-      return;
-
-   win = elm_object_top_widget_get(obj);
+   if (elm_object_widget_check(obj))
+      win = elm_object_top_widget_get(obj);
+   else
+      win = elm_object_top_widget_get(elm_object_parent_widget_get(obj));
    if (!win || !eo_isa(win, ELM_WIN_CLASS))
       return;
-
-   if (!visible && (obj == _elm_win_accessibility_highlight_get(win)))
-      _elm_win_accessibility_highlight_set(win, NULL);
-   else if (visible)
-      _elm_win_accessibility_highlight_set(win, obj);
+   if (visible)
+     {
+       if (elm_widget_access_highlight_in_theme_get(obj))
+          elm_widget_signal_emit(obj, "elm,action,access_highlight,show", "elm");
+       else
+          _elm_win_object_set_accessibility_highlight(win, obj);
+     }
+   else
+     {
+       if (elm_widget_access_highlight_in_theme_get(obj))
+          elm_widget_signal_emit(obj, "elm,action,access_highlight,hide", "elm");
+       else
+          _elm_win_object_set_accessibility_highlight(win, NULL);
+     }
 }
 //
