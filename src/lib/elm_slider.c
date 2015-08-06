@@ -505,7 +505,6 @@ _popup_add(Elm_Slider_Data *sd, Eo *obj)
 
    // XXX popup needs to adapt to theme etc.
    sd->popup = edje_object_add(evas_object_evas_get(obj));
-   evas_object_smart_member_add(sd->popup, obj);
    if (sd->horizontal)
      _elm_theme_set(NULL, sd->popup, "slider", "horizontal/popup", elm_widget_style_get(obj));
    else
@@ -557,7 +556,7 @@ _elm_slider_elm_widget_theme_apply(Eo *obj, Elm_Slider_Data *sd)
    if (!int_ret) return EINA_FALSE;
 
 #ifdef TIZEN_VECTOR_UX
-   tizen_vg_slider_set(obj);
+   tizen_vg_slider_set(obj, sd->popup);
 #endif
 
    if (sd->popup)
@@ -875,11 +874,11 @@ _elm_slider_evas_object_smart_add(Eo *obj, Elm_Slider_Data *priv)
    evas_object_pass_events_set(priv->spacer, EINA_TRUE);
    elm_layout_content_set(obj, "elm.swallow.bar", priv->spacer);
 
-#ifdef TIZEN_VECTOR_UX
-   tizen_vg_slider_set(obj);
-#endif
-
    _popup_add(priv, obj);
+
+#ifdef TIZEN_VECTOR_UX
+   tizen_vg_slider_set(obj, priv->popup);
+#endif
 
    evas_object_event_callback_add
      (priv->spacer, EVAS_CALLBACK_MOUSE_DOWN, _spacer_down_cb, obj);
