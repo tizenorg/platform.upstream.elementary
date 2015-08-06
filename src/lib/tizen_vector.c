@@ -1180,6 +1180,77 @@ typedef struct vg_button_s
 } vg_button;
 
 static void
+button_no_bg_init(vg_button *vd)
+{
+   if (vd->init) return;
+   vd->init = EINA_TRUE;
+
+   //Effect Shape
+   Efl_VG *effect_root = evas_object_vg_root_node_get(vd->vg[0]);
+   vd->shape[0] = evas_vg_shape_add(effect_root);
+   evas_vg_node_color_set(vd->shape[0], 255, 255, 255, 255);
+}
+
+static void
+button_effect_no_bg_resize_cb(void *data, Evas *e EINA_UNUSED,
+                        Evas_Object *obj EINA_UNUSED,
+                        void *event_info EINA_UNUSED)
+{
+   vg_button *vd = data;
+
+   button_no_bg_init(vd);
+
+   //Update Effect Shape
+   Evas_Coord x, y, w, h;
+   evas_object_geometry_get(vd->vg[0], &x, &y, &w, &h);
+   evas_vg_shape_shape_reset(vd->shape[0]);
+   evas_vg_shape_shape_append_circle(vd->shape[0], w/2, h/2, w/2);
+}
+
+static void
+button_no_bg_del_cb(void *data, Evas *e EINA_UNUSED, Evas_Object *obj EINA_UNUSED,
+              void *event_info EINA_UNUSED)
+{
+   vg_button *vd = data;
+   evas_object_data_del(vd->obj, vg_key);
+   free(vd);
+}
+
+void
+tizen_vg_button_no_bg_set(Elm_Button *obj)
+{
+   vg_button *vd = evas_object_data_get(obj, vg_key);
+   if (vd)
+     {
+        elm_object_part_content_unset(obj, "tizen_vg_shape");
+        evas_object_del(vd->vg[0]);
+     }
+
+   vd = calloc(1, sizeof(vg_button));
+   if (!vd)
+     {
+        ERR("Failed to allocate vector graphics data memory");
+        return;
+     }
+   evas_object_data_set(obj, vg_key, vd);
+
+   //Vector Graphics Object
+   Evas *e = evas_object_evas_get(obj);
+
+   vd->obj = obj;
+
+   //Effect VG
+   vd->vg[0] = evas_object_vg_add(e);
+   evas_object_event_callback_add(vd->vg[0], EVAS_CALLBACK_DEL,
+                                  button_no_bg_del_cb, vd);
+
+   evas_object_event_callback_add(vd->vg[0], EVAS_CALLBACK_RESIZE,
+                                  button_effect_no_bg_resize_cb, vd);
+
+   elm_object_part_content_set(obj, "tizen_vg_shape", vd->vg[0]);
+}
+
+static void
 button_init(vg_button *vd)
 {
    if (vd->init) return;
@@ -1245,7 +1316,7 @@ button_del_cb(void *data, Evas *e EINA_UNUSED, Evas_Object *obj EINA_UNUSED,
 }
 
 void
-tizen_vg_button_set(Elm_Button *obj)
+tizen_vg_button_default_set(Elm_Button *obj)
 {
    vg_button *vd = evas_object_data_get(obj, vg_key);
    if (vd)
@@ -1254,11 +1325,6 @@ tizen_vg_button_set(Elm_Button *obj)
         elm_object_part_content_unset(obj, "tizen_vg_shape2");
         evas_object_del(vd->vg[0]);
      }
-
-   //Apply vector ux only theme has "vector_ux"
-   const char *str = elm_layout_data_get(obj, "vector_ux");
-   if (!str) return;
-
    vd = calloc(1, sizeof(vg_button));
    if (!vd)
      {
@@ -1285,6 +1351,19 @@ tizen_vg_button_set(Elm_Button *obj)
 
    elm_object_part_content_set(obj, "tizen_vg_shape", vd->vg[0]);
    elm_object_part_content_set(obj, "tizen_vg_shape2", vd->vg[1]);
+}
+
+void
+tizen_vg_button_set(Elm_Button *obj)
+{
+   //Apply vector ux only theme has "vector_ux"
+   const char *str = elm_layout_data_get(obj, "vector_ux");
+   if (!str) return;
+
+   if (!strcmp(str, "no_bg"))
+     tizen_vg_button_no_bg_set(obj);
+   else
+     tizen_vg_button_default_set(obj);
 }
 
 /////////////////////////////////////////////////////////////////////////
