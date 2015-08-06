@@ -1176,6 +1176,7 @@ typedef struct vg_button_s
    Evas_Object *vg[2];       //0: base, 1: effect
    Efl_VG_Shape *shape[2];   //0: base, 1: effect
    Evas_Object *obj;
+   Evas_Coord corner;
    Eina_Bool init : 1;
 } vg_button;
 
@@ -1204,7 +1205,10 @@ button_effect_no_bg_resize_cb(void *data, Evas *e EINA_UNUSED,
    Evas_Coord x, y, w, h;
    evas_object_geometry_get(vd->vg[0], &x, &y, &w, &h);
    evas_vg_shape_shape_reset(vd->shape[0]);
-   evas_vg_shape_shape_append_circle(vd->shape[0], w/2, h/2, w/2);
+   if (vd->corner)
+     evas_vg_shape_shape_append_rect(vd->shape[0], 0, 0, w, h, vd->corner, vd->corner);
+   else
+     evas_vg_shape_shape_append_circle(vd->shape[0], w/2, h/2, w/2);
 }
 
 static void
@@ -1244,6 +1248,9 @@ tizen_vg_button_no_bg_set(Elm_Button *obj)
    evas_object_event_callback_add(vd->vg[0], EVAS_CALLBACK_DEL,
                                   button_no_bg_del_cb, vd);
 
+   const char *str = elm_layout_data_get(obj, "corner_radius");
+   if (str) vd->corner = atoi(str);
+
    evas_object_event_callback_add(vd->vg[0], EVAS_CALLBACK_RESIZE,
                                   button_effect_no_bg_resize_cb, vd);
 
@@ -1282,6 +1289,8 @@ button_effect_resize_cb(void *data, Evas *e EINA_UNUSED,
    evas_vg_shape_shape_reset(vd->shape[1]);
    if (w == h)
      evas_vg_shape_shape_append_circle(vd->shape[1], w/2, h/2, w/2);
+   else if (vd->corner)
+     evas_vg_shape_shape_append_rect(vd->shape[1], 0, 0, w, h, vd->corner, vd->corner);
    else
      evas_vg_shape_shape_append_rect(vd->shape[1], 0, 0, w, h, h/2, h/2);
 }
@@ -1301,6 +1310,8 @@ button_base_resize_cb(void *data, Evas *e EINA_UNUSED,
    evas_vg_shape_shape_reset(vd->shape[0]);
    if (w == h)
      evas_vg_shape_shape_append_circle(vd->shape[0], w/2, h/2, w/2);
+   else if (vd->corner)
+     evas_vg_shape_shape_append_rect(vd->shape[0], 0, 0, w, h, vd->corner, vd->corner);
    else
      evas_vg_shape_shape_append_rect(vd->shape[0], 0, 0, w, h, h/2, h/2);
 }
@@ -1337,6 +1348,8 @@ tizen_vg_button_default_set(Elm_Button *obj)
    Evas *e = evas_object_evas_get(obj);
 
    vd->obj = obj;
+   const char *str = elm_layout_data_get(obj, "corner_radius");
+   if (str) vd->corner = atoi(str);
 
    //Base VG
    vd->vg[0] = evas_object_vg_add(e);
