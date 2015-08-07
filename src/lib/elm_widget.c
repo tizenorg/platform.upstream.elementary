@@ -5426,13 +5426,6 @@ elm_widget_tree_dot_dump(const Evas_Object *top,
 #endif
 }
 
-static void
-_on_focus_change(void *data, Evas_Object *obj, void *event_info EINA_UNUSED)
-{
-   Eina_Bool val = data ? EINA_TRUE : EINA_FALSE;
-   elm_interface_atspi_accessible_state_changed_signal_emit(obj, ELM_ATSPI_STATE_FOCUSED, val);
-}
-
 EOLIAN static void
 _elm_widget_eo_base_constructor(Eo *obj, Elm_Widget_Smart_Data *sd)
 {
@@ -5448,8 +5441,6 @@ _elm_widget_eo_base_constructor(Eo *obj, Elm_Widget_Smart_Data *sd)
    sd->on_create = EINA_FALSE;
 
    sd->role = ELM_ATSPI_ROLE_UNKNOWN;
-   evas_object_smart_callback_add(obj, "focused", _on_focus_change, (void*)1);
-   evas_object_smart_callback_add(obj, "unfocused", _on_focus_change, NULL);
 }
 
 EOLIAN static void
@@ -5475,12 +5466,16 @@ _elm_widget_on_focus(Eo *obj, Elm_Widget_Smart_Data *sd)
              if (!sd->resize_obj)
                evas_object_focus_set(obj, EINA_TRUE);
              evas_object_smart_callback_call(obj, SIG_WIDGET_FOCUSED, NULL);
+             if (_elm_config->atspi_mode && !elm_widget_child_can_focus_get(obj))
+               elm_interface_atspi_accessible_state_changed_signal_emit(obj, ELM_ATSPI_STATE_FOCUSED, EINA_TRUE);
           }
         else
           {
              if (!sd->resize_obj)
                evas_object_focus_set(obj, EINA_FALSE);
              evas_object_smart_callback_call(obj, SIG_WIDGET_UNFOCUSED, NULL);
+             if (_elm_config->atspi_mode && !elm_widget_child_can_focus_get(obj))
+               elm_interface_atspi_accessible_state_changed_signal_emit(obj, ELM_ATSPI_STATE_FOCUSED, EINA_FALSE);
           }
      }
    else
@@ -5634,10 +5629,13 @@ _elm_widget_elm_interface_atspi_accessible_state_set_get(Eo *obj, Elm_Widget_Sma
               ((wy < y) && (wy + wh < y)) || ((wy > y+ h) && (wy + wh > y + h))))
           STATE_TYPE_SET(states, ELM_ATSPI_STATE_SHOWING);
      }
-   if (elm_object_focus_get(obj))
-     STATE_TYPE_SET(states, ELM_ATSPI_STATE_FOCUSED);
-   if (elm_object_focus_allow_get(obj))
-     STATE_TYPE_SET(states, ELM_ATSPI_STATE_FOCUSABLE);
+   if (!elm_widget_child_can_focus_get(obj))
+     {
+        if (elm_object_focus_allow_get(obj))
+          STATE_TYPE_SET(states, ELM_ATSPI_STATE_FOCUSABLE);
+        if (elm_object_focus_get(obj))
+          STATE_TYPE_SET(states, ELM_ATSPI_STATE_FOCUSED);
+     }
    if (!elm_object_disabled_get(obj))
      {
         STATE_TYPE_SET(states, ELM_ATSPI_STATE_ENABLED);
