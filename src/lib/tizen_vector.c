@@ -1208,7 +1208,11 @@ button_effect_no_bg_resize_cb(void *data, Evas *e EINA_UNUSED,
    if (vd->corner)
      evas_vg_shape_shape_append_rect(vd->shape[0], 0, 0, w, h, vd->corner, vd->corner);
    else
-     evas_vg_shape_shape_append_circle(vd->shape[0], w/2, h/2, w/2);
+     {
+        int radius_w = adjust_radius(w/2);
+        int radius_h = adjust_radius(h/2);
+        evas_vg_shape_shape_append_circle(vd->shape[0], radius_w, radius_h, radius_h);
+     }
 }
 
 static void
@@ -1249,7 +1253,7 @@ tizen_vg_button_no_bg_set(Elm_Button *obj)
                                   button_no_bg_del_cb, vd);
 
    const char *str = elm_layout_data_get(obj, "corner_radius");
-   if (str) vd->corner = atoi(str);
+   if (str) vd->corner = ELM_VG_SCALE_SIZE(obj, atoi(str));
 
    evas_object_event_callback_add(vd->vg[0], EVAS_CALLBACK_RESIZE,
                                   button_effect_no_bg_resize_cb, vd);
@@ -1287,12 +1291,17 @@ button_effect_resize_cb(void *data, Evas *e EINA_UNUSED,
    Evas_Coord x, y, w, h;
    evas_object_geometry_get(vd->vg[1], &x, &y, &w, &h);
    evas_vg_shape_shape_reset(vd->shape[1]);
-   if (w == h)
-     evas_vg_shape_shape_append_circle(vd->shape[1], w/2, h/2, w/2);
-   else if (vd->corner)
+   if (vd->corner)
      evas_vg_shape_shape_append_rect(vd->shape[1], 0, 0, w, h, vd->corner, vd->corner);
    else
-     evas_vg_shape_shape_append_rect(vd->shape[1], 0, 0, w, h, h/2, h/2);
+     {
+        int radius_w = adjust_radius(w/2);
+        int radius_h = adjust_radius(h/2);
+        if (w == h)
+          evas_vg_shape_shape_append_circle(vd->shape[1], radius_w, radius_h, radius_w);
+        else
+          evas_vg_shape_shape_append_rect(vd->shape[1], 0, 0, w, h, radius_h, radius_h);
+     }
 }
 
 static void
@@ -1308,12 +1317,17 @@ button_base_resize_cb(void *data, Evas *e EINA_UNUSED,
    Evas_Coord w, h;
    evas_object_geometry_get(vd->vg[0], NULL, NULL, &w, &h);
    evas_vg_shape_shape_reset(vd->shape[0]);
-   if (w == h)
-     evas_vg_shape_shape_append_circle(vd->shape[0], w/2, h/2, w/2);
-   else if (vd->corner)
+   if (vd->corner)
      evas_vg_shape_shape_append_rect(vd->shape[0], 0, 0, w, h, vd->corner, vd->corner);
    else
-     evas_vg_shape_shape_append_rect(vd->shape[0], 0, 0, w, h, h/2, h/2);
+     {
+        int radius_w = adjust_radius(w/2);
+        int radius_h = adjust_radius(h/2);
+        if (w == h)
+          evas_vg_shape_shape_append_circle(vd->shape[0], radius_w, radius_h, radius_w);
+        else
+          evas_vg_shape_shape_append_rect(vd->shape[0], 0, 0, w, h, radius_h, radius_h);
+     }
 }
 
 static void
@@ -1349,7 +1363,7 @@ tizen_vg_button_default_set(Elm_Button *obj)
 
    vd->obj = obj;
    const char *str = elm_layout_data_get(obj, "corner_radius");
-   if (str) vd->corner = atoi(str);
+   if (str) vd->corner = ELM_VG_SCALE_SIZE(obj, atoi(str));
 
    //Base VG
    vd->vg[0] = evas_object_vg_add(e);
