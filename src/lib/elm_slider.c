@@ -559,7 +559,7 @@ _elm_slider_elm_widget_theme_apply(Eo *obj, Elm_Slider_Data *sd)
    if (!int_ret) return EINA_FALSE;
 
 #ifdef TIZEN_VECTOR_UX
-   tizen_vg_slider_set(obj, sd->popup);
+   tizen_vg_slider_set(obj);
 #endif
 
    if (sd->popup)
@@ -879,11 +879,11 @@ _elm_slider_evas_object_smart_add(Eo *obj, Elm_Slider_Data *priv)
    evas_object_pass_events_set(priv->spacer, EINA_TRUE);
    elm_layout_content_set(obj, "elm.swallow.bar", priv->spacer);
 
-   _popup_add(priv, obj);
-
 #ifdef TIZEN_VECTOR_UX
-   tizen_vg_slider_set(obj, priv->popup);
+   tizen_vg_slider_set(obj);
 #endif
+
+   _popup_add(priv, obj);
 
    evas_object_event_callback_add
      (priv->spacer, EVAS_CALLBACK_MOUSE_DOWN, _spacer_down_cb, obj);
