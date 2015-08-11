@@ -34,8 +34,8 @@ ELM_VG_SCALE_SIZE(Evas_Object* obj, double x)
 /////////////////////////////////////////////////////////////////////////
 typedef struct vg_radio_s
 {
-   Evas_Object *vg[3];       //0: outline, 1: center circle, 2: iconic circle
-   Efl_VG_Shape *shape[4];   //0: outline, 1: center circle, 2: iconic outline, 3: iconic circle
+   Evas_Object *vg[2];       //0: outline, 1: center circle, 2: iconic circle
+   Efl_VG_Shape *shape[3];   //0: outline, 1: center circle, 2: iconic outline, 3: iconic circle
    Elm_Transit *transit;
    Evas_Object *obj;
    Eina_Bool init : 1;
@@ -68,14 +68,14 @@ transit_radio_op(Elm_Transit_Effect *effect, Elm_Transit *transit EINA_UNUSED,
       - (2 * ELM_VG_SCALE_SIZE(vd->obj, 1.5));
 
    //Iconic Circle (Outline)
-   evas_vg_shape_stroke_width_set(vd->shape[2],
+   evas_vg_shape_stroke_width_set(vd->shape[1],
                                   (1 + progress * ELM_VG_SCALE_SIZE(vd->obj, 1.5)));
 
    //Iconic Circle (Center)
    radius = radius * 0.6 * progress;
    radius = adjust_radius(radius);
-   evas_vg_shape_shape_reset(vd->shape[3]);
-   evas_vg_shape_shape_append_circle(vd->shape[3], center_x, center_y, radius);
+   evas_vg_shape_shape_reset(vd->shape[2]);
+   evas_vg_shape_shape_append_circle(vd->shape[2], center_x, center_y, radius);
 }
 
 static void
@@ -113,7 +113,6 @@ radio_del_cb(void *data, Evas *e EINA_UNUSED, Evas_Object *obj EINA_UNUSED,
                                   radio_changed_cb);
    elm_transit_del(vd->transit);
    evas_object_del(vd->vg[1]);
-   evas_object_del(vd->vg[2]);
    free(vd);
 }
 
@@ -128,18 +127,14 @@ radio_init(vg_radio *vd)
    evas_vg_shape_stroke_color_set(vd->shape[0], 255, 255, 255, 255);
    evas_vg_shape_stroke_width_set(vd->shape[0], ELM_VG_SCALE_SIZE(vd->obj, 1));
 
-   //Center Circle
-   vd->shape[1] = evas_vg_shape_add(evas_object_vg_root_node_get(vd->vg[1]));
-   evas_vg_node_color_set(vd->shape[1], 255, 255, 255, 255);
-
    //Iconic Circle (Outline)
-   vd->shape[2] = evas_vg_shape_add(evas_object_vg_root_node_get(vd->vg[2]));
-   evas_vg_shape_stroke_color_set(vd->shape[2], 255, 255, 255, 255);
-   evas_vg_shape_stroke_width_set(vd->shape[2], 1 + ELM_VG_SCALE_SIZE(vd->obj, 1.5));
+   vd->shape[1] = evas_vg_shape_add(evas_object_vg_root_node_get(vd->vg[1]));
+   evas_vg_shape_stroke_color_set(vd->shape[1], 255, 255, 255, 255);
+   evas_vg_shape_stroke_width_set(vd->shape[1], 1 + ELM_VG_SCALE_SIZE(vd->obj, 1.5));
 
    //Iconic Circle (Center Point)
-   vd->shape[3] = evas_vg_shape_add(evas_object_vg_root_node_get(vd->vg[2]));
-   evas_vg_node_color_set(vd->shape[3], 255, 255, 255, 255);
+   vd->shape[2] = evas_vg_shape_add(evas_object_vg_root_node_get(vd->vg[1]));
+   evas_vg_node_color_set(vd->shape[2], 255, 255, 255, 255);
 }
 
 static void
@@ -168,21 +163,17 @@ radio_base_resize_cb(void *data, Evas *e EINA_UNUSED,
 
    if (elm_radio_selected_object_get(vd->obj) != vd->obj) return;
 
-   //Center Circle
-   evas_vg_shape_shape_reset(vd->shape[1]);
-   evas_vg_shape_shape_append_circle(vd->shape[1], center_x, center_y,
-                                     radius);
 
    //Iconic Circle (Outline)
-   evas_vg_shape_shape_reset(vd->shape[2]);
-   evas_vg_shape_shape_append_circle(vd->shape[2], center_x, center_y,
+   evas_vg_shape_shape_reset(vd->shape[1]);
+   evas_vg_shape_shape_append_circle(vd->shape[1], center_x, center_y,
                                      radius);
 
    //Iconic Circle (Center)
    radius = radius * 0.6;
    radius = adjust_radius(radius);
-   evas_vg_shape_shape_reset(vd->shape[3]);
-   evas_vg_shape_shape_append_circle(vd->shape[3], center_x, center_y,
+   evas_vg_shape_shape_reset(vd->shape[2]);
+   evas_vg_shape_shape_append_circle(vd->shape[2], center_x, center_y,
                                      radius);
 }
 
@@ -216,15 +207,12 @@ tizen_vg_radio_set(Elm_Radio *obj)
                                   radio_del_cb, vd);
    evas_object_event_callback_add(vd->vg[0], EVAS_CALLBACK_RESIZE,
                                   radio_base_resize_cb, vd);
-   //Center Circle
-   vd->vg[1] = evas_object_vg_add(e);
 
    //Iconic Circle
-   vd->vg[2] = evas_object_vg_add(e);
+   vd->vg[1] = evas_object_vg_add(e);
 
    elm_object_part_content_set(obj, "tizen_vg_shape", vd->vg[0]);
    elm_object_part_content_set(obj, "tizen_vg_shape2", vd->vg[1]);
-   elm_object_part_content_set(obj, "tizen_vg_shape3", vd->vg[2]);
 }
 
 
