@@ -214,6 +214,16 @@ abstract Elm_Widget (Evas.Object_Smart, Elm_Interface_Atspi_Accessible, Elm_Inte
             bool highlight; /*@ highlight */
          }
       }
+      focus_region_show_mode {
+         /*Control the focus_region_show mode.*/
+         set {
+         }
+         get {
+         }
+         values {
+            Elm_Focus_Region_Show_Mode mode;
+         }
+      }
       parent_highlight {
          set {
             /*@ No description supplied by the EAPI. */
