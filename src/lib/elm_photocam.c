@@ -158,6 +158,111 @@ _elm_photocam_pan_evas_object_smart_resize(Eo *obj, Elm_Photocam_Pan_Data *psd, 
 }
 
 static void
+_image_size_calc(Eo *obj, Elm_Photocam_Data *sd)
+{
+   Evas_Coord pw, ph, rx, ry, rw, rh;
+   double z;
+
+   eo_do(obj, elm_interface_scrollable_content_pos_get(&rx, &ry));
+   eo_do(obj, elm_interface_scrollable_content_viewport_geometry_get
+         (NULL, NULL, &rw, &rh));
+
+   if (sd->mode == ELM_PHOTOCAM_ZOOM_MODE_MANUAL)
+     {
+        sd->size.nw = (double)sd->size.imw / sd->zoom;
+        sd->size.nh = (double)sd->size.imh / sd->zoom;
+     }
+   else if (sd->mode == ELM_PHOTOCAM_ZOOM_MODE_AUTO_FIT)
+     {
+        if ((sd->size.imw < 1) || (sd->size.imh < 1))
+          {
+             sd->size.nw = 0;
+             sd->size.nh = 0;
+          }
+        else
+          {
+             ph = (sd->size.imh * rw) / sd->size.imw;
+             if (ph > rh)
+               {
+                  pw = (sd->size.imw * rh) / sd->size.imh;
+                  ph = rh;
+               }
+             else
+               {
+                  pw = rw;
+               }
+             if (sd->size.imw > sd->size.imh)
+               z = (double)sd->size.imw / pw;
+             else
+               z = (double)sd->size.imh / ph;
+             sd->zoom = z;
+             sd->size.nw = pw;
+             sd->size.nh = ph;
+          }
+     }
+   else if (sd->mode == ELM_PHOTOCAM_ZOOM_MODE_AUTO_FILL)
+     {
+        if ((sd->size.imw < 1) || (sd->size.imh < 1))
+          {
+             sd->size.nw = 0;
+             sd->size.nw = 0;
+          }
+        else
+          {
+             ph = (sd->size.imh * rw) / sd->size.imw;
+             if (ph < rh)
+               {
+                  pw = (sd->size.imw * rh) / sd->size.imh;
+                  ph = rh;
+               }
+             else
+               {
+                  pw = rw;
+               }
+             if (sd->size.imw > sd->size.imh)
+               z = (double)sd->size.imw / pw;
+             else
+               z = (double)sd->size.imh / ph;
+             sd->zoom = z;
+             sd->size.nw = pw;
+             sd->size.nh = ph;
+          }
+     }
+   else if (sd->mode == ELM_PHOTOCAM_ZOOM_MODE_AUTO_FIT_IN)
+     {
+        if ((sd->size.imw < 1) || (sd->size.imh < 1))
+          {
+             sd->size.nw = 0;
+             sd->size.nh = 0;
+          }
+        else if ((sd->size.imw < rw) && (sd->size.imh < rh))
+          {
+             sd->zoom = 1;
+             sd->size.nw = sd->size.imw;
+             sd->size.nh = sd->size.imh;
+          }
+        else
+          {
+             ph = (sd->size.imh * rw) / sd->size.imw;
+             if (ph > rh)
+               {
+                  pw = (sd->size.imw * rh) / sd->size.imh;
+                  ph = rh;
+               }
+             else
+               pw = rw;
+             if (sd->size.imw > sd->size.imh)
+               z = (double)sd->size.imw / pw;
+             else
+               z = (double)sd->size.imh / ph;
+             sd->zoom = z;
+             sd->size.nw = pw;
+             sd->size.nh = ph;
+          }
+     }
+}
+
+static void
 _image_place(Evas_Object *obj,
              Evas_Coord px,
              Evas_Coord py,
@@ -170,8 +275,17 @@ _image_place(Evas_Object *obj,
 
    ELM_PHOTOCAM_DATA_GET(obj, sd);
 
+   int rw, rh;
+   eo_do(obj, elm_interface_scrollable_content_viewport_geometry_get
+         (NULL, NULL, &rw, &rh));
+
    ax = 0;
    ay = 0;
+
+   _image_size_calc(obj, sd);
+   sd->size.w = sd->size.nw;
+   sd->size.h = sd->size.nh;
+
    gw = sd->size.w;
    gh = sd->size.h;
    if (!sd->zoom_g_layer)
@@ -180,7 +294,9 @@ _image_place(Evas_Object *obj,
         if (oh > gh) ay = (oh - gh) / 2;
      }
    evas_object_move(sd->img, ox + 0 - px + ax, oy + 0 - py + ay);
-   evas_object_resize(sd->img, gw, gh);
+
+   if (rw != 0 && rh != 0)
+     evas_object_resize(sd->img, gw, gh);
 
    if (sd->show.show)
      {
@@ -1527,8 +1643,8 @@ _elm_photocam_zoom_set(Eo *obj, Elm_Photocam_Data *sd, double zoom)
    Eina_List *l;
    Ecore_Animator *an;
    Elm_Phocam_Grid *g, *g_zoom = NULL;
-   Evas_Coord pw, ph, rx, ry, rw, rh;
-   int zoom_changed = 0, started = 0;
+   Evas_Coord rx, ry, rw, rh;
+   int started = 0;
 
    if (zoom <= (1.0 / 256.0)) zoom = (1.0 / 256.0);
    if (zoom == sd->zoom) return;
@@ -1541,114 +1657,13 @@ _elm_photocam_zoom_set(Eo *obj, Elm_Photocam_Data *sd, double zoom)
          (NULL, NULL, &rw, &rh));
    if ((rw <= 0) || (rh <= 0)) return;
 
-   if (sd->mode == ELM_PHOTOCAM_ZOOM_MODE_MANUAL)
-     {
-        sd->size.nw = (double)sd->size.imw / sd->zoom;
-        sd->size.nh = (double)sd->size.imh / sd->zoom;
-     }
-   else if (sd->mode == ELM_PHOTOCAM_ZOOM_MODE_AUTO_FIT)
-     {
-        if ((sd->size.imw < 1) || (sd->size.imh < 1))
-          {
-             sd->size.nw = 0;
-             sd->size.nh = 0;
-          }
-        else
-          {
-             ph = (sd->size.imh * rw) / sd->size.imw;
-             if (ph > rh)
-               {
-                  pw = (sd->size.imw * rh) / sd->size.imh;
-                  ph = rh;
-               }
-             else
-               {
-                  pw = rw;
-               }
-             if (sd->size.imw > sd->size.imh)
-               z = (double)sd->size.imw / pw;
-             else
-               z = (double)sd->size.imh / ph;
-             if (z != sd->zoom)
-               zoom_changed = 1;
-             sd->zoom = z;
-             sd->size.nw = pw;
-             sd->size.nh = ph;
-          }
-     }
-   else if (sd->mode == ELM_PHOTOCAM_ZOOM_MODE_AUTO_FILL)
-     {
-        if ((sd->size.imw < 1) || (sd->size.imh < 1))
-          {
-             sd->size.nw = 0;
-             sd->size.nw = 0;
-          }
-        else
-          {
-             ph = (sd->size.imh * rw) / sd->size.imw;
-             if (ph < rh)
-               {
-                  pw = (sd->size.imw * rh) / sd->size.imh;
-                  ph = rh;
-               }
-             else
-               {
-                  pw = rw;
-               }
-             if (sd->size.imw > sd->size.imh)
-               z = (double)sd->size.imw / pw;
-             else
-               z = (double)sd->size.imh / ph;
-             if (z != sd->zoom)
-               zoom_changed = 1;
-             sd->zoom = z;
-             sd->size.nw = pw;
-             sd->size.nh = ph;
-          }
-     }
-   else if (sd->mode == ELM_PHOTOCAM_ZOOM_MODE_AUTO_FIT_IN)
-     {
-        if ((sd->size.imw < 1) || (sd->size.imh < 1))
-          {
-             sd->size.nw = 0;
-             sd->size.nh = 0;
-          }
-        else if ((sd->size.imw < rw) && (sd->size.imh < rh))
-          {
-             if (1 != sd->zoom) zoom_changed = 1;
-             sd->zoom = 1;
-             sd->size.nw = sd->size.imw;
-             sd->size.nh = sd->size.imh;
-          }
-        else
-          {
-             ph = (sd->size.imh * rw) / sd->size.imw;
-             if (ph > rh)
-               {
-                  pw = (sd->size.imw * rh) / sd->size.imh;
-                  ph = rh;
-               }
-             else
-               pw = rw;
-             if (sd->size.imw > sd->size.imh)
-               z = (double)sd->size.imw / pw;
-             else
-               z = (double)sd->size.imh / ph;
-             if (z != sd->zoom)
-               zoom_changed = 1;
-             sd->zoom = z;
-             sd->size.nw = pw;
-             sd->size.nh = ph;
-          }
-     }
+   z = sd->zoom;
+   _image_size_calc(obj, sd);
 
-   if (sd->main_load_pending)
-     {
-        sd->size.w = sd->size.nw;
-        sd->size.h = sd->size.nh;
+   sd->size.w = sd->size.nw;
+   sd->size.h = sd->size.nh;
 
-        goto done;
-     }
+   if (sd->main_load_pending) goto done;
 
    EINA_LIST_FOREACH(sd->grids, l, g)
      {
@@ -1736,7 +1751,7 @@ done:
         if (!an)
           evas_object_smart_callback_call(obj, SIG_ZOOM_STOP, NULL);
      }
-   if (zoom_changed)
+   if (sd->zoom != z)
      evas_object_smart_callback_call(obj, SIG_ZOOM_CHANGE, NULL);
 }
 
