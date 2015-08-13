@@ -419,6 +419,11 @@ abstract Elm_Widget (Evas.Object_Smart, Elm_Interface_Atspi_Accessible, Elm_Inte
             return: Evas_Object *;
          }
       }
+      focus_origin {
+         get {
+            return: Elm_Focus_Direction;
+         }
+      }
       parent2 {
          set {
             /*@ No description supplied by the EAPI. */
