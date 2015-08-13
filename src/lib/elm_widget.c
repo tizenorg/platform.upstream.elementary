@@ -63,6 +63,7 @@ struct _Elm_Translate_String_Data
 
 /* local subsystem globals */
 static unsigned int focus_order = 0;
+Elm_Focus_Direction focus_origin = -1;
 
 static inline Eina_Bool
 _elm_widget_is(const Evas_Object *obj)
@@ -198,6 +199,16 @@ _elm_widget_focus_highlight_signal_callback_del(Evas_Object *obj, const char *em
 
    if (top && eo_isa(top, ELM_WIN_CLASS))
      _elm_win_focus_highlight_signal_callback_del(top, emission, source, _focus_highlight_signal_cb);
+}
+
+Evas_Object *
+_elm_widget_focus_highlight_object_get(const Evas_Object *obj)
+{
+	Evas_Object *top = elm_widget_top_get(obj);
+
+	if (top && eo_isa(top, ELM_WIN_CLASS))
+		return _elm_win_focus_highlight_object_get(top);
+	return NULL;
 }
 
 EAPI Eina_Bool
@@ -412,6 +423,7 @@ _if_focused_revert(Evas_Object *obj,
    if (!sd->focused) return;
    if (!sd->parent_obj) return;
 
+   focus_origin = ELM_FOCUS_REVERT;
    top = elm_widget_top_get(sd->parent_obj);
    if (top)
      {
@@ -1853,6 +1865,7 @@ _elm_widget_focus_cycle(Eo *obj, Elm_Widget_Smart_Data *_pd EINA_UNUSED, Elm_Foc
    Evas_Object *target = NULL;
    if (!_elm_widget_is(obj))
      return;
+   focus_origin = dir;
    elm_widget_focus_next_get(obj, dir, &target);
    if (target)
      {
@@ -1910,8 +1923,8 @@ _elm_widget_focus_direction_go(Eo *obj, Elm_Widget_Smart_Data *_pd EINA_UNUSED, 
    return EINA_FALSE;
 }
 
-static double
-_direction_weight_get(const Evas_Object *obj1,
+double
+_elm_widget_focus_direction_weight_get(const Evas_Object *obj1,
                       const Evas_Object *obj2,
                       double degree)
 {
@@ -2278,7 +2291,7 @@ _elm_widget_focus_direction_get(Eo *obj, Elm_Widget_Smart_Data *sd, const Evas_O
    if (!elm_widget_can_focus_get(obj) || elm_widget_focus_get(obj))
      return EINA_FALSE;
 
-   c_weight = _direction_weight_get(base, obj, degree);
+   c_weight = _elm_widget_focus_direction_weight_get(base, obj, degree);
    if ((c_weight == -1.0) ||
        ((c_weight != 0.0) && (*weight != -1.0) &&
         ((int)(*weight * 1000000) <= (int)(c_weight * 1000000))))
@@ -2371,6 +2384,7 @@ _elm_widget_focus_next_get(Eo *obj, Elm_Widget_Smart_Data *sd, Elm_Focus_Directi
      return EINA_FALSE;
    *next = NULL;
 
+   focus_origin = dir;
    /* Ignore if disabled */
    if (_elm_config->access_mode && _elm_access_auto_highlight_get())
      {
@@ -4004,6 +4018,12 @@ EOLIAN static Elm_Object_Item*
 _elm_widget_focused_item_get(Eo *obj EINA_UNUSED, Elm_Widget_Smart_Data *_pd EINA_UNUSED)
 {
    return NULL;
+}
+
+EOLIAN static Elm_Focus_Direction
+_elm_widget_focus_origin_get(Eo *obj EINA_UNUSED, Elm_Widget_Smart_Data *_pd EINA_UNUSED)
+{
+   return focus_origin;
 }
 
 EOLIAN static void
