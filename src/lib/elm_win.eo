@@ -332,6 +332,27 @@ class Elm_Win (Elm_Widget, Elm_Interface_Atspi_Window,
             bool borderless; /*@ If true, the window is borderless */
          }
       }
+      border_style {
+         set {
+            /*@
+            Set the border style of a window.
+
+            Sets the specific style of border to decorate window.
+
+            @ingroup Win */
+         }
+         get {
+            /*@
+            Get the border style of a window.
+
+            @return The style set
+
+            @ingroup Win */
+         }
+         values {
+            const(char)* style; /*@ The style to set */
+         }
+      }
       screen_constrain {
          set {
             /*@

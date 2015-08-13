@@ -174,6 +174,7 @@ struct _Elm_Win_Data
    const char  *title;
    const char  *icon_name;
    const char  *role;
+   const char  *frame_style;
 
    Evas_Object *main_menu;
 
@@ -1798,6 +1799,7 @@ _elm_win_evas_object_smart_del(Eo *obj, Elm_Win_Data *sd)
    eina_stringshare_del(sd->title);
    eina_stringshare_del(sd->icon_name);
    eina_stringshare_del(sd->role);
+   eina_stringshare_del(sd->frame_style);
    evas_object_del(sd->icon);
    evas_object_del(sd->main_menu);
 
@@ -3578,6 +3580,7 @@ _elm_win_constructor(Eo *obj, Elm_Win_Data *sd, const char *name, Elm_Win_Type t
    _elm_win_list = eina_list_append(_elm_win_list, obj);
    _elm_win_count++;
 
+   sd->frame_style = eina_stringshare_add("default");
    if ((engine) && ((!strcmp(engine, ELM_SOFTWARE_FB)) || (!strcmp(engine, ELM_DRM))))
      {
         TRAP(sd, fullscreen_set, 1);
@@ -3586,7 +3589,7 @@ _elm_win_constructor(Eo *obj, Elm_Win_Data *sd, const char *name, Elm_Win_Type t
             ((engine) &&
              ((!strcmp(engine, ELM_WAYLAND_SHM) ||
               (!strcmp(engine, ELM_WAYLAND_EGL))))))
-     _elm_win_frame_add(sd, "default");
+     _elm_win_frame_add(sd, sd->frame_style);
 
    if (_elm_config->focus_highlight_enable)
      elm_win_focus_highlight_enabled_set(obj, EINA_TRUE);
@@ -3903,7 +3906,7 @@ _elm_win_borderless_set(Eo *obj EINA_UNUSED, Elm_Win_Data *sd, Eina_Bool borderl
    else
      {
         if (need_frame)
-          _elm_win_frame_add(sd, "default");
+          _elm_win_frame_add(sd, sd->frame_style);
 
         if (sd->frame_obj)
           evas_object_show(sd->frame_obj);
@@ -3919,6 +3922,43 @@ EOLIAN static Eina_Bool
 _elm_win_borderless_get(Eo *obj EINA_UNUSED, Elm_Win_Data *sd)
 {
    return ecore_evas_borderless_get(sd->ee);
+}
+
+EOLIAN static void
+_elm_win_border_style_set(Eo *obj, Elm_Win_Data *sd, const char *style)
+{
+   Elm_Theme *theme;
+   char buf[1024];
+
+   if (!style) return;
+   if (!strcmp(sd->frame_style, style))
+     return;
+
+   theme = elm_widget_theme_get(obj);
+   if (!theme) theme = elm_theme_default_get();
+   if (theme)
+     {
+        snprintf(buf, sizeof(buf), "elm/border/base/%s", style);
+        if (!elm_theme_group_path_find(theme, buf))
+          return;
+     }
+
+   eina_stringshare_replace(&(sd->frame_style), style);
+
+   if (sd->frame_obj)
+     {
+        _elm_win_frame_del(sd);
+        _elm_win_frame_add(sd, sd->frame_style);
+
+        if (sd->frame_obj)
+          evas_object_show(sd->frame_obj);
+     }
+}
+
+EOLIAN static const char*
+_elm_win_border_style_get(Eo *obj EINA_UNUSED, Elm_Win_Data *sd)
+{
+   return sd->frame_style;
 }
 
 EOLIAN static void
@@ -4005,7 +4045,7 @@ _elm_win_fullscreen_set(Eo *obj EINA_UNUSED, Elm_Win_Data *sd, Eina_Bool fullscr
         else
           {
              if (need_frame)
-               _elm_win_frame_add(sd, "default");
+               _elm_win_frame_add(sd, sd->frame_style);
 
              if (sd->frame_obj)
                evas_object_show(sd->frame_obj);
