@@ -157,6 +157,7 @@ _elm_photocam_pan_evas_object_smart_resize(Eo *obj, Elm_Photocam_Pan_Data *psd, 
    psd->wsd->calc_job = ecore_job_add(_calc_job_cb, psd->wobj);
 }
 
+// TIZEN_ONLY(20150813): make as a function for reusability
 static void
 _image_size_calc(Eo *obj, Elm_Photocam_Data *sd)
 {
@@ -261,6 +262,7 @@ _image_size_calc(Eo *obj, Elm_Photocam_Data *sd)
           }
      }
 }
+//
 
 static void
 _image_place(Evas_Object *obj,
@@ -275,16 +277,20 @@ _image_place(Evas_Object *obj,
 
    ELM_PHOTOCAM_DATA_GET(obj, sd);
 
+   // TIZEN_ONLY(20150813): get viewport size to check if its 0
    int rw, rh;
    eo_do(obj, elm_interface_scrollable_content_viewport_geometry_get
          (NULL, NULL, &rw, &rh));
+   //
 
    ax = 0;
    ay = 0;
 
+   // TIZEN_ONLY(20150813): calculate image size before resize
    _image_size_calc(obj, sd);
    sd->size.w = sd->size.nw;
    sd->size.h = sd->size.nh;
+   //
 
    gw = sd->size.w;
    gh = sd->size.h;
@@ -295,7 +301,7 @@ _image_place(Evas_Object *obj,
      }
    evas_object_move(sd->img, ox + 0 - px + ax, oy + 0 - py + ay);
 
-   if (rw != 0 && rh != 0)
+   if (rw != 0 && rh != 0) // TIZEN_ONLY(20150813): resize image only viewport has a size
      evas_object_resize(sd->img, gw, gh);
 
    if (sd->show.show)
@@ -820,8 +826,8 @@ _zoom_anim_cb(void *data)
    Evas_Object *obj = data;
 
    ELM_PHOTOCAM_DATA_GET(obj, sd);
-/** FIXME
-  * temporarily disable zoom effect (2015.5.1)
+
+/** TIZEN_ONLY(20150501): temporarily disable zoom effect
    t = ecore_loop_time_get();
    if (t >= sd->t_end)
      t = 1.0;
