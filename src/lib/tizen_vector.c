@@ -1852,14 +1852,14 @@ tizen_vg_progressbar_set(Elm_Progressbar *obj)
        !strcmp(str, "process_medium") ||
        !strcmp(str, "process_small"))
      {
-        vd->stroke_width = ELM_VG_SCALE_SIZE(vd->obj, 3);
+        vd->stroke_width = ELM_VG_SCALE_SIZE(vd->obj, 5);
         if (!strcmp(str, "process_medium"))
           {
-             vd->stroke_width = ELM_VG_SCALE_SIZE(vd->obj, 2);
+             vd->stroke_width = ELM_VG_SCALE_SIZE(vd->obj, 3);
           }
         if (!strcmp(str, "process_small"))
           {
-             vd->stroke_width = ELM_VG_SCALE_SIZE(vd->obj, 1.5);
+             vd->stroke_width = ELM_VG_SCALE_SIZE(vd->obj, 2);
           }
         vd->shrink = 2 * vd->stroke_width;
         vd->shift = vd->stroke_width + 0.5;
