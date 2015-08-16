@@ -50,6 +50,10 @@ struct _Elm_Calendar_Data
    Evas_Object             *inc_btn_year_access;
    Evas_Object             *dec_btn_year_access;
    Evas_Object             *year_access;
+   // TIZEN_ONLY(20150816): Add left, right button for header spinner to implement press effect.
+   Evas_Object             *left_button;
+   Evas_Object             *right_button;
+   //
 
    Elm_Calendar_Weekday     first_week_day;
    Elm_Calendar_Select_Mode select_mode;

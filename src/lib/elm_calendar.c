@@ -639,12 +639,36 @@ _set_headers(Evas_Object *obj)
 }
 
 EOLIAN static Eina_Bool
-_elm_calendar_elm_widget_theme_apply(Eo *obj, Elm_Calendar_Data *_pd EINA_UNUSED)
+_elm_calendar_elm_widget_theme_apply(Eo *obj, Elm_Calendar_Data *_pd)
 {
    Eina_Bool int_ret = EINA_FALSE;
 
    eo_do_super(obj, MY_CLASS, int_ret = elm_obj_widget_theme_apply());
    if (!int_ret) return EINA_FALSE;
+
+   // TIZEN_ONLY(20150816): Add left, right button for header spinner to implement press effect.
+   if (_pd->left_button)
+     {
+        Eina_Strbuf *buf = eina_strbuf_new();
+        eina_strbuf_append_printf(buf, "calendar_arrow_left/%s", elm_widget_style_get(obj));
+
+        if (!elm_widget_style_set(_pd->left_button, eina_strbuf_string_get(buf)))
+          elm_widget_style_set(_pd->left_button, "calendar_arrow_left/default");
+
+        eina_strbuf_free(buf);
+     }
+
+   if (_pd->right_button)
+     {
+        Eina_Strbuf *buf = eina_strbuf_new();
+        eina_strbuf_append_printf(buf, "calendar_arrow_right/%s", elm_widget_style_get(obj));
+
+        if (!elm_widget_style_set(_pd->left_button, eina_strbuf_string_get(buf)))
+          elm_widget_style_set(_pd->left_button, "calendar_arrow_right/default");
+
+        eina_strbuf_free(buf);
+     }
+   //
 
    evas_object_smart_changed(obj);
    return EINA_TRUE;
@@ -1115,6 +1139,16 @@ _elm_calendar_evas_object_smart_add(Eo *obj, Elm_Calendar_Data *priv)
                              elm_object_style_get(obj)))
      CRI("Failed to set layout!");
 
+   // TIZEN_ONLY(20150816): Add left, right button for header spinner to implement press effect.
+   priv->left_button = elm_button_add(obj);
+   elm_object_style_set(priv->left_button, "calendar_arrow_left/default");
+   elm_layout_content_set(obj, "left_bt_swallow", priv->left_button);
+
+   priv->right_button = elm_button_add(obj);
+   elm_object_style_set(priv->right_button, "calendar_arrow_right/default");
+   elm_layout_content_set(obj, "right_bt_swallow", priv->right_button);
+   //
+
    evas_object_smart_changed(obj);
 
    // ACCESS
@@ -1142,6 +1176,20 @@ _elm_calendar_evas_object_smart_del(Eo *obj, Elm_Calendar_Data *sd)
 
    for (i = 0; i < ELM_DAY_LAST; i++)
      eina_stringshare_del(sd->weekdays[i]);
+
+   // TIZEN_ONLY(20150816): Add left, right button for header spinner to implement press effect.
+   if (sd->left_button)
+     {
+        evas_object_del(sd->left_button);
+        sd->left_button = NULL;
+     }
+
+   if (sd->right_button)
+     {
+        evas_object_del(sd->right_button);
+        sd->right_button = NULL;
+     }
+   //
 
    eo_do_super(obj, MY_CLASS, evas_obj_smart_del());
 }
