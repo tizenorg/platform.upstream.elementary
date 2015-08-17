@@ -1209,8 +1209,8 @@ button_effect_no_bg_resize_cb(void *data, Evas *e EINA_UNUSED,
      evas_vg_shape_shape_append_rect(vd->shape[0], 0, 0, w, h, vd->corner, vd->corner);
    else
      {
-        int radius_w = adjust_radius(w/2);
-        int radius_h = adjust_radius(h/2);
+        int radius_w = w / 2;
+        int radius_h = h / 2;
         evas_vg_shape_shape_append_circle(vd->shape[0], radius_w, radius_h, radius_h);
      }
 }
@@ -1295,8 +1295,8 @@ button_effect_resize_cb(void *data, Evas *e EINA_UNUSED,
      evas_vg_shape_shape_append_rect(vd->shape[1], 0, 0, w, h, vd->corner, vd->corner);
    else
      {
-        int radius_w = adjust_radius(w/2);
-        int radius_h = adjust_radius(h/2);
+        int radius_w = w / 2;
+        int radius_h = h / 2;
         if (w == h)
           evas_vg_shape_shape_append_circle(vd->shape[1], radius_w, radius_h, radius_w);
         else
@@ -1321,8 +1321,8 @@ button_base_resize_cb(void *data, Evas *e EINA_UNUSED,
      evas_vg_shape_shape_append_rect(vd->shape[0], 0, 0, w, h, vd->corner, vd->corner);
    else
      {
-        int radius_w = adjust_radius(w/2);
-        int radius_h = adjust_radius(h/2);
+        int radius_w = w / 2;
+        int radius_h = h / 2;
         if (w == h)
           evas_vg_shape_shape_append_circle(vd->shape[0], radius_w, radius_h, radius_w);
         else
