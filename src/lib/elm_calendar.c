@@ -663,8 +663,8 @@ _elm_calendar_elm_widget_theme_apply(Eo *obj, Elm_Calendar_Data *_pd)
         Eina_Strbuf *buf = eina_strbuf_new();
         eina_strbuf_append_printf(buf, "calendar_arrow_right/%s", elm_widget_style_get(obj));
 
-        if (!elm_widget_style_set(_pd->left_button, eina_strbuf_string_get(buf)))
-          elm_widget_style_set(_pd->left_button, "calendar_arrow_right/default");
+        if (!elm_widget_style_set(_pd->right_button, eina_strbuf_string_get(buf)))
+          elm_widget_style_set(_pd->right_button, "calendar_arrow_right/default");
 
         eina_strbuf_free(buf);
      }
