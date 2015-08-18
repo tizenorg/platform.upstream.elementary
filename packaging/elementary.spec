@@ -91,6 +91,7 @@ cp %{SOURCE1001} .
 %if !%{with x}
          --disable-ecore-x \
 %endif
+         --with-elementary-base-dir="share/.elementary" \
 %if %dbus_unavailable
          --disable-build-examples
 %else
