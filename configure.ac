@@ -71,7 +71,7 @@ esac
 AC_ARG_WITH([elementary-base-dir],
    [AS_HELP_STRING([--with-elementary-base-dir=PATH], [specify the subdirectory for all elementary data @<:@default=${elementary_base_dir}@:>@])],
    [elementary_base_dir=${withval}],
-   [elementary_base_dir=".elementary"])
+   [elementary_base_dir="share/.elementary"]) #TIZEN_ONLY(20150818): related to smack rule
 
 AC_MSG_NOTICE([ELEMENTARY_BASE_DIR set to ${elementary_base_dir}])
 AC_DEFINE_UNQUOTED([ELEMENTARY_BASE_DIR], ["${elementary_base_dir}"], ["subdirectory for all elementary data"])
