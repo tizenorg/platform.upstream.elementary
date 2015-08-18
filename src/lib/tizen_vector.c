@@ -1179,6 +1179,7 @@ typedef struct vg_button_s
    Evas_Object *obj;
    Evas_Coord corner;
    Eina_Bool init : 1;
+   Eina_Bool is_circle : 1;
 } vg_button;
 
 static void
@@ -1206,14 +1207,14 @@ button_effect_no_bg_resize_cb(void *data, Evas *e EINA_UNUSED,
    Evas_Coord x, y, w, h;
    evas_object_geometry_get(vd->vg[0], &x, &y, &w, &h);
    evas_vg_shape_shape_reset(vd->shape[0]);
-   if (vd->corner)
-     evas_vg_shape_shape_append_rect(vd->shape[0], 0, 0, w, h, vd->corner, vd->corner);
-   else
+   if (vd->is_circle)
      {
         int radius_w = w / 2;
         int radius_h = h / 2;
-        evas_vg_shape_shape_append_circle(vd->shape[0], radius_w, radius_h, radius_h);
+        evas_vg_shape_shape_append_circle(vd->shape[0], radius_w, radius_h, radius_w);
      }
+   else
+     evas_vg_shape_shape_append_rect(vd->shape[0], 0, 0, w, h, vd->corner, vd->corner);
 }
 
 static void
@@ -1253,8 +1254,18 @@ tizen_vg_button_no_bg_set(Elm_Button *obj)
    evas_object_event_callback_add(vd->vg[0], EVAS_CALLBACK_DEL,
                                   button_no_bg_del_cb, vd);
 
-   const char *str = elm_layout_data_get(obj, "corner_radius");
-   if (str) vd->corner = ELM_VG_SCALE_SIZE(obj, atoi(str));
+   // Check whether the button has circle shape.
+   // When the button has no background and has circle shape,
+   // the vector_ux will be "no_bg/circle".
+   const char *str = elm_layout_data_get(obj, "vector_ux");
+   if (strstr(str, "circle"))
+     vd->is_circle = EINA_TRUE;
+   else
+     {
+        // Since it is not circle, it has rectangle shape.
+        str = elm_layout_data_get(obj, "corner_radius");
+        if (str) vd->corner = ELM_VG_SCALE_SIZE(obj, atoi(str));
+     }
 
    evas_object_event_callback_add(vd->vg[0], EVAS_CALLBACK_RESIZE,
                                   button_effect_no_bg_resize_cb, vd);
@@ -1292,17 +1303,14 @@ button_effect_resize_cb(void *data, Evas *e EINA_UNUSED,
    Evas_Coord x, y, w, h;
    evas_object_geometry_get(vd->vg[1], &x, &y, &w, &h);
    evas_vg_shape_shape_reset(vd->shape[1]);
-   if (vd->corner)
-     evas_vg_shape_shape_append_rect(vd->shape[1], 0, 0, w, h, vd->corner, vd->corner);
-   else
+   if (vd->is_circle)
      {
         int radius_w = w / 2;
         int radius_h = h / 2;
-        if (w == h)
-          evas_vg_shape_shape_append_circle(vd->shape[1], radius_w, radius_h, radius_w);
-        else
-          evas_vg_shape_shape_append_rect(vd->shape[1], 0, 0, w, h, radius_h, radius_h);
+        evas_vg_shape_shape_append_circle(vd->shape[1], radius_w, radius_h, radius_w);
      }
+   else
+     evas_vg_shape_shape_append_rect(vd->shape[1], 0, 0, w, h, vd->corner, vd->corner);
 }
 
 static void
@@ -1318,17 +1326,14 @@ button_base_resize_cb(void *data, Evas *e EINA_UNUSED,
    Evas_Coord w, h;
    evas_object_geometry_get(vd->vg[0], NULL, NULL, &w, &h);
    evas_vg_shape_shape_reset(vd->shape[0]);
-   if (vd->corner)
-     evas_vg_shape_shape_append_rect(vd->shape[0], 0, 0, w, h, vd->corner, vd->corner);
-   else
+   if (vd->is_circle)
      {
         int radius_w = w / 2;
         int radius_h = h / 2;
-        if (w == h)
-          evas_vg_shape_shape_append_circle(vd->shape[0], radius_w, radius_h, radius_w);
-        else
-          evas_vg_shape_shape_append_rect(vd->shape[0], 0, 0, w, h, radius_h, radius_h);
+        evas_vg_shape_shape_append_circle(vd->shape[0], radius_w, radius_h, radius_w);
      }
+   else
+     evas_vg_shape_shape_append_rect(vd->shape[0], 0, 0, w, h, vd->corner, vd->corner);
 }
 
 static void
@@ -1363,8 +1368,19 @@ tizen_vg_button_default_set(Elm_Button *obj)
    Evas *e = evas_object_evas_get(obj);
 
    vd->obj = obj;
-   const char *str = elm_layout_data_get(obj, "corner_radius");
-   if (str) vd->corner = ELM_VG_SCALE_SIZE(obj, atoi(str));
+
+   // Check whether the button has circle shape.
+   // When the button has no background and has circle shape,
+   // the vector_ux will be "no_bg/circle".
+   const char *str = elm_layout_data_get(obj, "vector_ux");
+   if (strstr(str, "circle"))
+     vd->is_circle = EINA_TRUE;
+   else
+     {
+        // Since it is not circle, it has rectangle shape.
+        str = elm_layout_data_get(obj, "corner_radius");
+        if (str) vd->corner = ELM_VG_SCALE_SIZE(obj, atoi(str));
+     }
 
    //Base VG
    vd->vg[0] = evas_object_vg_add(e);
@@ -1388,7 +1404,8 @@ tizen_vg_button_set(Elm_Button *obj)
    const char *str = elm_layout_data_get(obj, "vector_ux");
    if (!str) return;
 
-   if (!strcmp(str, "no_bg"))
+   // Check whether the button has a background.
+   if (!strncmp(str, "no_bg", strlen("no_bg")))
      tizen_vg_button_no_bg_set(obj);
    else
      tizen_vg_button_default_set(obj);
