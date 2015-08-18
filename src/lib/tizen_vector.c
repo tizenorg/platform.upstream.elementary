@@ -671,6 +671,7 @@ check_onoff_del_cb(void *data, Evas *e EINA_UNUSED,
    elm_transit_del(vd->transit[1]);
    elm_transit_del(vd->transit[2]);
    evas_object_del(vd->vg[1]);
+   evas_object_del(vd->vg[2]);
    free(vd);
 }
 
