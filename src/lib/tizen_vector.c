@@ -1877,6 +1877,7 @@ typedef struct vg_slider_s
    Evas_Object *vg[7];
    Efl_VG_Shape *shape[7];
    Evas_Object *obj;
+   Evas_Object *popup;
    Eina_Stringshare *style;
 } vg_slider;
 
@@ -2046,11 +2047,12 @@ _slider_create_handle(vg_slider *vd)
    evas_object_event_callback_add(vd->vg[slider_handle_pressed], EVAS_CALLBACK_RESIZE,
                                   slider_vg_handle_pressed_resize_cb, vd);
    elm_object_part_content_set(vd->obj, "elm.dragable.slider:elm.swallow.tizen_vg_shape1", vd->vg[slider_handle]);
-   elm_object_part_content_set(vd->obj, "elm.dragable.slider:elm.swallow.tizen_vg_shape2", vd->vg[slider_handle_pressed]);
+   if (vd->popup)
+     edje_object_part_swallow(vd->popup, "elm.swallow.tizen_vg_shape2", vd->vg[slider_handle_pressed]);
 }
 
 void
-tizen_vg_slider_set(Elm_Slider *obj)
+tizen_vg_slider_set(Elm_Slider *obj, Evas_Object *popup)
 {
    vg_slider *vd = evas_object_data_get(obj, vg_key);
    if (vd)
@@ -2070,6 +2072,7 @@ tizen_vg_slider_set(Elm_Slider *obj)
         vd = calloc(1, sizeof(vg_slider));
         evas_object_data_set(obj, vg_key, vd);
         vd->obj = obj;
+        vd->popup = popup;
         // callback to free vd data
         evas_object_event_callback_add(vd->obj, EVAS_CALLBACK_DEL,
                                        slider_del_cb, NULL);
