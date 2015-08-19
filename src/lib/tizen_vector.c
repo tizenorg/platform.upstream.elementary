@@ -2048,7 +2048,10 @@ _slider_create_handle(vg_slider *vd)
                                   slider_vg_handle_pressed_resize_cb, vd);
    elm_object_part_content_set(vd->obj, "elm.dragable.slider:elm.swallow.tizen_vg_shape1", vd->vg[slider_handle]);
    if (vd->popup)
-     edje_object_part_swallow(vd->popup, "elm.swallow.tizen_vg_shape2", vd->vg[slider_handle_pressed]);
+     {
+        edje_object_part_swallow(vd->popup, "elm.swallow.tizen_vg_shape2", vd->vg[slider_handle_pressed]);
+        elm_widget_sub_object_add(vd->obj, vd->vg[slider_handle_pressed]);
+     }
 }
 
 void
