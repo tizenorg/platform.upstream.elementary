@@ -1508,6 +1508,7 @@ progressbar_normal_fg_resize_cb(void *data, Evas *e EINA_UNUSED,
                                 void *event_info EINA_UNUSED)
 {
    Evas_Coord x, y, w, h;
+   static double ease_out_factor[4] = {0.25, 0.46, 0.45, 1.0};
    vg_progressbar *vd = data;
    evas_object_geometry_get(vd->vg[1], &x, &y, &w, &h);
    if (w < 2) return;
@@ -1519,6 +1520,8 @@ progressbar_normal_fg_resize_cb(void *data, Evas *e EINA_UNUSED,
    Elm_Transit *transit1 = elm_transit_add();
    elm_transit_object_add(transit1, obj);
    elm_transit_effect_add(transit1, transit_progressbar_normal_op1, vd, NULL);
+   elm_transit_tween_mode_set(transit1, ELM_TRANSIT_TWEEN_MODE_BEZIER_CURVE);
+   elm_transit_tween_mode_factor_n_set(transit1, 4, ease_out_factor);
    elm_transit_duration_set(transit1, 0.8);
    elm_transit_objects_final_state_keep_set(transit1, EINA_TRUE);
 
@@ -1526,12 +1529,16 @@ progressbar_normal_fg_resize_cb(void *data, Evas *e EINA_UNUSED,
    Elm_Transit *transit2 = elm_transit_add();
    elm_transit_object_add(transit2, obj);
    elm_transit_effect_add(transit2, transit_progressbar_normal_op2, vd, NULL);
+   elm_transit_tween_mode_set(transit1, ELM_TRANSIT_TWEEN_MODE_BEZIER_CURVE);
+   elm_transit_tween_mode_factor_n_set(transit2, 4, ease_out_factor);
    elm_transit_duration_set(transit2, 0.7);
    elm_transit_objects_final_state_keep_set(transit2, EINA_TRUE);
 
    Elm_Transit *transit3 = elm_transit_add();
    elm_transit_object_add(transit3, obj);
    elm_transit_effect_add(transit3, transit_progressbar_normal_op3, vd, NULL);
+   elm_transit_tween_mode_set(transit1, ELM_TRANSIT_TWEEN_MODE_BEZIER_CURVE);
+   elm_transit_tween_mode_factor_n_set(transit3, 4, ease_out_factor);
    elm_transit_duration_set(transit3, 0.3);
    elm_transit_objects_final_state_keep_set(transit3, EINA_TRUE);
 
