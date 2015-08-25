@@ -771,6 +771,7 @@ _elm_spinner_elm_widget_theme_apply(Eo *obj, Elm_Spinner_Data *sd EINA_UNUSED)
 
    if (!int_ret) CRI("Failed to set layout!");
 
+   _label_write(obj);
    buf = eina_strbuf_new();
    if (sd->ent)
      {
