@@ -995,6 +995,9 @@ _back_btn_new(Evas_Object *obj, const char *title_label)
         elm_layout_content_set(btn, CONTENT_PART, ico);
      }
 
+   if(_elm_config->atspi_mode)
+      eo_do(btn, elm_interface_atspi_accessible_name_set(N_("Navigate back")));
+
    return btn;
 }
 
