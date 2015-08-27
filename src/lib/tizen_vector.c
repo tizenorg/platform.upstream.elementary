@@ -1206,7 +1206,8 @@ button_effect_no_bg_resize_cb(void *data, Evas *e EINA_UNUSED,
         Evas_Coord w2, h2;
         double effect_ratio;
 
-        evas_object_geometry_get(vd->obj, NULL, NULL, &w2, &h2);
+        if (!edje_object_part_geometry_get(elm_layout_edje_get(vd->obj), "effect_spacer", NULL, NULL, &w2, &h2))
+          evas_object_geometry_get(vd->obj, NULL, NULL, &w2, &h2);
         effect_ratio = (w2 < h2) ? (double)w / w2 : (double)h / h2;
         evas_vg_shape_shape_append_rect(vd->shape[0], 0, 0, w, h, vd->corner * effect_ratio, vd->corner * effect_ratio);
      }
@@ -1309,7 +1310,8 @@ button_effect_resize_cb(void *data, Evas *e EINA_UNUSED,
         Evas_Coord w2, h2;
         double effect_ratio;
 
-        evas_object_geometry_get(vd->vg[0], NULL, NULL, &w2, &h2);
+        if (!edje_object_part_geometry_get(elm_layout_edje_get(vd->obj), "effect_spacer", NULL, NULL, &w2, &h2))
+          evas_object_geometry_get(vd->vg[0], NULL, NULL, &w2, &h2);
         effect_ratio = (w2 < h2) ? (double)w / w2 : (double)h / h2;
         evas_vg_shape_shape_append_rect(vd->shape[1], 0, 0, w, h, vd->corner * effect_ratio, vd->corner * effect_ratio);
      }
