@@ -41,15 +41,6 @@ typedef struct vg_radio_s
    Eina_Bool init : 1;
 } vg_radio;
 
-static int
-adjust_radius(int radius)
-{
-   //FIXME: remove once ector backend
-   // draws perfect circle for odd radius value.
-   if (radius & 1) radius -= 1;
-   return radius;
-}
-
 static void
 transit_radio_op(Elm_Transit_Effect *effect, Elm_Transit *transit EINA_UNUSED,
                  double progress)
@@ -64,7 +55,7 @@ transit_radio_op(Elm_Transit_Effect *effect, Elm_Transit *transit EINA_UNUSED,
    if (elm_radio_selected_object_get(vd->obj) != vd->obj)
      progress = 1 - progress;
 
-   int radius = (center_x < center_y ? center_x : center_y)
+   double radius = (center_x < center_y ? center_x : center_y)
       - (2 * ELM_VG_SCALE_SIZE(vd->obj, 1.5));
 
    //Iconic Circle (Outline)
@@ -73,7 +64,6 @@ transit_radio_op(Elm_Transit_Effect *effect, Elm_Transit *transit EINA_UNUSED,
 
    //Iconic Circle (Center)
    radius = radius * 0.6 * progress;
-   radius = adjust_radius(radius);
    evas_vg_shape_shape_reset(vd->shape[2]);
    evas_vg_shape_shape_append_circle(vd->shape[2], center_x, center_y, radius);
 }
@@ -151,10 +141,8 @@ radio_base_resize_cb(void *data, Evas *e EINA_UNUSED,
    Evas_Coord center_x = (w / 2);
    Evas_Coord center_y = (h / 2);
 
-   int radius = (center_x < center_y ? center_x : center_y)
+   double radius = (center_x < center_y ? center_x : center_y)
       -(2 * ELM_VG_SCALE_SIZE(vd->obj, 1.5));
-
-   radius = adjust_radius(radius);
 
    //Outline
    evas_vg_shape_shape_reset(vd->shape[0]);
@@ -171,7 +159,6 @@ radio_base_resize_cb(void *data, Evas *e EINA_UNUSED,
 
    //Iconic Circle (Center)
    radius = radius * 0.6;
-   radius = adjust_radius(radius);
    evas_vg_shape_shape_reset(vd->shape[2]);
    evas_vg_shape_shape_append_circle(vd->shape[2], center_x, center_y,
                                      radius);
