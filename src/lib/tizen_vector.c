@@ -228,6 +228,22 @@ typedef struct check_favorite_s
    Eina_Bool init : 1;
 } check_favorite;
 
+//favorite off svg path info
+static const char *star_off = "M26.003,38.931c0.29,0,0.58,0.084,0.832,0.252\
+  l12.212,8.142c0.367,0.245,0.859,0.229,1.199-0.021c0.359-0.262,0.516-0.721,0.394-1.146l-4.104-14.367\
+  c-0.158-0.557,0.017-1.156,0.452-1.538l10.174-8.949c0.313-0.284,0.424-0.74,0.267-1.148c-0.159-0.415-0.546-0.681-0.987-0.681\
+  H33.433c-0.623,0-1.181-0.385-1.402-0.967L26.966,5.17c-0.153-0.398-0.549-0.67-0.98-0.67C25.55,4.501,25.154,4.773,25,5.177\
+  l-5.034,13.328c-0.221,0.583-0.779,0.97-1.404,0.97H5.557c-0.44,0-0.827,0.266-0.985,0.677c-0.158,0.413-0.049,0.869,0.279,1.164\
+  l10.158,8.937c0.434,0.383,0.609,0.981,0.451,1.538l-4.104,14.367c-0.123,0.425,0.033,0.883,0.387,1.14\
+  c0.357,0.258,0.85,0.271,1.211,0.028l12.217-8.144C25.423,39.015,25.713,38.931,26.003,38.931z";
+
+//favorite on svg path info
+static const char *star_on = "M39.633,49c-0.492,0-0.987-0.145-1.417-0.432l-12.212-8.141l-12.215,8.141\
+  c-0.892,0.598-2.059,0.57-2.926-0.061c-0.866-0.629-1.245-1.734-0.949-2.766l4.104-14.365L3.846,22.429\
+  c-0.788-0.71-1.055-1.828-0.676-2.814c0.378-0.987,1.326-1.641,2.385-1.641h13.007l5.036-13.331c0.377-0.989,1.326-1.64,2.384-1.643\
+  h0.003c1.056,0,2.003,0.651,2.384,1.637l5.063,13.337h13.011c1.061,0,2.007,0.652,2.387,1.641c0.38,0.988,0.109,2.104-0.677,2.814\
+  L37.98,31.377l4.104,14.365c0.294,1.031-0.085,2.137-0.947,2.766C40.692,48.834,40.162,49,39.633,49z";
+
 static void
 check_favorite_init(check_favorite *vd)
 {
@@ -236,64 +252,16 @@ check_favorite_init(check_favorite *vd)
 
    //Outline Star
    vd->shape[0] = evas_vg_shape_add(evas_object_vg_root_node_get(vd->vg[0]));
+   evas_vg_node_origin_set(vd->shape[0], 14, 14);
    evas_vg_shape_stroke_color_set(vd->shape[0], 255, 255, 255, 255);
    evas_vg_shape_stroke_width_set(vd->shape[0], ELM_VG_SCALE_SIZE(vd->obj, 1.5));
-   evas_vg_shape_stroke_join_set(vd->shape[0], EFL_GFX_JOIN_ROUND);
+   evas_vg_shape_shape_append_svg_path(vd->shape[0], star_off);
 
    //Inner Body Star
    vd->shape[1] = evas_vg_shape_add(evas_object_vg_root_node_get(vd->vg[1]));
+   evas_vg_node_origin_set(vd->shape[1], 14, 14);
+   evas_vg_shape_shape_append_svg_path(vd->shape[1], star_on);
    evas_vg_node_color_set(vd->shape[1], 255, 255, 255, 255);
-}
-
-static void
-check_favorite_shape_do(check_favorite *vd, int idx)
-{
-   //Input Parameters
-   #define PT_CNT 10
-
-   const double STAR_PT[PT_CNT][2] = {{0, -18}, {6, -6}, {17, -6}, {8, 3},
-                                      {12, 16}, {0, 9}, {-12, 16}, {-8, 3},
-                                      {-17, -6}, {-6, -6}};
-   check_favorite_init(vd);
-
-   Evas_Coord w, h;
-   evas_object_geometry_get(vd->vg[idx], NULL, NULL, &w, &h);
-   double center_x = ((double)w / 2);
-   double center_y = ((double)h / 2);
-
-   //Inner Star Body
-   evas_vg_shape_shape_reset(vd->shape[idx]);
-   evas_vg_shape_shape_append_move_to(vd->shape[idx],
-                                      center_x + ELM_VG_SCALE_SIZE(vd->obj, STAR_PT[0][0]),
-                                      center_y + ELM_VG_SCALE_SIZE(vd->obj, STAR_PT[0][1]));
-   int i;
-   for (i = 1; i < PT_CNT; i++)
-     {
-        evas_vg_shape_shape_append_line_to(vd->shape[idx],
-                                      center_x + ELM_VG_SCALE_SIZE(vd->obj, STAR_PT[i][0]),
-                                      center_y + ELM_VG_SCALE_SIZE(vd->obj, STAR_PT[i][1]));
-     }
-   evas_vg_shape_shape_append_close(vd->shape[idx]);
-
-}
-
-static void
-check_favorite_vg_resize_cb(void *data, Evas *e EINA_UNUSED,
-                            Evas_Object *obj EINA_UNUSED,
-                            void *event_info EINA_UNUSED)
-{
-   check_favorite *vd = data;
-   check_favorite_shape_do(vd, 0);
-}
-
-static void
-check_favorite_vg2_resize_cb(void *data, Evas *e EINA_UNUSED,
-                             Evas_Object *obj EINA_UNUSED,
-                             void *event_info EINA_UNUSED)
-{
-   check_favorite *vd = data;
-   if (!elm_check_state_get(vd->obj)) return;
-   check_favorite_shape_do(vd, 1);
 }
 
 static void
@@ -306,14 +274,12 @@ transit_check_favorite_del_cb(void *data, Elm_Transit *transit EINA_UNUSED)
 static void
 _check_favorite(check_favorite *vd, double progress)
 {
-   check_favorite_shape_do(vd, 1);
+   // star on svg has viewbox as -14 -14 80 80, so the center
+   // of the shape is (80 - 2 *14) = 26
+   double center_x = 26;
+   double center_y = 26;
 
    if (!elm_check_state_get(vd->obj)) progress = 1 - progress;
-
-   Evas_Coord w, h;
-   evas_object_geometry_get(vd->vg[1], NULL, NULL, &w, &h);
-   double center_x = ((double)w / 2);
-   double center_y = ((double)h / 2);
 
    Eina_Matrix3 m;
    eina_matrix3_identity(&m);
@@ -329,6 +295,16 @@ transit_check_favorite_op(Elm_Transit_Effect *effect,
 {
    check_favorite *vd = effect;
    _check_favorite(vd, progress);
+}
+
+static void
+check_favorite_vg_resize_cb(void *data, Evas *e EINA_UNUSED,
+                            Evas_Object *obj EINA_UNUSED,
+                            void *event_info EINA_UNUSED)
+{
+   check_favorite *vd = data;
+   check_favorite_init(vd);
+   _check_favorite(vd, 1);
 }
 
 static void
@@ -414,8 +390,6 @@ tizen_vg_check_favorite_set(Elm_Check *obj)
                                   check_favorite_vg_resize_cb, vd);
    //Inner Body Star
    vd->vg[1] = evas_object_vg_add(evas_object_evas_get(obj));
-   evas_object_event_callback_add(vd->vg[1], EVAS_CALLBACK_RESIZE,
-                                  check_favorite_vg2_resize_cb, vd);
 
    elm_object_part_content_set(obj, "tizen_vg_shape", vd->vg[0]);
    elm_object_part_content_set(obj, "tizen_vg_shape2", vd->vg[1]);
