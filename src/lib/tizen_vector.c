@@ -308,6 +308,14 @@ transit_check_favorite_op(Elm_Transit_Effect *effect,
 }
 
 static void
+_transit_check_favorite_animation_finished(Elm_Transit_Effect *effect, Elm_Transit *transit EINA_UNUSED)
+{
+   check_favorite *vd = effect;
+
+   elm_layout_signal_emit(vd->obj, "elm,action,animation,finished", "elm");
+}
+
+static void
 check_favorite_vg_resize_cb(void *data, Evas *e EINA_UNUSED,
                             Evas_Object *obj EINA_UNUSED,
                             void *event_info EINA_UNUSED)
@@ -334,7 +342,7 @@ check_favorite_action_toggle_cb(void *data, Evas_Object *obj EINA_UNUSED,
    elm_transit_del(vd->transit);
    vd->transit = elm_transit_add();
    elm_transit_effect_add(vd->transit, transit_check_favorite_op, vd,
-                          NULL);
+                          _transit_check_favorite_animation_finished);
    elm_transit_del_cb_set(vd->transit, transit_check_favorite_del_cb, vd);
    elm_transit_tween_mode_set(vd->transit,
                               ELM_TRANSIT_TWEEN_MODE_DECELERATE);
@@ -508,6 +516,14 @@ transit_check_onoff_line_op(void *data, Elm_Transit *transit EINA_UNUSED,
 }
 
 static void
+_transit_check_onoff_animation_finished(Elm_Transit_Effect *effect, Elm_Transit *transit EINA_UNUSED)
+{
+   check_onoff *vd = effect;
+
+   elm_layout_signal_emit(vd->obj, "elm,action,animation,finished", "elm");
+}
+
+static void
 transit_check_onoff_line_del_cb(void *data, Elm_Transit *transit EINA_UNUSED)
 {
    check_onoff *vd = data;
@@ -606,7 +622,7 @@ check_onoff_action_toggle_cb(void *data, Evas_Object *obj EINA_UNUSED,
    elm_transit_del(vd->transit[2]);
    vd->transit[2] = elm_transit_add();
    elm_transit_effect_add(vd->transit[2], transit_check_onoff_sizing_op, vd,
-                          NULL);
+                          _transit_check_onoff_animation_finished);
    elm_transit_del_cb_set(vd->transit[2], transit_check_onoff_sizing_del_cb,
                           vd);
    elm_transit_tween_mode_set(vd->transit[2],
@@ -941,6 +957,14 @@ transit_check_default_bg_color_op(Elm_Transit_Effect *effect,
 }
 
 static void
+_transit_check_default_animation_finished(Elm_Transit_Effect *effect, Elm_Transit *transit EINA_UNUSED)
+{
+   check_default *vd = effect;
+
+   elm_layout_signal_emit(vd->obj, "elm,action,animation,finished", "elm");
+}
+
+static void
 transit_check_default_bg_scale_del_cb(Elm_Transit_Effect *effect,
                                       Elm_Transit *transit EINA_UNUSED)
 {
@@ -1036,7 +1060,7 @@ check_default_action_toggle_cb(void *data, Evas_Object *obj EINA_UNUSED,
    elm_transit_del(vd->transit[0]);
    vd->transit[0] = elm_transit_add();
    elm_transit_effect_add(vd->transit[0], transit_check_default_bg_color_op, vd,
-                          NULL);
+                          _transit_check_default_animation_finished);
    elm_transit_del_cb_set(vd->transit[0], transit_check_default_bg_color_del_cb,
                           vd);
    elm_transit_tween_mode_set(vd->transit[0],
