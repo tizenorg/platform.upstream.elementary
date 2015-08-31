@@ -1910,7 +1910,6 @@ group { name: "elm/border/base/simple";
       part { name: "e.event.titlebar"; type: RECT;
          description { state: "default" 0.0;
             rel1.relative: 0.0 0.0;
-            rel1.offset: 0 23;
             rel1.to: "top";
             rel2.relative: 0.0 1.0;
             rel2.to_x: "e.event.close";
@@ -1939,17 +1938,6 @@ group { name: "elm/border/base/simple";
             rel1.offset: -17 0;
             rel2.relative: 0.0 1.0;
             rel2.to_y: "top";
-            color: 0 0 0 0;
-         }
-      }
-      part { name: "e.event.resize.t"; type: RECT;
-         description { state: "default" 0.0;
-            fixed: 1 1;
-            rel1.relative: 0.0 0.0;
-            rel1.to: "top";
-            rel2.relative: 1.0 0.0;
-            rel2.offset: 0 23;
-            rel2.to: "top";
             color: 0 0 0 0;
          }
       }
@@ -2147,18 +2135,6 @@ group { name: "elm/border/base/simple";
       program {
          signal: "mouse,clicked,1"; source: "e.event.close";
          action: SIGNAL_EMIT "elm,action,close" "elm";
-      }
-      program {
-         signal: "mouse,in"; source: "e.event.resize.t";
-         action: SIGNAL_EMIT "elm,action,resize,show" "elm.event.resize.t";
-      }
-      program {
-         signal: "mouse,out"; source: "e.event.resize.t";
-         action: SIGNAL_EMIT "elm,action,resize,hide" "elm.event.resize.t";
-      }
-      program { name: "resize_t_down";
-         signal: "mouse,down,1"; source: "e.event.resize.t";
-         action: SIGNAL_EMIT "elm,action,resize,start" "elm.event.resize.t";
       }
       program {
          signal: "mouse,in"; source: "e.event.resize.b";
