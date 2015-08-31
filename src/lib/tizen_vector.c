@@ -1515,6 +1515,14 @@ transit_progressbar_normal_op3(Elm_Transit_Effect *effect, Elm_Transit *transit 
 }
 
 static void
+_transit_progressbar_normal_animation_finished(Elm_Transit_Effect *effect, Elm_Transit *transit EINA_UNUSED)
+{
+   vg_progressbar *vd = effect;
+
+   elm_layout_signal_emit(vd->obj, "elm,action,animation,finished", "elm");
+}
+
+static void
 progressbar_normal_bg_resize_cb(void *data , Evas *e EINA_UNUSED,
                                 Evas_Object *obj EINA_UNUSED,
                                 void *event_info EINA_UNUSED)
@@ -1561,7 +1569,7 @@ progressbar_normal_fg_resize_cb(void *data, Evas *e EINA_UNUSED,
 
    Elm_Transit *transit3 = elm_transit_add();
    elm_transit_object_add(transit3, obj);
-   elm_transit_effect_add(transit3, transit_progressbar_normal_op3, vd, NULL);
+   elm_transit_effect_add(transit3, transit_progressbar_normal_op3, vd, _transit_progressbar_normal_animation_finished);
    elm_transit_tween_mode_set(transit1, ELM_TRANSIT_TWEEN_MODE_BEZIER_CURVE);
    elm_transit_tween_mode_factor_n_set(transit3, 4, ease_out_factor);
    elm_transit_duration_set(transit3, 0.3);
