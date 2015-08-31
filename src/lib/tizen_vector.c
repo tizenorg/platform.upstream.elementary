@@ -1712,7 +1712,7 @@ transit_progressbar_process_C_op1(Elm_Transit_Effect *effect, Elm_Transit *trans
    evas_vg_shape_shape_append_arc(vd->shape[0], 0, 0, w - vd->shrink, h - vd->shrink, start_angle, sweep_length);
 }
 
-static void _transit_progreassbar_process_end(Elm_Transit_Effect *effect, Elm_Transit *transit);
+static void _transit_progressbar_process_end(Elm_Transit_Effect *effect, Elm_Transit *transit);
 
 static void
 _progressbar_process_pulse_start_helper(vg_progressbar *vd)
@@ -1768,7 +1768,7 @@ _progressbar_process_pulse_start_helper(vg_progressbar *vd)
    // For Layer C Animation
    transit1 = elm_transit_add();
    elm_transit_object_add(transit1, vd->obj);
-   elm_transit_effect_add(transit1, transit_progressbar_process_C_op1, vd, _transit_progreassbar_process_end);
+   elm_transit_effect_add(transit1, transit_progressbar_process_C_op1, vd, _transit_progressbar_process_end);
    elm_transit_duration_set(transit1, 0.85);
    elm_transit_objects_final_state_keep_set(transit1, EINA_TRUE);
    vd->transit = transit1;
@@ -1776,7 +1776,7 @@ _progressbar_process_pulse_start_helper(vg_progressbar *vd)
 }
 
 static void
-_transit_progreassbar_process_end(Elm_Transit_Effect *effect, Elm_Transit *transit EINA_UNUSED)
+_transit_progressbar_process_end(Elm_Transit_Effect *effect, Elm_Transit *transit EINA_UNUSED)
 {
    vg_progressbar *vd = effect;
    if (!vd->transit) return;
