@@ -741,8 +741,8 @@ tizen_vg_check_onoff_set(Elm_Check *obj)
 /////////////////////////////////////////////////////////////////////////
 typedef struct check_default_s
 {
-   Evas_Object *vg[2]; //0: base, 1: line
-   Efl_VG_Shape *shape[4];  //0: outline, 1: bg, 2: left line, 3: right line
+   Evas_Object *vg[3]; //0: base, 1: line 2: bg
+   Efl_VG_Shape *shape[5];  //0: outline, 1: bg, 2: left line, 3: right line 4: bg
    Elm_Transit *transit[3]; //0: bg color, 1: bg scale, 2: check lines
    Evas_Object *obj;
    double left_move_to[2];
@@ -752,24 +752,31 @@ typedef struct check_default_s
    Eina_Bool init : 1;
 } check_default;
 
+static const char *check_default_fill = "M7.279,2h35.442C45.637,2,48,4.359,48,7.271v35.455C48,45.639,45.637,48,42.723,48\
+  H7.279C4.362,47.997,2,45.639,2,42.727V7.271C2,4.359,4.362,2,7.279,2z";
+
+static const char *check_default_outline= "M-2.073-7h36.147C36.796-7,39-4.793,39-2.073v36.146\
+  C39,36.796,36.796,39,34.074,39H-2.073C-4.793,39-7,36.796-7,34.072V-2.073C-7-4.793-4.793-7-2.073-7z";
+
 static void
 check_default_init(check_default *vd)
 {
    if (vd->init) return;
    vd->init = EINA_TRUE;
 
+   // bg sahpe
+   Efl_VG *bg_root = evas_object_vg_root_node_get(vd->vg[2]);
+   vd->shape[4] = evas_vg_shape_add(bg_root);
+
+
    Efl_VG *base_root = evas_object_vg_root_node_get(vd->vg[0]);
-
-   //Outline Shape
+   //outline
    vd->shape[0] = evas_vg_shape_add(base_root);
-   evas_vg_shape_stroke_color_set(vd->shape[0], 255, 255, 255, 255);
-   evas_vg_shape_stroke_width_set(vd->shape[0], ELM_VG_SCALE_SIZE(vd->obj, 1.25));
-
-   //BG Shape
+   //effect
    vd->shape[1] = evas_vg_shape_add(base_root);
 
+   // check icon
    Efl_VG *line_root = evas_object_vg_root_node_get(vd->vg[1]);
-
    //Left Line Shape
    vd->shape[2] = evas_vg_shape_add(line_root);
    evas_vg_shape_stroke_width_set(vd->shape[2], ELM_VG_SCALE_SIZE(vd->obj, 1.75));
@@ -794,6 +801,42 @@ check_default_init(check_default *vd)
 }
 
 static void
+_update_default_check_shape(Efl_VG *shape, Eina_Bool outline)
+{
+   evas_vg_shape_shape_reset(shape);
+   if (outline)
+     {
+        // outline
+        evas_vg_shape_shape_append_svg_path(shape, check_default_outline);
+        evas_vg_node_origin_set(shape, 9, 9);
+        evas_vg_shape_stroke_width_set(shape, 2);
+
+        // update color
+        evas_vg_node_color_set(shape, 0, 0, 0, 0);
+        evas_vg_shape_stroke_color_set(shape, 255, 255, 255, 255);
+     }
+   else
+     {
+        // fill
+        evas_vg_shape_shape_append_svg_path(shape, check_default_fill);
+        evas_vg_node_origin_set(shape, 0, 0);
+        // update color
+        evas_vg_node_color_set(shape, 255, 255, 255, 255);
+        evas_vg_shape_stroke_color_set(shape, 0, 0, 0, 0);
+     }
+}
+
+static void
+check_default_vg_bg_resize_cb(void *data, Evas *e EINA_UNUSED,
+                                Evas_Object *obj EINA_UNUSED,
+                                void *event_info EINA_UNUSED)
+{
+   check_default *vd = data;
+   check_default_init(vd);
+   _update_default_check_shape(vd->shape[4], elm_check_state_get(vd->obj));
+}
+
+static void
 check_default_vg_resize_cb(void *data, Evas *e EINA_UNUSED,
                            Evas_Object *obj EINA_UNUSED,
                            void *event_info EINA_UNUSED)
@@ -808,17 +851,11 @@ check_default_vg_resize_cb(void *data, Evas *e EINA_UNUSED,
    double center_y = ((double)h / 2);
 
    //Update Outline Shape
-   evas_vg_shape_shape_reset(vd->shape[0]);
-   evas_vg_shape_shape_append_rect(vd->shape[0], 1, 1,
-                                   w - 2, h - 2,
-                                   ELM_VG_SCALE_SIZE(vd->obj, 5),
-                                   ELM_VG_SCALE_SIZE(vd->obj, 5));
+   _update_default_check_shape(vd->shape[0], !elm_check_state_get(vd->obj));
 
    //Update BG Shape
-   evas_vg_shape_shape_reset(vd->shape[1]);
-   evas_vg_shape_shape_append_rect(vd->shape[1], 0, 0, w, h,
-                                   ELM_VG_SCALE_SIZE(vd->obj, 5),
-                                   ELM_VG_SCALE_SIZE(vd->obj, 5));
+   _update_default_check_shape(vd->shape[1], EINA_FALSE);
+
    if (elm_check_state_get(vd->obj))
      evas_vg_node_color_set(vd->shape[1], 255, 255, 255, 255);
    else
@@ -868,6 +905,7 @@ _check_default_bg_color(check_default *vd, double progress)
    else color = 255 * (1 - progress);
 
    evas_vg_node_color_set(vd->shape[1], color, color, color, color);
+   evas_vg_shape_stroke_color_set(vd->shape[0], 255 - color, 255 - color, 255 - color, 255 -color);
 }
 
 static void
@@ -890,16 +928,13 @@ transit_check_default_bg_scale_del_cb(Elm_Transit_Effect *effect,
 static void
 _check_default_bg_scale(check_default *vd, double progress)
 {
-   Evas_Coord w, h;
-   evas_object_geometry_get(vd->vg[0], NULL, NULL, &w, &h);
-   double center_x = ((double)w / 2);
-   double center_y = ((double)h / 2);
-
+   // as the viewbox of the check_on svg is 0 0 50 50
+   // center of the svg is 25 25
    Eina_Matrix3 m;
    eina_matrix3_identity(&m);
-   eina_matrix3_translate(&m, center_x, center_y);
+   eina_matrix3_translate(&m, 25, 25);
    eina_matrix3_scale(&m, progress, progress);
-   eina_matrix3_translate(&m, -center_x, -center_y);
+   eina_matrix3_translate(&m, -25, -25);
    evas_vg_node_transformation_set(vd->shape[1], &m);
 }
 static void
@@ -1027,6 +1062,8 @@ check_default_action_toggle_cb(void *data, Evas_Object *obj EINA_UNUSED,
      elm_transit_go_in(vd->transit[2], 0.15);
    else
      elm_transit_go(vd->transit[2]);
+
+   _update_default_check_shape(vd->shape[4], elm_check_state_get(vd->obj));
 }
 
 static void
@@ -1043,6 +1080,13 @@ check_default_state_toggle_cb(void *data, Evas_Object *obj EINA_UNUSED,
    _check_default_bg_color(vd, 1.0);
    _check_default_bg_scale(vd, 1.0);
    _check_default_line(vd, 1.0);
+   _update_default_check_shape(vd->shape[4], elm_check_state_get(vd->obj));
+
+   // update outline color
+   if (elm_check_state_get(vd->obj))
+     evas_vg_shape_stroke_color_set(vd->shape[0], 0, 0, 0, 0);
+   else
+     evas_vg_shape_stroke_color_set(vd->shape[0], 255, 255, 255, 255);
 }
 
 static void
@@ -1057,6 +1101,7 @@ check_default_del_cb(void *data, Evas *e EINA_UNUSED,
    elm_transit_del(vd->transit[1]);
    elm_transit_del(vd->transit[2]);
    evas_object_del(vd->vg[1]);
+   evas_object_del(vd->vg[2]);
    free(vd);
 }
 
@@ -1076,6 +1121,11 @@ tizen_vg_check_default_set(Elm_Check *obj)
 
    vd->obj = obj;
 
+   //Check bg
+   vd->vg[2] = evas_object_vg_add(evas_object_evas_get(obj));
+   evas_object_event_callback_add(vd->vg[2], EVAS_CALLBACK_RESIZE,
+                                  check_default_vg_bg_resize_cb, vd);
+
    //Base VG
    vd->vg[0] = evas_object_vg_add(evas_object_evas_get(obj));
    evas_object_event_callback_add(vd->vg[0], EVAS_CALLBACK_DEL,
@@ -1085,6 +1135,7 @@ tizen_vg_check_default_set(Elm_Check *obj)
    //Check Line VG
    vd->vg[1] = evas_object_vg_add(evas_object_evas_get(obj));
 
+   elm_object_part_content_set(obj, "tizen_vg_shape_bg", vd->vg[2]);
    elm_object_part_content_set(obj, "tizen_vg_shape", vd->vg[0]);
    elm_object_part_content_set(obj, "tizen_vg_shape2", vd->vg[1]);
 }
