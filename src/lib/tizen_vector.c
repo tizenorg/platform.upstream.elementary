@@ -42,11 +42,29 @@ typedef struct vg_radio_s
 } vg_radio;
 
 static void
-transit_radio_op(Elm_Transit_Effect *effect, Elm_Transit *transit EINA_UNUSED,
-                 double progress)
+radio_init(vg_radio *vd)
 {
-   vg_radio *vd = effect;
+   if (vd->init) return;
+   vd->init = EINA_TRUE;
 
+   //Outline Shape
+   vd->shape[0] = evas_vg_shape_add(evas_object_vg_root_node_get(vd->vg[0]));
+   evas_vg_shape_stroke_color_set(vd->shape[0], 255, 255, 255, 255);
+   evas_vg_shape_stroke_width_set(vd->shape[0], ELM_VG_SCALE_SIZE(vd->obj, 1));
+
+   //Iconic Circle (Outline)
+   vd->shape[1] = evas_vg_shape_add(evas_object_vg_root_node_get(vd->vg[1]));
+   evas_vg_shape_stroke_color_set(vd->shape[1], 255, 255, 255, 255);
+   evas_vg_shape_stroke_width_set(vd->shape[1], 1 + ELM_VG_SCALE_SIZE(vd->obj, 1.5));
+
+   //Iconic Circle (Center Point)
+   vd->shape[2] = evas_vg_shape_add(evas_object_vg_root_node_get(vd->vg[1]));
+   evas_vg_node_color_set(vd->shape[2], 255, 255, 255, 255);
+}
+
+static void
+_radio_icon_update(vg_radio *vd, double progress)
+{
    Evas_Coord w, h;
    evas_object_geometry_get(vd->vg[0], NULL, NULL, &w, &h);
    double center_x = ((double)w / 2);
@@ -69,6 +87,14 @@ transit_radio_op(Elm_Transit_Effect *effect, Elm_Transit *transit EINA_UNUSED,
 }
 
 static void
+transit_radio_op(Elm_Transit_Effect *effect, Elm_Transit *transit EINA_UNUSED,
+                 double progress)
+{
+   vg_radio *vd = effect;
+   _radio_icon_update(vd, progress);
+}
+
+static void
 transit_radio_del_cb(void *data, Elm_Transit *transit EINA_UNUSED)
 {
    vg_radio *vd = data;
@@ -76,10 +102,13 @@ transit_radio_del_cb(void *data, Elm_Transit *transit EINA_UNUSED)
 }
 
 static void
-radio_changed_cb(void *data, Evas_Object *obj EINA_UNUSED,
-                 void *event_info EINA_UNUSED)
+radio_action_toggle_cb(void *data, Evas_Object *obj EINA_UNUSED,
+                       const char *emission EINA_UNUSED,
+                       const char *source)
 {
    vg_radio *vd = data;
+   if (!source) return;
+   if (strcmp(source, "tizen_vg")) return;
 
    //Circle Effect
    elm_transit_del(vd->transit);
@@ -94,37 +123,29 @@ radio_changed_cb(void *data, Evas_Object *obj EINA_UNUSED,
 }
 
 static void
+radio_state_toggle_cb(void *data, Evas_Object *obj EINA_UNUSED,
+                      const char *emission EINA_UNUSED,
+                      const char *source)
+{
+   vg_radio *vd = data;
+   if (!source) return;
+   if (strcmp(source, "tizen_vg")) return;
+
+   //Circle Effect
+    _radio_icon_update(vd, 1.0);
+}
+
+static void
 radio_del_cb(void *data, Evas *e EINA_UNUSED, Evas_Object *obj EINA_UNUSED,
              void *event_info EINA_UNUSED)
 {
    vg_radio *vd = data;
    evas_object_data_set(vd->obj, vg_key, NULL);
-   evas_object_smart_callback_del(vd->obj, "changed",
-                                  radio_changed_cb);
+   elm_object_signal_callback_del(vd->obj, "elm,radio,state,toggle", "tizen_vg", radio_state_toggle_cb);
+   elm_object_signal_callback_del(vd->obj, "elm,radio,action,toggle", "tizen_vg", radio_action_toggle_cb);
    elm_transit_del(vd->transit);
    evas_object_del(vd->vg[1]);
    free(vd);
-}
-
-static void
-radio_init(vg_radio *vd)
-{
-   if (vd->init) return;
-   vd->init = EINA_TRUE;
-
-   //Outline Shape
-   vd->shape[0] = evas_vg_shape_add(evas_object_vg_root_node_get(vd->vg[0]));
-   evas_vg_shape_stroke_color_set(vd->shape[0], 255, 255, 255, 255);
-   evas_vg_shape_stroke_width_set(vd->shape[0], ELM_VG_SCALE_SIZE(vd->obj, 1));
-
-   //Iconic Circle (Outline)
-   vd->shape[1] = evas_vg_shape_add(evas_object_vg_root_node_get(vd->vg[1]));
-   evas_vg_shape_stroke_color_set(vd->shape[1], 255, 255, 255, 255);
-   evas_vg_shape_stroke_width_set(vd->shape[1], 1 + ELM_VG_SCALE_SIZE(vd->obj, 1.5));
-
-   //Iconic Circle (Center Point)
-   vd->shape[2] = evas_vg_shape_add(evas_object_vg_root_node_get(vd->vg[1]));
-   evas_vg_node_color_set(vd->shape[2], 255, 255, 255, 255);
 }
 
 static void
@@ -181,7 +202,9 @@ tizen_vg_radio_set(Elm_Radio *obj)
         return;
      }
    evas_object_data_set(obj, vg_key, vd);
-   evas_object_smart_callback_add(obj, "changed", radio_changed_cb, vd);
+   elm_object_signal_callback_add(obj, "elm,radio,state,toggle", "tizen_vg", radio_state_toggle_cb, vd);
+   elm_object_signal_callback_add(obj, "elm,radio,action,toggle", "tizen_vg", radio_action_toggle_cb, vd);
+
 
    //Vector Graphics Object
    Evas *e = evas_object_evas_get(obj);
