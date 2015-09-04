@@ -39,6 +39,8 @@ struct _Elm_Flipselector_Data
    int                   walking;
    Eina_Bool             evaluating : 1;
    Eina_Bool             deleting : 1;
+   Evas_Object           *access_top_button;
+   Evas_Object           *access_bottom_button;
 };
 
 typedef struct _Elm_Flipselector_Item_Data       Elm_Flipselector_Item_Data;
