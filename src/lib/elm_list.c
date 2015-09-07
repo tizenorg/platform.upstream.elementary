@@ -2320,6 +2320,12 @@ _item_new(Evas_Object *obj,
 
    VIEW(it) = edje_object_add(evas_object_evas_get(obj));
 
+   if (_elm_config->atspi_mode)
+     {
+        if (it->icon) eo_do(it->icon, elm_interface_atspi_accessible_parent_set(eo_it));
+        if (it->end) eo_do(it->end, elm_interface_atspi_accessible_parent_set(eo_it));
+     }
+
    /* access */
    if (_elm_config->access_mode == ELM_ACCESS_MODE_ON)
      _access_widget_item_register(it, EINA_TRUE);
