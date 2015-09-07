@@ -1499,23 +1499,69 @@ typedef struct vg_progressbar_s
 {
    Evas_Object *vg[3];       //0: base, 1: layer1, 2:layer2
    Efl_VG_Shape *shape[3];   //0: base, 1: layer1, 2: layer2
-   Elm_Transit  *transit;
+   Elm_Transit  *transit[7];
    Evas_Object *obj;
    Evas_Coord x, w, h;       // for normal style animation data
    double stroke_width;
    double shrink;
    double shift;
+   Eina_Bool pulse;
 } vg_progressbar;
+
+static void
+transit0_progress_del_cb(void *data, Elm_Transit *transit EINA_UNUSED)
+{
+   vg_progressbar *vd = data;
+   vd->transit[0] = NULL;
+}
+
+static void
+transit1_progress_del_cb(void *data, Elm_Transit *transit EINA_UNUSED)
+{
+   vg_progressbar *vd = data;
+   vd->transit[1] = NULL;
+}
+
+static void
+transit2_progress_del_cb(void *data, Elm_Transit *transit EINA_UNUSED)
+{
+   vg_progressbar *vd = data;
+   vd->transit[2] = NULL;
+}
+
+static void
+transit3_progress_del_cb(void *data, Elm_Transit *transit EINA_UNUSED)
+{
+   vg_progressbar *vd = data;
+   vd->transit[3] = NULL;
+}
+
+static void
+transit4_progress_del_cb(void *data, Elm_Transit *transit EINA_UNUSED)
+{
+   vg_progressbar *vd = data;
+   vd->transit[4] = NULL;
+}
+
+static void
+transit5_progress_del_cb(void *data, Elm_Transit *transit EINA_UNUSED)
+{
+   vg_progressbar *vd = data;
+   vd->transit[5] = NULL;
+}
 
 static void
 progressbar_del_cb(void *data EINA_UNUSED, Evas *e EINA_UNUSED, Evas_Object *obj,
               void *event_info EINA_UNUSED)
 {
    vg_progressbar *vd = evas_object_data_get(obj, vg_key);
-   Elm_Transit *cur_transit = vd->transit;
-   vd->transit = NULL;
-   if (cur_transit)
-     elm_transit_del(cur_transit);
+   vd->pulse = EINA_FALSE;
+   int i;
+   for (i = 0; i < 7 ; i++)
+     {
+        elm_transit_del(vd->transit[i]);
+        vd->transit[i] = NULL;
+     }
    evas_object_data_set(obj, vg_key, NULL);
    free(vd);
 }
@@ -1559,7 +1605,7 @@ static void
 _transit_progressbar_normal_animation_finished(Elm_Transit_Effect *effect, Elm_Transit *transit EINA_UNUSED)
 {
    vg_progressbar *vd = effect;
-
+   vd->transit[2] = NULL;
    elm_layout_signal_emit(vd->obj, "elm,action,animation,finished", "elm");
 }
 
@@ -1591,35 +1637,37 @@ progressbar_normal_fg_resize_cb(void *data, Evas *e EINA_UNUSED,
    else vd->x = vd->w - vd->h;
    vd->w = w;
    vd->h = h;
-   Elm_Transit *transit1 = elm_transit_add();
-   elm_transit_object_add(transit1, obj);
-   elm_transit_effect_add(transit1, transit_progressbar_normal_op1, vd, NULL);
-   elm_transit_tween_mode_set(transit1, ELM_TRANSIT_TWEEN_MODE_BEZIER_CURVE);
-   elm_transit_tween_mode_factor_n_set(transit1, 4, ease_out_factor);
-   elm_transit_duration_set(transit1, 0.8);
-   elm_transit_objects_final_state_keep_set(transit1, EINA_TRUE);
+   elm_transit_del(vd->transit[0]);
+   vd->transit[0] = elm_transit_add();
+   elm_transit_object_add(vd->transit[0], obj);
+   elm_transit_effect_add(vd->transit[0], transit_progressbar_normal_op1, vd, transit0_progress_del_cb);
+   elm_transit_tween_mode_set(vd->transit[0], ELM_TRANSIT_TWEEN_MODE_BEZIER_CURVE);
+   elm_transit_tween_mode_factor_n_set(vd->transit[0], 4, ease_out_factor);
+   elm_transit_duration_set(vd->transit[0], 0.8);
+   elm_transit_objects_final_state_keep_set(vd->transit[0], EINA_TRUE);
 
+   elm_transit_del(vd->transit[1]);
+   vd->transit[1] = elm_transit_add();
+   elm_transit_object_add(vd->transit[1], obj);
+   elm_transit_effect_add(vd->transit[1], transit_progressbar_normal_op2, vd, transit1_progress_del_cb);
+   elm_transit_tween_mode_set(vd->transit[1], ELM_TRANSIT_TWEEN_MODE_BEZIER_CURVE);
+   elm_transit_tween_mode_factor_n_set(vd->transit[1], 4, ease_out_factor);
+   elm_transit_duration_set(vd->transit[1], 0.7);
+   elm_transit_objects_final_state_keep_set(vd->transit[1], EINA_TRUE);
 
-   Elm_Transit *transit2 = elm_transit_add();
-   elm_transit_object_add(transit2, obj);
-   elm_transit_effect_add(transit2, transit_progressbar_normal_op2, vd, NULL);
-   elm_transit_tween_mode_set(transit1, ELM_TRANSIT_TWEEN_MODE_BEZIER_CURVE);
-   elm_transit_tween_mode_factor_n_set(transit2, 4, ease_out_factor);
-   elm_transit_duration_set(transit2, 0.7);
-   elm_transit_objects_final_state_keep_set(transit2, EINA_TRUE);
+   elm_transit_del(vd->transit[2]);
+   vd->transit[2] = elm_transit_add();
+   elm_transit_object_add(vd->transit[2], obj);
+   elm_transit_effect_add(vd->transit[2], transit_progressbar_normal_op3, vd, _transit_progressbar_normal_animation_finished);
+   elm_transit_tween_mode_set(vd->transit[2], ELM_TRANSIT_TWEEN_MODE_BEZIER_CURVE);
+   elm_transit_tween_mode_factor_n_set(vd->transit[2], 4, ease_out_factor);
+   elm_transit_duration_set(vd->transit[2], 0.3);
+   elm_transit_objects_final_state_keep_set(vd->transit[2], EINA_TRUE);
 
-   Elm_Transit *transit3 = elm_transit_add();
-   elm_transit_object_add(transit3, obj);
-   elm_transit_effect_add(transit3, transit_progressbar_normal_op3, vd, _transit_progressbar_normal_animation_finished);
-   elm_transit_tween_mode_set(transit1, ELM_TRANSIT_TWEEN_MODE_BEZIER_CURVE);
-   elm_transit_tween_mode_factor_n_set(transit3, 4, ease_out_factor);
-   elm_transit_duration_set(transit3, 0.3);
-   elm_transit_objects_final_state_keep_set(transit3, EINA_TRUE);
+   elm_transit_chain_transit_add(vd->transit[0], vd->transit[1]);
+   elm_transit_chain_transit_add(vd->transit[1], vd->transit[2]);
 
-   elm_transit_chain_transit_add(transit1, transit2);
-   elm_transit_chain_transit_add(transit2, transit3);
-
-   elm_transit_go(transit1);
+   elm_transit_go(vd->transit[0]);
 
 }
 
@@ -1767,70 +1815,76 @@ static void
 _progressbar_process_pulse_start_helper(vg_progressbar *vd)
 {
    // For Layer A animation
-   Elm_Transit *transit1 = elm_transit_add();
-   elm_transit_object_add(transit1, vd->obj);
-   elm_transit_effect_add(transit1, transit_progressbar_process_A_op1, vd, NULL);
-   elm_transit_duration_set(transit1, 0.35);
-   elm_transit_objects_final_state_keep_set(transit1, EINA_TRUE);
+   elm_transit_del(vd->transit[0]);
+   vd->transit[0] = elm_transit_add();
+   elm_transit_object_add(vd->transit[0], vd->obj);
+   elm_transit_effect_add(vd->transit[0], transit_progressbar_process_A_op1, vd, transit0_progress_del_cb);
+   elm_transit_duration_set(vd->transit[0], 0.35);
+   elm_transit_objects_final_state_keep_set(vd->transit[0], EINA_TRUE);
 
-   Elm_Transit *transit2 = elm_transit_add();
-   elm_transit_object_add(transit2, vd->obj);
-   elm_transit_effect_add(transit2, transit_progressbar_process_A_op2, vd, NULL);
-   elm_transit_duration_set(transit2, 0.65);
-   elm_transit_objects_final_state_keep_set(transit2, EINA_TRUE);
+   elm_transit_del(vd->transit[1]);
+   vd->transit[1] = elm_transit_add();
+   elm_transit_object_add(vd->transit[1], vd->obj);
+   elm_transit_effect_add(vd->transit[1], transit_progressbar_process_A_op2, vd, transit1_progress_del_cb);
+   elm_transit_duration_set(vd->transit[1], 0.65);
+   elm_transit_objects_final_state_keep_set(vd->transit[1], EINA_TRUE);
 
-   Elm_Transit *transit3 = elm_transit_add();
-   elm_transit_object_add(transit3, vd->obj);
-   elm_transit_effect_add(transit3, transit_progressbar_process_A_op3, vd, NULL);
-   elm_transit_duration_set(transit3, 0.25);
-   elm_transit_objects_final_state_keep_set(transit3, EINA_TRUE);
+   elm_transit_del(vd->transit[2]);
+   vd->transit[2] = elm_transit_add();
+   elm_transit_object_add(vd->transit[2], vd->obj);
+   elm_transit_effect_add(vd->transit[2], transit_progressbar_process_A_op3, vd, transit2_progress_del_cb);
+   elm_transit_duration_set(vd->transit[2], 0.25);
+   elm_transit_objects_final_state_keep_set(vd->transit[2], EINA_TRUE);
 
-   elm_transit_chain_transit_add(transit1, transit2);
-   elm_transit_chain_transit_add(transit2, transit3);
+   elm_transit_chain_transit_add(vd->transit[0], vd->transit[1]);
+   elm_transit_chain_transit_add(vd->transit[1], vd->transit[2]);
 
-   elm_transit_go(transit1);
+   elm_transit_go(vd->transit[0]);
 
    // For Layer B Animation
-   transit1 = elm_transit_add();
-   elm_transit_object_add(transit1, vd->obj);
-   elm_transit_effect_add(transit1, transit_progressbar_process_B_op1, vd, NULL);
-   elm_transit_duration_set(transit1, 0.48);
-   elm_transit_objects_final_state_keep_set(transit1, EINA_TRUE);
+   elm_transit_del(vd->transit[3]);
+   vd->transit[3] = elm_transit_add();
+   elm_transit_object_add(vd->transit[3], vd->obj);
+   elm_transit_effect_add(vd->transit[3], transit_progressbar_process_B_op1, vd, transit3_progress_del_cb);
+   elm_transit_duration_set(vd->transit[3], 0.48);
+   elm_transit_objects_final_state_keep_set(vd->transit[3], EINA_TRUE);
 
-   transit2 = elm_transit_add();
-   elm_transit_object_add(transit2, vd->obj);
-   elm_transit_effect_add(transit2, transit_progressbar_process_B_op2, vd, NULL);
-   elm_transit_duration_set(transit2, 0.52);
-   elm_transit_objects_final_state_keep_set(transit2, EINA_TRUE);
+   elm_transit_del(vd->transit[4]);
+   vd->transit[4] = elm_transit_add();
+   elm_transit_object_add(vd->transit[4], vd->obj);
+   elm_transit_effect_add(vd->transit[4], transit_progressbar_process_B_op2, vd, transit4_progress_del_cb);
+   elm_transit_duration_set(vd->transit[4], 0.52);
+   elm_transit_objects_final_state_keep_set(vd->transit[4], EINA_TRUE);
 
-   transit3 = elm_transit_add();
-   elm_transit_object_add(transit3, vd->obj);
-   elm_transit_effect_add(transit3, transit_progressbar_process_B_op3, vd, NULL);
-   elm_transit_duration_set(transit3, 0.33);
-   elm_transit_objects_final_state_keep_set(transit3, EINA_TRUE);
+   elm_transit_del(vd->transit[5]);
+   vd->transit[5] = elm_transit_add();
+   elm_transit_object_add(vd->transit[5], vd->obj);
+   elm_transit_effect_add(vd->transit[5], transit_progressbar_process_B_op3, vd, transit5_progress_del_cb);
+   elm_transit_duration_set(vd->transit[5], 0.33);
+   elm_transit_objects_final_state_keep_set(vd->transit[5], EINA_TRUE);
 
-   elm_transit_chain_transit_add(transit1, transit2);
-   elm_transit_chain_transit_add(transit2, transit3);
+   elm_transit_chain_transit_add(vd->transit[3], vd->transit[4]);
+   elm_transit_chain_transit_add(vd->transit[4], vd->transit[5]);
 
-   elm_transit_go(transit1);
+   elm_transit_go(vd->transit[3]);
 
    // For Layer C Animation
-   transit1 = elm_transit_add();
-   elm_transit_object_add(transit1, vd->obj);
-   elm_transit_effect_add(transit1, transit_progressbar_process_C_op1, vd, _transit_progressbar_process_end);
-   elm_transit_duration_set(transit1, 0.85);
-   elm_transit_objects_final_state_keep_set(transit1, EINA_TRUE);
-   vd->transit = transit1;
-   elm_transit_go_in(transit1, .54);
+   elm_transit_del(vd->transit[6]);
+   vd->transit[6] = elm_transit_add();
+   elm_transit_object_add(vd->transit[6], vd->obj);
+   elm_transit_effect_add(vd->transit[6], transit_progressbar_process_C_op1, vd, _transit_progressbar_process_end);
+   elm_transit_duration_set(vd->transit[6], 0.85);
+   elm_transit_objects_final_state_keep_set(vd->transit[6], EINA_TRUE);
+   elm_transit_go_in(vd->transit[6], .54);
 }
 
 static void
 _transit_progressbar_process_end(Elm_Transit_Effect *effect, Elm_Transit *transit EINA_UNUSED)
 {
    vg_progressbar *vd = effect;
-   if (!vd->transit) return;
-   vd->transit = NULL;
-   _progressbar_process_pulse_start_helper(vd);
+   vd->transit[6] = NULL;
+   if (vd->pulse)
+     _progressbar_process_pulse_start_helper(vd);
 }
 
 static void
@@ -1839,6 +1893,8 @@ _progressbar_process_pulse_start(void *data,
                        const char *emission EINA_UNUSED,
                        const char *source EINA_UNUSED)
 {
+   vg_progressbar *vd = data;
+   vd->pulse = EINA_TRUE;
    _progressbar_process_pulse_start_helper(data);
 }
 
@@ -1849,10 +1905,13 @@ _progressbar_process_pulse_stop(void *data,
                        const char *source EINA_UNUSED)
 {
    vg_progressbar *vd = data;
-   Elm_Transit *cur_transit = vd->transit;
-   vd->transit = NULL;
-   if (cur_transit)
-     elm_transit_del(cur_transit);
+   vd->pulse = EINA_FALSE;
+   int i;
+   for (i = 0; i < 7 ; i++)
+     {
+        elm_transit_del(vd->transit[i]);
+        vd->transit[i] = NULL;
+     }
 }
 
 static void
