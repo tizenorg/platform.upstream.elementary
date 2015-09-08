@@ -5033,7 +5033,7 @@ _elm_win_keygrab_set(Eo *obj EINA_UNUSED, Elm_Win_Data *sd, const char *key, Eva
              wl_grab_mode = ECORE_WL_WINDOW_KEYGRAB_OVERRIDE_EXCLUSIVE;
              break;
            default:
-             break;
+             return ret;
           }
         ret = ecore_wl_window_keygrab_set(sd->wl.win, key, 0, 0, 0, wl_grab_mode);
      }
