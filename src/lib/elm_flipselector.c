@@ -4,6 +4,7 @@
 
 #define ELM_INTERFACE_ATSPI_ACCESSIBLE_PROTECTED
 #define ELM_INTERFACE_ATSPI_WIDGET_ACTION_PROTECTED
+#define ELM_INTERFACE_ATSPI_COMPONENT_PROTECTED
 
 #define ELM_WIDGET_ITEM_PROTECTED
 #include <Elementary.h>
@@ -587,20 +588,22 @@ elm_flipselector_add(Evas_Object *parent)
 }
 
 //TIZEN ONLY(2015090): expose flipselector top/bottom buttons for accessibility tree
-static Eina_Bool _activate_top_cb (void *data, Evas_Object *obj, Elm_Access_Action_Info *action_info)
+static Eina_Bool _activate_top_cb (void *data, Evas_Object *obj EINA_UNUSED, Elm_Access_Action_Info *action_info EINA_UNUSED)
 {
    Elm_Flipselector_Data *sd = (Elm_Flipselector_Data*)data;
    _flipselector_walk(sd);
    _flip_up(sd);
    _flipselector_unwalk(sd);
+   return EINA_TRUE;
 }
 
-static Eina_Bool _activate_bottom_cb (void *data, Evas_Object *obj, Elm_Access_Action_Info *action_info)
+static Eina_Bool _activate_bottom_cb (void *data, Evas_Object *obj EINA_UNUSED, Elm_Access_Action_Info *action_info EINA_UNUSED)
 {
    Elm_Flipselector_Data *sd = (Elm_Flipselector_Data*)data;
    _flipselector_walk(sd);
    _flip_down(sd);
    _flipselector_unwalk(sd);
+   return EINA_TRUE;
 }
 //
 
@@ -864,6 +867,34 @@ _elm_flipselector_elm_interface_atspi_widget_action_elm_actions_get(Eo *obj EINA
    };
    return &atspi_actions[0];
 }
+
+///TIZEN_ONLY(20150716) : fix accessible_at_point getter
+EOLIAN static Eo *
+_elm_flipselector_elm_interface_atspi_component_accessible_at_point_get(Eo *obj, Elm_Flipselector_Data *_pd EINA_UNUSED, Eina_Bool screen_coords, int x, int y)
+{
+   Evas_Coord wx, wy, ww, wh;
+   int ee_x, ee_y;
+
+   if (screen_coords)
+     {
+        Ecore_Evas *ee = ecore_evas_ecore_evas_get(evas_object_evas_get(obj));
+        if (!ee) return NULL;
+        ecore_evas_geometry_get(ee, &ee_x, &ee_y, NULL, NULL);
+        x -= ee_x;
+        y -= ee_y;
+     }
+
+   evas_object_geometry_get(_pd->access_top_button, &wx, &wy, &ww, &wh);
+   if (!((x > wx + ww) || (y > wy + wh) || (x < wx - ww) || (y < wy - wh)))
+     return _pd->access_top_button;
+
+   evas_object_geometry_get(_pd->access_bottom_button, &wx, &wy, &ww, &wh);
+   if (!((x > wx + ww) || (y > wy + wh) || (x < wx - ww) || (y < wy - wh)))
+     return _pd->access_bottom_button;
+
+   return NULL;
+}
+///
 
 #include "elm_flipselector_item.eo.c"
 #include "elm_flipselector.eo.c"

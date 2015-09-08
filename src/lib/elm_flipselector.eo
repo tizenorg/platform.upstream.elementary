@@ -165,6 +165,9 @@ class Elm.Flipselector (Elm.Layout, Elm_Interface_Atspi_Widget_Action,
       Elm.Widget.event;
       Elm.Layout.sizing_eval;
       Elm_Interface_Atspi_Widget_Action.elm_actions.get;
+      ///TIZEN_ONLY(20150716) : fix accessible_at_point getter
+      Elm_Interface_Atspi_Component.accessible_at_point_get;
+      ///
    }
    events {
       underflowed;
