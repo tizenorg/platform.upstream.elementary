@@ -44,6 +44,8 @@ static Eina_Bool _on_item_back_btn_clicked(void *data,
 
 static Eina_Bool _key_action_top_item_get(Evas_Object *obj, const char *params);
 
+static char *_access_info_cb(void *data, Evas_Object *obj EINA_UNUSED);
+
 static const Elm_Action key_actions[] = {
    {"top_item_get", _key_action_top_item_get},
    {NULL, NULL}
@@ -331,6 +333,20 @@ _item_style_set(Elm_Naviframe_Item_Data *it,
 
    if (sd->freeze_events)
      evas_object_freeze_events_set(VIEW(it), EINA_FALSE);
+
+   //TIZEN ONLY(20150707): expose title as at-spi object
+   if (_elm_config->atspi_mode)
+     {
+         Evas_Object *part = (Evas_Object*)edje_object_part_object_get(elm_layout_edje_get(VIEW(it)), TITLE_ACCESS_PART);
+         if (part)
+           {
+              Evas_Object *access = elm_access_object_register(part, VIEW(it));
+              _elm_access_callback_set(_elm_access_info_get(access),
+                                       ELM_ACCESS_INFO, _access_info_cb, it);
+              elm_atspi_accessible_role_set(access, ELM_ATSPI_ROLE_HEADING);
+           }
+     }
+   //
 }
 
 static void
