@@ -54,6 +54,9 @@ struct _Elm_Calendar_Data
    Evas_Object             *left_button;
    Evas_Object             *right_button;
    //
+   //TIZEN_ONLY(20150909): Register smart callbacks for calendar buttons.
+   Eina_Bool               _month_repeated;
+   //
 
    Elm_Calendar_Weekday     first_week_day;
    Elm_Calendar_Select_Mode select_mode;
