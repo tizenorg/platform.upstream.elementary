@@ -1090,7 +1090,7 @@ check_default_action_toggle_cb(void *data, Evas_Object *obj EINA_UNUSED,
      }
    else
      {
-        elm_transit_duration_set(vd->transit[0], 0.3);
+        elm_transit_duration_set(vd->transit[0], 0.2);
         elm_transit_go_in(vd->transit[0], 0.15);
      }
 
