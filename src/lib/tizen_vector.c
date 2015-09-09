@@ -628,24 +628,24 @@ check_onoff_action_toggle_cb(void *data, Evas_Object *obj EINA_UNUSED,
      {
         elm_transit_duration_set(vd->transit[1], 0.25);
         elm_transit_go_in(vd->transit[1], 0.05);
+
+        //Overlap Circle Sizing Effect
+        elm_transit_del(vd->transit[2]);
+        vd->transit[2] = elm_transit_add();
+        elm_transit_effect_add(vd->transit[2], transit_check_onoff_sizing_op, vd,
+                               _transit_check_onoff_animation_finished);
+        elm_transit_del_cb_set(vd->transit[2], transit_check_onoff_sizing_del_cb,
+                               vd);
+        elm_transit_tween_mode_set(vd->transit[2],
+                                   ELM_TRANSIT_TWEEN_MODE_DECELERATE);
+        elm_transit_duration_set(vd->transit[2], 0.3);
+        elm_transit_go(vd->transit[2]);
      }
    else
      {
         elm_transit_duration_set(vd->transit[1], 0.1);
         elm_transit_go(vd->transit[1]);
      }
-
-   //Overlap Circle Sizing Effect
-   elm_transit_del(vd->transit[2]);
-   vd->transit[2] = elm_transit_add();
-   elm_transit_effect_add(vd->transit[2], transit_check_onoff_sizing_op, vd,
-                          _transit_check_onoff_animation_finished);
-   elm_transit_del_cb_set(vd->transit[2], transit_check_onoff_sizing_del_cb,
-                          vd);
-   elm_transit_tween_mode_set(vd->transit[2],
-                              ELM_TRANSIT_TWEEN_MODE_DECELERATE);
-   elm_transit_duration_set(vd->transit[2], 0.3);
-   elm_transit_go(vd->transit[2]);
 }
 
 static void
