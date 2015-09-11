@@ -3,6 +3,8 @@
 #endif
 
 #define ELM_INTERFACE_ATSPI_ACCESSIBLE_PROTECTED
+#define ELM_INTERFACE_ATSPI_WIDGET_ACTION_PROTECTED
+#define ELM_INTERFACE_ATSPI_COMPONENT_PROTECTED
 
 #include <Elementary.h>
 
@@ -685,7 +687,7 @@ _elm_hover_eo_base_constructor(Eo *obj, Elm_Hover_Data *_pd EINA_UNUSED)
    eo_do(obj,
          evas_obj_type_set(MY_CLASS_NAME_LEGACY),
          evas_obj_smart_callbacks_descriptions_set(_smart_callbacks),
-         elm_interface_atspi_accessible_role_set(ELM_ATSPI_ROLE_GLASS_PANE));
+         elm_interface_atspi_accessible_role_set(ELM_ATSPI_ROLE_POPUP_MENU));
 
    return obj;
 }
@@ -834,6 +836,66 @@ EOLIAN static void
 _elm_hover_class_constructor(Eo_Class *klass)
 {
    evas_smart_legacy_type_register(MY_CLASS_NAME_LEGACY, klass);
+}
+
+
+EOLIAN static Elm_Atspi_State_Set
+_elm_hover_elm_interface_atspi_accessible_state_set_get(Eo *obj, Elm_Hover_Data *pd EINA_UNUSED)
+{
+   Elm_Atspi_State_Set states;
+
+   eo_do_super(obj, MY_CLASS, states = elm_interface_atspi_accessible_state_set_get());
+
+   STATE_TYPE_SET(states, ELM_ATSPI_STATE_MODAL);
+
+   return states;
+}
+
+static Eina_Bool
+_action_dismiss(Evas_Object *obj, const char *params EINA_UNUSED)
+{
+   elm_hover_dismiss(obj);
+   return EINA_TRUE;
+}
+
+EOLIAN const Elm_Atspi_Action *
+_elm_hover_elm_interface_atspi_widget_action_elm_actions_get(Eo *obj EINA_UNUSED, Elm_Hover_Data *pd EINA_UNUSED)
+{
+   static Elm_Atspi_Action atspi_actions[] = {
+          { "dismiss", "dismiss", NULL, _action_dismiss },
+          { NULL, NULL, NULL, NULL}
+   };
+   return &atspi_actions[0];
+}
+
+EOLIAN static Eina_Bool
+_elm_hover_elm_interface_atspi_component_highlight_grab(Eo *obj, Elm_Hover_Data *sd)
+{
+   ELM_HOVER_PARTS_FOREACH
+   {
+      if (sd->subs[i].obj)
+     {
+        elm_object_accessibility_highlight_set(sd->subs[i].obj, EINA_TRUE);
+        elm_interface_atspi_accessible_state_changed_signal_emit(obj, ELM_ATSPI_STATE_HIGHLIGHTED, EINA_TRUE);
+        break;
+     }
+   }
+   return EINA_TRUE;
+}
+
+EOLIAN static Eina_Bool
+_elm_hover_elm_interface_atspi_component_highlight_clear(Eo *obj, Elm_Hover_Data *sd)
+{
+   ELM_HOVER_PARTS_FOREACH
+   {
+      if (sd->subs[i].obj)
+     {
+        elm_object_accessibility_highlight_set(sd->subs[i].obj, EINA_FALSE);
+        elm_interface_atspi_accessible_state_changed_signal_emit(obj, ELM_ATSPI_STATE_HIGHLIGHTED, EINA_FALSE);
+        break;
+     }
+   }
+   return EINA_TRUE;
 }
 
 #include "elm_hover.eo.c"
