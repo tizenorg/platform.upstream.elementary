@@ -8274,6 +8274,9 @@ _elm_genlist_elm_interface_atspi_accessible_state_set_get(Eo *obj, Elm_Genlist_D
 
    STATE_TYPE_SET(ret, ELM_ATSPI_STATE_MANAGES_DESCENDANTS);
 
+   if (elm_genlist_multi_select_get(obj))
+     STATE_TYPE_SET(ret, ELM_ATSPI_STATE_MULTISELECTABLE);
+
    return ret;
 }
 
