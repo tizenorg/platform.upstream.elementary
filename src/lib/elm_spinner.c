@@ -1353,7 +1353,7 @@ _elm_spinner_eo_base_constructor(Eo *obj, Elm_Spinner_Data *_pd EINA_UNUSED)
    eo_do(obj,
          evas_obj_type_set(MY_CLASS_NAME_LEGACY),
          evas_obj_smart_callbacks_descriptions_set(_smart_callbacks),
-         elm_interface_atspi_accessible_role_set(ELM_ATSPI_ROLE_SPIN_BUTTON));
+         elm_interface_atspi_accessible_role_set(ELM_ATSPI_ROLE_FILLER));
 
    return obj;
 }
@@ -1568,20 +1568,6 @@ _elm_spinner_class_constructor(Eo_Class *klass)
 
    if (_elm_config->access_mode)
       _elm_spinner_smart_focus_next_enable = EINA_TRUE;
-}
-
-EOLIAN static const Elm_Atspi_Action *
-_elm_spinner_elm_interface_atspi_widget_action_elm_actions_get(Eo *obj EINA_UNUSED, Elm_Spinner_Data *sd EINA_UNUSED)
-{
-   static Elm_Atspi_Action atspi_actions[] = {
-      { "spin,left", "spin", "left", _key_action_spin},
-      { "spin,right", "spin", "right", _key_action_spin},
-      { "spin,up", "spin", "up", _key_action_spin},
-      { "spin,down", "spin", "down", _key_action_spin},
-      { "toggle", "toggle", NULL, _key_action_toggle},
-      { NULL, NULL, NULL, NULL }
-   };
-   return &atspi_actions[0];
 }
 
 // A11Y Accessibility
