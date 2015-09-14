@@ -8024,6 +8024,7 @@ _elm_genlist_item_elm_interface_atspi_accessible_name_get(Eo *eo_it EINA_UNUSED,
 {
    char *ret;
    Eina_Strbuf *buf;
+   Elm_Genlist_Item_Type genlist_item_type = elm_genlist_item_type_get(eo_it);
 
    buf = eina_strbuf_new();
 
@@ -8034,6 +8035,7 @@ _elm_genlist_item_elm_interface_atspi_accessible_name_get(Eo *eo_it EINA_UNUSED,
 
         texts =
            elm_widget_stringlist_get(edje_object_data_get(VIEW(it), "texts"));
+        int texts_list_item_index = 0;
 
         EINA_LIST_FREE(texts, key)
           {
@@ -8048,7 +8050,15 @@ _elm_genlist_item_elm_interface_atspi_accessible_name_get(Eo *eo_it EINA_UNUSED,
                   if (eina_strbuf_length_get(buf) > 0) eina_strbuf_append(buf, ", ");
                   eina_strbuf_append(buf, str_utf8);
                   free(str_utf8);
+
+                  if((genlist_item_type & ELM_GENLIST_ITEM_TREE) && texts_list_item_index == 0)
+                    {
+                      eina_strbuf_append(buf, ", ");
+                      eina_strbuf_append(buf, E_("group index"));
+                    }
                }
+
+             ++texts_list_item_index;
           }
      }
 
