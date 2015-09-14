@@ -2042,7 +2042,7 @@ slider_del_cb(void *data EINA_UNUSED, Evas *e EINA_UNUSED, Evas_Object *obj,
 }
 
 static void
-_append_circle(Efl_VG *shape, int cx, int cy, int r)
+_append_circle(Efl_VG *shape, double cx, double cy, double r)
 {
    evas_vg_shape_shape_reset(shape);
    evas_vg_shape_shape_append_circle(shape, cx, cy, r);
