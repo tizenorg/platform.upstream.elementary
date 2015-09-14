@@ -1505,7 +1505,7 @@ typedef struct vg_progressbar_s
    double stroke_width;
    double shrink;
    double shift;
-   Eina_Bool pulse;
+   Ecore_Job *pulse_job;
 } vg_progressbar;
 
 static void
@@ -1555,13 +1555,17 @@ progressbar_del_cb(void *data EINA_UNUSED, Evas *e EINA_UNUSED, Evas_Object *obj
               void *event_info EINA_UNUSED)
 {
    vg_progressbar *vd = evas_object_data_get(obj, vg_key);
-   vd->pulse = EINA_FALSE;
    int i;
    for (i = 0; i < 7 ; i++)
      {
         elm_transit_del(vd->transit[i]);
         vd->transit[i] = NULL;
      }
+   // delete if any pul_job is scheduled.
+   if (vd->pulse_job)
+     ecore_job_del(vd->pulse_job);
+   vd->pulse_job = NULL;
+
    evas_object_data_set(obj, vg_key, NULL);
    free(vd);
 }
@@ -1812,8 +1816,9 @@ transit_progressbar_process_C_op1(Elm_Transit_Effect *effect, Elm_Transit *trans
 static void _transit_progressbar_process_end(Elm_Transit_Effect *effect, Elm_Transit *transit);
 
 static void
-_progressbar_process_pulse_start_helper(vg_progressbar *vd)
+_progressbar_process_pulse_start_helper(void *data)
 {
+   vg_progressbar *vd = data;
    // For Layer A animation
    elm_transit_del(vd->transit[0]);
    vd->transit[0] = elm_transit_add();
@@ -1883,8 +1888,9 @@ _transit_progressbar_process_end(Elm_Transit_Effect *effect, Elm_Transit *transi
 {
    vg_progressbar *vd = effect;
    vd->transit[6] = NULL;
-   if (vd->pulse)
-     _progressbar_process_pulse_start_helper(vd);
+
+   // restart the pulse
+   vd->pulse_job = ecore_job_add(_progressbar_process_pulse_start_helper, vd);
 }
 
 static void
@@ -1894,7 +1900,6 @@ _progressbar_process_pulse_start(void *data,
                        const char *source EINA_UNUSED)
 {
    vg_progressbar *vd = data;
-   vd->pulse = EINA_TRUE;
    _progressbar_process_pulse_start_helper(data);
 }
 
@@ -1905,13 +1910,17 @@ _progressbar_process_pulse_stop(void *data,
                        const char *source EINA_UNUSED)
 {
    vg_progressbar *vd = data;
-   vd->pulse = EINA_FALSE;
    int i;
    for (i = 0; i < 7 ; i++)
      {
         elm_transit_del(vd->transit[i]);
         vd->transit[i] = NULL;
      }
+
+   // delete if any pul_job is scheduled.
+   if (vd->pulse_job)
+     ecore_job_del(vd->pulse_job);
+   vd->pulse_job = NULL;
 }
 
 static void
@@ -1972,15 +1981,8 @@ tizen_vg_progressbar_set(Elm_Progressbar *obj)
         evas_object_data_set(obj, vg_key, vd);
         vd->obj = obj;
         // callback to free vd data
-        // Note: we need progressbar_del_cb() to be called first so that we can stop the
-        // transition properly in case of process style.
-        // As the elm_transition also adds the EVAS_CALLBACK_DEL callback on the same object (vd->obj)
-        // for deleting the transition it causes problem when elm_transition's cb called before our
-        // deletion callback (as we restart the transition loop again).
-        // to fix the above issue we add our callback as a priority one to make sure it is called first.
-        evas_object_event_callback_priority_add(vd->obj, EVAS_CALLBACK_DEL,
-                                                EVAS_CALLBACK_PRIORITY_BEFORE,
-                                                progressbar_del_cb, NULL);
+        evas_object_event_callback_add(vd->obj, EVAS_CALLBACK_DEL,
+                                       progressbar_del_cb, NULL);
      }
 
    if (!strcmp(str, "default"))
