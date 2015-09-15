@@ -100,6 +100,7 @@ _key_action_move(Evas_Object *obj, const char *params)
    Evas_Object *current_focus = NULL;
    Eina_List *can_focus_list = NULL;
    Evas_Object *new_focus = NULL;
+   Elm_Object_Item *new_focus_item = NULL;
    Evas_Coord f_x = 0;
    Evas_Coord f_y = 0;
    Evas_Coord f_w = 0;
@@ -143,7 +144,7 @@ _key_action_move(Evas_Object *obj, const char *params)
                     cur_weight += ((f_y - c_y) - y) * ((f_y - c_y) - y);
                   if (cur_weight == 0.0)
                     {
-                       elm_widget_focus_steal(cur);
+                       elm_widget_focus_steal(cur, NULL);
                        return EINA_TRUE;
                     }
                   cur_weight = 1.0 / cur_weight;
@@ -156,7 +157,7 @@ _key_action_move(Evas_Object *obj, const char *params)
           }
         if (new_focus)
           {
-             elm_widget_focus_steal(new_focus);
+             elm_widget_focus_steal(new_focus, NULL);
              return EINA_TRUE;
           }
      }
@@ -165,13 +166,13 @@ _key_action_move(Evas_Object *obj, const char *params)
         Eina_Bool r = EINA_FALSE;
 
         if (!strcmp(dir, "left"))
-          r = elm_widget_focus_next_get(obj, ELM_FOCUS_LEFT, &new_focus);
+          r = elm_widget_focus_next_get(obj, ELM_FOCUS_LEFT, &new_focus, &new_focus_item);
         else if (!strcmp(dir, "right"))
-          r = elm_widget_focus_next_get(obj, ELM_FOCUS_RIGHT, &new_focus);
+          r = elm_widget_focus_next_get(obj, ELM_FOCUS_RIGHT, &new_focus, &new_focus_item);
         else if (!strcmp(dir, "up"))
-          r = elm_widget_focus_next_get(obj, ELM_FOCUS_UP, &new_focus);
+          r = elm_widget_focus_next_get(obj, ELM_FOCUS_UP, &new_focus, &new_focus_item);
         else if (!strcmp(dir, "down"))
-          r = elm_widget_focus_next_get(obj, ELM_FOCUS_DOWN, &new_focus);
+          r = elm_widget_focus_next_get(obj, ELM_FOCUS_DOWN, &new_focus, &new_focus_item);
 
         if (r && new_focus)
           {
@@ -188,7 +189,7 @@ _key_action_move(Evas_Object *obj, const char *params)
 
              if (ELM_RECTS_INTERSECT(x, y, v_w, v_h, l_x, l_y, l_w, l_h))
                {
-                  elm_widget_focus_steal(new_focus);
+                  elm_widget_focus_steal(new_focus, new_focus_item);
                   return EINA_TRUE;
                }
           }
@@ -405,7 +406,7 @@ _elm_scroller_elm_widget_focus_next_manager_is(Eo *obj EINA_UNUSED, Elm_Scroller
 }
 
 EOLIAN static Eina_Bool
-_elm_scroller_elm_widget_focus_next(Eo *obj EINA_UNUSED, Elm_Scroller_Data *sd, Elm_Focus_Direction dir, Evas_Object **next)
+_elm_scroller_elm_widget_focus_next(Eo *obj EINA_UNUSED, Elm_Scroller_Data *sd, Elm_Focus_Direction dir, Evas_Object **next, Elm_Object_Item **next_item)
 {
    Evas_Object *cur;
 
@@ -419,7 +420,7 @@ _elm_scroller_elm_widget_focus_next(Eo *obj EINA_UNUSED, Elm_Scroller_Data *sd, 
         if ((elm_widget_can_focus_get(cur)) ||
             (elm_widget_child_can_focus_get(cur)))
           {
-             return elm_widget_focus_next_get(cur, dir, next);
+             return elm_widget_focus_next_get(cur, dir, next, next_item);
           }
 
         return EINA_FALSE;
@@ -431,7 +432,7 @@ _elm_scroller_elm_widget_focus_next(Eo *obj EINA_UNUSED, Elm_Scroller_Data *sd, 
         if ((elm_widget_can_focus_get(cur)) ||
             (elm_widget_child_can_focus_get(cur)))
           {
-             return elm_widget_focus_next_get(cur, dir, next);
+             return elm_widget_focus_next_get(cur, dir, next, next_item);
           }
      }
 

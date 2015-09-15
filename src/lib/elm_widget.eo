@@ -481,15 +481,29 @@ abstract Elm_Widget (Evas.Object_Smart, Elm_Interface_Atspi_Accessible, Elm_Inte
          }
       }
       focus_next_object_set {
-         /*@ No description supplied by the EAPI. */
+         /*Set the next object with specific focus direction.*/
          params {
             @in Evas_Object *next;
             @in Elm_Focus_Direction dir;
          }
       }
       focus_next_object_get @const {
-         /*@ No description supplied by the EAPI. */
+         /*Get the next object with specific focus direction.*/
          return: Evas_Object *;
+         params {
+            @in Elm_Focus_Direction dir;
+         }
+      }
+      focus_next_item_set {
+         /*Set the next object item with specific focus direction.*/
+         params {
+            @in Elm_Object_Item *next_item;
+            @in Elm_Focus_Direction dir;
+         }
+      }
+      focus_next_item_get @const {
+         /*Get the next object item with specific focus direction.*/
+         return: Elm_Object_Item *;
          params {
             @in Elm_Focus_Direction dir;
          }
@@ -581,6 +595,9 @@ abstract Elm_Widget (Evas.Object_Smart, Elm_Interface_Atspi_Accessible, Elm_Inte
       on_focus {
          /*@ 'Virtual' function handling focus in/out events on the widget.
          return EINA_TRUE if this widget can handle focus, EINA_FALSE otherwise */
+         params {
+            @in Elm_Object_Item *item;
+         }
          return: bool;
       }
       on_focus_region {
@@ -695,6 +712,7 @@ abstract Elm_Widget (Evas.Object_Smart, Elm_Interface_Atspi_Accessible, Elm_Inte
          params {
             @in Elm_Focus_Direction dir;
             @out Evas_Object *next;
+            @out Elm_Object_Item *next_item;
          }
       }
       translatable_part_text_get @const {
@@ -732,7 +750,9 @@ abstract Elm_Widget (Evas.Object_Smart, Elm_Interface_Atspi_Accessible, Elm_Inte
          /*@ No description supplied by the EAPI. */
       }
       focus_steal {
-         /*@ No description supplied by the EAPI. */
+         params {
+            @in Elm_Object_Item *item;
+         }
       }
       focus_hide_handle {
          /*@ No description supplied by the EAPI. */
@@ -742,6 +762,7 @@ abstract Elm_Widget (Evas.Object_Smart, Elm_Interface_Atspi_Accessible, Elm_Inte
          params {
             @in Elm_Focus_Direction dir;
             @out Evas_Object *next;
+            @out Elm_Object_Item *next_item;
          }
          return: bool;
       }
@@ -753,6 +774,7 @@ abstract Elm_Widget (Evas.Object_Smart, Elm_Interface_Atspi_Accessible, Elm_Inte
             @in list_data_get_func_type list_data_get;
             @in Elm_Focus_Direction dir;
             @out Evas_Object *next;
+            @out Elm_Object_Item *next_item;
          }
       }
       focus_mouse_up_handle {

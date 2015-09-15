@@ -722,6 +722,54 @@ class Elm_Widget_Item(Eo.Base, Elm_Interface_Atspi_Accessible)
                 legacy: null;
                 return: bool;
            }
+           focus_next_object_get @const {
+                /**
+				  Get the next object with specific focus direction.
+
+				  @ingroup General
+                  @since 1.16
+				 */
+                params {
+                     Elm_Focus_Direction dir;
+                } 
+                return: Evas_Object *;
+           }
+           focus_next_object_set {
+                /**
+				  Set the next object with specific focus direction.
+
+				  @ingroup General
+                  @since 1.16
+				 */
+                params {
+                     Evas_Object *next;
+                     Elm_Focus_Direction dir;
+                }
+           }
+           focus_next_item_get @const {
+                /**
+				  Get the next object item with specific focus direction.
+
+				  @ingroup General
+                  @since 1.16
+				 */
+                params {
+                     Elm_Focus_Direction dir;
+                }
+                return: Elm_Object_Item *;
+           }
+           focus_next_item_set {
+                /**
+				  Set the next object item with specific focus direction.
+
+				  @ingroup General
+                  @since 1.16
+				 */
+                params {
+                     Elm_Object_Item *next_item;
+                     Elm_Focus_Direction dir;
+                }
+           }
       }
       implements {
            Eo.Base.constructor;

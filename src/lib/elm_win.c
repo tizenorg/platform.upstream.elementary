@@ -1045,7 +1045,7 @@ _elm_win_focus_in(Ecore_Evas *ee)
         if (!elm_widget_focus_order_get(obj)
             || (obj == elm_widget_newest_focus_order_get(obj, &order, EINA_TRUE)))
           {
-             elm_widget_focus_steal(obj);
+             elm_widget_focus_steal(obj, NULL);
           }
         else
           elm_widget_focus_restore(obj);
@@ -1332,7 +1332,7 @@ _elm_win_elm_widget_focus_next_manager_is(Eo *obj EINA_UNUSED, Elm_Win_Data *_pd
 }
 
 EOLIAN static Eina_Bool
-_elm_win_elm_widget_focus_next(Eo *obj, Elm_Win_Data *_pd EINA_UNUSED, Elm_Focus_Direction dir, Evas_Object **next)
+_elm_win_elm_widget_focus_next(Eo *obj, Elm_Win_Data *_pd EINA_UNUSED, Elm_Focus_Direction dir, Evas_Object **next, Elm_Object_Item **next_item)
 {
    ELM_WIDGET_DATA_GET_OR_RETURN(obj, wd, EINA_FALSE);
 
@@ -1350,7 +1350,7 @@ _elm_win_elm_widget_focus_next(Eo *obj, Elm_Win_Data *_pd EINA_UNUSED, Elm_Focus
           }
         list_data_get = eina_list_data_get;
 
-        elm_widget_focus_list_next_get(obj, items, list_data_get, dir, next);
+        elm_widget_focus_list_next_get(obj, items, list_data_get, dir, next, next_item);
 
         if (*next) return EINA_TRUE;
      }
@@ -1388,10 +1388,10 @@ _elm_win_elm_widget_focus_direction(Eo *obj, Elm_Win_Data *_pd EINA_UNUSED, cons
 }
 
 EOLIAN static Eina_Bool
-_elm_win_elm_widget_on_focus(Eo *obj, Elm_Win_Data *sd)
+_elm_win_elm_widget_on_focus(Eo *obj, Elm_Win_Data *sd, Elm_Object_Item *item EINA_UNUSED)
 {
    Eina_Bool int_ret = EINA_FALSE;
-   eo_do_super(obj, MY_CLASS, int_ret = elm_obj_widget_on_focus());
+   eo_do_super(obj, MY_CLASS, int_ret = elm_obj_widget_on_focus(NULL));
    if (!int_ret) return EINA_TRUE;
 
    if (sd->img_obj)
@@ -1702,7 +1702,7 @@ _win_img_focus_in(void *data,
                   Evas_Object *obj EINA_UNUSED,
                   void *event_info EINA_UNUSED)
 {
-   elm_widget_focus_steal(data);
+   elm_widget_focus_steal(data, NULL);
 }
 
 static void
