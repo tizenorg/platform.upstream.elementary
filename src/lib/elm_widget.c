@@ -437,7 +437,7 @@ _if_focused_revert(Evas_Object *obj,
                   if (!sd2) return;
 
                   if (!elm_widget_focus_get(newest))
-                    elm_widget_focus_steal(newest);
+                    elm_widget_focus_steal(newest, NULL);
                   else
                     {
                        if (sd2->resize_obj && elm_widget_focus_get(sd2->resize_obj))
@@ -836,7 +836,7 @@ _elm_widget_focus_highlight_style_get(Eo *obj EINA_UNUSED, Elm_Widget_Smart_Data
 }
 
 static void
-_parent_focus(Evas_Object *obj)
+_parent_focus(Evas_Object *obj, Elm_Object_Item *item)
 {
    API_ENTRY return;
 
@@ -845,7 +845,7 @@ _parent_focus(Evas_Object *obj)
    Evas_Object *o = elm_widget_parent_get(obj);
    sd->focus_order_on_calc = EINA_TRUE;
 
-   if (o) _parent_focus(o);
+   if (o) _parent_focus(o, item);
 
    if (!sd->focus_order_on_calc)
      return;  /* we don't want to override it if by means of any of the
@@ -858,7 +858,7 @@ _parent_focus(Evas_Object *obj)
    if (sd->top_win_focused)
      {
         sd->focused = EINA_TRUE;
-        eo_do(obj, elm_obj_widget_on_focus());
+        eo_do(obj, elm_obj_widget_on_focus(item));
         elm_widget_focus_region_show(obj);
      }
    sd->focus_order_on_calc = EINA_FALSE;
@@ -1863,10 +1863,11 @@ EOLIAN static void
 _elm_widget_focus_cycle(Eo *obj, Elm_Widget_Smart_Data *_pd EINA_UNUSED, Elm_Focus_Direction dir)
 {
    Evas_Object *target = NULL;
+   Elm_Object_Item *target_item = NULL;
    if (!_elm_widget_is(obj))
      return;
    focus_origin = dir;
-   elm_widget_focus_next_get(obj, dir, &target);
+   elm_widget_focus_next_get(obj, dir, &target, &target_item);
    if (target)
      {
         /* access */
@@ -1876,12 +1877,12 @@ _elm_widget_focus_cycle(Eo *obj, Elm_Widget_Smart_Data *_pd EINA_UNUSED, Elm_Foc
                 the ECORE_X_ATOM_E_ILLUME_ACCESS_ACTION_ACTIVATE message,
                 target will steal focus, or focus its own job. */
              if (!_elm_access_auto_highlight_get())
-               elm_widget_focus_steal(target);
+               elm_widget_focus_steal(target, target_item);
 
              _elm_access_highlight_set(target);
              elm_widget_focus_region_show(target);
           }
-        else elm_widget_focus_steal(target);
+        else elm_widget_focus_steal(target, target_item);
      }
 }
 
@@ -1916,7 +1917,7 @@ _elm_widget_focus_direction_go(Eo *obj, Elm_Widget_Smart_Data *_pd EINA_UNUSED, 
    if (elm_widget_focus_direction_get
          (obj, current_focused, degree, &target, &weight))
      {
-        elm_widget_focus_steal(target);
+        elm_widget_focus_steal(target, NULL);
         return EINA_TRUE;
      }
 
@@ -2376,7 +2377,7 @@ _elm_widget_focus_list_direction_get(Eo *obj EINA_UNUSED, Elm_Widget_Smart_Data 
  * @ingroup Widget
  */
 EOLIAN static Eina_Bool
-_elm_widget_focus_next_get(Eo *obj, Elm_Widget_Smart_Data *sd, Elm_Focus_Direction dir, Evas_Object **next)
+_elm_widget_focus_next_get(Eo *obj, Elm_Widget_Smart_Data *sd, Elm_Focus_Direction dir, Evas_Object **next, Elm_Object_Item **next_item)
 {
    Elm_Access_Info *ac;
 
@@ -2404,22 +2405,39 @@ _elm_widget_focus_next_get(Eo *obj, Elm_Widget_Smart_Data *sd, Elm_Focus_Directi
    if (_elm_widget_focus_chain_manager_is(obj))
      {
         Eina_Bool int_ret = EINA_FALSE;
-        eo_do((Eo *)obj, int_ret = elm_obj_widget_focus_next(dir, next));
+        eo_do((Eo *)obj, int_ret = elm_obj_widget_focus_next(dir, next, next_item));
         if (!int_ret && elm_widget_focus_get(obj))
           {
              Evas_Object *o = NULL;
              if (dir == ELM_FOCUS_PREVIOUS)
-               o = sd->focus_previous;
+               *next_item = sd->item_focus_previous;
              else if (dir == ELM_FOCUS_NEXT)
-               o = sd->focus_next;
+               *next_item = sd->item_focus_next;
              else if (dir == ELM_FOCUS_UP)
-               o = sd->focus_up;
+               *next_item = sd->item_focus_up;
              else if (dir == ELM_FOCUS_DOWN)
-               o = sd->focus_down;
+               *next_item = sd->item_focus_down;
              else if (dir == ELM_FOCUS_RIGHT)
-               o = sd->focus_right;
+               *next_item = sd->item_focus_right;
              else if (dir == ELM_FOCUS_LEFT)
-               o = sd->focus_left;
+               *next_item = sd->item_focus_left;
+             o = elm_object_item_widget_get(*next_item);
+
+             if (!o)
+               {
+                  if (dir == ELM_FOCUS_PREVIOUS)
+                    o = sd->focus_previous;
+                  else if (dir == ELM_FOCUS_NEXT)
+                    o = sd->focus_next;
+                  else if (dir == ELM_FOCUS_UP)
+                    o = sd->focus_up;
+                  else if (dir == ELM_FOCUS_DOWN)
+                    o = sd->focus_down;
+                  else if (dir == ELM_FOCUS_RIGHT)
+                    o = sd->focus_right;
+                  else if (dir == ELM_FOCUS_LEFT)
+                    o = sd->focus_left;
+               }
 
              if (o)
                {
@@ -2447,17 +2465,34 @@ _elm_widget_focus_next_get(Eo *obj, Elm_Widget_Smart_Data *sd, Elm_Focus_Directi
    if (elm_widget_focus_get(obj))
      {
         if (dir == ELM_FOCUS_PREVIOUS)
-          *next = sd->focus_previous;
+          *next_item = sd->item_focus_previous;
         else if (dir == ELM_FOCUS_NEXT)
-          *next = sd->focus_next;
+          *next_item = sd->item_focus_next;
         else if (dir == ELM_FOCUS_UP)
-          *next = sd->focus_up;
+          *next_item = sd->item_focus_up;
         else if (dir == ELM_FOCUS_DOWN)
-          *next = sd->focus_down;
+          *next_item = sd->item_focus_down;
         else if (dir == ELM_FOCUS_RIGHT)
-          *next = sd->focus_right;
+          *next_item = sd->item_focus_right;
         else if (dir == ELM_FOCUS_LEFT)
-          *next = sd->focus_left;
+          *next_item = sd->item_focus_left;
+        *next = elm_object_item_widget_get(*next_item);
+
+        if (!(*next))
+          {
+             if (dir == ELM_FOCUS_PREVIOUS)
+               *next = sd->focus_previous;
+             else if (dir == ELM_FOCUS_NEXT)
+               *next = sd->focus_next;
+             else if (dir == ELM_FOCUS_UP)
+               *next = sd->focus_up;
+             else if (dir == ELM_FOCUS_DOWN)
+               *next = sd->focus_down;
+             else if (dir == ELM_FOCUS_RIGHT)
+               *next = sd->focus_right;
+             else if (dir == ELM_FOCUS_LEFT)
+               *next = sd->focus_left;
+          }
 
         if (*next) return EINA_TRUE;
      }
@@ -2487,7 +2522,7 @@ _elm_widget_focus_next_get(Eo *obj, Elm_Widget_Smart_Data *sd, Elm_Focus_Directi
  * @ingroup Widget
  */
 EOLIAN static Eina_Bool
-_elm_widget_focus_list_next_get(Eo *obj, Elm_Widget_Smart_Data *_pd EINA_UNUSED, const Eina_List *items, list_data_get_func_type list_data_get, Elm_Focus_Direction dir, Evas_Object **next)
+_elm_widget_focus_list_next_get(Eo *obj, Elm_Widget_Smart_Data *_pd EINA_UNUSED, const Eina_List *items, list_data_get_func_type list_data_get, Elm_Focus_Direction dir, Evas_Object **next, Elm_Object_Item **next_item)
 {
    Eina_List *(*list_next)(const Eina_List *list) = NULL;
    Evas_Object *focused_object = NULL;
@@ -2511,7 +2546,11 @@ _elm_widget_focus_list_next_get(Eo *obj, Elm_Widget_Smart_Data *_pd EINA_UNUSED,
            || (dir == ELM_FOCUS_RIGHT)
            || (dir == ELM_FOCUS_LEFT))
           {
-             *next = elm_widget_focus_next_object_get(focused_object, dir);
+             *next_item = elm_widget_focus_next_item_get(focused_object, dir);
+             if (*next_item)
+               *next = elm_object_item_widget_get(*next_item);
+             else
+               *next = elm_widget_focus_next_object_get(focused_object, dir);
              if (*next) return EINA_TRUE;
              else
                {
@@ -2567,12 +2606,14 @@ _elm_widget_focus_list_next_get(Eo *obj, Elm_Widget_Smart_Data *_pd EINA_UNUSED,
 
    const Eina_List *start = l;
    Evas_Object *to_focus = NULL;
+   Elm_Object_Item *to_focus_item = NULL;
 
    /* Iterate sub items */
    /* Go to the end of list */
    for (; l; l = list_next(l))
      {
         Evas_Object *tmp = NULL;
+        Elm_Object_Item *tmp_item = NULL;
         Evas_Object *cur = list_data_get(l);
 
         if (!cur) continue;
@@ -2581,9 +2622,10 @@ _elm_widget_focus_list_next_get(Eo *obj, Elm_Widget_Smart_Data *_pd EINA_UNUSED,
           continue;
 
         /* Try Focus cycle in subitem */
-        if (elm_widget_focus_next_get(cur, dir, &tmp))
+        if (elm_widget_focus_next_get(cur, dir, &tmp, &tmp_item))
           {
              *next = tmp;
+             *next_item = tmp_item;
              return EINA_TRUE;
           }
         else if ((dir == ELM_FOCUS_UP)
@@ -2594,11 +2636,15 @@ _elm_widget_focus_list_next_get(Eo *obj, Elm_Widget_Smart_Data *_pd EINA_UNUSED,
              if (tmp && elm_widget_focus_get(cur))
                {
                   *next = tmp;
+                  *next_item = tmp_item;
                   return EINA_FALSE;
                }
           }
         else if ((tmp) && (!to_focus))
-          to_focus = tmp;
+          {
+             to_focus = tmp;
+             to_focus_item = tmp_item;
+          }
      }
 
    l = items;
@@ -2607,21 +2653,24 @@ _elm_widget_focus_list_next_get(Eo *obj, Elm_Widget_Smart_Data *_pd EINA_UNUSED,
    for (; l != start; l = list_next(l))
      {
         Evas_Object *tmp = NULL;
+        Elm_Object_Item *tmp_item = NULL;
         Evas_Object *cur = list_data_get(l);
 
         if (elm_widget_parent_get(cur) != obj)
           continue;
 
         /* Try Focus cycle in subitem */
-        elm_widget_focus_next_get(cur, dir, &tmp);
+        elm_widget_focus_next_get(cur, dir, &tmp, &tmp_item);
         if (tmp)
           {
              *next = tmp;
+             *next_item = tmp_item;
              return EINA_FALSE;
           }
      }
 
    *next = to_focus;
+   *next_item = to_focus_item;
    return EINA_FALSE;
 }
 
@@ -2694,6 +2743,44 @@ _elm_widget_focus_next_object_set(Eo *obj EINA_UNUSED, Elm_Widget_Smart_Data *sd
      sd->focus_left = next;
 }
 
+EOLIAN static Elm_Object_Item*
+_elm_widget_focus_next_item_get(Eo *obj EINA_UNUSED, Elm_Widget_Smart_Data *sd, Elm_Focus_Direction dir)
+{
+   Elm_Object_Item *ret = NULL;
+
+   if (dir == ELM_FOCUS_PREVIOUS)
+     ret = sd->item_focus_previous;
+   else if (dir == ELM_FOCUS_NEXT)
+     ret = sd->item_focus_next;
+   else if (dir == ELM_FOCUS_UP)
+     ret = sd->item_focus_up;
+   else if (dir == ELM_FOCUS_DOWN)
+     ret = sd->item_focus_down;
+   else if (dir == ELM_FOCUS_RIGHT)
+     ret = sd->item_focus_right;
+   else if (dir == ELM_FOCUS_LEFT)
+     ret = sd->item_focus_left;
+
+   return ret;
+}
+
+EOLIAN static void
+_elm_widget_focus_next_item_set(Eo *obj EINA_UNUSED, Elm_Widget_Smart_Data *sd, Elm_Object_Item *next_item, Elm_Focus_Direction dir)
+{
+   if (dir == ELM_FOCUS_PREVIOUS)
+     sd->item_focus_previous = next_item;
+   else if (dir == ELM_FOCUS_NEXT)
+     sd->item_focus_next = next_item;
+   else if (dir == ELM_FOCUS_UP)
+     sd->item_focus_up = next_item;
+   else if (dir == ELM_FOCUS_DOWN)
+     sd->item_focus_down = next_item;
+   else if (dir == ELM_FOCUS_RIGHT)
+     sd->item_focus_right = next_item;
+   else if (dir == ELM_FOCUS_LEFT)
+     sd->item_focus_left = next_item;
+}
+
 EOLIAN static void
 _elm_widget_parent_highlight_set(Eo *obj, Elm_Widget_Smart_Data *sd, Eina_Bool highlighted)
 {
@@ -2761,7 +2848,7 @@ _elm_widget_focus_set(Eo *obj, Elm_Widget_Smart_Data *sd, Eina_Bool focus)
         focus_order++;
         sd->focus_order = focus_order;
         sd->focused = EINA_TRUE;
-        eo_do(obj, elm_obj_widget_on_focus());
+        eo_do(obj, elm_obj_widget_on_focus(NULL));
      }
 
    if (focus)
@@ -2835,11 +2922,11 @@ _elm_widget_focused_object_clear(Eo *obj, Elm_Widget_Smart_Data *sd)
           }
      }
    sd->focused = EINA_FALSE;
-   eo_do(obj, elm_obj_widget_on_focus());
+   eo_do(obj, elm_obj_widget_on_focus(NULL));
 }
 
 EOLIAN static void
-_elm_widget_focus_steal(Eo *obj, Elm_Widget_Smart_Data *sd)
+_elm_widget_focus_steal(Eo *obj, Elm_Widget_Smart_Data *sd, Elm_Object_Item *item)
 {
    Evas_Object *parent, *parent2, *o;
 
@@ -2888,7 +2975,7 @@ _elm_widget_focus_steal(Eo *obj, Elm_Widget_Smart_Data *sd)
                }
           }
      }
-   _parent_focus(obj);
+   _parent_focus(obj, item);
    return;
 }
 
@@ -3852,7 +3939,7 @@ _elm_widget_focus_mouse_up_handle(Eo *obj, Elm_Widget_Smart_Data *_pd EINA_UNUSE
 {
    if (!obj) return;
    if (!_is_focusable(obj)) return;
-   elm_widget_focus_steal(obj);
+   elm_widget_focus_steal(obj, NULL);
 }
 
 EOLIAN static void
@@ -5385,6 +5472,82 @@ _elm_widget_item_access_object_get(Eo *eo_item EINA_UNUSED, Elm_Widget_Item_Data
    return item->access_obj;
 }
 
+EOLIAN static Evas_Object *
+_elm_widget_item_focus_next_object_get(Eo *eo_item EINA_UNUSED, Elm_Widget_Item_Data *item, Elm_Focus_Direction dir)
+{
+   Evas_Object *ret = NULL;
+
+   if (dir == ELM_FOCUS_PREVIOUS)
+     ret = item->focus_previous;
+   else if (dir == ELM_FOCUS_NEXT)
+     ret = item->focus_next;
+   else if (dir == ELM_FOCUS_UP)
+     ret = item->focus_up;
+   else if (dir == ELM_FOCUS_DOWN)
+     ret = item->focus_down;
+   else if (dir == ELM_FOCUS_RIGHT)
+     ret = item->focus_right;
+   else if (dir == ELM_FOCUS_LEFT)
+     ret = item->focus_left;
+
+   return ret;
+}
+
+EOLIAN static void
+_elm_widget_item_focus_next_object_set(Eo *eo_item EINA_UNUSED, Elm_Widget_Item_Data *item, Evas_Object *next, Elm_Focus_Direction dir)
+{
+   if (dir == ELM_FOCUS_PREVIOUS)
+     item->focus_previous = next;
+   else if (dir == ELM_FOCUS_NEXT)
+     item->focus_next = next;
+   else if (dir == ELM_FOCUS_UP)
+     item->focus_up = next;
+   else if (dir == ELM_FOCUS_DOWN)
+     item->focus_down = next;
+   else if (dir == ELM_FOCUS_RIGHT)
+     item->focus_right = next;
+   else if (dir == ELM_FOCUS_LEFT)
+     item->focus_left = next;
+}
+
+EOLIAN static Elm_Object_Item*
+_elm_widget_item_focus_next_item_get(Eo *eo_item EINA_UNUSED, Elm_Widget_Item_Data *item, Elm_Focus_Direction dir)
+{
+   Elm_Object_Item *ret = NULL;
+
+   if (dir == ELM_FOCUS_PREVIOUS)
+     ret = item->item_focus_previous;
+   else if (dir == ELM_FOCUS_NEXT)
+     ret = item->item_focus_next;
+   else if (dir == ELM_FOCUS_UP)
+     ret = item->item_focus_up;
+   else if (dir == ELM_FOCUS_DOWN)
+     ret = item->item_focus_down;
+   else if (dir == ELM_FOCUS_RIGHT)
+     ret = item->item_focus_right;
+   else if (dir == ELM_FOCUS_LEFT)
+     ret = item->item_focus_left;
+
+   return ret;
+}
+
+EOLIAN static void
+_elm_widget_item_focus_next_item_set(Eo *eo_item EINA_UNUSED, Elm_Widget_Item_Data *item, Elm_Object_Item *next_item, Elm_Focus_Direction dir)
+{
+   if (dir == ELM_FOCUS_PREVIOUS)
+     item->item_focus_previous = next_item;
+   else if (dir == ELM_FOCUS_NEXT)
+     item->item_focus_next = next_item;
+   else if (dir == ELM_FOCUS_UP)
+     item->item_focus_up = next_item;
+   else if (dir == ELM_FOCUS_DOWN)
+     item->item_focus_down = next_item;
+   else if (dir == ELM_FOCUS_RIGHT)
+     item->item_focus_right = next_item;
+   else if (dir == ELM_FOCUS_LEFT)
+     item->item_focus_left = next_item;
+}
+
 /* happy debug functions */
 #ifdef ELM_DEBUG
 static void
@@ -5531,7 +5694,7 @@ _elm_widget_eo_base_destructor(Eo *obj, Elm_Widget_Smart_Data *sd)
 }
 
 EOLIAN static Eina_Bool
-_elm_widget_on_focus(Eo *obj, Elm_Widget_Smart_Data *sd)
+_elm_widget_on_focus(Eo *obj, Elm_Widget_Smart_Data *sd, Elm_Object_Item *item EINA_UNUSED)
 {
    if (elm_widget_can_focus_get(obj))
      {
