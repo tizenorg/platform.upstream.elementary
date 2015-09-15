@@ -1499,7 +1499,7 @@ typedef struct vg_progressbar_s
 {
    Evas_Object *vg[3];       //0: base, 1: layer1, 2:layer2
    Efl_VG_Shape *shape[3];   //0: base, 1: layer1, 2: layer2
-   Elm_Transit  *transit[7];
+   Elm_Transit  *transit[8];
    Evas_Object *obj;
    Evas_Coord x, w, h;       // for normal style animation data
    double stroke_width;
@@ -1551,12 +1551,19 @@ transit5_progress_del_cb(void *data, Elm_Transit *transit EINA_UNUSED)
 }
 
 static void
+transit6_progress_del_cb(void *data, Elm_Transit *transit EINA_UNUSED)
+{
+   vg_progressbar *vd = data;
+   vd->transit[6] = NULL;
+}
+
+static void
 progressbar_del_cb(void *data EINA_UNUSED, Evas *e EINA_UNUSED, Evas_Object *obj,
               void *event_info EINA_UNUSED)
 {
    vg_progressbar *vd = evas_object_data_get(obj, vg_key);
    int i;
-   for (i = 0; i < 7 ; i++)
+   for (i = 0; i < 8 ; i++)
      {
         elm_transit_del(vd->transit[i]);
         vd->transit[i] = NULL;
@@ -1801,7 +1808,12 @@ transit_progressbar_process_B_op3(Elm_Transit_Effect *effect, Elm_Transit *trans
 }
 
 static void
-transit_progressbar_process_C_op1(Elm_Transit_Effect *effect, Elm_Transit *transit EINA_UNUSED, double progress)
+transit_progressbar_process_C_op1(Elm_Transit_Effect *effect EINA_UNUSED, Elm_Transit *transit EINA_UNUSED, double progress EINA_UNUSED)
+{
+}
+
+static void
+transit_progressbar_process_C_op2(Elm_Transit_Effect *effect, Elm_Transit *transit EINA_UNUSED, double progress)
 {
    vg_progressbar *vd = effect;
    Evas_Coord x, y, w, h;
@@ -1873,21 +1885,35 @@ _progressbar_process_pulse_start_helper(void *data)
 
    elm_transit_go(vd->transit[3]);
 
-   // For Layer C Animation
+   // This transition is just a dummy one
+   // because transit_go_in dosen't guarentee the exact time transition will start.
+   // this fixed the tail dot animation delay issue in 1st frame.
    elm_transit_del(vd->transit[6]);
    vd->transit[6] = elm_transit_add();
    elm_transit_object_add(vd->transit[6], vd->obj);
-   elm_transit_effect_add(vd->transit[6], transit_progressbar_process_C_op1, vd, _transit_progressbar_process_end);
-   elm_transit_duration_set(vd->transit[6], 0.85);
+   elm_transit_effect_add(vd->transit[6], transit_progressbar_process_C_op1, vd, transit6_progress_del_cb);
+   elm_transit_duration_set(vd->transit[6], .54);
    elm_transit_objects_final_state_keep_set(vd->transit[6], EINA_TRUE);
    elm_transit_go_in(vd->transit[6], .54);
+
+   // For Layer C Animation
+   elm_transit_del(vd->transit[7]);
+   vd->transit[7] = elm_transit_add();
+   elm_transit_object_add(vd->transit[7], vd->obj);
+   elm_transit_effect_add(vd->transit[7], transit_progressbar_process_C_op2, vd, _transit_progressbar_process_end);
+   elm_transit_duration_set(vd->transit[7], 0.85);
+   elm_transit_objects_final_state_keep_set(vd->transit[7], EINA_TRUE);
+
+   elm_transit_chain_transit_add(vd->transit[6], vd->transit[7]);
+
+   elm_transit_go(vd->transit[6]);
 }
 
 static void
 _transit_progressbar_process_end(Elm_Transit_Effect *effect, Elm_Transit *transit EINA_UNUSED)
 {
    vg_progressbar *vd = effect;
-   vd->transit[6] = NULL;
+   vd->transit[7] = NULL;
 
    // restart the pulse
    vd->pulse_job = ecore_job_add(_progressbar_process_pulse_start_helper, vd);
@@ -1911,7 +1937,7 @@ _progressbar_process_pulse_stop(void *data,
 {
    vg_progressbar *vd = data;
    int i;
-   for (i = 0; i < 7 ; i++)
+   for (i = 0; i < 8 ; i++)
      {
         elm_transit_del(vd->transit[i]);
         vd->transit[i] = NULL;
