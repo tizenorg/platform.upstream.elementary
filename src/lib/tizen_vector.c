@@ -1506,6 +1506,7 @@ typedef struct vg_progressbar_s
    double shrink;
    double shift;
    Ecore_Job *pulse_job;
+   Eina_Bool continued : 1;
 } vg_progressbar;
 
 static void
@@ -1617,7 +1618,10 @@ _transit_progressbar_normal_animation_finished(Elm_Transit_Effect *effect, Elm_T
 {
    vg_progressbar *vd = effect;
    vd->transit[2] = NULL;
-   elm_layout_signal_emit(vd->obj, "elm,action,animation,finished", "elm");
+   if (vd->continued)
+     vd->continued = EINA_FALSE;
+   else
+     elm_layout_signal_emit(vd->obj, "elm,action,animation,finished", "elm");
 }
 
 static void
@@ -1665,6 +1669,8 @@ progressbar_normal_fg_resize_cb(void *data, Evas *e EINA_UNUSED,
    elm_transit_tween_mode_factor_n_set(vd->transit[1], 4, ease_out_factor);
    elm_transit_duration_set(vd->transit[1], 0.7);
    elm_transit_objects_final_state_keep_set(vd->transit[1], EINA_TRUE);
+
+   if (vd->transit[2]) vd->continued = EINA_TRUE;
 
    elm_transit_del(vd->transit[2]);
    vd->transit[2] = elm_transit_add();
