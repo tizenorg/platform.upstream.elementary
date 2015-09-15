@@ -253,6 +253,8 @@ typedef struct check_favorite_s
    Elm_Transit *transit;
    Evas_Object *obj;
    Eina_Bool init : 1;
+   double scale_x;
+   double scale_y;
 } check_favorite;
 
 //favorite off svg path info
@@ -311,7 +313,7 @@ _check_favorite(check_favorite *vd, double progress)
    Eina_Matrix3 m;
    eina_matrix3_identity(&m);
    eina_matrix3_translate(&m, center_x, center_y);
-   eina_matrix3_scale(&m, progress, progress);
+   eina_matrix3_scale(&m, vd->scale_x * progress, vd->scale_y * progress);
    eina_matrix3_translate(&m, -center_x, -center_y);
    evas_vg_node_transformation_set(vd->shape[1], &m);
 }
@@ -337,8 +339,36 @@ check_favorite_vg_resize_cb(void *data, Evas *e EINA_UNUSED,
                             Evas_Object *obj EINA_UNUSED,
                             void *event_info EINA_UNUSED)
 {
+   Evas_Coord w, h;
    check_favorite *vd = data;
    check_favorite_init(vd);
+   // star on svg has viewbox as -14 -14 80 80, so the center
+   // of the shape is (80 - 2 *14) = 26
+   double center_x = 26;
+   double center_y = 26;
+   double originx = 14;
+   double originy = 14;
+
+   evas_object_geometry_get(vd->vg[0], NULL, NULL, &w, &h);
+   vd->scale_x = w/80.0;
+   vd->scale_y = h/80.0;
+
+   originx = originx * vd->scale_x;
+   originy = originy * vd->scale_y;
+
+   // update origin
+   evas_vg_node_origin_set(vd->shape[0], originx, originy);
+   evas_vg_node_origin_set(vd->shape[1], originx, originy);
+
+   // apply it to outline star
+   Eina_Matrix3 m;
+   eina_matrix3_identity(&m);
+   eina_matrix3_translate(&m, center_x, center_y);
+   eina_matrix3_scale(&m, vd->scale_x, vd->scale_y);
+   eina_matrix3_translate(&m, -center_x, -center_y);
+   evas_vg_node_transformation_set(vd->shape[0], &m);
+
+   // update the inner star
    _check_favorite(vd, 1);
 }
 
