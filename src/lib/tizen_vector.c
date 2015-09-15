@@ -2176,6 +2176,18 @@ slider_level_rest_resize_cb(void *data , Evas *e EINA_UNUSED,
    _append_round_rect(vd->shape[slider_level_rest], w, h);
 }
 
+//TIZEN_ONLY(20150915): slider: fix slider's handler bug
+static void
+slider_unfocused_cb(void *data,
+                   Evas_Object *obj EINA_UNUSED,
+                   void *event_info EINA_UNUSED)
+{
+   vg_slider *vd = evas_object_data_get(obj, vg_key);
+   if (vd->popup)
+     evas_object_hide(vd->popup);
+}
+//
+
 static void
 _slider_create_handle(vg_slider *vd)
 {
@@ -2253,6 +2265,10 @@ tizen_vg_slider_set(Elm_Slider *obj, Evas_Object *popup)
         // callback to free vd data
         evas_object_event_callback_add(vd->obj, EVAS_CALLBACK_DEL,
                                        slider_del_cb, NULL);
+
+        //TIZEN_ONLY(20150915): slider: fix slider's handler bug
+        evas_object_smart_callback_add(vd->obj, SIG_LAYOUT_UNFOCUSED, slider_unfocused_cb, NULL);
+        //
      }
    if (!vd)
      {
