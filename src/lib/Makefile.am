@@ -220,6 +220,7 @@ elm_flipselector_common.h \
 elm_flipselector_eo.h \
 elm_flipselector_legacy.h \
 elm_focus.h \
+elm_focus_item.h \
 elm_font.h \
 elm_frame.h \
 elm_frame_eo.h \
