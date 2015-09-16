@@ -95,7 +95,7 @@ _radio_icon_update(vg_radio *vd, double progress)
    else
      offset = 2; // on case 2 pixel margin
 
-   outline_stroke = ELM_VG_SCALE_SIZE(vd->obj, 2) + progress * ELM_VG_SCALE_SIZE(vd->obj, 1.5);
+   outline_stroke = ELM_VG_SCALE_SIZE(vd->obj, 1) + progress * ELM_VG_SCALE_SIZE(vd->obj, 1.5);
    double radius = (center_x < center_y ? center_x : center_y) - outline_stroke - offset;
 
    //Iconic Circle (Outline)
@@ -312,8 +312,9 @@ _check_favorite(check_favorite *vd, double progress)
 
    Eina_Matrix3 m;
    eina_matrix3_identity(&m);
+   eina_matrix3_scale(&m, vd->scale_x, vd->scale_y);
    eina_matrix3_translate(&m, center_x, center_y);
-   eina_matrix3_scale(&m, vd->scale_x * progress, vd->scale_y * progress);
+   eina_matrix3_scale(&m, progress, progress);
    eina_matrix3_translate(&m, -center_x, -center_y);
    evas_vg_node_transformation_set(vd->shape[1], &m);
 }
@@ -342,10 +343,8 @@ check_favorite_vg_resize_cb(void *data, Evas *e EINA_UNUSED,
    Evas_Coord w, h;
    check_favorite *vd = data;
    check_favorite_init(vd);
-   // star on svg has viewbox as -14 -14 80 80, so the center
-   // of the shape is (80 - 2 *14) = 26
-   double center_x = 26;
-   double center_y = 26;
+   // star on svg has viewbox as -14 -14 80 80, so the origin
+   // is shifted by 14.
    double originx = 14;
    double originy = 14;
 
@@ -363,9 +362,7 @@ check_favorite_vg_resize_cb(void *data, Evas *e EINA_UNUSED,
    // apply it to outline star
    Eina_Matrix3 m;
    eina_matrix3_identity(&m);
-   eina_matrix3_translate(&m, center_x, center_y);
    eina_matrix3_scale(&m, vd->scale_x, vd->scale_y);
-   eina_matrix3_translate(&m, -center_x, -center_y);
    evas_vg_node_transformation_set(vd->shape[0], &m);
 
    // update the inner star
@@ -887,16 +884,25 @@ check_default_init(check_default *vd)
 }
 
 static void
-_update_default_check_shape(Efl_VG *shape, Eina_Bool outline)
+_update_default_check_shape(check_default *vd, Efl_VG *shape, Eina_Bool outline)
 {
    evas_vg_shape_shape_reset(shape);
    if (outline)
      {
         // outline
-        evas_vg_shape_shape_append_svg_path(shape, check_default_outline);
-        evas_vg_node_origin_set(shape, 9, 9);
-        evas_vg_shape_stroke_width_set(shape, 2);
+        Evas_Coord w, h;
+        evas_object_geometry_get(vd->vg[0], NULL, NULL, &w, &h);
+        double scale_x = w/50.0;
+        double scale_y = h/50.0;
 
+        evas_vg_shape_shape_append_svg_path(shape, check_default_outline);
+        evas_vg_node_origin_set(shape, 9 * scale_x, 9 * scale_y);
+        Eina_Matrix3 m;
+        eina_matrix3_identity(&m);
+        eina_matrix3_scale(&m, scale_x, scale_y);
+        evas_vg_node_transformation_set(shape, &m);
+
+        evas_vg_shape_stroke_width_set(shape, 1);
         // update color
         evas_vg_node_color_set(shape, 0, 0, 0, 0);
         evas_vg_shape_stroke_color_set(shape, 255, 255, 255, 255);
@@ -906,6 +912,8 @@ _update_default_check_shape(Efl_VG *shape, Eina_Bool outline)
         // fill
         evas_vg_shape_shape_append_svg_path(shape, check_default_fill);
         evas_vg_node_origin_set(shape, 0, 0);
+        evas_vg_node_transformation_set(shape, NULL);
+
         // update color
         evas_vg_node_color_set(shape, 255, 255, 255, 255);
         evas_vg_shape_stroke_color_set(shape, 0, 0, 0, 0);
@@ -919,7 +927,7 @@ check_default_vg_bg_resize_cb(void *data, Evas *e EINA_UNUSED,
 {
    check_default *vd = data;
    check_default_init(vd);
-   _update_default_check_shape(vd->shape[4], elm_check_state_get(vd->obj));
+   _update_default_check_shape(vd, vd->shape[4], elm_check_state_get(vd->obj));
 }
 
 static void
@@ -937,10 +945,10 @@ check_default_vg_resize_cb(void *data, Evas *e EINA_UNUSED,
    double center_y = ((double)h / 2);
 
    //Update Outline Shape
-   _update_default_check_shape(vd->shape[0], !elm_check_state_get(vd->obj));
+   _update_default_check_shape(vd, vd->shape[0], !elm_check_state_get(vd->obj));
 
    //Update BG Shape
-   _update_default_check_shape(vd->shape[1], EINA_FALSE);
+   _update_default_check_shape(vd, vd->shape[1], EINA_FALSE);
 
    if (elm_check_state_get(vd->obj))
      evas_vg_node_color_set(vd->shape[1], 255, 255, 255, 255);
@@ -1024,8 +1032,14 @@ _check_default_bg_scale(check_default *vd, double progress)
 {
    // as the viewbox of the check_on svg is 0 0 50 50
    // center of the svg is 25 25
+   Evas_Coord w, h;
+   evas_object_geometry_get(vd->vg[0], NULL, NULL, &w, &h);
+   double scale_x = w/50.0;
+   double scale_y = h/50.0;
+
    Eina_Matrix3 m;
    eina_matrix3_identity(&m);
+   eina_matrix3_scale(&m, scale_x, scale_y);
    eina_matrix3_translate(&m, 25, 25);
    eina_matrix3_scale(&m, progress, progress);
    eina_matrix3_translate(&m, -25, -25);
@@ -1157,7 +1171,7 @@ check_default_action_toggle_cb(void *data, Evas_Object *obj EINA_UNUSED,
    else
      elm_transit_go(vd->transit[2]);
 
-   _update_default_check_shape(vd->shape[4], elm_check_state_get(vd->obj));
+   _update_default_check_shape(vd, vd->shape[4], elm_check_state_get(vd->obj));
 }
 
 static void
@@ -1174,7 +1188,7 @@ check_default_state_toggle_cb(void *data, Evas_Object *obj EINA_UNUSED,
    _check_default_bg_color(vd, 1.0);
    _check_default_bg_scale(vd, 1.0);
    _check_default_line(vd, 1.0);
-   _update_default_check_shape(vd->shape[4], elm_check_state_get(vd->obj));
+   _update_default_check_shape(vd, vd->shape[4], elm_check_state_get(vd->obj));
 
    // update outline color
    if (elm_check_state_get(vd->obj))
