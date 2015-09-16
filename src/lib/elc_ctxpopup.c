@@ -1255,11 +1255,14 @@ _elm_ctxpopup_horizontal_get(Eo *obj EINA_UNUSED, Elm_Ctxpopup_Data *sd)
 }
 
 static void
-_item_wrap_cb(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
+_item_wrap_cb(void *data, Evas_Object *obj, void *event_info EINA_UNUSED)
 {
    Elm_Ctxpopup_Item_Data *item = data;
    if (!item->wcb.org_func_cb) return;
    item->wcb.org_func_cb((void *)item->wcb.org_data, item->wcb.cobj, EO_OBJ(item));
+//TIZEN ONLY(20150710)ctxpopup: Accessible methods for children_get, extents_get and item name_get
+   eo_do(obj, elm_interface_atspi_accessible_role_set(ELM_ATSPI_ROLE_MENU_ITEM));
+//
 }
 
 EOLIAN static Eo *
@@ -1483,6 +1486,26 @@ _elm_ctxpopup_elm_interface_atspi_accessible_state_set_get(Eo *obj, Elm_Ctxpopup
    STATE_TYPE_SET(ret, ELM_ATSPI_STATE_MODAL);
 
    return ret;
+}
+
+static Eina_Bool
+_item_action_activate(Evas_Object *obj, const char *params EINA_UNUSED)
+{
+   ELM_CTXPOPUP_ITEM_DATA_GET(obj, item);
+
+   if (item->wcb.org_func_cb)
+     item->wcb.org_func_cb((void*)item->wcb.org_data, WIDGET(item), EO_OBJ(item));
+   return EINA_TRUE;
+}
+
+EOLIAN static const Elm_Atspi_Action*
+_elm_ctxpopup_item_elm_interface_atspi_widget_action_elm_actions_get(Eo *obj EINA_UNUSED, Elm_Ctxpopup_Item_Data *sd EINA_UNUSED)
+{
+   static Elm_Atspi_Action atspi_actions[] = {
+          { "activate", "activate", NULL, _item_action_activate},
+          { NULL, NULL, NULL, NULL }
+   };
+   return &atspi_actions[0];
 }
 
 #include "elm_ctxpopup_item.eo.c"
