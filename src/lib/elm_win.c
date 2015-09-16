@@ -6117,15 +6117,15 @@ _elm_win_object_set_accessibility_highlight(Evas_Object *win, Evas_Object *obj)
 {
    if (!win) return;
    ELM_WIN_DATA_GET(win, sd);
-   _elm_win_accessibility_highlight_hide(sd->obj);
+   _elm_win_accessibility_highlight_hide(win);
    if (obj)
      {
          _elm_win_accessibility_highlight_init(sd, obj);
-         _elm_win_accessibility_highlight_show(sd->obj);
+         _elm_win_accessibility_highlight_show(win);
      }
    else
      {
-         _elm_win_accessibility_highlight_hide(sd->obj);
+         _elm_win_accessibility_highlight_hide(win);
      }
 }
 
