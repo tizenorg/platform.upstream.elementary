@@ -46,7 +46,10 @@ main(int argc, char **argv)
      }
    cwd = strdup(buf);
    if (!(disp = getenv("DISPLAY"))) disp = "unknown";
-   snprintf(buf, sizeof(buf), "/tmp/elm-ql-%i/%s", getuid(), disp);
+   //TIZEN ONLY (150917): security issue. To access any application, it needs smack rule.
+   //snprintf(buf, sizeof(buf), "/tmp/elm-ql-%i/%s", getuid(), disp);
+   snprintf(buf, sizeof(buf), "/run/.elementary/elm-ql-%i/%s", getuid(), disp);
+   //
    if ((sock = socket(AF_UNIX, SOCK_STREAM, 0)) < 0)
      {
         perror("elementary_quicklaunch: socket(AF_UNIX, SOCK_STREAM, 0)");
