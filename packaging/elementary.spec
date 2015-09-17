@@ -10,6 +10,7 @@ Summary:        EFL toolkit for small touchscreens
 Url:            http://trac.enlightenment.org/e/wiki/Elementary
 Group:          Graphics & UI Framework/Development
 Source0:        elementary-%{version}.tar.bz2
+Source100:      elementary.conf
 Source1001:     elementary.manifest
 BuildRequires:  doxygen
 BuildRequires:  gettext-devel
@@ -103,6 +104,9 @@ cp %{SOURCE1001} .
 %install
 %make_install
 
+mkdir -p %{buildroot}%{_tmpfilesdir}
+install -m 0644 %SOURCE100 %{buildroot}%{_tmpfilesdir}/elementary.conf
+
 %find_lang %{name}
 
 %post -p /sbin/ldconfig
@@ -122,6 +126,7 @@ cp %{SOURCE1001} .
 %{_libdir}/*.so.*
 %{_datadir}/elementary/*
 %{_datadir}/icons/elementary.png
+%{_tmpfilesdir}/elementary.conf
 
 %exclude %{_datadir}/elementary/config/
 
