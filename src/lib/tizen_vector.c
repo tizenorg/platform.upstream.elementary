@@ -1551,6 +1551,7 @@ typedef struct vg_progressbar_s
    double shift;
    Ecore_Job *pulse_job;
    Eina_Bool continued : 1;
+   Eina_Bool pulse : 1;
 } vg_progressbar;
 
 static void
@@ -1603,20 +1604,36 @@ transit6_progress_del_cb(void *data, Elm_Transit *transit EINA_UNUSED)
 }
 
 static void
-progressbar_del_cb(void *data EINA_UNUSED, Evas *e EINA_UNUSED, Evas_Object *obj,
-              void *event_info EINA_UNUSED)
+_pulse_stop(vg_progressbar *vd)
 {
-   vg_progressbar *vd = evas_object_data_get(obj, vg_key);
    int i;
+
+   vd->pulse = EINA_FALSE;
+
    for (i = 0; i < 8 ; i++)
      {
         elm_transit_del(vd->transit[i]);
         vd->transit[i] = NULL;
      }
+
    // delete if any pul_job is scheduled.
    if (vd->pulse_job)
      ecore_job_del(vd->pulse_job);
    vd->pulse_job = NULL;
+}
+
+static void
+progressbar_hide_cb(void *data, Evas *e EINA_UNUSED, Evas_Object *obj EINA_UNUSED,
+                    void *event_info EINA_UNUSED)
+{
+   _pulse_stop(data);
+}
+
+static void
+progressbar_del_cb(void *data EINA_UNUSED, Evas *e EINA_UNUSED, Evas_Object *obj,
+                   void *event_info EINA_UNUSED)
+{
+   vg_progressbar *vd = evas_object_data_get(obj, vg_key);
 
    evas_object_data_set(obj, vg_key, NULL);
    free(vd);
@@ -1966,37 +1983,30 @@ _transit_progressbar_process_end(Elm_Transit_Effect *effect, Elm_Transit *transi
    vd->transit[7] = NULL;
 
    // restart the pulse
-   vd->pulse_job = ecore_job_add(_progressbar_process_pulse_start_helper, vd);
+   if (vd->pulse)
+     vd->pulse_job = ecore_job_add(_progressbar_process_pulse_start_helper, vd);
 }
 
 static void
 _progressbar_process_pulse_start(void *data,
-                       Evas_Object *obj EINA_UNUSED,
-                       const char *emission EINA_UNUSED,
-                       const char *source EINA_UNUSED)
+                                 Evas_Object *obj EINA_UNUSED,
+                                 const char *emission EINA_UNUSED,
+                                 const char *source EINA_UNUSED)
 {
    vg_progressbar *vd = data;
+   if (vd->pulse) return;
+
+   vd->pulse = EINA_TRUE;
    _progressbar_process_pulse_start_helper(data);
 }
 
 static void
 _progressbar_process_pulse_stop(void *data,
-                       Evas_Object *obj EINA_UNUSED,
-                       const char *emission EINA_UNUSED,
-                       const char *source EINA_UNUSED)
+                                Evas_Object *obj EINA_UNUSED,
+                                const char *emission EINA_UNUSED,
+                                const char *source EINA_UNUSED)
 {
-   vg_progressbar *vd = data;
-   int i;
-   for (i = 0; i < 8 ; i++)
-     {
-        elm_transit_del(vd->transit[i]);
-        vd->transit[i] = NULL;
-     }
-
-   // delete if any pul_job is scheduled.
-   if (vd->pulse_job)
-     ecore_job_del(vd->pulse_job);
-   vd->pulse_job = NULL;
+   _pulse_stop(data);
 }
 
 static void
@@ -2059,6 +2069,8 @@ tizen_vg_progressbar_set(Elm_Progressbar *obj)
         // callback to free vd data
         evas_object_event_callback_add(vd->obj, EVAS_CALLBACK_DEL,
                                        progressbar_del_cb, NULL);
+        evas_object_event_callback_add(vd->obj, EVAS_CALLBACK_HIDE,
+                                       progressbar_hide_cb, vd);
      }
 
    if (!strcmp(str, "default"))
