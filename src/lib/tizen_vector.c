@@ -902,7 +902,7 @@ _update_default_check_shape(check_default *vd, Efl_VG *shape, Eina_Bool outline)
         eina_matrix3_scale(&m, scale_x, scale_y);
         evas_vg_node_transformation_set(shape, &m);
 
-        evas_vg_shape_stroke_width_set(shape, 1);
+        evas_vg_shape_stroke_width_set(shape, 1.5);
         // update color
         evas_vg_node_color_set(shape, 0, 0, 0, 0);
         evas_vg_shape_stroke_color_set(shape, 255, 255, 255, 255);
