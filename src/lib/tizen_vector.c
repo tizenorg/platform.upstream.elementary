@@ -1898,6 +1898,9 @@ static void
 _progressbar_process_pulse_start_helper(void *data)
 {
    vg_progressbar *vd = data;
+
+   vd->pulse_job = NULL;
+
    // For Layer A animation
    elm_transit_del(vd->transit[0]);
    vd->transit[0] = elm_transit_add();
