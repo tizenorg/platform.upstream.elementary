@@ -238,6 +238,7 @@ static const char SIG_PROFILE_CHANGED[] = "profile,changed";
 static const char SIG_WM_ROTATION_CHANGED[] = "wm,rotation,changed";
 static const char SIG_THEME_CHANGED[] = "theme,changed";
 static const char SIG_CONFORMANT_CHANGED[] = "conformant,changed";
+static const char SIG_AUX_HINT_ALLOWED[] = "aux,hint,allowed";
 
 static const Evas_Smart_Cb_Description _smart_callbacks[] = {
    {SIG_DELETE_REQUEST, ""},
@@ -261,6 +262,7 @@ static const Evas_Smart_Cb_Description _smart_callbacks[] = {
    {SIG_WIDGET_FOCUSED, ""}, /**< handled by elm_widget */
    {SIG_WIDGET_UNFOCUSED, ""}, /**< handled by elm_widget */
    {SIG_CONFORMANT_CHANGED, ""},
+   {SIG_AUX_HINT_ALLOWED, ""},
    {NULL, NULL}
 };
 
@@ -1186,6 +1188,8 @@ _elm_win_state_change(Ecore_Evas *ee)
    Eina_Bool ch_profile = EINA_FALSE;
    Eina_Bool ch_wm_rotation = EINA_FALSE;
    Eina_Bool ch_conformant  = EINA_FALSE;
+   Eina_Bool ch_aux_hint = EINA_FALSE;
+   Eina_List *aux_hints = NULL;
    const char *profile;
 
    if (!sd) return;
@@ -1232,6 +1236,12 @@ _elm_win_state_change(Ecore_Evas *ee)
              ch_wm_rotation = EINA_TRUE;
           }
      }
+   aux_hints = ecore_evas_aux_hints_allowed_get(sd->ee);
+   if (aux_hints)
+     {
+        ch_aux_hint = EINA_TRUE;
+     }
+
 #ifdef HAVE_ELEMENTARY_WAYLAND
    int x = 0, y = 0, w = 0, h = 0;
    if (sd->indmode != (Elm_Win_Indicator_Mode)ecore_wl_window_indicator_state_get(sd->wl.win))
@@ -1318,6 +1328,16 @@ _elm_win_state_change(Ecore_Evas *ee)
    if (ch_conformant)
      {
         evas_object_smart_callback_call(obj, SIG_CONFORMANT_CHANGED, NULL);
+     }
+   if (ch_aux_hint)
+     {
+        void *id;
+        Eina_List *l;
+        EINA_LIST_FOREACH(aux_hints, l, id)
+          {
+             evas_object_smart_callback_call(obj, SIG_AUX_HINT_ALLOWED, id);
+          }
+        eina_list_free(aux_hints);
      }
 }
 
@@ -5413,3 +5433,55 @@ _elm_win_elm_interface_atspi_widget_action_elm_actions_get(Eo *obj EINA_UNUSED, 
 }
 
 #include "elm_win.eo.c"
+
+//////////////////////////////////////////////////////////////////
+
+EAPI const Eina_List *
+elm_win_aux_hints_supported_get(const Evas_Object *obj)
+{
+   ELM_WIN_CHECK(obj) NULL;
+   ELM_WIN_DATA_GET_OR_RETURN_VAL(obj, sd, NULL);
+   return ecore_evas_aux_hints_supported_get(sd->ee);
+}
+
+EAPI int
+elm_win_aux_hint_add(Evas_Object *obj, const char *hint, const char *val)
+{
+   ELM_WIN_CHECK(obj) -1;
+   ELM_WIN_DATA_GET_OR_RETURN_VAL(obj, sd, -1);
+   return ecore_evas_aux_hint_add(sd->ee, hint, val);
+}
+
+EAPI Eina_Bool
+elm_win_aux_hint_del(Evas_Object *obj,
+                     const int    id)
+{
+   ELM_WIN_CHECK(obj) EINA_FALSE;
+   ELM_WIN_DATA_GET_OR_RETURN_VAL(obj, sd, EINA_FALSE);
+   return ecore_evas_aux_hint_del(sd->ee, id);
+}
+
+EAPI Eina_Bool
+elm_win_aux_hint_val_set(Evas_Object *obj, const int id, const char *val)
+{
+   ELM_WIN_CHECK(obj) EINA_FALSE;
+   ELM_WIN_DATA_GET_OR_RETURN_VAL(obj, sd, EINA_FALSE);
+   return ecore_evas_aux_hint_val_set(sd->ee, id, val);
+}
+
+EAPI const char *
+elm_win_aux_hint_val_get(Evas_Object *obj, int id)
+{
+   ELM_WIN_CHECK(obj) EINA_FALSE;
+   ELM_WIN_DATA_GET_OR_RETURN_VAL(obj, sd, EINA_FALSE);
+   return ecore_evas_aux_hint_val_get(sd->ee, id);
+}
+
+EAPI int
+elm_win_aux_hint_id_get(Evas_Object *obj, const char *hint)
+{
+   ELM_WIN_CHECK(obj) EINA_FALSE;
+   ELM_WIN_DATA_GET_OR_RETURN_VAL(obj, sd, EINA_FALSE);
+   return ecore_evas_aux_hint_id_get(sd->ee, hint);
+}
+//////////////////////////////////////////////////////////////////

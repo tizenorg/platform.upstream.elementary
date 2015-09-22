@@ -110,5 +110,111 @@
 #endif
 
 /**
+ * @internal
+ * @remarks Tizen only feature
+ *
+ * @brief Gets the list of supported auxiliary hint strings.
+ *
+ * @since 1.8
+ *
+ * @remarks Do not change the returned list of contents. Auxiliary hint
+ *          strings are internal and should be considered constants, do not free or
+ *          modify them.
+ * @remarks Support for this depends on the underlying windowing system.
+ *
+ * @remarks The window auxiliary hint is the value that is used to decide which action should
+ *          be made available to the user by the Windows Manager. If you want to set a specific hint
+ *          to your window, then you should check whether it exists in the supported auxiliary
+ *          hints that are registered in the root window by the Windows Manager. Once you have added
+ *          an auxiliary hint, you can get a new ID which is used to change the value and delete the hint.
+ *          The Windows Manager sends a response message to the application on receiving the auxiliary
+ *          hint change event.
+ *
+ * @param obj The window object
+ * @return The list of supported auxiliary hint strings
+ */
+EAPI const Eina_List      *elm_win_aux_hints_supported_get(const Evas_Object *obj);
+
+/**
+ * @internal
+ * @remarks Tizen only feature
+ *
+ * @brief Creates an auxiliary hint of the window.
+ *
+ * @since 1.8
+ *
+ * @remarks Support for this depends on the underlying windowing system.
+ *
+ * @param obj The window object
+ * @param hint The auxiliary hint string
+ * @param val The value string
+ * @return The ID of the created auxiliary hint,
+ *         otherwise @c -1 on failure
+ */
+EAPI int                   elm_win_aux_hint_add(Evas_Object *obj, const char *hint, const char *val);
+
+/**
+ * @internal
+ * @remarks Tizen only feature
+ *
+ * @brief Deletes an auxiliary hint of the window.
+ *
+ * @since 1.8
+ *
+ * @remarks Support for this depends on the underlying windowing system.
+ * @param obj The window object
+ * @param id The ID of the auxiliary hint
+ * @return @c EINA_TRUE if no error occurs,
+ *         otherwise @c EINA_FALSE
+ */
+EAPI Eina_Bool             elm_win_aux_hint_del(Evas_Object *obj, const int id);
+
+/**
+ * @internal
+ * @remarks Tizen only feature
+ *
+ * @brief Changes a value of the auxiliary hint.
+ *
+ * @since 1.8
+ *
+ * @remarks Support for this depends on the underlying windowing system.
+ * @param obj The window object
+ * @param id The auxiliary hint ID
+ * @param val The value string to be set
+ * @return @c EINA_TRUE if no error occurs,
+ *         otherwise @c EINA_FALSE
+ */
+EAPI Eina_Bool             elm_win_aux_hint_val_set(Evas_Object *obj, const int id, const char *val);
+
+/**
+ * @internal
+ * @remarks Tizen only feature
+ *
+ * @brief Gets a value of the auxiliary hint.
+ *
+ * @remarks Support for this depends on the underlying windowing system.
+ * @param obj The window object
+ * @param id The auxiliary hint ID
+ * @return The string value of the auxiliary hint ID,
+ *         otherwise @c NULL
+ */
+EAPI const char           *elm_win_aux_hint_val_get(Evas_Object *obj, int id);
+
+
+/**
+ * @internal
+ * @remarks Tizen only feature
+ *
+ * @brief Gets an ID of the auxiliary hint string.
+ *
+ * @remarks Support for this depends on the underlying windowing system.
+ * @param obj The window object
+ * @param hint The auxiliary hint string
+ * @return The ID of the auxiliary hint,
+ *         otherwise @c -1 on failure
+ */
+EAPI int                   elm_win_aux_hint_id_get(Evas_Object *obj, const char *hint);
+
+/**
  * @}
  */
