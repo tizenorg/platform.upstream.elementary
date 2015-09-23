@@ -3881,6 +3881,7 @@ static void
 _registered_listeners_get(void *data, const Eldbus_Message *msg, Eldbus_Pending *pending)
 {
    const char *event, *bus;
+   Eo *root, *pr;
    ELM_ATSPI_BRIDGE_DATA_GET_OR_RETURN(data, pd);
    pd->pending_requests = eina_list_remove(pd->pending_requests, pending);
 
@@ -3909,7 +3910,22 @@ _registered_listeners_get(void *data, const Eldbus_Message *msg, Eldbus_Pending 
      }
 
    if (!pd->connected)
-      eo_do(data, eo_event_callback_call(ELM_ATSPI_BRIDGE_EVENT_CONNECTED, NULL));
+     {
+        eo_do(data, eo_event_callback_call(ELM_ATSPI_BRIDGE_EVENT_CONNECTED, NULL));
+
+        // buid cache
+        eo_do(data, root = elm_obj_atspi_bridge_root_get());
+        _bridge_cache_build(data, root);
+
+        // initialize pending proxy
+        EINA_LIST_FREE(pd->socket_queue, pr)
+           _socket_interface_register(pd->a11y_bus, pr);
+        EINA_LIST_FREE(pd->plug_queue, pr)
+           _plug_connect(pd->a11y_bus, pr);
+
+        pd->socket_queue = pd->plug_queue = NULL;
+     }
+
    pd->connected = EINA_TRUE;
 }
 
@@ -4495,7 +4511,6 @@ static void
 _a11y_bus_initialize(Eo *obj, const char *socket_addr)
 {
    ELM_ATSPI_BRIDGE_DATA_GET_OR_RETURN(obj, pd);
-   Eo *root;
    pd->a11y_bus = eldbus_private_address_connection_get(socket_addr);
    if (!pd->a11y_bus)
      return;
@@ -4514,19 +4529,8 @@ _a11y_bus_initialize(Eo *obj, const char *socket_addr)
    if (!getenv("ELM_ATSPI_NO_EMBED"))
      _elm_atspi_bridge_app_register(obj);
 
-   // buid cache
-   eo_do(obj, root = elm_obj_atspi_bridge_root_get());
-   _bridge_cache_build(obj, root);
-
    // register accesible object event listener
    eo_do(ELM_INTERFACE_ATSPI_ACCESSIBLE_MIXIN, pd->event_hdlr = elm_interface_atspi_accessible_event_handler_add(_bridge_accessible_event_dispatch, obj));
-
-   // additionally register all socket objects and its descendants
-   EINA_LIST_FREE(pd->plug_queue, obj)
-   _plug_connect(pd->a11y_bus, obj);
-   EINA_LIST_FREE(pd->socket_queue, obj)
-   _socket_ifc_create(pd->a11y_bus, obj);
-   pd->plug_queue = pd->socket_queue = NULL;
 
 }
 
