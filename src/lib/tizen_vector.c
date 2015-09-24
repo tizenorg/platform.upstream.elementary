@@ -242,6 +242,16 @@ tizen_vg_radio_set(Elm_Radio *obj)
    elm_object_part_content_set(obj, "tizen_vg_shape2", vd->vg[2]);
 }
 
+void
+tizen_vg_radio_state_set(Elm_Radio *obj)
+{
+   // Fix for the state change visual change skips one frame.
+   // For vector enabled radio, visual change is handled in the
+   // code and it depends on "elm,radio,action,toggle" signal.
+   // as edje signal emit is asyn force one more message_signal to make sure
+   // state change related visual change occurs in the same frame.
+   edje_object_message_signal_process(elm_layout_edje_get(obj));
+}
 
 /////////////////////////////////////////////////////////////////////////
 /* Check: Favorite */
