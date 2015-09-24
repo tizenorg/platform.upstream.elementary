@@ -1635,6 +1635,7 @@ progressbar_del_cb(void *data EINA_UNUSED, Evas *e EINA_UNUSED, Evas_Object *obj
 {
    vg_progressbar *vd = evas_object_data_get(obj, vg_key);
 
+   _pulse_stop(vd);
    evas_object_data_set(obj, vg_key, NULL);
    free(vd);
 }
