@@ -695,6 +695,7 @@ class Elm_Gengrid (Elm_Layout, Elm_Interface_Scrollable,
       Elm_Widget.focus_direction_manager_is;
       Elm_Widget.access;
       Elm_Widget.focus_next;
+      Elm_Widget.focus_direction;
       Elm_Widget.on_focus;
       Elm_Widget.on_focus_region;
       Elm_Widget.event;
