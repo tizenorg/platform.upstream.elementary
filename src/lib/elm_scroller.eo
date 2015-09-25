@@ -84,6 +84,7 @@ class Elm_Scroller (Elm_Layout, Elm_Interface_Scrollable,
       Elm_Widget.focus_next_manager_is;
       Elm_Widget.focus_direction_manager_is;
       Elm_Widget.focus_next;
+      Elm_Widget.focus_direction;
       Elm_Widget.sub_object_del;
       Elm_Widget.event;
       Elm_Container.content_get;
