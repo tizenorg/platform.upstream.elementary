@@ -51,6 +51,9 @@ static const Evas_Smart_Cb_Description _smart_callbacks[] = {
    {NULL, NULL}
 };
 
+// TIZEN_ONLY(20151012): Unregister callbacks for ATSPI bridge enable/disable
+static void _unregister_flipselector_atspi_bridge_callbacks(Elm_Flipselector_Data *sd);
+//
 static Eina_Bool _key_action_flip(Evas_Object *obj, const char *params);
 
 static const Elm_Action key_actions[] = {
@@ -575,6 +578,10 @@ _elm_flipselector_evas_object_smart_del(Eo *obj, Elm_Flipselector_Data *sd)
 
    ecore_timer_del(sd->spin);
 
+   // TIZEN_ONLY(20151012): Unregister callbacks for ATSPI bridge enable/disable
+   _unregister_flipselector_atspi_bridge_callbacks(sd);
+   //
+
    eo_do_super(obj, MY_CLASS, evas_obj_smart_del());
 }
 
@@ -587,7 +594,8 @@ elm_flipselector_add(Evas_Object *parent)
 }
 
 //TIZEN ONLY(2015090): expose flipselector top/bottom buttons for accessibility tree
-static Eina_Bool _activate_top_cb (void *data, Evas_Object *obj, Elm_Access_Action_Info *action_info)
+static Eina_Bool
+_activate_top_cb(void *data, Evas_Object *obj EINA_UNUSED, Elm_Access_Action_Info *action_info EINA_UNUSED)
 {
    Elm_Flipselector_Data *sd = (Elm_Flipselector_Data*)data;
    _flipselector_walk(sd);
@@ -595,12 +603,79 @@ static Eina_Bool _activate_top_cb (void *data, Evas_Object *obj, Elm_Access_Acti
    _flipselector_unwalk(sd);
 }
 
-static Eina_Bool _activate_bottom_cb (void *data, Evas_Object *obj, Elm_Access_Action_Info *action_info)
+static Eina_Bool
+_activate_bottom_cb(void *data, Evas_Object *obj EINA_UNUSED, Elm_Access_Action_Info *action_info EINA_UNUSED)
 {
    Elm_Flipselector_Data *sd = (Elm_Flipselector_Data*)data;
    _flipselector_walk(sd);
    _flip_down(sd);
    _flipselector_unwalk(sd);
+}
+
+//TIZEN ONLY(20151012): register callbacks for ATSPI bridge enable/disable
+static Eina_Bool
+_flipselector_atspi_bridge_on_connect_cb(void *data, Eo *obj EINA_UNUSED, const Eo_Event_Description *desc EINA_UNUSED, void *event_info EINA_UNUSED)
+{
+   Elm_Flipselector_Data *sd = (Elm_Flipselector_Data*)data;
+   Evas_Object *btn1;
+   Evas_Object *btn2;
+   btn1 = (Evas_Object*)edje_object_part_object_get(elm_layout_edje_get(sd->obj), "top_clipper");
+   btn2 = (Evas_Object*)edje_object_part_object_get(elm_layout_edje_get(sd->obj), "bottom_clipper");
+   if (btn1 && btn2)
+     {
+        sd->access_top_button = elm_access_object_register(btn1, sd->obj);
+        sd->access_bottom_button = elm_access_object_register(btn2, sd->obj);
+
+        elm_atspi_accessible_role_set(sd->access_top_button, ELM_ATSPI_ROLE_PUSH_BUTTON);
+        elm_atspi_accessible_role_set(sd->access_bottom_button, ELM_ATSPI_ROLE_PUSH_BUTTON);
+
+        elm_access_action_cb_set(sd->access_top_button, ELM_ACCESS_ACTION_ACTIVATE, _activate_top_cb, sd);
+        elm_access_action_cb_set(sd->access_bottom_button, ELM_ACCESS_ACTION_ACTIVATE, _activate_bottom_cb, sd);
+     }
+   return EINA_TRUE;
+}
+
+static Eina_Bool
+_flipselector_atspi_bridge_on_disconnect_cb(void *data, Eo *obj EINA_UNUSED, const Eo_Event_Description *desc EINA_UNUSED, void *event_info EINA_UNUSED)
+{
+   Elm_Flipselector_Data *sd = (Elm_Flipselector_Data*)data;
+   elm_access_object_unregister(sd->access_top_button);
+   elm_access_object_unregister(sd->access_bottom_button);
+   return EINA_TRUE;
+}
+
+static void
+_unregister_flipselector_atspi_bridge_callbacks(Elm_Flipselector_Data *sd)
+{
+   if (!_elm_config->atspi_mode) return;
+
+   eo_do(_elm_atspi_bridge_get(),
+        eo_event_callback_del(ELM_ATSPI_BRIDGE_EVENT_CONNECTED, _flipselector_atspi_bridge_on_connect_cb, sd));
+   eo_do(_elm_atspi_bridge_get(),
+        eo_event_callback_del(ELM_ATSPI_BRIDGE_EVENT_DISCONNECTED, _flipselector_atspi_bridge_on_disconnect_cb, sd));
+}
+
+static void
+_atspi_expose_flipselector_top_bottom(Elm_Flipselector_Data *sd)
+{
+   Eina_Bool connected = EINA_FALSE;
+
+   if (!_elm_config->atspi_mode) return;
+
+   sd->access_top_button = NULL;
+   sd->access_bottom_button = NULL;
+
+   // Expose flipselector buttons
+   eo_do(_elm_atspi_bridge_get(), connected = elm_obj_atspi_bridge_connected_get());
+   if (connected)
+     _flipselector_atspi_bridge_on_connect_cb(sd, NULL, NULL, NULL);
+
+   // Register for ATSPI bridge enable/disable
+   _unregister_flipselector_atspi_bridge_callbacks(sd);
+   eo_do(_elm_atspi_bridge_get(),
+        eo_event_callback_add(ELM_ATSPI_BRIDGE_EVENT_CONNECTED, _flipselector_atspi_bridge_on_connect_cb, sd));
+   eo_do(_elm_atspi_bridge_get(),
+        eo_event_callback_add(ELM_ATSPI_BRIDGE_EVENT_DISCONNECTED, _flipselector_atspi_bridge_on_disconnect_cb, sd));
 }
 //
 
@@ -614,25 +689,9 @@ _elm_flipselector_eo_base_constructor(Eo *obj, Elm_Flipselector_Data *sd)
          evas_obj_smart_callbacks_descriptions_set(_smart_callbacks),
          elm_interface_atspi_accessible_role_set(ELM_ATSPI_ROLE_LIST));
 
-   //TIZEN ONLY(2015090): expose flipselector top/bottom buttons for accessibility tree
-   if (_elm_config->atspi_mode)
-     {
-         Evas_Object *btn1 = (Evas_Object*)edje_object_part_object_get(elm_layout_edje_get(obj), "top_clipper");
-         Evas_Object *btn2 = (Evas_Object*)edje_object_part_object_get(elm_layout_edje_get(obj), "bottom_clipper");
-         if (btn1 && btn2)
-           {
-              sd->access_top_button = elm_access_object_register(btn1, obj);
-              sd->access_bottom_button = elm_access_object_register(btn2, obj);
-
-              elm_atspi_accessible_role_set(sd->access_top_button, ELM_ATSPI_ROLE_PUSH_BUTTON);
-              elm_atspi_accessible_role_set(sd->access_bottom_button, ELM_ATSPI_ROLE_PUSH_BUTTON);
-
-              elm_access_action_cb_set(sd->access_top_button, ELM_ACCESS_ACTION_ACTIVATE, _activate_top_cb, sd);
-              elm_access_action_cb_set(sd->access_bottom_button, ELM_ACCESS_ACTION_ACTIVATE, _activate_bottom_cb, sd);
-           }
-     }
-   ////
-
+   //TIZEN ONLY(20151012): expose flipselector top/bottom buttons for accessibility tree
+   _atspi_expose_flipselector_top_bottom(sd);
+   //
    return obj;
 }
 

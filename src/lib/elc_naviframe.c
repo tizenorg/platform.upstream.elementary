@@ -306,6 +306,68 @@ _item_signals_emit(Elm_Naviframe_Item_Data *it)
    _item_content_signals_emit(it);
 }
 
+
+//TIZEN ONLY(20151012): expose title as at-spi object
+static Eina_Bool
+_naviframe_atspi_bridge_on_connect_cb(void *data, Eo *obj EINA_UNUSED, const Eo_Event_Description *desc EINA_UNUSED, void *event_info EINA_UNUSED)
+{
+   Elm_Naviframe_Item_Data *it = (Elm_Naviframe_Item_Data*)data;
+   Evas_Object *part;
+   Evas_Object *access;
+
+   part = (Evas_Object*)edje_object_part_object_get(elm_layout_edje_get(VIEW(it)), TITLE_ACCESS_PART);
+   if (part)
+     {
+        access = elm_access_object_register(part, VIEW(it));
+        _elm_access_callback_set(_elm_access_info_get(access),
+                                 ELM_ACCESS_INFO, _access_info_cb, it);
+        elm_atspi_accessible_role_set(access, ELM_ATSPI_ROLE_HEADING);
+     }
+   return EINA_TRUE;
+}
+
+static Eina_Bool
+_naviframe_atspi_bridge_on_disconnect_cb(void *data, Eo *obj EINA_UNUSED, const Eo_Event_Description *desc EINA_UNUSED, void *event_info EINA_UNUSED)
+{
+   Elm_Naviframe_Item_Data *it = (Elm_Naviframe_Item_Data*)data;
+   Evas_Object *part;
+   part = (Evas_Object*)edje_object_part_object_get(elm_layout_edje_get(VIEW(it)), TITLE_ACCESS_PART);
+   elm_access_object_unregister( part );
+   return EINA_TRUE;
+}
+
+static void
+_unregister_naviframe_atspi_bridge_callbacks(Elm_Naviframe_Item_Data *it)
+{
+   if (!_elm_config->atspi_mode) return;
+
+   eo_do(_elm_atspi_bridge_get(),
+         eo_event_callback_del(ELM_ATSPI_BRIDGE_EVENT_CONNECTED, _naviframe_atspi_bridge_on_connect_cb, it));
+   eo_do(_elm_atspi_bridge_get(),
+         eo_event_callback_del(ELM_ATSPI_BRIDGE_EVENT_DISCONNECTED, _naviframe_atspi_bridge_on_disconnect_cb, it));
+}
+
+static void
+_atspi_expose_title(Elm_Naviframe_Item_Data *it)
+{
+   Eina_Bool connected = EINA_FALSE;
+
+   if (!_elm_config->atspi_mode) return;
+
+   // If bridge is connected expose it now
+   eo_do(_elm_atspi_bridge_get(), connected = elm_obj_atspi_bridge_connected_get());
+   if (connected)
+     _naviframe_atspi_bridge_on_connect_cb(it, NULL, NULL, NULL);
+
+   // Register for bridge connect/disconnect
+   _unregister_naviframe_atspi_bridge_callbacks(it);
+   eo_do(_elm_atspi_bridge_get(),
+        eo_event_callback_add(ELM_ATSPI_BRIDGE_EVENT_CONNECTED, _naviframe_atspi_bridge_on_connect_cb, it));
+   eo_do(_elm_atspi_bridge_get(),
+         eo_event_callback_add(ELM_ATSPI_BRIDGE_EVENT_DISCONNECTED, _naviframe_atspi_bridge_on_disconnect_cb, it));
+}
+//
+
 /* FIXME: we need to handle the case when this function is called
  * during a transition */
 static void
@@ -334,18 +396,8 @@ _item_style_set(Elm_Naviframe_Item_Data *it,
    if (sd->freeze_events)
      evas_object_freeze_events_set(VIEW(it), EINA_FALSE);
 
-   //TIZEN ONLY(20150707): expose title as at-spi object
-   if (_elm_config->atspi_mode)
-     {
-         Evas_Object *part = (Evas_Object*)edje_object_part_object_get(elm_layout_edje_get(VIEW(it)), TITLE_ACCESS_PART);
-         if (part)
-           {
-              Evas_Object *access = elm_access_object_register(part, VIEW(it));
-              _elm_access_callback_set(_elm_access_info_get(access),
-                                       ELM_ACCESS_INFO, _access_info_cb, it);
-              elm_atspi_accessible_role_set(access, ELM_ATSPI_ROLE_HEADING);
-           }
-     }
+   //TIZEN ONLY(20151012): expose title as at-spi object
+   _atspi_expose_title(it);
    //
 }
 
@@ -1489,6 +1541,10 @@ _elm_naviframe_evas_object_smart_del(Eo *obj, Elm_Naviframe_Data *sd)
      eo_do(EO_OBJ(it), elm_wdg_item_del());
 
    evas_object_del(sd->dummy_edje);
+
+   // TIZEN_ONLY(20151012): Unregister callbacks for ATSPI bridge enable/disable
+   _unregister_naviframe_atspi_bridge_callbacks(it);
+   //
 
    eo_do_super(obj, MY_CLASS, evas_obj_smart_del());
 }
