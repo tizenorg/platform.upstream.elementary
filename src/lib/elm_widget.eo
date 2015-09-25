@@ -419,12 +419,6 @@ abstract Elm_Widget (Evas.Object_Smart, Elm_Interface_Atspi_Accessible, Elm_Inte
             return: Evas_Object *;
          }
       }
-      focus_origin {
-         get {
-            /*Get the origination of the focus. Arrow key, tab key, mouse or deletion of an object.*/
-            return: Elm_Focus_Direction;
-         }
-      }
       parent2 {
          set {
             /*@ No description supplied by the EAPI. */
@@ -622,6 +616,7 @@ abstract Elm_Widget (Evas.Object_Smart, Elm_Interface_Atspi_Accessible, Elm_Inte
             @in const(Evas_Object)* base;
             @in double degree;
             @out Evas_Object *direction;
+            @out Elm_Object_Item *direction_item;
             @out double weight;
          }
          return: bool;
@@ -665,6 +660,7 @@ abstract Elm_Widget (Evas.Object_Smart, Elm_Interface_Atspi_Accessible, Elm_Inte
             @in list_data_get_func_type list_data_get;
             @in double degree;
             @out Evas_Object *direction;
+            @out Elm_Object_Item *direction_item;
             @out double weight;
          }
       }
@@ -792,6 +788,7 @@ abstract Elm_Widget (Evas.Object_Smart, Elm_Interface_Atspi_Accessible, Elm_Inte
             @in const(Evas_Object)* base;
             @in double degree;
             @out Evas_Object *direction;
+            @out Elm_Object_Item *direction_item;
             @out double weight;
          }
       }
