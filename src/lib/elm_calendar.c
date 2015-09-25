@@ -597,6 +597,96 @@ _access_calendar_register(Evas_Object *obj)
    _access_calendar_item_register(obj);
 }
 
+//TIZEN_ONLY(20151012): Register smart callbacks for calendar buttons.
+static char *
+_localized_access_info_cb(void *data, Evas_Object *obj EINA_UNUSED)
+{
+   if (data) return E_(data);
+   return NULL;
+}
+
+static Eina_Bool
+_calendar_atspi_bridge_on_connect_cb(void *data, Eo *_obj EINA_UNUSED, const Eo_Event_Description *desc EINA_UNUSED, void *event_info EINA_UNUSED)
+{
+   Evas_Object *obj = (Evas_Object*)data;
+   int day;
+   int maxdays;
+   char day_s[3];
+   int ii;
+   char pname[14];
+   Evas_Object *ao, *ac;
+
+   ELM_CALENDAR_DATA_GET(obj, sd);
+   day = 0;
+   maxdays = _maxdays_get(&sd->shown_time, 0);
+   for (ii = 0; ii < 42; ii++)
+     {
+      snprintf(pname, sizeof(pname), "cit_%i.access", ii);
+      ac = (Evas_Object*)edje_object_part_object_get(elm_layout_edje_get(obj), pname);
+      elm_access_object_unregister(ac);
+      if ((!day) && (ii == sd->first_day_it)) day = 1;
+      if ((day) && (day <= maxdays))
+        {
+           ao = elm_access_object_register(ac, obj);
+           elm_atspi_accessible_role_set(ao, ELM_ATSPI_ROLE_TABLE_CELL);
+
+           snprintf(day_s, sizeof(day_s), "%i", day++);
+           elm_access_info_set(ao, ELM_ACCESS_INFO, (const char*)day_s);
+           elm_access_info_cb_set(ao, ELM_ACCESS_CONTEXT_INFO, _localized_access_info_cb, "calendar item");
+        }
+     }
+   return EINA_TRUE;
+}
+
+static Eina_Bool
+_calendar_atspi_bridge_on_disconnect_cb(void *data, Eo *_obj EINA_UNUSED, const Eo_Event_Description *desc EINA_UNUSED, void *event_info EINA_UNUSED)
+{
+   Evas_Object *obj = (Evas_Object*)data;
+   int ii;
+   char pname[14];
+   Evas_Object *ac;
+
+   for (ii = 0; ii < 42; ii++)
+     {
+        snprintf(pname, sizeof(pname), "cit_%i.access", ii);
+        ac = (Evas_Object*)edje_object_part_object_get(elm_layout_edje_get(obj), pname);
+        elm_access_object_unregister(ac);
+     }
+   return EINA_TRUE;
+}
+
+static void
+_unregister_atspi_calendar_bridge_callbacks(Evas_Object *obj)
+{
+   if (!_elm_config->atspi_mode) return;
+
+   eo_do(_elm_atspi_bridge_get(),
+        eo_event_callback_del(ELM_ATSPI_BRIDGE_EVENT_CONNECTED, _calendar_atspi_bridge_on_connect_cb, obj));
+   eo_do(_elm_atspi_bridge_get(),
+        eo_event_callback_del(ELM_ATSPI_BRIDGE_EVENT_DISCONNECTED, _calendar_atspi_bridge_on_disconnect_cb, obj));
+}
+
+static void
+_register_smart_callbacks_for_calendar_buttons(Evas_Object *obj)
+{
+   Eina_Bool connected = EINA_FALSE;
+
+   if (!_elm_config->atspi_mode) return;
+
+   // If already connected register callendar buttons callbacks
+   eo_do(_elm_atspi_bridge_get(), connected = elm_obj_atspi_bridge_connected_get());
+   if (connected)
+     _calendar_atspi_bridge_on_connect_cb(obj, NULL, NULL, NULL);
+
+   // Register bridge connect/disconnect
+   _unregister_atspi_calendar_bridge_callbacks(obj);
+   eo_do(_elm_atspi_bridge_get(),
+        eo_event_callback_add(ELM_ATSPI_BRIDGE_EVENT_CONNECTED, _calendar_atspi_bridge_on_connect_cb, obj));
+   eo_do(_elm_atspi_bridge_get(),
+        eo_event_callback_add(ELM_ATSPI_BRIDGE_EVENT_DISCONNECTED, _calendar_atspi_bridge_on_disconnect_cb, obj));
+}
+//
+
 static void
 _populate(Evas_Object *obj)
 {
@@ -801,6 +891,10 @@ _populate(Evas_Object *obj)
 
    elm_layout_thaw(obj);
    edje_object_message_signal_process(elm_layout_edje_get(obj));
+
+   //TIZEN_ONLY(20151012): Register smart callbacks for calendar buttons.
+   _register_smart_callbacks_for_calendar_buttons(obj);
+   //
 }
 
 static void
@@ -1582,6 +1676,10 @@ _elm_calendar_evas_object_smart_del(Eo *obj, Elm_Calendar_Data *sd)
 
    for (i = 0; i < ELM_DAY_LAST; i++)
      eina_stringshare_del(sd->weekdays[i]);
+
+   // TIZEN_ONLY(20151012): Unregister callbacks for ATSPI bridge enable/disable
+   _unregister_atspi_calendar_bridge_callbacks(sd->obj);
+   //
 
    eo_do_super(obj, MY_CLASS, evas_obj_smart_del());
 }
