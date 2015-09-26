@@ -1640,17 +1640,6 @@ progressbar_hide_cb(void *data, Evas *e EINA_UNUSED, Evas_Object *obj EINA_UNUSE
 }
 
 static void
-progressbar_del_cb(void *data EINA_UNUSED, Evas *e EINA_UNUSED, Evas_Object *obj,
-                   void *event_info EINA_UNUSED)
-{
-   vg_progressbar *vd = evas_object_data_get(obj, vg_key);
-
-   _pulse_stop(vd);
-   evas_object_data_set(obj, vg_key, NULL);
-   free(vd);
-}
-
-static void
 transit_progressbar_normal_op1(Elm_Transit_Effect *effect, Elm_Transit *transit EINA_UNUSED, double progress)
 {
    vg_progressbar *vd = effect;
@@ -2024,6 +2013,24 @@ _progressbar_process_pulse_stop(void *data,
 }
 
 static void
+progressbar_del_cb(void *data EINA_UNUSED, Evas *e EINA_UNUSED, Evas_Object *obj,
+                   void *event_info EINA_UNUSED)
+{
+   vg_progressbar *vd = evas_object_data_get(obj, vg_key);
+
+   _pulse_stop(vd);
+   evas_object_data_set(obj, vg_key, NULL);
+   elm_object_signal_callback_del(vd->obj, "elm,state,pulse,start",
+                                  "*", _progressbar_process_pulse_start);
+   elm_object_signal_callback_del(vd->obj, "elm,state,pulse,stop",
+                                  "*", _progressbar_process_pulse_stop);
+   evas_object_del(vd->vg[0]);
+   evas_object_del(vd->vg[1]);
+   evas_object_del(vd->vg[2]);
+   free(vd);
+}
+
+static void
 _progressbar_process_style(vg_progressbar *vd)
 {
    Efl_VG *root;
@@ -2068,7 +2075,23 @@ tizen_vg_progressbar_set(Elm_Progressbar *obj)
 
    //Apply vector ux only theme has "vector_ux"
    const char *str = elm_layout_data_get(obj, "vector_ux");
-   if (!str) return;
+   if (!str)
+     {
+        _pulse_stop(vd);
+        evas_object_data_set(vd->obj, vg_key, NULL);
+        evas_object_event_callback_del(vd->obj, EVAS_CALLBACK_DEL,
+                                       progressbar_del_cb);
+        evas_object_event_callback_del(vd->obj, EVAS_CALLBACK_HIDE,
+                                       progressbar_hide_cb);
+        elm_object_signal_callback_del(vd->obj, "elm,state,pulse,start",
+                                       "*", _progressbar_process_pulse_start);
+
+        elm_object_signal_callback_del(vd->obj, "elm,state,pulse,stop",
+                                       "*", _progressbar_process_pulse_stop);
+        free(vd);
+
+        return;
+     }
 
    if (!vd)
      {
