@@ -2354,6 +2354,11 @@ tizen_vg_slider_set(Elm_Slider *obj, Evas_Object *popup)
    if (!vd)
      {
         vd = calloc(1, sizeof(vg_slider));
+        if (!vd)
+          {
+             ERR("Failed to allocate vector graphics data memory");
+             return;
+          }
         evas_object_data_set(obj, vg_key, vd);
         vd->obj = obj;
         vd->popup = popup;
@@ -2364,11 +2369,6 @@ tizen_vg_slider_set(Elm_Slider *obj, Evas_Object *popup)
         //TIZEN_ONLY(20150915): slider: fix slider's handler bug
         evas_object_smart_callback_add(vd->obj, SIG_LAYOUT_UNFOCUSED, slider_unfocused_cb, NULL);
         //
-     }
-   if (!vd)
-     {
-        ERR("Failed to allocate vector graphics data memory");
-        return;
      }
 
    vd->style = eina_stringshare_add(str);
