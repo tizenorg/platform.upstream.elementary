@@ -2077,6 +2077,8 @@ tizen_vg_progressbar_set(Elm_Progressbar *obj)
    const char *str = elm_layout_data_get(obj, "vector_ux");
    if (!str)
      {
+        if (!vd) return;
+
         _pulse_stop(vd);
         evas_object_data_set(vd->obj, vg_key, NULL);
         evas_object_event_callback_del(vd->obj, EVAS_CALLBACK_DEL,
