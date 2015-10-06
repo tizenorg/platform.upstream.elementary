@@ -955,7 +955,7 @@ check_default_vg_resize_cb(void *data, Evas *e EINA_UNUSED,
    double center_y = ((double)h / 2);
 
    //Update Outline Shape
-   _update_default_check_shape(vd, vd->shape[0], !elm_check_state_get(vd->obj));
+   _update_default_check_shape(vd, vd->shape[0], EINA_TRUE);
 
    //Update BG Shape
    _update_default_check_shape(vd, vd->shape[1], EINA_FALSE);
