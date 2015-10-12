@@ -569,6 +569,9 @@ class Elm.Gengrid (Elm.Layout, Elm_Interface_Scrollable,
       Elm_Interface_Atspi_Selection.is_child_selected;
       Elm_Interface_Atspi_Selection.all_children_select;
       Elm_Interface_Atspi_Selection.clear;
+      // TIZEN only (20151009) : Accessibility: updated highlight change during gengrid scroll
+      Elm_Interface_Scrollable.content_pos_set;
+     //
    }
    events {
       language,changed;

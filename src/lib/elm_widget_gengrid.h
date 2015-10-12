@@ -140,6 +140,7 @@ struct _Elm_Gengrid_Data
                                                       * cache. */
    int                                   item_cache_count;
    int                                   item_cache_max;
+   Elm_Gen_Item                         *atspi_item_to_highlight;
 };
 
 struct Elm_Gen_Item_Type
