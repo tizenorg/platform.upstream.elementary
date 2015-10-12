@@ -7,6 +7,7 @@
 #define ELM_INTERFACE_ATSPI_SELECTION_PROTECTED
 #define ELM_INTERFACE_ATSPI_WIDGET_ACTION_PROTECTED
 #define ELM_WIDGET_ITEM_PROTECTED
+#define ELM_ATSPI_BRIDGE_PROTECTED
 
 #include <Elementary.h>
 #include <Elementary_Cursor.h>
@@ -1474,6 +1475,13 @@ _item_realize(Elm_Gen_Item *it)
 
    it->realized = EINA_TRUE;
    it->want_unrealize = EINA_FALSE;
+//TIZEN_ONLY (20151009) : Accessibility: updated highlight change during gengrid scroll
+   if (sd->atspi_item_to_highlight == it)
+     {
+        sd->atspi_item_to_highlight = NULL;
+        elm_object_accessibility_highlight_set(VIEW(it), EINA_TRUE);
+     }
+//
 }
 
 static Eina_Bool
@@ -5676,7 +5684,13 @@ _elm_gengrid_item_elm_interface_atspi_component_highlight_grab(Eo *eo_it, Elm_Ge
 {
    elm_gengrid_item_show(eo_it, ELM_GENGRID_ITEM_SCROLLTO_IN);
 
-   elm_object_accessibility_highlight_set(VIEW(it), EINA_TRUE);
+   ELM_GENGRID_DATA_GET(WIDGET(it), sd);
+
+   if (VIEW(it))
+      elm_object_accessibility_highlight_set(VIEW(it), EINA_TRUE);
+   else
+      sd->atspi_item_to_highlight = it;//it will be highlighted when realized
+
 ///TIZEN_ONLY(20170717) : expose highlight information on atspi
    eo_do(WIDGET(it), eo_event_callback_call(ELM_INTERFACE_ATSPI_ACCESSIBLE_EVENT_ACTIVE_DESCENDANT_CHANGED, eo_it));
 ///
@@ -5687,6 +5701,11 @@ _elm_gengrid_item_elm_interface_atspi_component_highlight_grab(Eo *eo_it, Elm_Ge
 EOLIAN static Eina_Bool
 _elm_gengrid_item_elm_interface_atspi_component_highlight_clear(Eo *eo_it, Elm_Gen_Item *it)
 {
+   ELM_GENGRID_DATA_GET(WIDGET(it), sd);
+//TIZEN_ONLY (20151009) : Accessibility: updated highlight change during gengrid scroll
+   if (sd->atspi_item_to_highlight == it)
+       sd->atspi_item_to_highlight = NULL;
+//
    elm_object_accessibility_highlight_set(VIEW(it), EINA_FALSE);
 ///TIZEN_ONLY(20170717) : expose highlight information on atspi
    eo_do(WIDGET(it), eo_event_callback_call(ELM_INTERFACE_ATSPI_ACCESSIBLE_EVENT_ACTIVE_DESCENDANT_CHANGED, eo_it));
@@ -5953,5 +5972,102 @@ _elm_gengrid_elm_interface_atspi_selection_child_deselect(Eo *obj EINA_UNUSED, E
    return EINA_FALSE;
 }
 
+// TIZEN_ONLY (20151009) : Accessibility: updated highlight change during gengrid scroll
+static Eina_Bool _atspi_enabled()
+{
+    Eo *bridge = NULL;
+    Eina_Bool ret = EINA_FALSE;
+    if (_elm_config->atspi_mode && (bridge = _elm_atspi_bridge_get()))
+      eo_do(bridge, ret = elm_obj_atspi_bridge_connected_get());
+    return ret;
+}
+
+static int _is_item_in_viewport(int viewport_x, int viewport_y, int viewport_w, int viewport_h,
+                                int obj_x, int obj_y, int obj_w, int obj_h)
+{
+    if ((obj_y + obj_h/2) < viewport_y)
+      return 1;
+    else if ((obj_y + obj_h/2) > viewport_y + viewport_h)
+      return -1;
+    else if ((obj_x + obj_w/2) < viewport_x)
+      return 2;
+    else if ((obj_x + obj_w/2) > viewport_x + viewport_w)
+      return -2;
+    return 0;
+}
+//
+
+EOLIAN static void
+_elm_gengrid_elm_interface_scrollable_content_pos_set(Eo *obj, Elm_Gengrid_Data *sd EINA_UNUSED, Evas_Coord x, Evas_Coord y, Eina_Bool sig)
+{
+   if (!_atspi_enabled())
+     {
+       eo_do_super(obj, MY_CLASS, elm_interface_scrollable_content_pos_set(x,y,sig));
+       return;
+     }
+
+   int old_x, old_y, delta_y,delta_x;
+   eo_do_super(obj, MY_CLASS, elm_interface_scrollable_content_pos_get(&old_x,&old_y));
+   eo_do_super(obj, MY_CLASS, elm_interface_scrollable_content_pos_set(x,y,sig));
+   delta_y = old_y - y;
+   delta_x = old_x - x;
+   //check if highlighted item is gengrid descendant
+   Evas_Object * highlighted_obj = _elm_object_accessibility_currently_highlighted_get();
+   Evas_Object * parent = highlighted_obj;
+   if (eo_isa(highlighted_obj, ELM_WIDGET_CLASS))
+     {
+        while ((parent = elm_widget_parent_get(parent)))
+          if (parent == obj)
+            break;
+     }
+   else if (eo_isa(highlighted_obj, EDJE_OBJECT_CLASS))
+     {
+        while ((parent = evas_object_smart_parent_get(parent)))
+          if (parent == obj)
+            break;
+     }
+    if (parent)
+      {
+        int obj_x, obj_y, w, h, hx, hy, hw, hh;
+        evas_object_geometry_get(obj, &obj_x, &obj_y, &w, &h);
+        evas_object_geometry_get(highlighted_obj, &hx, &hy, &hw, &hh);
+        Elm_Gen_Item * next_previous_item = NULL;
+
+        int viewport_position_result = _is_item_in_viewport(obj_x, obj_y, w, h, hx, hy, hw, hh);
+        //only highlight if move direction is correct
+        //sometimes highlighted item is brought in and it does not fit viewport
+        //however content goes to the viewport position so soon it will
+        //meet _is_item_in_viewport condition
+        if (viewport_position_result == -1 && delta_y > 0 ||
+            viewport_position_result == 1 && delta_y < 0 ||
+            viewport_position_result == -2 && delta_x > 0 ||
+            viewport_position_result == 2 && delta_x < 0)
+          {
+             Eina_List *realized_items = elm_gengrid_realized_items_get(obj);
+             Eo *item;
+             Eina_List *l;
+             Eina_Bool traverse_direction = viewport_position_result > 0;
+             l = traverse_direction ? realized_items: eina_list_last(realized_items);
+             while(l)
+               {
+                  item = eina_list_data_get(l);
+                  ELM_GENGRID_ITEM_DATA_GET(item, it_data);
+
+                  next_previous_item = ELM_GEN_ITEM_FROM_INLIST(EINA_INLIST_GET(it_data));
+                  evas_object_geometry_get(VIEW(next_previous_item), &hx, &hy, &hw, &hh);
+
+                  if (_is_item_in_viewport(obj_x, obj_y, w, h,hx, hy, hw, hh) == 0)
+                     break;
+
+                  next_previous_item = NULL;
+
+                  l = traverse_direction ? eina_list_next(l): eina_list_prev(l);
+               }
+          }
+
+        if (next_previous_item)
+          eo_do(EO_OBJ(next_previous_item), elm_interface_atspi_component_highlight_grab());
+     }
+}
 #include "elm_gengrid.eo.c"
 #include "elm_gengrid_item.eo.c"
