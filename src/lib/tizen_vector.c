@@ -104,7 +104,7 @@ _radio_icon_update(vg_radio *vd, double progress)
    evas_vg_shape_shape_append_circle(vd->shape[1], center_x, center_y, radius);
 
    //Iconic Circle (Center)
-   radius = (radius - outline_stroke - 4) * progress;
+   radius = (radius - outline_stroke - ELM_VG_SCALE_SIZE(vd->obj, 4)) * progress;
    evas_vg_shape_shape_reset(vd->shape[2]);
    evas_vg_shape_shape_append_circle(vd->shape[2], center_x, center_y, radius);
 }
