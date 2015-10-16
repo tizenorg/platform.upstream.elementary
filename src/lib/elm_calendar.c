@@ -782,9 +782,9 @@ _spin_year_value(void *data)
 
 //TIZEN_ONLY(20150909): Register smart callbacks for calendar buttons.
 static void
-_button_month_inc_start_click(void *data,
-                  Evas_Object *obj EINA_UNUSED,
-                  void *event_info EINA_UNUSED)
+_tizen_button_month_inc_start_click(void *data,
+                                    Evas_Object *obj EINA_UNUSED,
+                                    void *event_info EINA_UNUSED)
 {
    ELM_CALENDAR_DATA_GET(data, sd);
    if (sd->_month_repeated)
@@ -799,9 +799,9 @@ _button_month_inc_start_click(void *data,
 }
 
 static void
-_button_month_inc_start(void *data,
-                  Evas_Object *obj EINA_UNUSED,
-                  void *event_info EINA_UNUSED)
+_tizen_button_month_inc_start(void *data,
+                              Evas_Object *obj EINA_UNUSED,
+                              void *event_info EINA_UNUSED)
 {
    ELM_CALENDAR_DATA_GET(data, sd);
 
@@ -812,9 +812,9 @@ _button_month_inc_start(void *data,
 }
 
 static void
-_button_month_dec_start_click(void *data,
-                  Evas_Object *obj EINA_UNUSED,
-                  void *event_info EINA_UNUSED)
+_tizen_button_month_dec_start_click(void *data,
+                                    Evas_Object *obj EINA_UNUSED,
+                                    void *event_info EINA_UNUSED)
 {
    ELM_CALENDAR_DATA_GET(data, sd);
    if (sd->_month_repeated)
@@ -829,9 +829,9 @@ _button_month_dec_start_click(void *data,
 }
 
 static void
-_button_month_dec_start(void *data,
-                  Evas_Object *obj EINA_UNUSED,
-                  void *event_info EINA_UNUSED)
+_tizen_button_month_dec_start(void *data,
+                              Evas_Object *obj EINA_UNUSED,
+                              void *event_info EINA_UNUSED)
 {
    ELM_CALENDAR_DATA_GET(data, sd);
 
@@ -840,8 +840,8 @@ _button_month_dec_start(void *data,
    _spin_month_value(data);
    sd->_month_repeated = EINA_TRUE;
 }
+//
 
-/*
 static void
 _button_month_inc_start(void *data,
                   Evas_Object *obj EINA_UNUSED,
@@ -885,9 +885,6 @@ _button_month_stop(void *data,
    sd->interval = sd->first_interval;
    ELM_SAFE_FREE(sd->spin_month, ecore_timer_del);
 }
-
-*/
-//
 
 static void
 _button_year_inc_start(void *data,
@@ -1139,29 +1136,21 @@ _elm_calendar_evas_object_smart_add(Eo *obj, Elm_Calendar_Data *priv)
    priv->format_func = _format_month_year;
    priv->selectable = (~(ELM_CALENDAR_SELECTABLE_NONE));
 
-   //TIZEN_ONLY(20150909): Register smart callbacks for calendar buttons.
-   /*
    edje_object_signal_callback_add
      (wd->resize_obj, "elm,action,increment,start", "*",
      _button_month_inc_start, obj);
    edje_object_signal_callback_add
      (wd->resize_obj, "elm,action,decrement,start", "*",
       _button_month_dec_start, obj);
-   */
-   //
    edje_object_signal_callback_add
      (wd->resize_obj, "elm,action,increment,startyear", "*",
      _button_year_inc_start, obj);
    edje_object_signal_callback_add
      (wd->resize_obj, "elm,action,decrement,startyear", "*",
      _button_year_dec_start, obj);
-   //TIZEN_ONLY(20150909): Register smart callbacks for calendar buttons.
-   /*
    edje_object_signal_callback_add
      (wd->resize_obj, "elm,action,stop", "*",
      _button_month_stop, obj);
-   */
-   //
    edje_object_signal_callback_add
      (wd->resize_obj, "elm,action,stopyear", "*",
      _button_year_stop, obj);
@@ -1227,12 +1216,12 @@ _elm_calendar_evas_object_smart_add(Eo *obj, Elm_Calendar_Data *priv)
    elm_button_autorepeat_initial_timeout_set(priv->left_button, 0.0);
    elm_button_autorepeat_gap_timeout_set(priv->left_button, 0.1);
    elm_button_autorepeat_set(priv->right_button, EINA_TRUE);
-   elm_button_autorepeat_initial_timeout_set(priv->right_button, 0.0);
-   elm_button_autorepeat_gap_timeout_set(priv->right_button, 0.1);
-   evas_object_smart_callback_add(priv->left_button, "clicked", _button_month_dec_start_click, obj);
-   evas_object_smart_callback_add(priv->left_button, "repeated", _button_month_dec_start, obj);
-   evas_object_smart_callback_add(priv->right_button, "clicked", _button_month_inc_start_click, obj);
-   evas_object_smart_callback_add(priv->right_button, "repeated", _button_month_inc_start, obj);
+   elm_button_autorepeat_initial_timeout_set(priv->right_button, 0.5);
+   elm_button_autorepeat_gap_timeout_set(priv->right_button, 0.2);
+   evas_object_smart_callback_add(priv->left_button, "clicked", _tizen_button_month_dec_start_click, obj);
+   evas_object_smart_callback_add(priv->left_button, "repeated", _tizen_button_month_dec_start, obj);
+   evas_object_smart_callback_add(priv->right_button, "clicked", _tizen_button_month_inc_start_click, obj);
+   evas_object_smart_callback_add(priv->right_button, "repeated", _tizen_button_month_inc_start, obj);
    //
 
    evas_object_smart_changed(obj);
