@@ -1327,8 +1327,8 @@ button_effect_no_bg_resize_cb(void *data, Evas *e EINA_UNUSED,
    evas_vg_shape_shape_reset(vd->shape[0]);
    if (vd->is_circle)
      {
-        double radius_w = w / 2;
-        double radius_h = h / 2;
+        double radius_w = w / 2.0;
+        double radius_h = h / 2.0;
         evas_vg_shape_shape_append_circle(vd->shape[0], radius_w, radius_h, radius_w);
      }
    else
@@ -1431,8 +1431,8 @@ button_effect_resize_cb(void *data, Evas *e EINA_UNUSED,
    evas_vg_shape_shape_reset(vd->shape[1]);
    if (vd->is_circle)
      {
-        double radius_w = w / 2;
-        double radius_h = h / 2;
+        double radius_w = w / 2.0;
+        double radius_h = h / 2.0;
         evas_vg_shape_shape_append_circle(vd->shape[1], radius_w, radius_h, radius_w);
      }
    else
@@ -1462,8 +1462,8 @@ button_base_resize_cb(void *data, Evas *e EINA_UNUSED,
    evas_vg_shape_shape_reset(vd->shape[0]);
    if (vd->is_circle)
      {
-        double radius_w = w / 2;
-        double radius_h = h / 2;
+        double radius_w = w / 2.0;
+        double radius_h = h / 2.0;
         evas_vg_shape_shape_append_circle(vd->shape[0], radius_w, radius_h, radius_w);
      }
    else
