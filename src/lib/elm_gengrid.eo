@@ -1,5 +1,4 @@
-class Elm_Gengrid (Elm_Layout, Elm_Interface_Scrollable,
-                   Evas.Clickable_Interface, Elm_Interface_Atspi_Widget_Action)
+class Elm_Gengrid (Elm_Layout, Elm_Interface_Scrollable, Evas.Clickable_Interface)
 {
    eo_prefix: elm_obj_gengrid;
    properties {
@@ -706,9 +705,6 @@ class Elm_Gengrid (Elm_Layout, Elm_Interface_Scrollable,
       Elm_Layout.sizing_eval;
       Elm_Interface_Scrollable.bounce_allow.set;
       Elm_Interface_Scrollable.policy;
-      Elm_Interface_Atspi_Accessible.children.get;
-      Elm_Interface_Atspi_Accessible.state_set.get;
-      Elm_Interface_Atspi_Widget_Action.elm_actions.get;
    }
    events {
       language,changed;
