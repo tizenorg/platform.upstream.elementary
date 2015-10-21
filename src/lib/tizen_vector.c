@@ -845,11 +845,11 @@ typedef struct check_default_s
    Eina_Bool init : 1;
 } check_default;
 
-static const char *check_default_fill = "M7.279,2h35.442C45.637,2,48,4.359,48,7.271v35.455C48,45.639,45.637,48,42.723,48\
-  H7.279C4.362,47.997,2,45.639,2,42.727V7.271C2,4.359,4.362,2,7.279,2z";
+static const char *check_default_fill = "M7.279,2h35.442C45.637,2,48,4.359,48,7.271v35.455\
+  C48,45.639,45.637,48,42.723,48H7.279C4.362,47.997,2,45.639,2,42.727 V7.271C2,4.359,4.362,2,7.279,2z";
 
-static const char *check_default_outline= "M-2.073-7h36.147C36.796-7,39-4.793,39-2.073v36.146\
-  C39,36.796,36.796,39,34.074,39H-2.073C-4.793,39-7,36.796-7,34.072V-2.073C-7-4.793-4.793-7-2.073-7z";
+static const char *check_default_outline= "M7.32,2.5h35.361c2.662,0,4.818,2.159,4.818,4.82\
+  v35.361c0,2.663-2.156,4.819-4.818,4.819H7.32c-2.661,0-4.82-2.156-4.82-4.82V7.32C2.5,4.659,4.659,2.5,7.32,2.5z";
 
 static void
 check_default_init(check_default *vd)
@@ -906,11 +906,11 @@ _update_default_check_shape(check_default *vd, Efl_VG *shape, Eina_Bool outline)
         double scale_y = h/50.0;
 
         evas_vg_shape_shape_append_svg_path(shape, check_default_outline);
-        evas_vg_node_origin_set(shape, 9 * scale_x, 9 * scale_y);
         Eina_Matrix3 m;
         eina_matrix3_identity(&m);
         eina_matrix3_scale(&m, scale_x, scale_y);
-        evas_vg_node_transformation_set(shape, &m);
+        if (eina_matrix3_type_get(&m) != EINA_MATRIX_TYPE_IDENTITY)
+          evas_vg_node_transformation_set(shape, &m);
 
         evas_vg_shape_stroke_width_set(shape, 1.5);
         // update color
