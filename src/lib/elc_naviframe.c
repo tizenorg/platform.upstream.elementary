@@ -39,9 +39,8 @@ static const Evas_Smart_Cb_Description _smart_callbacks[] = {
    {NULL, NULL}
 };
 
-static const char SIG_CLICKED[] = "clicked";
-
-static void _on_item_back_btn_clicked(void *data, Evas_Object *obj, void *event_info EINA_UNUSED);
+static Eina_Bool _on_item_back_btn_clicked(void *data,
+      Eo *obj EINA_UNUSED, const Eo_Event_Description *desc EINA_UNUSED, void *event_info EINA_UNUSED);
 
 static Eina_Bool _key_action_top_item_get(Evas_Object *obj, const char *params);
 
@@ -112,6 +111,7 @@ _item_title_prev_btn_del_cb(void *data,
    Elm_Naviframe_Item_Data *it = data;
 
    it->title_prev_btn = NULL;
+   if (it->auto_pushed_btn) it->auto_pushed_btn = NULL;
    elm_object_signal_emit(VIEW(it), "elm,state,prev_btn,hide", "elm");
 }
 
@@ -341,7 +341,8 @@ _on_item_title_transition_finished(void *data,
 {
    Elm_Naviframe_Item_Data *it = data;
 
-   evas_object_smart_callback_call(WIDGET(it), SIG_TITLE_TRANSITION_FINISHED, EO_OBJ(it));
+   eo_do(WIDGET(it), eo_event_callback_call
+         (ELM_NAVIFRAME_EVENT_TITLE_TRANSITION_FINISHED, EO_OBJ(it)));
 }
 
 static void
@@ -530,14 +531,14 @@ _elm_naviframe_item_elm_widget_item_part_text_get(Eo *nit EINA_UNUSED,
 EOLIAN static void
 _elm_naviframe_item_eo_base_destructor(Eo *eo_item, Elm_Naviframe_Item_Data *it)
 {
+   Eina_List *l;
+   Elm_Naviframe_Op *nfo;
    Elm_Naviframe_Item_Data *nit = it, *prev_it = NULL;
    Eina_Bool top;
 
    ELM_NAVIFRAME_DATA_GET(WIDGET(nit), sd);
 
    nit->delete_me = EINA_TRUE;
-
-   ecore_animator_del(nit->animator);
 
    top = (eo_item == elm_naviframe_top_item_get(WIDGET(nit)));
    if (evas_object_data_get(VIEW(nit), "out_of_list"))
@@ -550,7 +551,11 @@ _elm_naviframe_item_eo_base_destructor(Eo *eo_item, Elm_Naviframe_Item_Data *it)
         if (sd->stack && sd->stack->last)
           prev_it = EINA_INLIST_CONTAINER_GET(sd->stack->last,
                                               Elm_Naviframe_Item_Data);
-        if (!prev_it) goto end;
+        if (!prev_it)
+          {
+             elm_widget_tree_unfocusable_set(VIEW(nit), EINA_TRUE);
+             goto end;
+          }
 
         elm_widget_tree_unfocusable_set(VIEW(prev_it), EINA_FALSE);
         elm_widget_tree_unfocusable_set(VIEW(nit), EINA_TRUE);
@@ -566,6 +571,14 @@ _elm_naviframe_item_eo_base_destructor(Eo *eo_item, Elm_Naviframe_Item_Data *it)
      }
 
 end:
+   // This should not happen, but just in case and by security
+   // make sure there is no more reference to this item.
+   EINA_LIST_FOREACH(sd->ops, l, nfo)
+     {
+        if (nfo->related == nit) nfo->related = NULL;
+        if (nfo->self == nit) nfo->self = NULL;
+     }
+
    _item_free(nit);
 
    eo_do_super(eo_item, ELM_NAVIFRAME_ITEM_CLASS, eo_destructor());
@@ -596,6 +609,8 @@ _item_title_prev_btn_set(Elm_Naviframe_Item_Data *it,
    if (it->title_prev_btn == btn) return;
    evas_object_del(it->title_prev_btn);
    it->title_prev_btn = btn;
+   if (it->auto_pushed_btn && (it->auto_pushed_btn != btn))
+     it->auto_pushed_btn = NULL;
    if (!btn) return;
 
    elm_object_part_content_set(VIEW(it), PREV_BTN_PART, btn);
@@ -667,9 +682,12 @@ _item_title_prev_btn_unset(Elm_Naviframe_Item_Data *it)
 
    evas_object_event_callback_del
      (content, EVAS_CALLBACK_DEL, _item_title_prev_btn_del_cb);
-   evas_object_smart_callback_del(content, SIG_CLICKED,
-                                  _on_item_back_btn_clicked);
+   Eo* parent = eo_do_ret(content, parent, eo_parent_get());
+   eo_do(content, eo_event_callback_del(
+            EVAS_CLICKABLE_INTERFACE_EVENT_CLICKED, _on_item_back_btn_clicked,
+            parent));
    it->title_prev_btn = NULL;
+   if (it->auto_pushed_btn) it->auto_pushed_btn = NULL;
    return content;
 }
 
@@ -924,17 +942,20 @@ _elm_naviframe_elm_layout_sizing_eval(Eo *obj, Elm_Naviframe_Data *sd)
    evas_object_size_hint_max_set(obj, -1, -1);
 }
 
-static void
+static Eina_Bool
 _on_item_back_btn_clicked(void *data,
-                          Evas_Object *obj,
-                          void *event_info EINA_UNUSED)
+      Eo *obj EINA_UNUSED, const Eo_Event_Description *desc EINA_UNUSED, void *event_info EINA_UNUSED)
 {
-   /* Since edje has the event queue, clicked event could be happend
+   /* Since edje has the event queue, clicked event could be happened
       multiple times on some heavy environment. This callback del will
       prevent those scenario and guarantee only one clicked for it's own
       page. */
-   evas_object_smart_callback_del(obj, SIG_CLICKED, _on_item_back_btn_clicked);
+   eo_do(obj, eo_event_callback_del(
+            EVAS_CLICKABLE_INTERFACE_EVENT_CLICKED,  _on_item_back_btn_clicked,
+            data));
    elm_naviframe_item_pop(data);
+
+   return EINA_TRUE;
 }
 
 static Evas_Object *
@@ -946,8 +967,8 @@ _back_btn_new(Evas_Object *obj, const char *title_label)
    btn = elm_button_add(obj);
 
    if (!btn) return NULL;
-   evas_object_smart_callback_add
-     (btn, SIG_CLICKED, _on_item_back_btn_clicked, obj);
+   eo_do(btn, eo_event_callback_add
+         (EVAS_CLICKABLE_INTERFACE_EVENT_CLICKED, _on_item_back_btn_clicked, obj));
    snprintf
      (buf, sizeof(buf), "naviframe/back_btn/%s", elm_widget_style_get(obj));
    elm_object_style_set(btn, buf);
@@ -995,16 +1016,20 @@ EOLIAN static Eina_Bool
 _elm_naviframe_elm_layout_text_set(Eo *obj, Elm_Naviframe_Data *sd EINA_UNUSED, const char *part, const char *label)
 {
    Elm_Object_Item *it;
+   const char *text = NULL;
 
    it = elm_naviframe_top_item_get(obj);
    if (!it) return EINA_FALSE;
 
    elm_object_item_part_text_set(it, part, label);
-   return !strcmp(elm_object_item_part_text_get(it, part), label);
+   text = elm_object_item_part_text_get(it, part);
+   if ((text) && !strcmp(text, label))
+     return EINA_TRUE;
+   return EINA_FALSE;
 }
 
 EOLIAN static const char*
-_elm_naviframe_elm_layout_text_get(Eo *obj, Elm_Naviframe_Data *sd EINA_UNUSED, const char *part)
+_elm_naviframe_elm_layout_text_get(const Eo *obj, Elm_Naviframe_Data *sd EINA_UNUSED, const char *part)
 {
    Elm_Object_Item *it = elm_naviframe_top_item_get(obj);
    if (!it) return NULL;
@@ -1058,7 +1083,7 @@ _on_item_title_clicked(void *data,
 {
    Elm_Naviframe_Item_Data *it = data;
 
-   evas_object_smart_callback_call(WIDGET(it), SIG_TITLE_CLICKED, EO_OBJ(it));
+   eo_do(WIDGET(it), eo_event_callback_call(ELM_NAVIFRAME_EVENT_TITLE_CLICKED,  EO_OBJ(it)));
 }
 
 /* "elm,state,cur,pushed"
@@ -1122,7 +1147,9 @@ _on_item_show_finished(void *data,
    if (sd->freeze_events)
      evas_object_freeze_events_set(VIEW(it), EINA_FALSE);
 
-   evas_object_smart_callback_call(WIDGET(it), SIG_TRANSITION_FINISHED, data);
+   it->pushing = EINA_FALSE;
+
+   eo_do(WIDGET(it), eo_event_callback_call(ELM_NAVIFRAME_EVENT_TRANSITION_FINISHED, EO_OBJ(it)));
 }
 
 static void
@@ -1156,11 +1183,13 @@ _access_prev_btn_info_cb(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED)
    return strdup(E_("Back"));
 }
 
-EOLIAN static void
+EOLIAN static Eo *
 _elm_naviframe_item_eo_base_constructor(Eo *eo_item, Elm_Naviframe_Item_Data *it)
 {
-   eo_do_super(eo_item, ELM_NAVIFRAME_ITEM_CLASS, eo_constructor());
+   eo_item = eo_do_super_ret(eo_item, ELM_NAVIFRAME_ITEM_CLASS, eo_item, eo_constructor());
    it->base = eo_data_scope_get(eo_item, ELM_WIDGET_ITEM_CLASS);
+
+   return eo_item;
 }
 
 static Elm_Object_Item *
@@ -1219,6 +1248,7 @@ _item_new(Evas_Object *obj,
         ELM_NAVIFRAME_ITEM_DATA_GET(eo_prev_it, prev_it);
         const char *prev_title = prev_it->title_label;
         prev_btn = _back_btn_new(obj, prev_title);
+        it->auto_pushed_btn = prev_btn;
      }
 
    if (prev_btn)
@@ -1358,7 +1388,7 @@ _elm_naviframe_evas_object_smart_add(Eo *obj, Elm_Naviframe_Data *priv)
    priv->dummy_edje = wd->resize_obj;
    evas_object_smart_member_add(priv->dummy_edje, obj);
 
-   priv->auto_pushed = EINA_TRUE;
+   priv->auto_pushed = _elm_config->naviframe_prev_btn_auto_pushed;
    priv->freeze_events = EINA_TRUE;
 
    evas_object_event_callback_add(obj, EVAS_CALLBACK_CHANGED_SIZE_HINTS,
@@ -1366,26 +1396,41 @@ _elm_naviframe_evas_object_smart_add(Eo *obj, Elm_Naviframe_Data *priv)
    elm_widget_can_focus_set(obj, EINA_TRUE);
 }
 
-static Eina_Bool
-_pop_transition_cb(void *data)
+static void
+_send_signal(Elm_Naviframe_Item_Data *it, const char *sig)
 {
-   Elm_Object_Item *eo_prev_it;
-   Elm_Naviframe_Item_Data *it;
-   it = (Elm_Naviframe_Item_Data *)data;
-
-   it->animator = NULL;
-
-   eo_prev_it = elm_naviframe_top_item_get(WIDGET(it));
-   if (eo_prev_it)
-     {
-        ELM_NAVIFRAME_ITEM_DATA_GET(eo_prev_it, prev_it);
-        elm_object_signal_emit(VIEW(prev_it), "elm,state,prev,popped,deferred",
-                               "elm");
-        edje_object_message_signal_process(elm_layout_edje_get(VIEW(prev_it)));
-     }
-   elm_object_signal_emit(VIEW(it), "elm,state,cur,popped,deferred", "elm");
+   if (!it) return ;
+   elm_object_signal_emit(VIEW(it), sig, "elm");
    edje_object_message_signal_process(elm_layout_edje_get(VIEW(it)));
+}
 
+static Eina_Bool
+_deferred(void *data)
+{
+   Elm_Naviframe_Data *nfd = data;
+   Elm_Naviframe_Op *nfo;
+
+   EINA_LIST_FREE(nfd->ops, nfo)
+     {
+        const char *signals_cur[] = {
+          "elm,state,cur,popped,deferred",
+          "elm,state,cur,pushed,deferred"
+        };
+        const char *signals_prev = "elm,state,prev,popped,deferred";
+        const char *signals_new = "elm,state,new,pushed,deferred";
+        Elm_Naviframe_Item_Data *cur;
+        Elm_Naviframe_Item_Data *other;
+
+        cur = nfo->push ? nfo->related : nfo->self;
+        other = nfo->push ? nfo->self : nfo->related;
+
+        _send_signal(cur, signals_cur[nfo->push]);
+        _send_signal(other, nfo->push ? signals_new : signals_prev);
+
+        free(nfo);
+     }
+
+   nfd->animator = NULL;
    return ECORE_CALLBACK_CANCEL;
 }
 
@@ -1393,6 +1438,7 @@ EOLIAN static void
 _elm_naviframe_evas_object_smart_del(Eo *obj, Elm_Naviframe_Data *sd)
 {
    Elm_Naviframe_Item_Data *it;
+   Elm_Naviframe_Op *nfo;
 
    sd->on_deletion = EINA_TRUE;
 
@@ -1403,11 +1449,11 @@ _elm_naviframe_evas_object_smart_del(Eo *obj, Elm_Naviframe_Data *sd)
      }
 
    //All popping items which are not called yet by animator.
+   if (sd->animator) ecore_animator_del(sd->animator);
+   EINA_LIST_FREE(sd->ops, nfo)
+     free(nfo);
    EINA_LIST_FREE(sd->popping, it)
-     {
-        ecore_animator_del(it->animator);
-        eo_do(EO_OBJ(it), elm_wdg_item_del());
-     }
+     eo_do(EO_OBJ(it), elm_wdg_item_del());
 
    evas_object_del(sd->dummy_edje);
 
@@ -1431,14 +1477,14 @@ static Eina_Bool
 _key_action_top_item_get(Evas_Object *obj, const char *params EINA_UNUSED)
 {
    Elm_Object_Item *eo_item = NULL;
-   eo_item = eo_do(obj, elm_obj_naviframe_top_item_get());
+   eo_do(obj, eo_item = elm_obj_naviframe_top_item_get());
    if (!eo_item) return EINA_FALSE;
 
    //FIXME: Replace this below code to elm_naviframe_item_pop() at elm 2.0.
    ///Leave for compatibility.
    ELM_NAVIFRAME_ITEM_DATA_GET(eo_item, it);
    if (it->title_prev_btn)
-     evas_object_smart_callback_call(it->title_prev_btn, SIG_CLICKED, NULL);
+     eo_do(it->title_prev_btn, eo_event_callback_call(EVAS_CLICKABLE_INTERFACE_EVENT_CLICKED, NULL));
 
    return EINA_TRUE;
 }
@@ -1466,27 +1512,6 @@ _elm_naviframe_elm_widget_access(Eo *obj EINA_UNUSED, Elm_Naviframe_Data *sd, Ei
      _access_obj_process(it, is_access);
 }
 
-static Eina_Bool
-_push_transition_cb(void *data)
-{
-   Elm_Naviframe_Item_Data *prev_it, *it = data;
-
-   it->animator = NULL;
-
-   if (EINA_INLIST_GET(it)->prev)
-     {
-        prev_it = EINA_INLIST_CONTAINER_GET(EINA_INLIST_GET(it)->prev,
-                                            Elm_Naviframe_Item_Data);
-        elm_object_signal_emit(VIEW(prev_it), "elm,state,cur,pushed,deferred",
-                                "elm");
-        edje_object_message_signal_process(elm_layout_edje_get(VIEW(prev_it)));
-     }
-   elm_object_signal_emit(VIEW(it), "elm,state,new,pushed,deferred", "elm");
-   edje_object_message_signal_process(elm_layout_edje_get(VIEW(it)));
-
-   return ECORE_CALLBACK_CANCEL;
-}
-
 static void
 _item_push_helper(Elm_Naviframe_Item_Data *item)
 {
@@ -1501,6 +1526,8 @@ _item_push_helper(Elm_Naviframe_Item_Data *item)
    _resize_object_reset(obj, item);
    if (top_item)
      {
+        Elm_Naviframe_Op *nfo = calloc(1, sizeof (Elm_Naviframe_Op));
+
         elm_widget_tree_unfocusable_set(VIEW(item), EINA_FALSE);
         elm_widget_tree_unfocusable_set(VIEW(top_item), EINA_TRUE);
 
@@ -1514,8 +1541,13 @@ _item_push_helper(Elm_Naviframe_Item_Data *item)
         edje_object_message_signal_process(elm_layout_edje_get(VIEW(top_item)));
         edje_object_message_signal_process(elm_layout_edje_get(VIEW(item)));
 
-        ecore_animator_del(item->animator);
-        item->animator = ecore_animator_add(_push_transition_cb, item);
+        nfo->self = item;
+        nfo->related = top_item;
+        nfo->push = EINA_TRUE;
+
+        sd->ops = eina_list_append(sd->ops, nfo);
+        if (!sd->animator) sd->animator = ecore_animator_add(_deferred, sd);
+        item->pushing = EINA_TRUE;
      }
    else
      {
@@ -1541,14 +1573,16 @@ elm_naviframe_add(Evas_Object *parent)
    return obj;
 }
 
-EOLIAN static void
+EOLIAN static Eo *
 _elm_naviframe_eo_base_constructor(Eo *obj, Elm_Naviframe_Data *sd EINA_UNUSED)
 {
-   eo_do_super(obj, MY_CLASS, eo_constructor());
+   obj = eo_do_super_ret(obj, MY_CLASS, obj, eo_constructor());
    eo_do(obj,
          evas_obj_type_set(MY_CLASS_NAME_LEGACY),
          evas_obj_smart_callbacks_descriptions_set(_smart_callbacks),
          elm_interface_atspi_accessible_role_set(ELM_ATSPI_ROLE_PAGE_TAB_LIST));
+
+   return obj;
 }
 
 EOLIAN static Elm_Object_Item*
@@ -1653,14 +1687,12 @@ _elm_naviframe_item_pop(Eo *obj, Elm_Naviframe_Data *sd)
    Elm_Naviframe_Item_Data *prev_it = NULL;
    Evas_Object *content = NULL;
 
-   if (sd->freeze_events && sd->popping) return NULL;
-
    eo_item = elm_naviframe_top_item_get(obj);
    if (!eo_item) return NULL;
 
    ELM_NAVIFRAME_ITEM_DATA_GET(eo_item, it);
 
-   if (it->popping) return NULL;
+   if (it->pushing || it->popping) return NULL;
    it->popping = EINA_TRUE;
 
    evas_object_ref(obj);
@@ -1673,7 +1705,17 @@ _elm_naviframe_item_pop(Eo *obj, Elm_Naviframe_Data *sd)
              if (it->delete_me)
                eo_do(eo_item, elm_wdg_item_del());
              else
-               it->popping = EINA_FALSE;
+               {
+                  /* To avoid multiple item pops, the auto pushed button deletes
+                     its clicked callback once it is called.
+                     Since the item is not popped or deleted here, the deleted
+                     callback of the auto pushed button should be restored. */
+                  if (it->auto_pushed_btn)
+                    eo_do(it->auto_pushed_btn, eo_event_callback_add
+                          (EVAS_CLICKABLE_INTERFACE_EVENT_CLICKED,
+                           _on_item_back_btn_clicked, obj));
+                  it->popping = EINA_FALSE;
+               }
              evas_object_unref(obj);
              return NULL;
           }
@@ -1694,6 +1736,8 @@ _elm_naviframe_item_pop(Eo *obj, Elm_Naviframe_Data *sd)
 
    if (prev_it)
      {
+        Elm_Naviframe_Op *nfo = calloc(1, sizeof (Elm_Naviframe_Op));
+
         elm_widget_tree_unfocusable_set(VIEW(it), EINA_TRUE);
         elm_widget_tree_unfocusable_set(VIEW(prev_it), EINA_FALSE);
 
@@ -1713,13 +1757,20 @@ _elm_naviframe_item_pop(Eo *obj, Elm_Naviframe_Data *sd)
         edje_object_message_signal_process(elm_layout_edje_get(VIEW(it)));
         edje_object_message_signal_process(elm_layout_edje_get(VIEW(prev_it)));
 
-        ecore_animator_del(it->animator);
-        it->animator = ecore_animator_add(_pop_transition_cb, it);
+        if (!nfo) goto on_error;
+
+        nfo->self = it;
+        nfo->related = prev_it;
+        nfo->push = EINA_FALSE;
+
         sd->popping = eina_list_append(sd->popping, it);
+        sd->ops = eina_list_append(sd->ops, nfo);
+        if (!sd->animator) sd->animator = ecore_animator_add(_deferred, sd);
      }
    else
      eo_do(eo_item, elm_wdg_item_del());
 
+ on_error:
    return content;
 }
 
@@ -1864,7 +1915,7 @@ _elm_naviframe_item_title_enabled_set(Eo *eo_item EINA_UNUSED,
 }
 
 EOLIAN static Eina_Bool
-_elm_naviframe_item_title_enabled_get(Eo *eo_item EINA_UNUSED, Elm_Naviframe_Item_Data *nit)
+_elm_naviframe_item_title_enabled_get(const Eo *eo_item EINA_UNUSED, Elm_Naviframe_Item_Data *nit)
 {
    return nit->title_enabled;
 }

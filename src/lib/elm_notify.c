@@ -15,14 +15,6 @@
 #define MY_CLASS_NAME "Elm_Notify"
 #define MY_CLASS_NAME_LEGACY "elm_notify"
 
-static const char SIG_BLOCK_CLICKED[] = "block,clicked";
-static const char SIG_TIMEOUT[] = "timeout";
-static const Evas_Smart_Cb_Description _smart_callbacks[] = {
-   {SIG_BLOCK_CLICKED, ""},
-   {SIG_TIMEOUT, ""},
-   {NULL, NULL}
-};
-
 static void
 _notify_theme_apply(Evas_Object *obj)
 {
@@ -163,6 +155,18 @@ _elm_notify_elm_widget_theme_apply(Eo *obj, Elm_Notify_Data *sd)
    return EINA_TRUE;
 }
 
+EOLIAN static void
+_elm_notify_elm_widget_part_text_set(Eo *obj EINA_UNUSED, Elm_Notify_Data *sd, const char *part, const char *label)
+{
+   edje_object_part_text_set(sd->notify, part, label);
+}
+
+EOLIAN static const char*
+_elm_notify_elm_widget_part_text_get(Eo *obj EINA_UNUSED, Elm_Notify_Data *sd, const char *part)
+{
+   return edje_object_part_text_get(sd->notify, part);
+}
+
 static void
 _calc(Evas_Object *obj)
 {
@@ -221,7 +225,7 @@ _block_area_clicked_cb(void *data,
                        const char *emission EINA_UNUSED,
                        const char *source EINA_UNUSED)
 {
-   evas_object_smart_callback_call(data, SIG_BLOCK_CLICKED, NULL);
+   eo_do(data, eo_event_callback_call(ELM_NOTIFY_EVENT_BLOCK_CLICKED, NULL));
 }
 
 EOLIAN static void
@@ -261,7 +265,7 @@ _timer_cb(void *data)
      {
         evas_object_hide(obj);
      }
-   evas_object_smart_callback_call(obj, SIG_TIMEOUT, NULL);
+   eo_do(obj, eo_event_callback_call(ELM_NOTIFY_EVENT_TIMEOUT, NULL));
 
 end:
    return ECORE_CALLBACK_CANCEL;
@@ -468,13 +472,15 @@ elm_notify_add(Evas_Object *parent)
    return obj;
 }
 
-EOLIAN static void
+EOLIAN static Eo *
 _elm_notify_eo_base_constructor(Eo *obj, Elm_Notify_Data *sd EINA_UNUSED)
 {
-   eo_do_super(obj, MY_CLASS, eo_constructor());
+   obj = eo_do_super_ret(obj, MY_CLASS, obj, eo_constructor());
    eo_do(obj,
          evas_obj_type_set(MY_CLASS_NAME_LEGACY),
          elm_interface_atspi_accessible_role_set(ELM_ATSPI_ROLE_NOTIFICATION));
+
+   return obj;
 }
 
 EAPI void

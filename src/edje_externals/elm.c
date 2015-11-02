@@ -31,15 +31,6 @@ external_elm_shutdown(void)
    elm_shutdown();
 }
 
-static void
-_external_obj_del(void *data EINA_UNUSED, Evas *evas EINA_UNUSED,
-                  Evas_Object *obj, void *event_info EINA_UNUSED)
-{
-   evas_object_event_callback_del(obj, EVAS_CALLBACK_DEL,
-                                  _external_obj_del);
-   external_elm_shutdown();
-}
-
 void
 external_signal(void *data EINA_UNUSED, Evas_Object *obj, const char *sig,
                 const char *source)
@@ -47,6 +38,9 @@ external_signal(void *data EINA_UNUSED, Evas_Object *obj, const char *sig,
    char *_signal = strdup(sig);
    char *p = _signal;
    Evas_Object *content;
+   Edje_External_Type *type;
+
+   if (!p) goto on_error;
 
    while ((*p!='\0') && (*p!=']'))
      p++;
@@ -55,26 +49,32 @@ external_signal(void *data EINA_UNUSED, Evas_Object *obj, const char *sig,
    if ((*p=='\0') || (*(p+1)!=':'))
      {
         ERR("Invalid External Signal received: '%s' '%s'", sig, source);
-        free(_signal);
-        return ;
+        goto on_error;
      }
 
    *p = '\0';
    p+=2; //jump ']' and ':'
 
-   Edje_External_Type *type = evas_object_data_get(obj, "Edje_External_Type");
+   type = evas_object_data_get(obj, "Edje_External_Type");
+   if (!type)
+     {
+        ERR("no external type for object %p", obj);
+        goto on_error;
+     }
    if (!type->content_get)
      {
         ERR("external type '%s' from module '%s' does not provide content_get()",
             type->module_name, type->module);
-        free(_signal);
-        return ;
+        goto on_error;
      }
 
    content = type->content_get(type->data, obj, _signal);
-   free(_signal);
    if (content)
      edje_object_signal_emit(content, sig + (p - _signal), source);
+
+on_error:
+   free(_signal);
+   return;
 }
 
 const char *
@@ -97,6 +97,7 @@ _external_signal_proxy_free_cb(void *data, Evas *e EINA_UNUSED,
                                void *event_info EINA_UNUSED)
 {
    Elm_External_Signals_Proxy_Context *ctxt = data;
+   external_elm_shutdown();
    free(ctxt);
 }
 
@@ -192,8 +193,6 @@ external_signals_proxy(Evas_Object *obj, Evas_Object *edje, const char *part_nam
         evas_object_smart_callback_add
            (obj, d->name, _external_signal_proxy_cb, ctxt);
      }
-   evas_object_event_callback_add(obj, EVAS_CALLBACK_DEL,
-                                  _external_obj_del, NULL);
 }
 
 void

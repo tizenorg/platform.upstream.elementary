@@ -91,7 +91,7 @@ static void
 _cube_pos(Cube *c,
           Evas_Coord x, Evas_Coord y, Evas_Coord z,
           double dx, double dy, double dz,
-          Evas_Coord cx, Evas_Coord cy, Evas_Coord foc, Evas_Coord z0)
+          Evas_Coord cx, Evas_Coord cy, Evas_Coord z0, Evas_Coord foc)
 {
    Evas_Map *m;
    int i, j, order[6], sorted;
@@ -118,7 +118,7 @@ _cube_pos(Cube *c,
         evas_map_util_3d_lighting(m, -1000, -1000, -1000,
                                   255, 255, 255,
                                   20, 20, 20);
-        evas_map_util_3d_perspective(m, cx, cy, foc, z0);
+        evas_map_util_3d_perspective(m, cx, cy, z0, foc);
         if (evas_map_util_clockwise_get(m))
           {
              evas_object_map_enable_set(c->side[i].o, EINA_TRUE);
@@ -276,7 +276,7 @@ test_3d(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info E
    evas_object_show(sl);
 
    sl = elm_slider_add(win);
-   elm_object_text_set(sl, "CX Off");
+   elm_object_text_set(sl, "PX Off");
    elm_slider_unit_format_set(sl, "%1.0f units");
    elm_slider_indicator_format_set(sl, "%1.0f units");
    elm_slider_span_size_set(sl, 360);
@@ -289,7 +289,7 @@ test_3d(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info E
    evas_object_show(sl);
 
    sl = elm_slider_add(win);
-   elm_object_text_set(sl, "CY Off");
+   elm_object_text_set(sl, "PY Off");
    elm_slider_unit_format_set(sl, "%1.0f units");
    elm_slider_indicator_format_set(sl, "%1.0f units");
    elm_slider_span_size_set(sl, 360);

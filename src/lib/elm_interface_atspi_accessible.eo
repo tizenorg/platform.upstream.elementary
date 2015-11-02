@@ -2,109 +2,195 @@ mixin Elm_Interface_Atspi_Accessible ()
 {
    legacy_prefix: null;
    eo_prefix: elm_interface_atspi_accessible;
-   data: null;
-   properties {
-      localized_role_name @protected {
+   data: Elm_Interface_Atspi_Accessible_Data;
+   methods {
+      @property localized_role_name @protected {
          get {
-            /*@ Gets an localized string describing ATSPI widget role name. */
+            [[Gets an localized string describing ATSPI widget role name.]]
          }
          values {
-            const(char)* localized_name;
+            localized_name: const(char)*;
          }
       }
-      name @protected {
+      @property name @protected {
          get {
+<<<<<<< HEAD
             /*@ Gets an string describing ATSPI widget role name. 
                 Should be free by a user. */
+=======
+            [[Gets an string describing ATSPI widget role name.  Should be free by a user.]]
+>>>>>>> opensource/master
          }
          set {
          }
          values {
+<<<<<<< HEAD
             char* name; /*@ obj name */
+=======
+            name: char*; [[obj name]]
+>>>>>>> opensource/master
          }
       }
-      relation_set @protected {
+      @property relation_set @protected {
          get {
-            /*@ Gets an string describing ATSPI widget role name. Lists and
-            elements Should be free by a user. */
+            [[Gets an string describing ATSPI widget role name. Lists and elements Should be free by a user.]]
          }
          values {
-            list *relations;
+            relations: Elm_Atspi_Relation_Set;
          }
       }
-      role @protected {
+      @property role @protected {
          get {
-            /*@ Gets the role of the widget in ATSPI Accessibility domain. */
+            [[Gets the role of the widget in ATSPI Accessibility domain.]]
          }
          set {
          }
          values {
-            Elm_Atspi_Role role;
+            role: Elm_Atspi_Role;
          }
       }
-      children @protected {
+      @property children @protected {
          get {
-            /*@ Gets widget's accessible children. */
+            [[Gets widget's accessible children.]]
          }
          values {
-            list *children;
+            children: free(own(list<Elm_Interface_Atspi_Accessible *> *), eina_list_free);
          }
       }
-      role_name @protected {
+      @property role_name @protected {
          get {
-            /*@ Gets human-readable string indentifying widget accessibility
-            role. */
+            [[Gets human-readable string indentifying widget accessibility role.]]
          }
          values {
-            const(char)* role_name;
+            role_name: const(char)*;
          }
       }
-      attributes @protected {
+      @property attributes @protected {
          get {
-            /*@ Gets key-value pairs indentifying widget extra 
-            attributes. Must be free by a user. */
+            [[Gets key-value pairs indentifying widget extra attributes. Must be free by a user.]]
          }
          values {
-            list *attributes;
+            attributes: free(own(list<own(Elm_Atspi_Attribute *)> *), elm_atspi_attributes_list_free);
          }
       }
-      index_in_parent @protected {
+      @property index_in_parent @protected {
          get {
-            /*@ Gets index of the child in parent's children list. */
+            [[Gets index of the child in parent's children list.]]
          }
          values {
-            int idx;
+            idx: int;
          }
       }
-      description @protected {
+      @property description @protected {
          get {
-            /*@ Gets widget contextual information. */
+            [[Gets widget contextual information.]]
          }
          set {
-            /*@ Sets contextual information about widget. */
+            [[Sets contextual information about widget.]]
          }
          values {
-            const(char)* description;
+            description: const(char)*;
          }
       }
-      parent @protected {
+      @property parent @protected {
          get {
-            /*@ Gets widget accessible parent. */
+            [[Gets widget accessible parent.]]
          }
          set {
-            /*@ Sets widget accessible parent. */
+            [[Sets widget accessible parent.]]
          }
          values {
-            Eo *parent;
+            parent: Elm_Interface_Atspi_Accessible *;
          }
       }
-      state_set @protected {
+      @property state_set @protected {
          get {
-            /*@ Gets set describing widget accessible states. */
+            [[Gets set describing widget accessible states.]]
          }
          values {
-            Elm_Atspi_State_Set states;
+            states: Elm_Atspi_State_Set;
          }
+      }
+      event_handler_add @class @protected {
+         [[Register accessibility event listener]]
+         params {
+              @in cb: Eo_Event_Cb; [[callback]]
+              @in data: void*; [[data]]
+         }
+         return: Elm_Atspi_Event_Handler*; [[Event handler]]
+      }
+      event_handler_del @class @protected {
+         [[Deregister accessibility event listener]]
+         params {
+              @in handler: Elm_Atspi_Event_Handler *; [[Event handler]]
+         }
+      }
+      event_emit @class @protected {
+         params {
+            @in accessible: Elm_Interface_Atspi_Accessible *; [[Accessibility object.]]
+            @in event: const(Eo_Event_Description)*; [[Accessibility event type.]]
+            @in event_info: void*; [[Accessibility event details.]]
+         }
+      }
+      @property translation_domain @protected {
+         get {
+            [[Gets the translation domain of "name" and "description"
+              properties.]]
+         }
+         set {
+            [[Sets the translation domain of "name" and "description"
+              properties.
+
+              Translation domain should be set if application wants to support i18n
+              for accessibily "name" and "description" properties.
+
+              When translation domain is set values of "name" and "description"
+              properties will be translated with dgettext function using
+              current translation domain as "domainname" parameter.
+
+              It is application developer responsibility to ensure that
+              translation files are loaded and binded to translation domain
+              when accessibility is enabled.]]
+         }
+         values {
+            domain: const(char)*; [[ translation domain ]]
+         }
+      }
+      relationship_append @protected {
+         [[Defines the relationship between two accessible objects.
+
+           Adds unique relation between source object and relation_object of a
+           given type.
+
+           Relationships can be queried by Assistive Technology clients to
+           provide customized feedback, improving overall user experience.
+
+           Relationship_append API is asymmetric, which means that
+           appending, for example, relation ELM_ATSPI_RELATION_FLOWS_TO from object A to B,
+           do NOT append relation ELM_ATSPI_RELATION_FLOWS_FROM from object B to
+           object A.
+
+           return: EINA_TRUE is relationship was successfully appended, EINA_FALSE
+           otherwise]]
+         return: bool;
+         params {
+            @in type: Elm_Atspi_Relation_Type;
+            @in relation_object: const(Elm_Interface_Atspi_Accessible)*;
+         }
+      }
+      relationship_remove @protected {
+         [[Removes the relationship between two accessible objects.
+
+          If relation_object is NULL function removes all relations
+          of given type.
+         ]]
+         params {
+            @in type: Elm_Atspi_Relation_Type;
+            @in relation_object: const(Elm_Interface_Atspi_Accessible)*;
+         }
+      }
+      relationships_clear @protected {
+         [[Removes all relationships in accessible object.]]
       }
    }
    events {
@@ -112,6 +198,8 @@ mixin Elm_Interface_Atspi_Accessible ()
       children,changed: Elm_Atspi_Event_Children_Changed_Data;
       state,changed: Elm_Atspi_Event_State_Changed_Data;
       visible,data,changed;
-      active,descendants,changed;
+      active,descendant,changed;
+      added;
+      removed;
    }
 }

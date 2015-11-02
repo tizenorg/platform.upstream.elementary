@@ -1,58 +1,52 @@
-class Elm_Ctxpopup_Item(Elm_Widget_Item)
+class Elm.Ctxpopup_Item(Elm.Widget_Item)
 {
    eo_prefix: elm_obj_ctxpopup_item;
-   properties {
-      prev {
-         get {
-            /*@
-             Get the item before @p it in a ctxpopup widget's internal list of
-             items.
-
-             @see elm_ctxpopup_item_next_get()
-
-             @since 1.11
-             @ingroup Ctxpopup
-             */
-         }
-         values {
-              Elm_Object_Item *item; /*@ The item before the object in its parent's list. If there is no
-                                       previous item for @p it or there's an error, @c NULL is returned. */
-         }
-      }
-      next {
-         get {
-            /*@
-             Get the item after @p it in a ctxpopup widget's
-             internal list of items.
-
-             @see elm_ctxpopup_item_prev_get()
-
-             @since 1.11
-             @ingroup Ctxpopup
-             */
-         }
-         values {
-              Elm_Object_Item *item; /*@ The item after the object in its parent's list. If there is no
-                                       previous item for @p it or there's an error, @c NULL is returned. */
-         }
-      }
-   }
    methods {
+      @property prev {
+         get {
+            [[Get the item before $ it in a ctxpopup widget's internal list of
+              items.
+
+              See also \@ref elm_ctxpopup_item_next_get.
+
+              @since 1.11
+            ]]
+         }
+         values {
+              item: Elm.Widget_Item *; [[The item before the object in its parent's list. If there is no previous item for $ it or there's an error, $null is returned.]]
+         }
+      }
+      @property next {
+         get {
+            [[Get the item after $ it in a ctxpopup widget's
+              internal list of items.
+
+              See also \@ref elm_ctxpopup_item_prev_get.
+
+              @since 1.11
+            ]]
+         }
+         values {
+              item: Elm.Widget_Item *; [[The item after the object in its parent's list. If there is no previous item for $ it or there's an error, $null is returned.]]
+         }
+      }
       init {
          params {
-            Evas_Smart_Cb func;
-            const(void) * data;
+            func: Evas_Smart_Cb @nullable;
+            data: const(void) * @optional;
          }
       }
    }
    implements {
         Eo.Base.constructor;
         Eo.Base.destructor;
-        Elm_Widget_Item.disable;
-        Elm_Widget_Item.signal_emit;
-        Elm_Widget_Item.part_text.get;
-        Elm_Widget_Item.part_text.set;
-        Elm_Widget_Item.part_content.get;
-        Elm_Widget_Item.part_content.set;
+        Elm.Widget_Item.disable;
+        Elm.Widget_Item.signal_emit;
+        Elm.Widget_Item.part_text.get;
+        Elm.Widget_Item.part_text.set;
+        Elm.Widget_Item.part_content.get;
+        Elm.Widget_Item.part_content.set;
+        Elm.Widget_Item.focus.set;
+        Elm.Widget_Item.focus.get;
    }
 }

@@ -26,6 +26,8 @@ EXTRA_PROGRAMS = elementary_test elementary_config elementary_codegen elm_prefs_
 
 elementary_test_SOURCES = \
 test.c \
+test_explode.c \
+test_explode.h \
 test_3d.c \
 test_access.c \
 test_actionslider.c \
@@ -40,6 +42,7 @@ test_check.c \
 test_clock.c \
 test_cnp.c \
 test_colorselector.c \
+test_colorclass.c \
 test_config.c \
 test_conform.c \
 test_conform_indicator.c \

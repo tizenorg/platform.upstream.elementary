@@ -1,90 +1,67 @@
-class Elm_Panel (Elm_Layout, Elm_Interface_Scrollable,
+enum Elm.Panel.Orient
+{
+   [[Panel orientation mode]]
+
+   top, [[Panel (dis)appears from the top]]
+   bottom, [[Panel (dis)appears from the bottom]]
+   left, [[Panel (dis)appears from the left]]
+   right [[Panel (dis)appears from the right]]
+}
+
+class Elm.Panel (Elm.Layout, Elm_Interface_Scrollable,
                  Elm_Interface_Atspi_Widget_Action)
 {
    eo_prefix: elm_obj_panel;
-   properties {
-      orient {
-         set {
-            /*@
-            @brief Sets the orientation of the panel
-
-            Sets from where the panel will (dis)appear.
-
-            @ingroup Panel */
-         }
-         get {
-            /*@
-            @brief Get the orientation of the panel.
-
-            @return The Elm_Panel_Orient, or #ELM_PANEL_ORIENT_LEFT on failure.
-
-            @ingroup Panel */
-         }
-         values {
-            Elm_Panel_Orient orient(2); /*@ The panel orientation. Can be one of the following:
-            @li #ELM_PANEL_ORIENT_TOP
-            @li #ELM_PANEL_ORIENT_LEFT
-            @li #ELM_PANEL_ORIENT_RIGHT */
-         }
-      }
-      hidden {
-         set {
-            /*@
-            @brief Set the state of the panel.
-
-            @ingroup Panel */
-         }
-         get {
-            /*@
-            @brief Get the state of the panel.
-
-            @return EINA_TRUE if it is hidden state
-
-            @ingroup Panel */
-         }
-         values {
-            bool hidden; /*@ If true, the panel will run the animation to disappear. */
-         }
-      }
-      scrollable {
-         set {
-            /*@
-            @brief Set the scrollability of the panel.
-
-            @ingroup Panel */
-         }
-         get {
-            /*@
-            @brief Get the state of the scrollability.
-
-            @return EINA_TRUE if it is scrollable
-
-            @ingroup Panel
-            @since 1.12 */
-         }
-         values {
-            bool scrollable;
-         }
-      }
-      scrollable_content_size {
-         set {
-            /*@
-            @brief Set the size of the scrollable panel.
-
-            @ingroup Panel */
-         }
-         values {
-            double ratio;
-         }
-      }
-   }
    methods {
+      @property orient {
+         set {
+            [[Set the orientation of the panel
+
+              Set from where the panel will (dis)appear.
+            ]]
+         }
+         get {
+            [[Get the orientation of the panel.]]
+         }
+         values {
+            orient: Elm.Panel.Orient(Elm.Panel.Orient.left); [[The panel orientation.]]
+         }
+      }
+      @property hidden {
+         set {
+            [[Set the state of the panel.]]
+         }
+         get {
+            [[Get the state of the panel.]]
+         }
+         values {
+            hidden: bool; [[If true, the panel will run the animation to disappear.]]
+         }
+      }
+      @property scrollable {
+         set {
+            [[Set the scrollability of the panel.]]
+         }
+         get {
+            [[Get the state of the scrollability.
+
+              @since 1.12
+            ]]
+         }
+         values {
+            scrollable: bool; [[The scrollable state.]]
+         }
+      }
+      @property scrollable_content_size {
+         set {
+            [[Set the size of the scrollable panel.]]
+         }
+         values {
+            ratio: double;
+         }
+      }
       toggle {
-         /*@
-         @brief Toggle the hidden state of the panel from code
-
-         @ingroup Panel */
-
+         [[Toggle the hidden state of the panel from code]]
       }
    }
    implements {
@@ -95,22 +72,17 @@ class Elm_Panel (Elm_Layout, Elm_Interface_Scrollable,
       Evas.Object_Smart.del;
       Evas.Object_Smart.resize;
       Evas.Object_Smart.move;
-      Elm_Widget.theme_apply;
-      Elm_Widget.focus_next_manager_is;
-      Elm_Widget.focus_next;
-      Elm_Widget.disable;
-      Elm_Widget.access;
-      Elm_Widget.event;
-      Elm_Widget.on_focus_region;
-      Elm_Container.content_get;
-      Elm_Container.content_unset;
-      Elm_Container.content_set;
-      Elm_Layout.sizing_eval;
+      Elm.Widget.theme_apply;
+      Elm.Widget.focus_next_manager_is;
+      Elm.Widget.focus_next;
+      Elm.Widget.disable;
+      Elm.Widget.access;
+      Elm.Widget.event;
+      Elm.Widget.on_focus_region;
+      Elm.Container.content_get;
+      Elm.Container.content_unset;
+      Elm.Container.content_set;
+      Elm.Layout.sizing_eval;
       Elm_Interface_Atspi_Widget_Action.elm_actions.get;
    }
-   events {
-      focused;
-      unfocused;
-   }
-
 }

@@ -1,3 +1,4 @@
+AM_DISTCHECK_CONFIGURE_FLAGS = --with-tests=regular
 SUBDIRS = src data config doc
 
 if HAVE_PO
@@ -117,6 +118,7 @@ cmakeconfig/ElementaryConfigVersion.cmake
 
 doc:
 	@echo "entering doc/"
+	$(MAKE) -C src/examples screenshots
 	$(MAKE) -C doc doc
 
 screenshots: all
@@ -137,7 +139,8 @@ lcov-report:
 	lcov --remove $(top_builddir)/coverage/coverage.cleaned.info '*/elm_test_*' --output-file $(top_builddir)/coverage/coverage.cleaned2.info
 	lcov --remove $(top_builddir)/coverage/coverage.cleaned2.info '*/elm_suite.c' --output-file $(top_builddir)/coverage/coverage.cleaned3.info
 	lcov --remove $(top_builddir)/coverage/coverage.cleaned3.info '*NONE*' --output-file $(top_builddir)/coverage/coverage.cleaned4.info
-	genhtml --branch-coverage -t "$(PACKAGE_STRING)" -o $(top_builddir)/coverage/html $(top_builddir)/coverage/coverage.cleaned4.info
+	lcov --remove $(top_builddir)/coverage/coverage.cleaned4.info '*/datetime_input_ctxpopup.c' '*/elm_horizontal_box.c' '*/elm_vertical_frame.c' '*/elm_vertical_box.c' '*/elm_horizontal_frame.c' '*/prefs_iface.c' '*/elm_swallow.c' --output-file $(top_builddir)/coverage/coverage.cleaned5.info
+	genhtml --branch-coverage -t "$(PACKAGE_STRING)" -o $(top_builddir)/coverage/html $(top_builddir)/coverage/coverage.cleaned5.info
 	@echo "Coverage Report at $(top_builddir)/coverage/html"
 
 endif
@@ -152,4 +155,7 @@ endif
 if ELEMENTARY_ENABLE_COVERAGE
 	@$(MAKE) $(AM_MAKEFLAGS) lcov-report
 endif
+
+clean-local:
+	rm -f src/tests/check-results.xml
 endif

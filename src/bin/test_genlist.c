@@ -5,6 +5,8 @@
 #endif
 #include <Elementary.h>
 
+#include "test_explode.h"
+
 Evas_Object * _elm_min_set(Evas_Object *obj, Evas_Object *parent,
                            Evas_Coord w, Evas_Coord h);
 
@@ -17,6 +19,8 @@ struct _api_data
    Elm_Genlist_Item_Class *itc1;
    Elm_Genlist_Item_Class *itc2;
    void *gl;
+
+   void *filter_data;   /* The data used for filtering     */
 };
 typedef struct _api_data api_data;
 
@@ -127,7 +131,7 @@ gl_text_get1(void *data, Evas_Object *obj EINA_UNUSED, const char *part EINA_UNU
    int num = (int)(uintptr_t)data;
 
    if (num == 5)
-     snprintf(buf, sizeof(buf), "Item # %i (Genlist Cleear on Select)", num);
+     snprintf(buf, sizeof(buf), "Item # %i (Genlist Clear on Select)", num);
    else
      snprintf(buf, sizeof(buf), "Item # %i", num);
 
@@ -236,6 +240,8 @@ _move(void *data, Evas *evas EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *ev
      INF("<%s> over none, where %i\n", __func__,where);
 }
 
+
+/***  Genlist  ***************************************************************/
 static void
 _bt50_cb(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
@@ -273,9 +279,65 @@ _gl_longpress(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_
 }
 
 static void
+_gl_changed(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
+{
+//   printf("changed %p\n", event_info);
+}
+
+static void
 _cleanup_cb(void *data, Evas *e EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
-   free(data);
+   api_data *api = (api_data *)data;
+   if (api->filter_data) free(api->filter_data);
+   free(api);
+}
+
+typedef struct
+{
+   Evas_Object *gl;
+   Elm_Object_Item *it1, *it2;
+   int state;
+} Bounce;
+
+static Eina_Bool
+_bounce_cb(void *data)
+{
+   Bounce *bounce = data;
+   bounce->state++;
+   if (bounce->state & 0x1)
+     elm_genlist_item_bring_in(bounce->it2, ELM_GENLIST_ITEM_SCROLLTO_MIDDLE);
+   else
+     elm_genlist_item_bring_in(bounce->it1, ELM_GENLIST_ITEM_SCROLLTO_MIDDLE);
+   if (bounce->state > 50)
+     {
+        if (getenv("ELM_TEST_AUTOBOUNCE")) elm_exit();
+     }
+   return EINA_TRUE;
+}
+
+static void
+_btbounce_cb(void *data, Evas_Object *obj, void *event_info EINA_UNUSED)
+{
+   Ecore_Timer *tim = evas_object_data_get(obj, "timer");
+   if (!tim)
+     {
+        _bounce_cb(data);
+        tim = ecore_timer_add(0.5, _bounce_cb, data);
+        evas_object_data_set(obj, "timer", tim);
+     }
+}
+
+static void
+_btdel_cb(void *data, Evas *e EINA_UNUSED, Evas_Object *obj, void *event_info EINA_UNUSED)
+{
+   Bounce *bounce = data;
+   Ecore_Timer *tim = evas_object_data_get(obj, "timer");
+   if (tim)
+     {
+        ecore_timer_del(tim);
+        evas_object_data_del(obj, "timer");
+     }
+   free(bounce);
 }
 
 void
@@ -284,12 +346,13 @@ test_genlist(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_i
    Evas_Object *win, *gl, *bt_50, *bt_1500, *bx, *bxx, *bt;
    Evas_Object *over;
    Elm_Object_Item *gli;
-   int i;
+   int i, max;
+   Bounce *bounce;
    api_data *api = calloc(1, sizeof(api_data));
 
    win = elm_win_util_standard_add("genlist", "Genlist");
    elm_win_autodel_set(win, EINA_TRUE);
-   evas_object_event_callback_add(win, EVAS_CALLBACK_FREE, _cleanup_cb, api);
+   evas_object_event_callback_add(win, EVAS_CALLBACK_DEL, _cleanup_cb, api);
 
    bxx = elm_box_add(win);
    evas_object_size_hint_weight_set(bxx, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
@@ -316,6 +379,7 @@ test_genlist(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_i
    evas_object_smart_callback_add(gl, "clicked,double", _gl_double_clicked, NULL);
    evas_object_smart_callback_add(gl, "clicked,right", _gl_right_clicked, NULL);
    evas_object_smart_callback_add(gl, "longpressed", _gl_longpress, NULL);
+   evas_object_smart_callback_add(gl, "changed", _gl_changed, NULL);
    // FIXME: This causes genlist to resize the horiz axis very slowly :(
    // Reenable this and resize the window horizontally, then try to resize it back
    //elm_genlist_mode_set(gl, ELM_LIST_LIMIT);
@@ -349,7 +413,18 @@ test_genlist(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_i
    evas_object_show(bt_1500);
    elm_box_pack_end(bx, bt_1500);
 
-   for (i = 0; i < 2000; i++)
+   bounce = calloc(1, sizeof(Bounce));
+   bt = elm_button_add(win);
+   elm_object_text_set(bt, "Bounce");
+   evas_object_show(bt);
+   elm_box_pack_end(bx, bt);
+   bounce->gl = gl;
+   evas_object_smart_callback_add(bt, "clicked", _btbounce_cb, bounce);
+   evas_object_event_callback_add(bt, EVAS_CALLBACK_DEL, _btdel_cb, bounce);
+
+   max = 2000;
+   if (getenv("ELM_TEST_AUTOBOUNCE")) max = 200;
+   for (i = 0; i < max; i++)
      {
         if (i == 5)
           {
@@ -374,15 +449,21 @@ test_genlist(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_i
           evas_object_smart_callback_add(bt_50, "clicked", _bt50_cb, gli);
         else if (i == 1500)
           evas_object_smart_callback_add(bt_1500, "clicked", _bt1500_cb, gli);
+
+        if (i == 100) bounce->it1 = gli;
+        if (i == 120) bounce->it2 = gli;
      }
    elm_genlist_item_class_free(api->itc1);
 
-   evas_object_resize(win, 480, 800);
+   evas_object_resize(win, 480, 400);
+   explode_win_enable(win);
    evas_object_show(win);
+
+   if (max == 200) _btbounce_cb(bounce, bt, NULL);
 }
 
-/*************/
 
+/***  Genlist 2  *************************************************************/
 static void
 my_gl_clear(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
@@ -763,8 +844,10 @@ test_genlist2(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_
    evas_object_show(win);
 }
 
-/*************/
-char *gl2_text_get(void *data, Evas_Object *obj EINA_UNUSED, const char *part EINA_UNUSED)
+
+/***  Genlist 3  *************************************************************/
+char *
+gl2_text_get(void *data, Evas_Object *obj EINA_UNUSED, const char *part EINA_UNUSED)
 {
    const Testitem *tit = data;
    char buf[256];
@@ -772,7 +855,8 @@ char *gl2_text_get(void *data, Evas_Object *obj EINA_UNUSED, const char *part EI
    return strdup(buf);
 }
 
-Evas_Object *gl2_content_get(void *data, Evas_Object *obj, const char *part)
+Evas_Object *
+gl2_content_get(void *data, Evas_Object *obj, const char *part)
 {
    const Testitem *tit = data;
    char buf[PATH_MAX];
@@ -805,7 +889,8 @@ Evas_Object *gl2_content_get(void *data, Evas_Object *obj, const char *part)
    return ic;
 }
 
-Eina_Bool gl2_state_get(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, const char *part EINA_UNUSED)
+Eina_Bool
+gl2_state_get(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, const char *part EINA_UNUSED)
 {
    return EINA_FALSE;
 }
@@ -916,8 +1001,8 @@ test_genlist3(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_
    evas_object_show(win);
 }
 
-/*************/
 
+/***  Genlist 4  *************************************************************/
 static void
 my_gl_item_check_changed(void *data, Evas_Object *obj, void *event_info EINA_UNUSED)
 {
@@ -926,7 +1011,8 @@ my_gl_item_check_changed(void *data, Evas_Object *obj, void *event_info EINA_UNU
    printf("item %p onoff = %i\n", tit, tit->onoff);
 }
 
-char *gl3_text_get(void *data, Evas_Object *obj EINA_UNUSED, const char *part EINA_UNUSED)
+char *
+gl3_text_get(void *data, Evas_Object *obj EINA_UNUSED, const char *part EINA_UNUSED)
 {
    const Testitem *tit = data;
    char buf[256];
@@ -934,7 +1020,8 @@ char *gl3_text_get(void *data, Evas_Object *obj EINA_UNUSED, const char *part EI
    return strdup(buf);
 }
 
-Evas_Object *gl3_content_get(void *data, Evas_Object *obj, const char *part)
+Evas_Object *
+gl3_content_get(void *data, Evas_Object *obj, const char *part)
 {
    const Testitem *tit = data;
    if (!strcmp(part, "elm.swallow.icon"))
@@ -959,12 +1046,14 @@ Evas_Object *gl3_content_get(void *data, Evas_Object *obj, const char *part)
    return NULL;
 }
 
-Eina_Bool gl3_state_get(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, const char *part EINA_UNUSED)
+Eina_Bool
+gl3_state_get(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, const char *part EINA_UNUSED)
 {
    return EINA_FALSE;
 }
 
-static void _realized(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *ei)
+static void
+_realized(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *ei)
 {
    Evas_Object *check;
    Eina_List *items;
@@ -1016,15 +1105,18 @@ test_genlist4(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_
 
    tit[0].mode = 0;
    tit[0].item = elm_genlist_item_append(gl, api->itc1,
-                                         &(tit[0])/* item data */, NULL/* parent */, ELM_GENLIST_ITEM_NONE, gl_sel/* func */,
+                                         &(tit[0])/* item data */, NULL/* parent */,
+                                         ELM_GENLIST_ITEM_NONE, gl_sel/* func */,
                                          NULL/* func data */);
    tit[1].mode = 1;
    tit[1].item = elm_genlist_item_append(gl, api->itc1,
-                                         &(tit[1])/* item data */, NULL/* parent */, ELM_GENLIST_ITEM_NONE, gl_sel/* func */,
+                                         &(tit[1])/* item data */, NULL/* parent */,
+                                         ELM_GENLIST_ITEM_NONE, gl_sel/* func */,
                                          NULL/* func data */);
    tit[2].mode = 2;
    tit[2].item = elm_genlist_item_append(gl, api->itc1,
-                                         &(tit[2])/* item data */, NULL/* parent */, ELM_GENLIST_ITEM_NONE, gl_sel/* func */,
+                                         &(tit[2])/* item data */, NULL/* parent */,
+                                         ELM_GENLIST_ITEM_NONE, gl_sel/* func */,
                                          NULL/* func data */);
 
    elm_genlist_item_class_free(api->itc1);
@@ -1068,8 +1160,8 @@ test_genlist4(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_
    evas_object_show(win);
 }
 
-/*************/
 
+/***  Genlist 5  *************************************************************/
 static void
 my_gl_item_check_changed2(void *data, Evas_Object *obj, void *event_info EINA_UNUSED)
 {
@@ -1078,7 +1170,8 @@ my_gl_item_check_changed2(void *data, Evas_Object *obj, void *event_info EINA_UN
    printf("item %p onoff = %i\n", tit, tit->onoff);
 }
 
-char *gl5_text_get(void *data, Evas_Object *obj EINA_UNUSED, const char *part)
+char *
+gl5_text_get(void *data, Evas_Object *obj EINA_UNUSED, const char *part)
 {
    const Testitem *tit = data;
    char buf[256] = { 0 };
@@ -1093,7 +1186,8 @@ char *gl5_text_get(void *data, Evas_Object *obj EINA_UNUSED, const char *part)
    return strdup(buf);
 }
 
-Evas_Object *gl5_content_get(void *data, Evas_Object *obj, const char *part)
+Evas_Object *
+gl5_content_get(void *data, Evas_Object *obj, const char *part)
 {
    const Testitem *tit = data;
    char buf[PATH_MAX];
@@ -1130,7 +1224,8 @@ Evas_Object *gl5_content_get(void *data, Evas_Object *obj, const char *part)
    return NULL;
 }
 
-Eina_Bool gl5_state_get(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, const char *part EINA_UNUSED)
+Eina_Bool
+gl5_state_get(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, const char *part EINA_UNUSED)
 {
    return EINA_FALSE;
 }
@@ -1234,15 +1329,18 @@ test_genlist5(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_
 
    tit[0].mode = 0;
    tit[0].item = elm_genlist_item_append(gl, api->itc1,
-                                         &(tit[0])/* item data */, NULL/* parent */, ELM_GENLIST_ITEM_NONE, gl_sel/* func */,
+                                         &(tit[0])/* item data */, NULL/* parent */,
+                                         ELM_GENLIST_ITEM_NONE, gl_sel/* func */,
                                          NULL/* func data */);
    tit[1].mode = 1;
    tit[1].item = elm_genlist_item_append(gl, api->itc1,
-                                         &(tit[1])/* item data */, NULL/* parent */, ELM_GENLIST_ITEM_NONE, gl_sel/* func */,
+                                         &(tit[1])/* item data */, NULL/* parent */,
+                                         ELM_GENLIST_ITEM_NONE, gl_sel/* func */,
                                          NULL/* func data */);
    tit[2].mode = 2;
    tit[2].item = elm_genlist_item_append(gl, api->itc1,
-                                         &(tit[2])/* item data */, NULL/* parent */, ELM_GENLIST_ITEM_NONE, gl_sel/* func */,
+                                         &(tit[2])/* item data */, NULL/* parent */,
+                                         ELM_GENLIST_ITEM_NONE, gl_sel/* func */,
                                          NULL/* func data */);
 
    elm_box_pack_end(bx, gl);
@@ -1294,8 +1392,8 @@ test_genlist5(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_
    evas_object_show(win);
 }
 
-/*************/
 
+/***  Genlist Tree  **********************************************************/
 static void
 gl4_sel(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info)
 {
@@ -1314,7 +1412,7 @@ gl4_exp(void *data, Evas_Object *obj EINA_UNUSED, void *event_info)
    int i = 0;
 
    val *= 10;
-   for (i = 0; i < 10; i++)
+   for (i = 0; i < 30; i++)
      {
         elm_genlist_item_append(gl, api->itc2,
                                 (void *)(uintptr_t) (val + i)/* item data */,
@@ -1356,14 +1454,16 @@ gl4_con_req(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_in
    elm_genlist_item_expanded_set(glit, EINA_FALSE);
 }
 
-char *gl4_text_get(void *data, Evas_Object *obj EINA_UNUSED, const char *part EINA_UNUSED)
+char *
+gl4_text_get(void *data, Evas_Object *obj EINA_UNUSED, const char *part EINA_UNUSED)
 {
    char buf[256];
    snprintf(buf, sizeof(buf), "Item mode %i", (int)(uintptr_t)data);
    return strdup(buf);
 }
 
-Evas_Object *gl4_content_get(void *data EINA_UNUSED, Evas_Object *obj, const char *part)
+Evas_Object *
+gl4_content_get(void *data EINA_UNUSED, Evas_Object *obj, const char *part)
 {
    char buf[PATH_MAX];
    if (!strcmp(part, "elm.swallow.icon"))
@@ -1386,32 +1486,34 @@ Evas_Object *gl4_content_get(void *data EINA_UNUSED, Evas_Object *obj, const cha
    return NULL;
 }
 
-Eina_Bool gl4_state_get(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, const char *part EINA_UNUSED)
+Eina_Bool
+gl4_state_get(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, const char *part EINA_UNUSED)
 {
    return EINA_FALSE;
 }
 
-void gl4_del(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED)
+void
+gl4_del(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED)
 {
    printf("item deleted.\n");
 }
 
 static void
-_tree_effect_enable_cb(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
+_tree_effect_changed_cb(void *data, Evas_Object *obj, void *event_info EINA_UNUSED)
 {
-   elm_genlist_tree_effect_enabled_set(data, EINA_TRUE);
+   elm_genlist_tree_effect_enabled_set(data, elm_check_state_get(obj));
 }
 
 static void
-_tree_effect_disable_cb(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
+_tree_homogeneous_changed_cb(void *data, Evas_Object *obj, void *event_info EINA_UNUSED)
 {
-   elm_genlist_tree_effect_enabled_set(data, EINA_FALSE);
+   elm_genlist_homogeneous_set(data, elm_check_state_get(obj));
 }
 
 void
 test_genlist6(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
-   Evas_Object *win, *gl, *bx, *fr, *bx2, *rd1, *rd2;
+   Evas_Object *win, *gl, *bx, *fr, *bx2, *ck1, *ck2;
 
    api_data *api = calloc(1, sizeof(api_data));
    win = elm_win_util_standard_add("genlist-tree", "Genlist Tree");
@@ -1424,7 +1526,9 @@ test_genlist6(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_
    evas_object_show(bx);
 
    fr = elm_frame_add(win);
-   elm_object_text_set(fr, "Genlist Tree Effect");
+   evas_object_size_hint_weight_set(fr, EVAS_HINT_EXPAND, 0.0);
+   evas_object_size_hint_align_set(fr, EVAS_HINT_FILL, 0.0);
+   elm_object_text_set(fr, "Genlist Tree Options");
    elm_box_pack_end(bx, fr);
    evas_object_show(fr);
 
@@ -1436,25 +1540,21 @@ test_genlist6(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_
    elm_object_content_set(fr, bx2);
    evas_object_show(bx2);
 
-   rd1 = elm_radio_add(win);
-   elm_radio_state_value_set(rd1, 0);
-   elm_object_text_set(rd1, "Enable    ");
-   evas_object_show(rd1);
-   elm_box_pack_end(bx2, rd1);
+   ck1 = elm_check_add(win);
+   elm_object_text_set(ck1, "Tree Effect");
+   evas_object_show(ck1);
+   elm_box_pack_end(bx2, ck1);
 
-   rd2 = elm_radio_add(win);
-   elm_radio_state_value_set(rd2, 1);
-   elm_radio_group_add(rd1, rd2);
-   elm_object_text_set(rd2, "Disable");
-   evas_object_show(rd2);
-   elm_box_pack_end(bx2, rd2);
+   ck2 = elm_check_add(win);
+   elm_object_text_set(ck2, "Homogeneous");
+   evas_object_show(ck2);
+   elm_box_pack_end(bx2, ck2);
 
    gl = elm_genlist_add(win);
    evas_object_size_hint_align_set(gl, EVAS_HINT_FILL, EVAS_HINT_FILL);
    evas_object_size_hint_weight_set(gl, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    api->gl = gl;
    evas_object_show(gl);
-   elm_genlist_tree_effect_enabled_set(gl, EINA_TRUE);
    evas_object_smart_callback_add(gl, "edge,left", scroll_left, NULL);
    evas_object_smart_callback_add(gl, "edge,right", scroll_right, NULL);
    evas_object_smart_callback_add(gl, "edge,top", scroll_top, NULL);
@@ -1475,13 +1575,16 @@ test_genlist6(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_
    api->itc2->func.del = gl4_del;
 
    elm_genlist_item_append(gl, api->itc2,
-                           (void *)1/* item data */, NULL/* parent */, ELM_GENLIST_ITEM_TREE, gl4_sel/* func */,
+                           (void *)1/* item data */, NULL/* parent */,
+                           ELM_GENLIST_ITEM_TREE, gl4_sel/* func */,
                            NULL/* func data */);
    elm_genlist_item_append(gl, api->itc2,
-                           (void *)2/* item data */, NULL/* parent */, ELM_GENLIST_ITEM_TREE, gl4_sel/* func */,
+                           (void *)2/* item data */, NULL/* parent */,
+                           ELM_GENLIST_ITEM_TREE, gl4_sel/* func */,
                            NULL/* func data */);
    elm_genlist_item_append(gl, api->itc1,
-                           (void *)3/* item data */, NULL/* parent */, ELM_GENLIST_ITEM_NONE, gl4_sel/* func */,
+                           (void *)3/* item data */, NULL/* parent */,
+                           ELM_GENLIST_ITEM_NONE, gl4_sel/* func */,
                            NULL/* func data */);
 
    elm_genlist_item_class_free(api->itc1);
@@ -1492,17 +1595,17 @@ test_genlist6(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_
    evas_object_smart_callback_add(gl, "expanded", gl4_exp, api);
    evas_object_smart_callback_add(gl, "contracted", gl4_con, api);
 
-   elm_box_pack_end(bx, gl);
+   evas_object_smart_callback_add(ck1, "changed", _tree_effect_changed_cb, gl);
+   evas_object_smart_callback_add(ck2, "changed", _tree_homogeneous_changed_cb, gl);
 
-   evas_object_smart_callback_add(rd1, "changed", _tree_effect_enable_cb, gl);
-   evas_object_smart_callback_add(rd2, "changed", _tree_effect_disable_cb, gl);
+   elm_box_pack_end(bx, gl);
 
    evas_object_resize(win, 320, 320);
    evas_object_show(win);
 }
 
-/*************/
 
+/***  Genlist 7  *************************************************************/
 struct genlist7_data
 {
    Evas_Object *win, *naviframe;
@@ -1625,8 +1728,8 @@ test_genlist7(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_
    evas_object_show(win);
 }
 
-/*************/
 
+/***  Genlist Group  *********************************************************/
 char *gl8_text_get(void *data, Evas_Object *obj EINA_UNUSED, const char *part EINA_UNUSED)
 {
    char buf[256];
@@ -1821,8 +1924,8 @@ test_genlist8(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_
    evas_object_show(win);
 }
 
-/*************/
 
+/***  Genlist Group Tree  ****************************************************/
 static void
 gl9_exp(void *data, Evas_Object *obj EINA_UNUSED, void *event_info)
 {
@@ -1949,10 +2052,12 @@ test_genlist9(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_
    evas_object_show(win);
 }
 
-/*************/
+
+/***  Genlist Decorate Item Mode  ********************************************/
 static char *mode_type[] = { "slide", "rotate" };
 
-char *gl10_text_get(void *data, Evas_Object *obj EINA_UNUSED, const char *part)
+char *
+gl10_text_get(void *data, Evas_Object *obj EINA_UNUSED, const char *part)
 {
    char buf[256];
    if (!strcmp(part, "elm.text.mode"))
@@ -1962,7 +2067,8 @@ char *gl10_text_get(void *data, Evas_Object *obj EINA_UNUSED, const char *part)
    return strdup(buf);
 }
 
-Evas_Object *gl10_content_get(void *data EINA_UNUSED, Evas_Object *obj, const char *part)
+Evas_Object *
+gl10_content_get(void *data EINA_UNUSED, Evas_Object *obj, const char *part)
 {
    char buf[PATH_MAX];
    Evas_Object *ic = elm_icon_add(obj);
@@ -2087,8 +2193,8 @@ test_genlist10(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event
    evas_object_show(win);
 }
 
-/*************/
 
+/***  Genlist Reorder Mode  **************************************************/
 static void
 _reorder_tg_changed_cb(void *data, Evas_Object *obj, void *event_info EINA_UNUSED)
 {
@@ -2253,8 +2359,8 @@ test_genlist_reorder(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED,
    evas_object_show(win);
 }
 
-/*************/
 
+/***  Genlist Textblock  *****************************************************/
 char *gl12_text_get(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, const char *part EINA_UNUSED)
 {
    return strdup("Enlightenment is not just a window manager for Linux/X11 and others, but also a whole suite of libraries to help you create beautiful user interfaces with much less work than doing it the old fashioned way and fighting with traditional toolkits, not to mention a traditional window manager. It covers uses from small mobile devices like phones all the way to powerful multi-core desktops (which are the primary development environment).");
@@ -2287,7 +2393,6 @@ test_genlist12(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event
    api->itc1 = elm_genlist_item_class_new();
    api->itc1->item_style = "message";
    api->itc1->func.text_get = gl12_text_get;
-   api->itc1->func.content_get = gl_content_get;
    api->itc1->func.state_get = gl_state_get;
    api->itc1->func.del = NULL;
 
@@ -2306,8 +2411,8 @@ test_genlist12(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event
    evas_object_show(win);
 }
 
-/*************/
 
+/***  Genlist Tree, Insert Sorted  *******************************************/
 static int
 gl13_cmp(const void *pa, const void *pb)
 {
@@ -2395,8 +2500,8 @@ test_genlist13(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event
    evas_object_show(win);
 }
 
-/*************/
 
+/***  Genlist Tree, Insert Relative  *****************************************/
 static void
 my_gl_insert_before_rel(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
@@ -2626,15 +2731,17 @@ test_genlist14(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event
    evas_object_show(win);
 }
 
-/*************/
 
-static void _edit_icon_clicked_cb(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
+/***  Genlist Decorate All Mode  *********************************************/
+static void
+_edit_icon_clicked_cb(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Elm_Object_Item *item = (Elm_Object_Item *)data;
    elm_object_item_del(item);
 }
 
-char *gl15_text_get(void *data, Evas_Object *obj EINA_UNUSED, const char *part EINA_UNUSED)
+char *
+gl15_text_get(void *data, Evas_Object *obj EINA_UNUSED, const char *part EINA_UNUSED)
 {
    const Testitem *tit = data;
    char buf[256];
@@ -2642,7 +2749,8 @@ char *gl15_text_get(void *data, Evas_Object *obj EINA_UNUSED, const char *part E
    return strdup(buf);
 }
 
-Evas_Object *gl15_content_get(void *data, Evas_Object *obj, const char *part)
+Evas_Object *
+gl15_content_get(void *data, Evas_Object *obj, const char *part)
 {
    Testitem *tit = data;
    char buf[PATH_MAX];
@@ -2656,7 +2764,7 @@ Evas_Object *gl15_content_get(void *data, Evas_Object *obj, const char *part)
    if (!strcmp(part, "elm.swallow.end"))
      {
         Evas_Object *ic = elm_icon_add(obj);
-        snprintf(buf, sizeof(buf), "%s/images/bubble.png", PACKAGE_DATA_DIR);
+        snprintf(buf, sizeof(buf), "%s/images/bubble.png", elm_app_data_dir_get());
         elm_image_file_set(ic, buf, NULL);
         evas_object_size_hint_aspect_set(ic, EVAS_ASPECT_CONTROL_VERTICAL, 1, 1);
         return ic;
@@ -2673,7 +2781,7 @@ Evas_Object *gl15_content_get(void *data, Evas_Object *obj, const char *part)
    else if (!strcmp(part, "elm.edit.icon.2"))
      {
         Evas_Object *icn = elm_icon_add(obj);
-        snprintf(buf, sizeof(buf), "%s/images/icon_06.png", PACKAGE_DATA_DIR);
+        snprintf(buf, sizeof(buf), "%s/images/icon_06.png", elm_app_data_dir_get());
         elm_image_file_set(icn, buf, NULL);
         evas_object_propagate_events_set(icn, EINA_FALSE);
         evas_object_size_hint_aspect_set(icn, EVAS_ASPECT_CONTROL_VERTICAL, 1, 1);
@@ -2709,7 +2817,8 @@ gl15_normal_mode(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA
    elm_genlist_select_mode_set(data, ELM_OBJECT_SELECT_MODE_DEFAULT);
 }
 
-void gl15_del(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED)
+void
+gl15_del(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED)
 {
    Testitem *ti = data;
    printf("item deleted. (# %d)\n", ti->mode);
@@ -2789,9 +2898,10 @@ test_genlist15(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event
    evas_object_show(win);
 }
 
-/*************/
 
-static void _flip_icon_clicked_cb(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
+/***  Genlist Flip Mode  *****************************************************/
+static void
+_flip_icon_clicked_cb(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    const Testitem *tit = data;
 
@@ -2801,7 +2911,8 @@ static void _flip_icon_clicked_cb(void *data, Evas_Object *obj EINA_UNUSED, void
      elm_genlist_item_flip_set(tit->item, EINA_TRUE);
 }
 
-char *gl16_text_get(void *data, Evas_Object *obj EINA_UNUSED, const char *part EINA_UNUSED)
+char *
+gl16_text_get(void *data, Evas_Object *obj EINA_UNUSED, const char *part EINA_UNUSED)
 {
    const Testitem *tit = data;
    char buf[256];
@@ -2809,7 +2920,8 @@ char *gl16_text_get(void *data, Evas_Object *obj EINA_UNUSED, const char *part E
    return strdup(buf);
 }
 
-Evas_Object *gl16_content_get(void *data, Evas_Object *obj, const char *part)
+Evas_Object *
+gl16_content_get(void *data, Evas_Object *obj, const char *part)
 {
    Testitem *tit = data;
    char buf[PATH_MAX];
@@ -2827,7 +2939,7 @@ Evas_Object *gl16_content_get(void *data, Evas_Object *obj, const char *part)
    else if (!strcmp(part, "elm.edit.icon.1"))
      {
         Evas_Object *icn = elm_icon_add(obj);
-        snprintf(buf, sizeof(buf), "%s/images/icon_04.png", PACKAGE_DATA_DIR);
+        snprintf(buf, sizeof(buf), "%s/images/icon_04.png", elm_app_data_dir_get());
         elm_image_file_set(icn, buf, NULL);
         evas_object_propagate_events_set(icn, EINA_FALSE);
         evas_object_size_hint_aspect_set(icn, EVAS_ASPECT_CONTROL_VERTICAL, 1, 1);
@@ -2836,7 +2948,7 @@ Evas_Object *gl16_content_get(void *data, Evas_Object *obj, const char *part)
    else if (!strcmp(part, "elm.edit.icon.2"))
      {
         Evas_Object *icn = elm_icon_add(obj);
-        snprintf(buf, sizeof(buf), "%s/images/icon_09.png", PACKAGE_DATA_DIR);
+        snprintf(buf, sizeof(buf), "%s/images/icon_09.png", elm_app_data_dir_get());
         elm_image_file_set(icn, buf, NULL);
         evas_object_propagate_events_set(icn, EINA_FALSE);
         evas_object_size_hint_aspect_set(icn, EVAS_ASPECT_CONTROL_VERTICAL, 1, 1);
@@ -2899,8 +3011,8 @@ test_genlist16(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event
    evas_object_show(win);
 }
 
-/*************/
 
+/***  Genlist Decorate Modes  ************************************************/
 char *
 gl17_text_get(void *data, Evas_Object *obj EINA_UNUSED, const char *part)
 {
@@ -3068,7 +3180,20 @@ test_genlist17(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event
    evas_object_show(win);
 }
 
-/*************/
+
+/***  Genlist Tree and Decorate All Mode  ************************************/
+static void
+_tree_effect_enable_cb(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
+{
+   elm_genlist_tree_effect_enabled_set(data, EINA_TRUE);
+}
+
+static void
+_tree_effect_disable_cb(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
+{
+   elm_genlist_tree_effect_enabled_set(data, EINA_FALSE);
+}
+
 Evas_Object *
 _tree_effect_frame_new(Evas_Object *win, Evas_Object **rdg, Evas_Object *gl)
 {
@@ -3281,6 +3406,8 @@ test_genlist18(void        *data EINA_UNUSED,
    evas_object_show(win);
 }
 
+
+/***  Genlist Full Widget  ***************************************************/
 void
 test_genlist19(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
@@ -3371,10 +3498,8 @@ test_genlist19(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event
    evas_object_show(win);
 }
 
-/*************/
 
-/* test genlist item styles */
-
+/***  Genlist Item Styles  ***************************************************/
 const char *_genlist_styles[] = {
    "default", "full", "one_icon", "end_icon", "no_icon",
    "default_style", "double_label", "icon_top_text_bottom",
@@ -3485,8 +3610,8 @@ test_genlist_item_styles(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED,
    evas_object_show(win);
 }
 
-/***********/
 
+/***  Genlist Multi Select  **************************************************/
 typedef struct _Genlist_Multi_Data Genlist_Multi_Data;
 struct _Genlist_Multi_Data
 {
@@ -3615,8 +3740,8 @@ test_genlist_multi_select(void *data EINA_UNUSED,
    evas_object_show(win);
 }
 
-/* test genlist item search by text */
 
+/***  Genlist Item Search By Text  *******************************************/
 typedef struct _gl20_Event_Data gl20_Event_Data;
 struct _gl20_Event_Data
 {
@@ -3876,8 +4001,8 @@ test_genlist20(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED,
    evas_object_show(win);
 }
 
-/* test genlist deletion */
 
+/***  Genlist Del  ***********************************************************/
 static void _gl_del_sel(void *data, Evas_Object *obj, void *event_info);
 
 static void
@@ -3939,8 +4064,9 @@ _gl_del_item_append(Evas_Object *gl, Elm_Genlist_Item_Class *itc)
      }
 }
 
-char *_gl_del_text_get(void *data, Evas_Object *obj EINA_UNUSED,
-                      const char *part EINA_UNUSED)
+char *
+_gl_del_text_get(void *data, Evas_Object *obj EINA_UNUSED,
+                 const char *part EINA_UNUSED)
 {
    char buf[256] = { 0 };
    int num = (int)(uintptr_t)data;
@@ -4040,7 +4166,8 @@ test_genlist_del(void *data EINA_UNUSED,
    evas_object_show(win);
 }
 
-/*************/
+
+/***  Genlist Focus  *********************************************************/
 static unsigned _gl_focus_objects = 3;
 static const char *_gl_focus_object_names[] = {"None", "Square", "Button", "Check", "Box"};
 
@@ -4143,6 +4270,7 @@ _gl_focus_sel_popup_create(Evas_Object *parent)
    // popup show should be called after adding all the contents and the buttons
    // of popup to set the focus into popup's contents correctly.
    evas_object_show(popup);
+   elm_object_focus_set(btn, EINA_TRUE);
 }
 
 static void
@@ -4175,6 +4303,22 @@ _gl_focus_focus_on_selection_changed_cb(void *data, Evas_Object *obj,
 {
    Eina_Bool nextstate = !elm_genlist_focus_on_selection_get(data);
    _gl_focus_focus_on_selection_set(data, obj, nextstate);
+}
+
+static void
+_gl_focus_win_auto_focus_enable_changed(void *data EINA_UNUSED,
+                                        Evas_Object *obj,
+                                        void *event_info EINA_UNUSED)
+{
+   elm_config_window_auto_focus_enable_set(elm_check_state_get(obj));
+}
+
+static void
+_gl_focus_win_auto_focus_animate_changed(void *data EINA_UNUSED,
+                                         Evas_Object *obj,
+                                         void *event_info EINA_UNUSED)
+{
+   elm_config_window_auto_focus_animate_set(elm_check_state_get(obj));
 }
 
 static void
@@ -4274,6 +4418,13 @@ _gl_first_item_focus_on_first_focus_in_cb(void *data EINA_UNUSED, Evas_Object *o
 {
    elm_config_first_item_focus_on_first_focusin_set(elm_check_state_get(obj));
 }
+
+static void
+_gl_wheel_disabled_cb(void *data, Evas_Object *obj, void *event_info EINA_UNUSED)
+{
+   elm_scroller_wheel_disabled_set(data, elm_check_state_get(obj));
+}
+
 static Eina_Bool
 _focus_timer_cb(void *data)
 {
@@ -4439,8 +4590,28 @@ _test_genlist_focus_option_panel_create(Evas_Object *win, Evas_Object *bx,
    evas_object_show(bx_opt);
 
    chk = elm_check_add(bx_opt);
-   elm_object_text_set(chk, "Focus Highlight");
+   elm_object_text_set(chk, "Window Auto Focus Enable");
    elm_check_state_set(chk, EINA_TRUE);
+   evas_object_size_hint_weight_set(chk, EVAS_HINT_EXPAND, 0.0);
+   evas_object_smart_callback_add(chk, "changed",
+                                  _gl_focus_win_auto_focus_enable_changed,
+                                  NULL);
+   elm_box_pack_end(bx_opt, chk);
+   evas_object_show(chk);
+
+   chk = elm_check_add(bx_opt);
+   elm_object_text_set(chk, "Window Auto Focus Animate");
+   elm_check_state_set(chk, EINA_TRUE);
+   evas_object_size_hint_weight_set(chk, EVAS_HINT_EXPAND, 0.0);
+   evas_object_smart_callback_add(chk, "changed",
+                                  _gl_focus_win_auto_focus_animate_changed,
+                                  NULL);
+   elm_box_pack_end(bx_opt, chk);
+   evas_object_show(chk);
+
+   chk = elm_check_add(bx_opt);
+   elm_object_text_set(chk, "Focus Highlight");
+   elm_check_state_set(chk, EINA_FALSE);
    evas_object_size_hint_weight_set(chk, EVAS_HINT_EXPAND, 0.0);
    evas_object_smart_callback_add(chk, "changed",
                                   _gl_focus_focus_highlight_changed_cb,
@@ -4450,7 +4621,7 @@ _test_genlist_focus_option_panel_create(Evas_Object *win, Evas_Object *bx,
 
    chk = elm_check_add(bx_opt);
    elm_object_text_set(chk, "Focus Animation");
-   elm_check_state_set(chk, EINA_TRUE);
+   elm_check_state_set(chk, EINA_FALSE);
    evas_object_size_hint_weight_set(chk, EVAS_HINT_EXPAND, 0.0);
    evas_object_smart_callback_add(chk, "changed",
                                   _gl_focus_focus_animate_changed_cb,
@@ -4491,6 +4662,14 @@ _test_genlist_focus_option_panel_create(Evas_Object *win, Evas_Object *bx,
    evas_object_smart_callback_add(chk, "changed",
                                   _gl_first_item_focus_on_first_focus_in_cb,
                                   NULL);
+   elm_box_pack_end(bx_opt, chk);
+   evas_object_show(chk);
+
+   chk = elm_check_add(bx_opt);
+   elm_object_text_set(chk, "Wheel Disabled");
+   elm_check_state_set(chk, elm_scroller_wheel_disabled_get(gl));
+   evas_object_size_hint_weight_set(chk, EVAS_HINT_EXPAND, 0.0);
+   evas_object_smart_callback_add(chk, "changed", _gl_wheel_disabled_cb, gl);
    elm_box_pack_end(bx_opt, chk);
    evas_object_show(chk);
 
@@ -4595,8 +4774,10 @@ test_genlist_focus(void *data EINA_UNUSED,
    evas_object_event_callback_add(win, EVAS_CALLBACK_DEL,
                                   _gl_focus_win_del_cb, NULL);
 
-   elm_win_focus_highlight_enabled_set(win, EINA_TRUE);
-   elm_win_focus_highlight_animate_set(win, EINA_TRUE);
+   elm_config_window_auto_focus_enable_set(EINA_TRUE);
+   elm_config_window_auto_focus_animate_set(EINA_TRUE);
+   elm_win_focus_highlight_enabled_set(win, EINA_FALSE);
+   elm_win_focus_highlight_animate_set(win, EINA_FALSE);
 
    bx = elm_box_add(win);
    evas_object_size_hint_weight_set(bx, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
@@ -4718,5 +4899,149 @@ test_genlist_focus(void *data EINA_UNUSED,
 
    evas_object_resize(win, 420, 600);
    evas_object_show(win);
+}
+
+char *genlist_demo_names[] = {
+        "Aaliyah", "Aamir", "Aaralyn", "Aaron", "Abagail",
+        "Babitha", "Bahuratna", "Bandana", "Bulbul", "Cade", "Caldwell",
+        "Chandan", "Caster", "Dagan ", "Daulat", "Dag", "Earl", "Ebenzer",
+        "Ellison", "Elizabeth", "Filbert", "Fitzpatrick", "Florian", "Fulton",
+        "Frazer", "Gabriel", "Gage", "Galen", "Garland", "Gauhar", "Hadden",
+        "Hafiz", "Hakon", "Haleem", "Hank", "Hanuman", "Jabali ", "Jaimini",
+        "Jayadev", "Jake", "Jayatsena", "Jonathan", "Kamaal", "Jeirk",
+        "Jasper", "Jack", "Mac", "Macy", "Marlon", "Milson",
+        NULL
+};
+
+static char *
+glf_text_get(void *data, Evas_Object *obj EINA_UNUSED, const char *part EINA_UNUSED)
+{
+   char buf[256];
+   snprintf(buf, sizeof(buf), "%s", genlist_demo_names[((int)(uintptr_t)data)%50]);
+   return strdup(buf);
+}
+
+Eina_Bool
+gl_filter_get(void *data, Evas_Object *obj EINA_UNUSED, void *key)
+{
+   if (!strlen((char *)key)) return EINA_TRUE;
+
+   if (strcasestr(genlist_demo_names[((int)(uintptr_t)data)%50], (char *)key))
+     return EINA_TRUE;
+   // Default case should return false (item fails filter hence will be hidden)
+   return EINA_FALSE;
+}
+
+static void
+_gl_filter_finished_cb(void *data EINA_UNUSED,
+                       Evas_Object *obj EINA_UNUSED,
+                       void *event_info EINA_UNUSED)
+{
+   printf("Filter finished\n");
+}
+
+void
+_entry_change_cb(void *data, Evas_Object *obj, void *event EINA_UNUSED)
+{
+   api_data *api = (api_data *)data;
+   char buf[100];
+   Eina_Iterator *filter_iter;
+   unsigned int count = 0;
+   Elm_Object_Item *item;
+
+   if (api->filter_data) free(api->filter_data);
+
+   sprintf(buf, "%s", elm_object_text_get(obj));
+   api->filter_data = strdup(buf);
+   elm_genlist_filter_set(api->gl, (void *)(api->filter_data));
+   if (!strlen(buf))
+     {
+        printf("Input data string empty; returning\n");
+        return;
+     }
+   filter_iter = elm_genlist_filter_iterator_new(api->gl);
+
+   EINA_ITERATOR_FOREACH(filter_iter, item)
+     if (item) count++;
+
+   printf("Number of matches for %s is %d\n", buf, count);
+   //Iterator needs to be freed by application using eina_iterator_free
+   eina_iterator_free(filter_iter);
+
+}
+
+void
+test_genlist_filter(void *data EINA_UNUSED,
+                    Evas_Object *obj EINA_UNUSED,
+                    void *event_info EINA_UNUSED)
+{
+   Evas_Object *win, *bx, *bx2, *entry, *gl;
+   Elm_Genlist_Item_Class *itc = NULL;
+   int i;
+
+   api_data *api = calloc(1, sizeof(api_data));
+   win = elm_win_util_standard_add("genlist-filter", "Genlist filter");
+   elm_win_autodel_set(win, EINA_TRUE);
+   evas_object_event_callback_add(win, EVAS_CALLBACK_FREE, _cleanup_cb, api);
+   evas_object_event_callback_add(win, EVAS_CALLBACK_DEL,
+                                _gl_focus_win_del_cb, NULL);
+
+   elm_win_focus_highlight_enabled_set(win, EINA_TRUE);
+   elm_win_focus_highlight_animate_set(win, EINA_TRUE);
+
+   bx = elm_box_add(win);
+   evas_object_size_hint_weight_set(bx, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   elm_win_resize_object_add(win, bx);
+   evas_object_show(bx);
+
+   entry = elm_entry_add(bx);
+   elm_entry_single_line_set(entry, EINA_TRUE);
+   evas_object_size_hint_weight_set(entry, EVAS_HINT_EXPAND, 0.0);
+   evas_object_size_hint_align_set(entry, EVAS_HINT_FILL, 0.0);
+   elm_object_part_text_set(entry, "guide", "Search.");
+   elm_box_pack_end(bx, entry);
+   evas_object_show(entry);
+
+   bx2 = elm_box_add(bx);
+   evas_object_size_hint_weight_set(bx2, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   evas_object_size_hint_align_set(bx2, EVAS_HINT_FILL, EVAS_HINT_FILL);
+   elm_box_pack_end(bx, bx2);
+   evas_object_show(bx2);
+
+   gl = elm_genlist_add(bx);
+   evas_object_size_hint_weight_set(gl, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   evas_object_size_hint_align_set(gl, EVAS_HINT_FILL, EVAS_HINT_FILL);
+   elm_genlist_select_mode_set(gl, ELM_OBJECT_SELECT_MODE_ALWAYS);
+   elm_genlist_mode_set(gl, ELM_LIST_COMPRESS);
+   elm_genlist_homogeneous_set(gl, EINA_TRUE);
+   elm_box_pack_end(bx2, gl);
+   api->gl = gl;
+   evas_object_show(gl);
+   evas_object_smart_callback_add(gl, "selected", _gl_focus_item_cb, "selected");
+   evas_object_smart_callback_add(gl, "unselected", _gl_focus_item_cb, "unselected");
+   evas_object_smart_callback_add(gl, "activated", _gl_focus_item_cb, "activated");
+   evas_object_smart_callback_add(gl, "highlighted", _gl_focus_item_cb, "highlighted");
+   evas_object_smart_callback_add(gl, "unhighlighted", _gl_focus_item_cb, "unhighlighted");
+   evas_object_smart_callback_add(gl, "filter,done", _gl_filter_finished_cb, NULL);
+   evas_object_event_callback_add(gl, EVAS_CALLBACK_KEY_DOWN, _gl_focus_key_down_cb, NULL);
+
+   itc = elm_genlist_item_class_new();
+   itc->item_style = "default";
+   itc->func.text_get = glf_text_get;
+   itc->func.content_get = NULL;
+   itc->func.filter_get = gl_filter_get;
+   itc->func.state_get = NULL;
+   itc->func.del = NULL;
+
+   for (i = 0; i < 500; i++)
+     elm_genlist_item_append(gl, itc,
+                             (void *)(long)i, NULL,
+                             ELM_GENLIST_ITEM_NONE,
+                             NULL, NULL);
+
+   evas_object_resize(win, 420, 600);
+   evas_object_show(win);
+   elm_object_focus_set(entry, EINA_TRUE);
+   evas_object_smart_callback_add(entry, "changed,user", _entry_change_cb, api);
 }
 

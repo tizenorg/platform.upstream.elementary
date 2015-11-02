@@ -117,13 +117,15 @@ elm_bg_add(Evas_Object *parent)
    return obj;
 }
 
-EOLIAN static void
+EOLIAN static Eo *
 _elm_bg_eo_base_constructor(Eo *obj, Elm_Bg_Data *_pd EINA_UNUSED)
 {
-   eo_do_super(obj, MY_CLASS, eo_constructor());
+   obj = eo_do_super_ret(obj, MY_CLASS, obj, eo_constructor());
    eo_do(obj,
          evas_obj_type_set(MY_CLASS_NAME_LEGACY),
          elm_interface_atspi_accessible_role_set(ELM_ATSPI_ROLE_IMAGE));
+
+   return obj;
 }
 
 EOLIAN static Eina_Bool
@@ -274,7 +276,8 @@ _elm_bg_class_constructor(Eo_Class *klass)
 EAPI Eina_Bool
 elm_bg_file_set(Eo *obj, const char *file, const char *group)
 {
-   return eo_do((Eo *) obj, efl_file_set(file, group));
+   Eina_Bool ret;
+   return eo_do_ret((Eo *) obj, ret, efl_file_set(file, group));
 }
 
 EAPI void

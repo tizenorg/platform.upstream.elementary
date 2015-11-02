@@ -1,4 +1,4 @@
-class Elm_Map_Pan (Elm_Pan)
+class Elm.Map_Pan (Elm_Pan)
 {
    eo_prefix: elm_obj_map_pan;
    implements {
@@ -13,18 +13,6 @@ class Elm_Map_Pan (Elm_Pan)
       Elm_Pan.pos_max.get;
    }
    events {
-      clicked;
-      clicked,double;
-      press;
-      longpressed;
-      scroll;
-      scroll,drag,start;
-      scroll,drag,stop;
-      scroll,anim,start;
-      scroll,anim,stop;
-      zoom,start;
-      zoom,stop;
-      zoom,change;
       loaded;
       tile,load;
       tile,loaded;
@@ -39,8 +27,6 @@ class Elm_Map_Pan (Elm_Pan)
       overlay,del;
       language,changed;
       access,changed;
-      focused;
-      unfocused;
    }
 
 }

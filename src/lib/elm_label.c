@@ -245,7 +245,7 @@ _get_value_in_key_string(const char *oldstring, const char *key, char **value)
         if ((!endtag) || (*endtag != '='))
              return -1;
 
-        firstindex = abs(oldstring - curlocater);
+        firstindex = abs((int)(oldstring - curlocater));
         firstindex += key_len + 1; // strlen("key") + strlen("=")
         *value = (char *)oldstring + firstindex;
 
@@ -345,10 +345,9 @@ _access_info_cb(void *data EINA_UNUSED, Evas_Object *obj)
 {
    const char *txt = elm_widget_access_info_get(obj);
 
-   if (!txt) txt = _elm_util_mkup_to_text(elm_layout_text_get(obj, NULL));
-   if (txt) return strdup(txt);
-
-   return NULL;
+   if (!txt)
+     return _elm_util_mkup_to_text(elm_layout_text_get(obj, NULL));
+   else return strdup(txt);
 }
 
 static void
@@ -360,7 +359,7 @@ _on_slide_end(void *data, Evas_Object *obj EINA_UNUSED,
    if (sd->slide_ellipsis)
      eo_do(data, elm_obj_label_ellipsis_set(EINA_TRUE));
 
-   evas_object_smart_callback_call(data, SIG_SLIDE_END, NULL);
+   eo_do(data, eo_event_callback_call(ELM_LABEL_EVENT_SLIDE_END, NULL));
 }
 
 EOLIAN static void
@@ -409,14 +408,16 @@ elm_label_add(Evas_Object *parent)
    return obj;
 }
 
-EOLIAN static void
+EOLIAN static Eo *
 _elm_label_eo_base_constructor(Eo *obj, Elm_Label_Data *_pd EINA_UNUSED)
 {
-   eo_do_super(obj, MY_CLASS, eo_constructor());
+   obj = eo_do_super_ret(obj, MY_CLASS, obj, eo_constructor());
    eo_do(obj,
          evas_obj_type_set(MY_CLASS_NAME_LEGACY),
          evas_obj_smart_callbacks_descriptions_set(_smart_callbacks),
          elm_interface_atspi_accessible_role_set(ELM_ATSPI_ROLE_LABEL));
+
+   return obj;
 }
 
 EOLIAN static void

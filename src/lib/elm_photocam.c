@@ -76,6 +76,13 @@ static const Evas_Smart_Cb_Description _smart_callbacks[] = {
    {NULL, NULL}
 };
 
+static Eina_Error PHOTO_FILE_LOAD_ERROR_GENERIC;
+static Eina_Error PHOTO_FILE_LOAD_ERROR_DOES_NOT_EXIST;
+static Eina_Error PHOTO_FILE_LOAD_ERROR_PERMISSION_DENIED;
+static Eina_Error PHOTO_FILE_LOAD_ERROR_RESOURCE_ALLOCATION_FAILED;
+static Eina_Error PHOTO_FILE_LOAD_ERROR_CORRUPT_FILE;
+static Eina_Error PHOTO_FILE_LOAD_ERROR_UNKNOWN_FORMAT;
+
 static Eina_Bool _key_action_move(Evas_Object *obj, const char *params);
 static Eina_Bool _key_action_zoom(Evas_Object *obj, const char *params);
 
@@ -130,7 +137,7 @@ _calc_job_cb(void *data)
         sd->minw = minw;
         sd->minh = minh;
 
-        evas_object_smart_callback_call(sd->pan_obj, "changed", NULL);
+        eo_do(sd->pan_obj, eo_event_callback_call(ELM_PAN_EVENT_CHANGED, NULL));
         _sizing_eval(obj);
      }
    sd->calc_job = NULL;
@@ -373,8 +380,8 @@ _grid_load(Evas_Object *obj,
                        edje_object_signal_emit
                          (wd->resize_obj,
                          "elm,state,busy,start", "elm");
-                       evas_object_smart_callback_call
-                         (obj, SIG_LOAD_DETAIL, NULL);
+                       eo_do(obj, eo_event_callback_call
+                        (ELM_PHOTOCAM_EVENT_LOAD_DETAIL, NULL));
                     }
                }
              else if ((g->grid[tn].want) && (!visible))
@@ -385,8 +392,8 @@ _grid_load(Evas_Object *obj,
                        edje_object_signal_emit
                          (wd->resize_obj,
                          "elm,state,busy,stop", "elm");
-                       evas_object_smart_callback_call
-                         (obj, SIG_LOADED_DETAIL, NULL);
+                       eo_do(obj, eo_event_callback_call
+                        (ELM_PHOTOCAM_EVENT_LOADED_DETAIL, NULL));
                     }
                   g->grid[tn].want = 0;
                   evas_object_hide(g->grid[tn].img);
@@ -583,6 +590,11 @@ _grid_clear(Evas_Object *obj,
                        edje_object_signal_emit
                          (wd->resize_obj,
                          "elm,state,busy,stop", "elm");
+<<<<<<< HEAD
+=======
+                       eo_do(obj, eo_event_callback_call
+                         (ELM_PHOTOCAM_EVENT_LOAD_DETAIL, NULL));
+>>>>>>> opensource/master
                     }
                }
           }
@@ -614,8 +626,8 @@ _tile_preloaded_cb(void *data,
              edje_object_signal_emit
                (wd->resize_obj, "elm,state,busy,stop",
                "elm");
-             evas_object_smart_callback_call
-               (wd->obj, SIG_LOADED_DETAIL, NULL);
+             eo_do(wd->obj, eo_event_callback_call
+               (ELM_PHOTOCAM_EVENT_LOADED_DETAIL, NULL));
           }
      }
 }
@@ -767,7 +779,19 @@ _main_img_preloaded_cb(void *data,
      }
    ecore_job_del(sd->calc_job);
    sd->calc_job = ecore_job_add(_calc_job_cb, data);
+<<<<<<< HEAD
    evas_object_smart_callback_call(data, SIG_LOADED, NULL);
+=======
+   eo_do(data, eo_event_callback_call(ELM_PHOTOCAM_EVENT_LOADED, NULL));
+   sd->preload_num--;
+   if (!sd->preload_num)
+     {
+        edje_object_signal_emit
+          (wd->resize_obj, "elm,state,busy,stop", "elm");
+        eo_do(obj, eo_event_callback_call
+          (ELM_PHOTOCAM_EVENT_LOADED_DETAIL, NULL));
+     }
+>>>>>>> opensource/master
 }
 
 static Eina_Bool
@@ -797,6 +821,13 @@ _zoom_do(Evas_Object *obj,
    sd->show.w = ow;
    sd->show.h = oh;
 
+   if (sd->orientation_changed)
+     {
+        evas_object_smart_member_del(sd->img);
+        elm_widget_sub_object_del(obj, sd->img);
+        evas_object_smart_member_add(sd->img, sd->pan_obj);
+        elm_widget_sub_object_add(obj, sd->img);
+     }
    ecore_job_del(sd->calc_job);
    sd->calc_job = ecore_job_add(_calc_job_cb, obj);
    if (t >= 1.0)
@@ -844,7 +875,7 @@ _zoom_anim_cb(void *data)
    if (!go)
      {
         sd->zoom_animator = NULL;
-        evas_object_smart_callback_call(obj, SIG_ZOOM_STOP, NULL);
+        eo_do(obj, eo_event_callback_call(EVAS_ZOOMABLE_INTERFACE_EVENT_ZOOM_STOP, NULL));
      }
 
    return go;
@@ -857,7 +888,8 @@ _long_press_cb(void *data)
 
    sd->long_timer = NULL;
    sd->longpressed = EINA_TRUE;
-   evas_object_smart_callback_call(data, SIG_LONGPRESSED, NULL);
+   eo_do(data, eo_event_callback_call
+     (EVAS_CLICKABLE_INTERFACE_EVENT_LONGPRESSED, NULL));
 
    return ECORE_CALLBACK_CANCEL;
 }
@@ -876,9 +908,10 @@ _mouse_down_cb(void *data,
    if (ev->event_flags & EVAS_EVENT_FLAG_ON_HOLD) sd->on_hold = EINA_TRUE;
    else sd->on_hold = EINA_FALSE;
    if (ev->flags & EVAS_BUTTON_DOUBLE_CLICK)
-     evas_object_smart_callback_call(data, SIG_CLICKED_DOUBLE, NULL);
+     eo_do(data, eo_event_callback_call
+       (EVAS_CLICKABLE_INTERFACE_EVENT_CLICKED_DOUBLE, NULL));
    else
-     evas_object_smart_callback_call(data, SIG_PRESS, NULL);
+     eo_do(data, eo_event_callback_call(ELM_PHOTOCAM_EVENT_PRESS, NULL));
    sd->longpressed = EINA_FALSE;
    ecore_timer_del(sd->long_timer);
    sd->long_timer = ecore_timer_add
@@ -900,7 +933,8 @@ _mouse_up_cb(void *data,
    else sd->on_hold = EINA_FALSE;
    ELM_SAFE_FREE(sd->long_timer, ecore_timer_del);
    if (!sd->on_hold)
-     evas_object_smart_callback_call(data, SIG_CLICKED, NULL);
+     eo_do(data, eo_event_callback_call
+       (EVAS_CLICKABLE_INTERFACE_EVENT_CLICKED, NULL));
    sd->on_hold = EINA_FALSE;
 }
 
@@ -945,35 +979,55 @@ static void
 _scroll_animate_start_cb(Evas_Object *obj,
                          void *data EINA_UNUSED)
 {
-   evas_object_smart_callback_call(obj, SIG_SCROLL_ANIM_START, NULL);
+   eo_do(obj, eo_event_callback_call
+     (EVAS_SCROLLABLE_INTERFACE_EVENT_SCROLL_ANIM_START, NULL));
 }
 
 static void
 _scroll_animate_stop_cb(Evas_Object *obj,
                         void *data EINA_UNUSED)
 {
-   evas_object_smart_callback_call(obj, SIG_SCROLL_ANIM_STOP, NULL);
+   eo_do(obj, eo_event_callback_call
+     (EVAS_SCROLLABLE_INTERFACE_EVENT_SCROLL_ANIM_STOP, NULL));
 }
 
 static void
 _scroll_drag_start_cb(Evas_Object *obj,
                       void *data EINA_UNUSED)
 {
-   evas_object_smart_callback_call(obj, SIG_SCROLL_DRAG_START, NULL);
+   eo_do(obj, eo_event_callback_call
+     (EVAS_SCROLLABLE_INTERFACE_EVENT_SCROLL_DRAG_START, NULL));
 }
 
 static void
 _scroll_drag_stop_cb(Evas_Object *obj,
                      void *data EINA_UNUSED)
 {
-   evas_object_smart_callback_call(obj, SIG_SCROLL_DRAG_STOP, NULL);
+   eo_do(obj, eo_event_callback_call
+     (EVAS_SCROLLABLE_INTERFACE_EVENT_SCROLL_DRAG_STOP, NULL));
 }
 
 static void
 _scroll_cb(Evas_Object *obj,
            void *data EINA_UNUSED)
 {
+<<<<<<< HEAD
    evas_object_smart_callback_call(obj, SIG_SCROLL, NULL);
+=======
+   ELM_PHOTOCAM_DATA_GET(obj, sd);
+
+   if (!sd->scr_timer)
+     {
+        sd->no_smooth++;
+        if (sd->no_smooth == 1) _smooth_update(obj);
+     }
+
+   ecore_timer_del(sd->scr_timer);
+   sd->scr_timer = ecore_timer_add(0.5, _scroll_timeout_cb, obj);
+
+   eo_do(obj, eo_event_callback_call
+     (EVAS_SCROLLABLE_INTERFACE_EVENT_SCROLL, NULL));
+>>>>>>> opensource/master
 }
 
 static Eina_Bool
@@ -1355,6 +1409,10 @@ _elm_photocam_image_orient_set(Eo *obj, Elm_Photocam_Data *sd, Evas_Image_Orient
 
    if (sd->orient == orient) return;
 
+<<<<<<< HEAD
+=======
+   sd->orientation_changed = EINA_TRUE;
+>>>>>>> opensource/master
    sd->orient = orient;
    g = _grid_create(obj);
    if (g)
@@ -1531,14 +1589,16 @@ elm_photocam_add(Evas_Object *parent)
    return obj;
 }
 
-EOLIAN static void
+EOLIAN static Eo *
 _elm_photocam_eo_base_constructor(Eo *obj, Elm_Photocam_Data *_pd EINA_UNUSED)
 {
-   eo_do_super(obj, MY_CLASS, eo_constructor());
+   obj = eo_do_super_ret(obj, MY_CLASS, obj, eo_constructor());
    eo_do(obj,
          evas_obj_type_set(MY_CLASS_NAME_LEGACY),
          evas_obj_smart_callbacks_descriptions_set(_smart_callbacks),
          elm_interface_atspi_accessible_role_set(ELM_ATSPI_ROLE_IMAGE));
+
+   return obj;
 }
 
 static void
@@ -1573,6 +1633,18 @@ _internal_file_set(Eo *obj, Elm_Photocam_Data *sd, const char *file, Eina_File *
    sd->size.imh = h;
    sd->size.w = sd->size.imw / sd->zoom;
    sd->size.h = sd->size.imh / sd->zoom;
+<<<<<<< HEAD
+=======
+   evas_object_image_file_set(sd->img, NULL, NULL);
+   _photocam_image_file_set(sd->img, sd);
+   err = evas_object_image_load_error_get(sd->img);
+   if (err != EVAS_LOAD_ERROR_NONE)
+     {
+        ERR("Things are going bad for '%s' (%p)", file, sd->img);
+        if (ret) *ret = err;
+        return;
+     }
+>>>>>>> opensource/master
 
    // load low resolution image
    evas_object_image_load_scale_down_set(sd->img, 8);
@@ -1581,11 +1653,26 @@ _internal_file_set(Eo *obj, Elm_Photocam_Data *sd, const char *file, Eina_File *
    sd->main_load_pending = EINA_TRUE;
 
    sd->calc_job = ecore_job_add(_calc_job_cb, obj);
+<<<<<<< HEAD
+=======
+   eo_do(obj, eo_event_callback_call(ELM_PHOTOCAM_EVENT_LOAD, NULL));
+   sd->preload_num++;
+   if (sd->preload_num == 1)
+     {
+        edje_object_signal_emit
+          (wd->resize_obj, "elm,state,busy,start", "elm");
+        eo_do(obj, eo_event_callback_call(ELM_PHOTOCAM_EVENT_LOAD_DETAIL, NULL));
+     }
+>>>>>>> opensource/master
 
    tz = sd->zoom;
    sd->zoom = 0.0;
    elm_photocam_zoom_set(obj, tz);
    sd->orient = EVAS_IMAGE_ORIENT_NONE;
+<<<<<<< HEAD
+=======
+   sd->orientation_changed = EINA_FALSE;
+>>>>>>> opensource/master
 
    if (ret) *ret = evas_object_image_load_error_get(sd->img);
 }
@@ -1614,11 +1701,13 @@ _elm_photocam_download_done(void *data, Elm_Url *url EINA_UNUSED, Eina_Binbuf *d
 
         free(sd->remote_data);
         sd->remote_data = NULL;
-        evas_object_smart_callback_call(obj, SIG_DOWNLOAD_ERROR, &err);
+        eo_do(obj, eo_event_callback_call
+          (ELM_PHOTOCAM_EVENT_DOWNLOAD_ERROR, &err));
      }
    else
      {
-        evas_object_smart_callback_call(obj, SIG_DOWNLOAD_DONE, NULL);
+        eo_do(obj, eo_event_callback_call
+          (ELM_PHOTOCAM_EVENT_DOWNLOAD_DONE, NULL));
      }
 
    sd->remote = NULL;
@@ -1631,7 +1720,7 @@ _elm_photocam_download_cancel(void *data, Elm_Url *url EINA_UNUSED, int error)
    Elm_Photocam_Data *sd = eo_data_scope_get(obj, MY_CLASS);
    Elm_Photocam_Error err = { error, EINA_FALSE };
 
-   evas_object_smart_callback_call(obj, SIG_DOWNLOAD_ERROR, &err);
+   eo_do(obj, eo_event_callback_call(ELM_PHOTOCAM_EVENT_DOWNLOAD_ERROR, &err));
 
    sd->remote = NULL;
 }
@@ -1644,15 +1733,16 @@ _elm_photocam_download_progress(void *data, Elm_Url *url EINA_UNUSED, double now
 
    progress.now = now;
    progress.total = total;
-   evas_object_smart_callback_call(obj, SIG_DOWNLOAD_PROGRESS, &progress);
+   eo_do(obj, eo_event_callback_call
+     (ELM_PHOTOCAM_EVENT_DOWNLOAD_PROGRESS, &progress));
 }
 
 static const char *remote_uri[] = {
   "http://", "https://", "ftp://"
 };
 
-EOLIAN static Evas_Load_Error
-_elm_photocam_file_set(Eo *obj, Elm_Photocam_Data *sd, const char *file)
+static Evas_Load_Error
+_elm_photocam_file_set_internal(Eo *obj, Elm_Photocam_Data *sd, const char *file)
 {
    Evas_Load_Error ret = EVAS_LOAD_ERROR_NONE;
    unsigned int i;
@@ -1688,7 +1778,8 @@ _elm_photocam_file_set(Eo *obj, Elm_Photocam_Data *sd, const char *file)
                                         obj);
           if (sd->remote)
             {
-               evas_object_smart_callback_call(obj, SIG_DOWNLOAD_START, NULL);
+               eo_do(obj, eo_event_callback_call
+                 (ELM_PHOTOCAM_EVENT_DOWNLOAD_START, NULL));
                return ret;
             }
           break;
@@ -1699,10 +1790,57 @@ _elm_photocam_file_set(Eo *obj, Elm_Photocam_Data *sd, const char *file)
    return ret;
 }
 
-EOLIAN static const char*
-_elm_photocam_file_get(Eo *obj EINA_UNUSED, Elm_Photocam_Data *sd)
+EOLIAN static Eina_Bool
+_elm_photocam_efl_file_file_set(Eo *obj, Elm_Photocam_Data *sd, const char *file, const char *key EINA_UNUSED)
 {
-   return sd->file;
+   Evas_Load_Error ret = _elm_photocam_file_set_internal(obj, sd, file);
+
+   if (ret == EVAS_LOAD_ERROR_NONE) return EINA_TRUE;
+
+   eina_error_set(
+     ret == EVAS_LOAD_ERROR_DOES_NOT_EXIST             ? PHOTO_FILE_LOAD_ERROR_DOES_NOT_EXIST :
+     ret == EVAS_LOAD_ERROR_PERMISSION_DENIED          ? PHOTO_FILE_LOAD_ERROR_PERMISSION_DENIED :
+     ret == EVAS_LOAD_ERROR_RESOURCE_ALLOCATION_FAILED ? PHOTO_FILE_LOAD_ERROR_RESOURCE_ALLOCATION_FAILED :
+     ret == EVAS_LOAD_ERROR_CORRUPT_FILE               ? PHOTO_FILE_LOAD_ERROR_CORRUPT_FILE :
+     ret == EVAS_LOAD_ERROR_UNKNOWN_FORMAT             ? PHOTO_FILE_LOAD_ERROR_UNKNOWN_FORMAT :
+     PHOTO_FILE_LOAD_ERROR_GENERIC
+   );
+   return EINA_FALSE;
+}
+
+EAPI Evas_Load_Error
+elm_photocam_file_set(Elm_Photocam *obj, const char *file)
+{
+   Eina_Bool ret;
+   if (eo_do_ret(obj, ret, efl_file_set(file, NULL))) return EVAS_LOAD_ERROR_NONE;
+
+   Eina_Error err = eina_error_get();
+   return err == PHOTO_FILE_LOAD_ERROR_DOES_NOT_EXIST ?
+            EVAS_LOAD_ERROR_DOES_NOT_EXIST :
+          err == PHOTO_FILE_LOAD_ERROR_PERMISSION_DENIED ?
+            EVAS_LOAD_ERROR_PERMISSION_DENIED :
+          err == PHOTO_FILE_LOAD_ERROR_RESOURCE_ALLOCATION_FAILED ?
+            EVAS_LOAD_ERROR_RESOURCE_ALLOCATION_FAILED :
+          err == PHOTO_FILE_LOAD_ERROR_CORRUPT_FILE ?
+            EVAS_LOAD_ERROR_CORRUPT_FILE :
+          err == PHOTO_FILE_LOAD_ERROR_UNKNOWN_FORMAT ?
+            EVAS_LOAD_ERROR_UNKNOWN_FORMAT :
+          EVAS_LOAD_ERROR_GENERIC;
+}
+
+EOLIAN static void
+_elm_photocam_efl_file_file_get(Eo *obj EINA_UNUSED, Elm_Photocam_Data *sd, const char **file, const char **key)
+{
+   if (file) *file = sd->file;
+   if (key) *key = NULL;
+}
+
+EAPI const char*
+elm_photocam_file_get(const Elm_Photocam *obj)
+{
+   const char *ret = NULL;
+   eo_do(obj, efl_file_get(&ret, NULL));
+   return ret;
 }
 
 EOLIAN static void
@@ -1816,12 +1954,17 @@ done:
    if (!sd->paused)
      {
         if (started)
-          evas_object_smart_callback_call(obj, SIG_ZOOM_START, NULL);
+          eo_do(obj, eo_event_callback_call(EVAS_ZOOMABLE_INTERFACE_EVENT_ZOOM_START, NULL));
         if (!an)
-          evas_object_smart_callback_call(obj, SIG_ZOOM_STOP, NULL);
+          eo_do(obj, eo_event_callback_call(EVAS_ZOOMABLE_INTERFACE_EVENT_ZOOM_STOP, NULL));
      }
+<<<<<<< HEAD
    if (sd->zoom != z)
      evas_object_smart_callback_call(obj, SIG_ZOOM_CHANGE, NULL);
+=======
+   if (zoom_changed)
+     eo_do(obj, eo_event_callback_call(EVAS_ZOOMABLE_INTERFACE_EVENT_ZOOM_CHANGE, NULL));
+>>>>>>> opensource/master
 }
 
 EOLIAN static double
@@ -1931,7 +2074,7 @@ _elm_photocam_image_region_show(Eo *obj, Elm_Photocam_Data *sd, int x, int y, in
         ecore_animator_del(sd->zoom_animator);
         sd->zoom_animator = NULL;
         _zoom_do(obj, 1.0);
-        evas_object_smart_callback_call(obj, SIG_ZOOM_STOP, NULL);
+        eo_do(obj, eo_event_callback_call(EVAS_ZOOMABLE_INTERFACE_EVENT_ZOOM_STOP, NULL));
      }
    eo_do(obj, elm_interface_scrollable_content_region_show(rx, ry, rw, rh));
 }
@@ -1972,7 +2115,7 @@ _elm_photocam_elm_interface_scrollable_region_bring_in(Eo *obj, Elm_Photocam_Dat
         ecore_animator_del(sd->zoom_animator);
         sd->zoom_animator = NULL;
         _zoom_do(obj, 1.0);
-        evas_object_smart_callback_call(obj, SIG_ZOOM_STOP, NULL);
+        eo_do(obj, eo_event_callback_call(EVAS_ZOOMABLE_INTERFACE_EVENT_ZOOM_STOP, NULL));
      }
    eo_do_super(obj, MY_CLASS, elm_interface_scrollable_region_bring_in(rx, ry, rw, rh));
 }
@@ -1997,7 +2140,7 @@ _elm_photocam_paused_set(Eo *obj, Elm_Photocam_Data *sd, Eina_Bool paused)
         ecore_animator_del(sd->zoom_animator);
         sd->zoom_animator = NULL;
         _zoom_do(obj, 1.0);
-        evas_object_smart_callback_call(obj, SIG_ZOOM_STOP, NULL);
+        eo_do(obj, eo_event_callback_call(EVAS_ZOOMABLE_INTERFACE_EVENT_ZOOM_STOP, NULL));
      }
 }
 
@@ -2074,6 +2217,13 @@ static void
 _elm_photocam_class_constructor(Eo_Class *klass)
 {
    evas_smart_legacy_type_register(MY_CLASS_NAME_LEGACY, klass);
+
+   PHOTO_FILE_LOAD_ERROR_GENERIC = eina_error_msg_static_register("Generic load error");
+   PHOTO_FILE_LOAD_ERROR_DOES_NOT_EXIST = eina_error_msg_static_register("File does not exist");
+   PHOTO_FILE_LOAD_ERROR_PERMISSION_DENIED = eina_error_msg_static_register("Permission denied to an existing file");
+   PHOTO_FILE_LOAD_ERROR_RESOURCE_ALLOCATION_FAILED = eina_error_msg_static_register("Allocation of resources failure prevented load");
+   PHOTO_FILE_LOAD_ERROR_CORRUPT_FILE = eina_error_msg_static_register("File corrupt (but was detected as a known format)");
+   PHOTO_FILE_LOAD_ERROR_UNKNOWN_FORMAT = eina_error_msg_static_register("File is not a known format");
 }
 
 EOLIAN const Elm_Atspi_Action *

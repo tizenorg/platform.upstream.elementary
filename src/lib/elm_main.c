@@ -696,6 +696,7 @@ elm_quicklaunch_sub_init(int    argc,
         ecore_con_url_init();
         _elm_prefs_init();
         _elm_ews_wm_init();
+        elm_color_class_init();
      }
    return _elm_sub_init_count;
 }
@@ -744,6 +745,7 @@ elm_quicklaunch_shutdown(void)
    ELM_SAFE_FREE(_elm_appname, free);
 
    _elm_config_shutdown();
+   elm_color_class_shutdown();
 
    ELM_SAFE_FREE(_elm_exit_handler, ecore_event_handler_del);
 
@@ -996,6 +998,8 @@ elm_quicklaunch_fork(int    argc,
    setsid();
    if (chdir(cwd) != 0) perror("could not chdir");
    ecore_app_args_set(argc, (const char **)argv);
+   if (_elm_config->atspi_mode != ELM_ATSPI_MODE_OFF)
+     _elm_atspi_bridge_init();
    ret = qr_main(argc, argv);
    exit(ret);
    return EINA_TRUE;
@@ -1346,13 +1350,10 @@ elm_object_focus_set(Evas_Object *obj,
 
    if (elm_widget_is(obj))
      {
-        const char *type;
-
         if (focus == elm_widget_focus_get(obj)) return;
 
         // ugly, but, special case for inlined windows
-        type = evas_object_type_get(obj);
-        if ((type) && (!strcmp(type, "elm_win")))
+        if (eo_isa(obj, ELM_WIN_CLASS))
           {
              Evas_Object *inlined = elm_win_inlined_image_object_get(obj);
 
@@ -1379,8 +1380,6 @@ elm_object_focus_allow_set(Evas_Object *obj,
 {
    EINA_SAFETY_ON_NULL_RETURN(obj);
    elm_widget_can_focus_set(obj, enable);
-/*FIXME: According to the elm_object_focus_allow_get(), child_can_focus field
-of the parent should be updated. Otherwise, the checking of it's child focus allow states should not be in elm_object_focus_allow_get() */
 }
 
 EAPI Eina_Bool
@@ -1510,7 +1509,11 @@ elm_object_focus_move_policy_set(Evas_Object *obj,
 }
 
 EAPI Elm_Focus_Move_Policy
+<<<<<<< HEAD
 elm_object_focus_move_policy_get(Evas_Object *obj)
+=======
+elm_object_focus_move_policy_get(const Evas_Object *obj)
+>>>>>>> opensource/master
 {
    EINA_SAFETY_ON_NULL_RETURN_VAL(obj, EINA_FALSE);
    return elm_widget_focus_move_policy_get(obj);
@@ -1731,6 +1734,12 @@ EAPI void
 elm_object_access_info_set(Evas_Object *obj, const char *txt)
 {
    elm_widget_access_info_set(obj, txt);
+}
+
+EAPI const char *
+elm_object_access_info_get(Evas_Object *obj)
+{
+   return elm_widget_access_info_get(obj);
 }
 
 EAPI Evas_Object *

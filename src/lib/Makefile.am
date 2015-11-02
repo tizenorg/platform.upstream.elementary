@@ -22,6 +22,7 @@ AM_CPPFLAGS = \
 -DLOCALE_DIR=\"$(localedir)\" \
 -DPACKAGE_LIB_DIR=\"$(libdir)\" \
 -DICON_DIR=\"$(datadir)/icons\" \
+-DELM_TOP_BUILD_DIR=\"$(top_builddir)\" \
 -DELEMENTARY_BUILD \
 @ELEMENTARY_CFLAGS@
 
@@ -34,9 +35,11 @@ includesdir = $(includedir)/elementary-@VMAJ@
 
 includesunstable_HEADERS = \
 elm_gen_common.h \
+elm_atspi_bridge.h \
 elm_interface_atspi_accessible.h \
 elm_interface_atspi_text.h \
 elm_interface_atspi_widget_action.h \
+elm_interface_atspi_window.h \
 elm_interface_fileselector.h \
 elm_interface_scrollable.h \
 elm_interfaces.h \
@@ -110,7 +113,6 @@ includesub_HEADERS = \
 elc_ctxpopup.h \
 elc_ctxpopup_eo.h \
 elc_ctxpopup_legacy.h \
-elc_ctxpopup_common.h \
 elc_fileselector.h \
 elc_fileselector_eo.h \
 elc_fileselector_legacy.h \
@@ -135,12 +137,10 @@ elc_naviframe_common.h \
 elc_popup.h \
 elc_popup_eo.h \
 elc_popup_legacy.h \
-elc_popup_common.h \
 elm_access.h \
 elm_actionslider.h \
 elm_actionslider_eo.h \
 elm_actionslider_legacy.h \
-elm_actionslider_common.h \
 elm_app_common.h \
 elm_app_server_eo.h \
 elm_app_server_view_eo.h \
@@ -157,7 +157,6 @@ elm_authors.h \
 elm_bg.h \
 elm_bg_eo.h \
 elm_bg_legacy.h \
-elm_bg_common.h \
 elm_box.h \
 elm_box_eo.h \
 elm_box_legacy.h \
@@ -165,7 +164,6 @@ elm_box_common.h \
 elm_bubble.h \
 elm_bubble_eo.h \
 elm_bubble_legacy.h \
-elm_bubble_common.h \
 elm_button.h \
 elm_button_eo.h \
 elm_button_legacy.h \
@@ -180,12 +178,12 @@ elm_check_legacy.h \
 elm_clock.h \
 elm_clock_eo.h \
 elm_clock_legacy.h \
-elm_clock_common.h \
 elm_cnp.h \
 elm_colorselector.h \
 elm_colorselector_eo.h \
 elm_colorselector_legacy.h \
 elm_colorselector_common.h \
+elm_color_class.h \
 elm_config.h \
 elm_conform.h \
 elm_conform_eo.h \
@@ -197,7 +195,6 @@ elm_datetime_common.h \
 elm_datetime_eo.h \
 elm_datetime_legacy.h \
 elm_dayselector.h \
-elm_dayselector_common.h \
 elm_dayselector_eo.h \
 elm_dayselector_legacy.h \
 elm_debug.h \
@@ -212,11 +209,9 @@ elm_entry_eo.h \
 elm_entry_legacy.h \
 elm_finger.h \
 elm_flip.h \
-elm_flip_common.h \
 elm_flip_eo.h \
 elm_flip_legacy.h \
 elm_flipselector.h \
-elm_flipselector_common.h \
 elm_flipselector_eo.h \
 elm_flipselector_legacy.h \
 elm_focus.h \
@@ -248,11 +243,9 @@ elm_grid.h \
 elm_grid_eo.h \
 elm_grid_legacy.h \
 elm_hover.h \
-elm_hover_common.h \
 elm_hover_eo.h \
 elm_hover_legacy.h \
 elm_icon.h \
-elm_icon_common.h \
 elm_icon_eo.h \
 elm_icon_legacy.h \
 elm_image.h \
@@ -260,7 +253,6 @@ elm_image_common.h \
 elm_image_eo.h \
 elm_image_legacy.h \
 elm_index.h \
-elm_index_common.h \
 elm_index_eo.h \
 elm_index_legacy.h \
 elm_intro.h \
@@ -268,7 +260,6 @@ elm_inwin.h \
 elm_inwin_eo.h \
 elm_inwin_legacy.h \
 elm_label.h \
-elm_label_common.h \
 elm_label_eo.h \
 elm_label_legacy.h \
 elm_layout.h \
@@ -276,7 +267,6 @@ elm_layout_common.h \
 elm_layout_eo.h \
 elm_layout_legacy.h \
 elm_list.h \
-elm_list_common.h \
 elm_list_eo.h \
 elm_list_legacy.h \
 elm_macros.h \
@@ -288,7 +278,6 @@ elm_mapbuf.h \
 elm_mapbuf_eo.h \
 elm_mapbuf_legacy.h \
 elm_menu.h \
-elm_menu_common.h \
 elm_menu_eo.h \
 elm_menu_legacy.h \
 elm_mirroring.h \
@@ -333,11 +322,9 @@ elm_route_legacy.h \
 elm_scale.h \
 elm_scroll.h \
 elm_scroller.h \
-elm_scroller_common.h \
 elm_scroller_eo.h \
 elm_scroller_legacy.h \
 elm_segment_control.h \
-elm_segment_control_common.h \
 elm_segment_control_eo.h \
 elm_segment_control_legacy.h \
 elm_separator.h \
@@ -377,6 +364,8 @@ elm_transit.h \
 elm_video.h \
 elm_video_eo.h \
 elm_video_legacy.h \
+elm_view_list.h \
+elm_view_form.h \
 elm_web.h \
 elm_web_common.h \
 elm_web_eo.h \
@@ -384,7 +373,10 @@ elm_web_legacy.h \
 elm_win.h \
 elm_win_common.h \
 elm_win_eo.h \
-elm_win_legacy.h
+elm_win_legacy.h \
+elm_win_standard.h \
+elm_win_standard.eo.h \
+elm_helper.h
 includesubdir = $(includedir)/elementary-@VMAJ@/
 
 libelementary_la_SOURCES = \
@@ -419,6 +411,7 @@ elm_check.c \
 elm_clock.c \
 elm_cnp.c \
 elm_colorselector.c \
+elm_color_class.c \
 elm_config.c \
 elm_conform.c \
 elm_container.c \
@@ -492,9 +485,13 @@ elm_transit.c \
 elm_util.c \
 elm_url.c \
 elm_video.c \
+elm_view_list.c \
+elm_view_form.c \
 elm_web2.c \
 elm_widget.c \
 elm_win.c \
+elm_win_standard.c \
+elm_helper.c \
 els_box.c \
 els_cursor.c \
 els_tooltip.c \
@@ -516,6 +513,7 @@ elm_intro.h.in
 elm_eolian_files = \
 elm_access.eo \
 elm_actionslider.eo \
+elm_atspi_bridge.eo \
 elm_app_client.eo \
 elm_app_client_view.eo \
 elm_app_server.eo \
@@ -601,9 +599,12 @@ elm_table.eo \
 elm_thumb.eo \
 elm_toolbar.eo \
 elm_video.eo \
+elm_view_list.eo \
+elm_view_form.eo \
 elm_web.eo \
 elm_widget.eo \
 elm_win.eo \
+elm_win_standard.eo \
 elm_widget_item.eo \
 elm_color_item.eo \
 elm_dayselector_item.eo \
@@ -623,23 +624,31 @@ elm_toolbar_item.eo \
 elm_diskselector_item.eo \
 elm_popup_item.eo
 
+elm_eolian_type_files = \
+elm_general.eot
+
 elm_eolian_c = $(elm_eolian_files:%.eo=%.eo.c)
 elm_eolian_h = $(elm_eolian_files:%.eo=%.eo.h)
 elm_eolian_legacy_h = $(elm_eolian_files:%.eo=%.eo.legacy.h)
 elm_eolian_hh = $(elm_eolian_files:%.eo=%.eo.hh)
+elm_eolian_impl_hh = $(elm_eolian_files:%.eo=%.eo.impl.hh)
+
+elm_eolian_eot_h = $(elm_eolian_type_files:%.eot=%.eot.h)
 
 BUILT_SOURCES = \
 	$(elm_eolian_c)	\
 	$(elm_eolian_h)	\
+	$(elm_eolian_eot_h) \
 	$(elm_eolian_legacy_h)
 
 elementaryeolianfilesdir = $(datadir)/eolian/include/elementary-@VMAJ@
-elementaryeolianfiles_DATA = $(elm_eolian_files)
+elementaryeolianfiles_DATA = $(elm_eolian_files) $(elm_eolian_type_files)
 EXTRA_DIST += ${elementaryeolianfiles_DATA}
 
-nodist_includesunstable_HEADERS = $(elm_eolian_h) $(elm_eolian_legacy_h)
+nodist_includesunstable_HEADERS = $(elm_eolian_h) $(elm_eolian_legacy_h) $(elm_eolian_eot_h)
 CLEANFILES += $(nodist_includesunstable_HEADERS)
 
+<<<<<<< HEAD
 elementaryeolianfilesdir = $(datadir)/eolian/include/elementary-@VMAJ@
 elementaryeolianfiles_DATA = \
 	     elm_widget.eo \
@@ -751,19 +760,14 @@ elementaryeolianfiles_DATA = \
 	     elm_diskselector_item.eo \
 	     elm_popup_item.eo
 
+=======
+>>>>>>> opensource/master
 EXTRA_DIST += ${elementaryeolianfiles_DATA}
 
 includecxxbindingsdir = $(includedir)/elementary-cxx-@VMAJ@
 
 if HAVE_CXX11
-nodist_includecxxbindings_HEADERS = Elementary.hh $(elm_eolian_hh)
-CLEANFILES += Elementary.hh $(nodist_includecxxbindings_HEADERS)
-Elementary.hh: $(elm_eolian_hh)
-	@echo @ECHO_E@ "#ifndef ELEMENTARY_CXX_HH\n#define ELEMENTARY_CXX_HH\n" > $(top_builddir)/src/lib/Elementary.hh
-	@echo @ECHO_E@ "#ifdef EFL_BETA_API_SUPPORT" >> $(top_builddir)/src/lib/Elementary.hh
-	@for i in $(elm_eolian_hh); do echo "#include <$$(basename $$i)>" >> $(top_builddir)/src/lib/Elementary.hh; done
-	@echo @ECHO_E@ "#endif\n\n#endif\n" >> $(top_builddir)/src/lib/Elementary.hh
+nodist_includecxxbindings_HEADERS = Elementary.hh $(elm_eolian_hh) $(elm_eolian_impl_hh)
+CLEANFILES += $(nodist_includecxxbindings_HEADERS)
+EXTRA_DIST += Elementary.hh.in
 endif
-
-
-

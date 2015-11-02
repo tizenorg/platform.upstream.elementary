@@ -1,20 +1,5 @@
 #define ELM_GENGRID_ITEM_CLASS_VERSION ELM_GEN_ITEM_CLASS_VERSION
 #define ELM_GENGRID_ITEM_CLASS_HEADER ELM_GEN_ITEM_CLASS_HEADER
-
-/**
- * Defines where to position the item in the genlist.
- *
- * @ingroup Genlist
- */
-typedef enum
-{
-   ELM_GENGRID_ITEM_SCROLLTO_NONE = 0,   /**< no scrollto */
-   ELM_GENGRID_ITEM_SCROLLTO_IN = (1 << 0),   /**< to the nearest viewport */
-   ELM_GENGRID_ITEM_SCROLLTO_TOP = (1 << 1),   /**< to the top of viewport */
-   ELM_GENGRID_ITEM_SCROLLTO_MIDDLE = (1 << 2)   /**< to the middle of viewport */
-} Elm_Gengrid_Item_Scrollto_Type;
-
-
 /**
  * @see Elm_Gen_Item_Class
  */

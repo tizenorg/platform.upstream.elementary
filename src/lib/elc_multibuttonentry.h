@@ -30,6 +30,7 @@
  * - @c "item,deleted" - when a multi-button entry item is deleted.
  * - @c "item,clicked" - this is called when an item is clicked by user
  *       interaction. Both "item,selected" and "item,clicked" are needed.
+ * - @c "item,longpressed" - when multi-button entry item is pressed for a long time.
  * - @c "clicked" - when multi-button entry is clicked.
  * - @c "focused" - when multi-button entry is focused.
  * - @c "unfocused" - when multi-button entry is unfocused.

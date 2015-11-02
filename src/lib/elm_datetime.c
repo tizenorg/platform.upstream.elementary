@@ -46,7 +46,8 @@
      &(tmptr)->tm_mon,                   \
      &(tmptr)->tm_mday,                  \
      &(tmptr)->tm_hour,                  \
-     &(tmptr)->tm_min}
+     &(tmptr)->tm_min,                  \
+     &(tmptr)->tm_sec}
 
 // default limits for individual fields
 static Format_Map mapping[ELM_DATETIME_TYPE_COUNT] = {
@@ -123,7 +124,7 @@ _expanded_fmt_str_get(char ch)
    switch (ch)
      {
       case 'c':
-#ifdef HAVE_LANGINFO_H
+#if defined(HAVE_LANGINFO_H) || defined (HAVE_EVIL)
         exp_fmt = nl_langinfo(D_T_FMT);
 #else
         exp_fmt = "";
@@ -131,7 +132,7 @@ _expanded_fmt_str_get(char ch)
         break;
 
       case 'x':
-#ifdef HAVE_LANGINFO_H
+#if defined(HAVE_LANGINFO_H) || defined (HAVE_EVIL)
         exp_fmt = nl_langinfo(D_FMT);
 #else
         exp_fmt = "";
@@ -139,7 +140,7 @@ _expanded_fmt_str_get(char ch)
         break;
 
       case 'X':
-#ifdef HAVE_LANGINFO_H
+#if defined(HAVE_LANGINFO_H) || defined (HAVE_EVIL)
         exp_fmt = nl_langinfo(T_FMT);
 #else
         exp_fmt = "";
@@ -147,7 +148,7 @@ _expanded_fmt_str_get(char ch)
         break;
 
       case 'r':
-#ifdef HAVE_LANGINFO_H
+#if defined(HAVE_LANGINFO_H) || defined (HAVE_EVIL)
         exp_fmt = nl_langinfo(T_FMT_AMPM);
 #else
         exp_fmt = "";
@@ -259,6 +260,11 @@ _parse_format(Evas_Object *obj,
      {
         if (fmt_parsing)
           {
+             if (cur == '_' || cur == '-' || cur == '0' || cur == '^' || cur == '#')
+               {
+                  fmt_ptr++;
+                  continue;
+               }
              fmt_parsing = EINA_FALSE;
              for (idx = 0; idx < ELM_DATETIME_TYPE_COUNT; idx++)
                {
@@ -315,7 +321,7 @@ _reload_format(Evas_Object *obj)
    // FIXME: provide nl_langinfo on Windows if possible
    // fetch the default format from Libc.
    if (!sd->user_format)
-#ifdef HAVE_LANGINFO_H
+#if defined(HAVE_LANGINFO_H) || defined (HAVE_EVIL)
      strncpy(sd->format, nl_langinfo(D_T_FMT), ELM_DATETIME_MAX_FORMAT_LEN);
 #else
      strncpy(sd->format, "", ELM_DATETIME_MAX_FORMAT_LEN);
@@ -576,21 +582,35 @@ _max_days_get(int year,
 }
 
 static Eina_Bool
-_date_cmp(struct tm *time1,
-          struct tm *time2)
+_date_cmp(const struct tm *time1,
+          const struct tm *time2)
 {
    unsigned int idx;
 
-   DATETIME_TM_ARRAY(timearr1, time1);
-   DATETIME_TM_ARRAY(timearr2, time2);
+   const DATETIME_TM_ARRAY(timearr1, time1);
+   const DATETIME_TM_ARRAY(timearr2, time2);
 
-   for (idx = 0; idx < ELM_DATETIME_TYPE_COUNT - 1; idx++)
+   for (idx = 0; idx < ELM_DATETIME_TYPE_COUNT; idx++)
      {
         if (*timearr1[idx] != *timearr2[idx])
           return EINA_FALSE;
      }
 
    return EINA_TRUE;
+}
+
+static Eina_Bool
+_field_cmp(Elm_Datetime_Field_Type field_type,
+          struct tm *time1,
+          struct tm *time2)
+{
+   DATETIME_TM_ARRAY(timearr1, time1);
+   DATETIME_TM_ARRAY(timearr2, time2);
+
+   if (*timearr1[field_type] != *timearr2[field_type])
+     return EINA_FALSE;
+   else
+     return EINA_TRUE;
 }
 
 // validates curr_time/min_limt/max_limit according to the newly set value
@@ -868,14 +888,16 @@ elm_datetime_add(Evas_Object *parent)
    return obj;
 }
 
-EOLIAN static void
+EOLIAN static Eo *
 _elm_datetime_eo_base_constructor(Eo *obj, Elm_Datetime_Data *_pd EINA_UNUSED)
 {
-   eo_do_super(obj, MY_CLASS, eo_constructor());
+   obj = eo_do_super_ret(obj, MY_CLASS, obj, eo_constructor());
    eo_do(obj,
          evas_obj_type_set(MY_CLASS_NAME_LEGACY),
          evas_obj_smart_callbacks_descriptions_set(_smart_callbacks),
          elm_interface_atspi_accessible_role_set(ELM_ATSPI_ROLE_DATE_EDITOR));
+
+   return obj;
 }
 
 EOLIAN static const char*
@@ -899,7 +921,7 @@ _elm_datetime_format_set(Eo *obj, Elm_Datetime_Data *sd, const char *fmt)
 }
 
 EOLIAN static Eina_Bool
-_elm_datetime_field_visible_get(Eo *obj EINA_UNUSED, Elm_Datetime_Data *sd, Elm_Datetime_Field_Type fieldtype)
+_elm_datetime_field_visible_get(const Eo *obj EINA_UNUSED, Elm_Datetime_Data *sd, Elm_Datetime_Field_Type fieldtype)
 {
    Datetime_Field *field;
 
@@ -969,7 +991,7 @@ _elm_datetime_field_visible_set(Eo *obj, Elm_Datetime_Data *sd, Elm_Datetime_Fie
 }
 
 EOLIAN static void
-_elm_datetime_field_limit_get(Eo *obj EINA_UNUSED, Elm_Datetime_Data *sd, Elm_Datetime_Field_Type fieldtype, int *min, int *max)
+_elm_datetime_field_limit_get(const Eo *obj EINA_UNUSED, Elm_Datetime_Data *sd, Elm_Datetime_Field_Type fieldtype, int *min, int *max)
 {
    Datetime_Field *field;
 
@@ -1003,12 +1025,18 @@ _elm_datetime_field_limit_set(Eo *obj, Elm_Datetime_Data *sd, Elm_Datetime_Field
 
    _apply_field_limits(obj);
 
+<<<<<<< HEAD
    if (!_date_cmp(&old_time, &sd->curr_time))
      evas_object_smart_callback_call(obj, SIG_CHANGED, NULL);
+=======
+   if (!_field_cmp(fieldtype, &old_time, &sd->curr_time))
+     eo_do(obj, eo_event_callback_call(ELM_DATETIME_EVENT_CHANGED, NULL));
+
+>>>>>>> opensource/master
 }
 
 EOLIAN static Eina_Bool
-_elm_datetime_value_get(Eo *obj EINA_UNUSED, Elm_Datetime_Data *sd, struct tm *currtime)
+_elm_datetime_value_get(const Eo *obj EINA_UNUSED, Elm_Datetime_Data *sd, struct tm *currtime)
 {
    EINA_SAFETY_ON_NULL_RETURN_VAL(currtime, EINA_FALSE);
 
@@ -1019,11 +1047,9 @@ _elm_datetime_value_get(Eo *obj EINA_UNUSED, Elm_Datetime_Data *sd, struct tm *c
 EOLIAN static Eina_Bool
 _elm_datetime_value_set(Eo *obj, Elm_Datetime_Data *sd, const struct tm *newtime)
 {
-   struct tm old_time;
-
    EINA_SAFETY_ON_NULL_RETURN_VAL(newtime, EINA_FALSE);
 
-   old_time = sd->curr_time;
+   if (_date_cmp(&sd->curr_time, newtime)) return EINA_TRUE;
    sd->curr_time = *newtime;
    // apply default field restrictions for curr_time
    _apply_range_restrictions(&sd->curr_time);
@@ -1032,14 +1058,13 @@ _elm_datetime_value_set(Eo *obj, Elm_Datetime_Data *sd, const struct tm *newtime
    _validate_datetime_limits(&sd->max_limit, &sd->curr_time, EINA_TRUE);
    _apply_field_limits(obj);
 
-   if (!_date_cmp(&old_time, &sd->curr_time))
-     evas_object_smart_callback_call(obj, SIG_CHANGED, NULL);
+   eo_do(obj, eo_event_callback_call(ELM_DATETIME_EVENT_CHANGED, NULL));
 
    return EINA_TRUE;
 }
 
 EOLIAN static Eina_Bool
-_elm_datetime_value_min_get(Eo *obj EINA_UNUSED, Elm_Datetime_Data *sd, struct tm *mintime)
+_elm_datetime_value_min_get(const Eo *obj EINA_UNUSED, Elm_Datetime_Data *sd, struct tm *mintime)
 {
    EINA_SAFETY_ON_NULL_RETURN_VAL(mintime, EINA_FALSE);
 
@@ -1054,6 +1079,7 @@ _elm_datetime_value_min_set(Eo *obj, Elm_Datetime_Data *sd, const struct tm *min
 
    EINA_SAFETY_ON_NULL_RETURN_VAL(mintime, EINA_FALSE);
 
+   if (_date_cmp(&sd->min_limit, mintime)) return EINA_TRUE;
    sd->min_limit = *mintime;
    old_time = sd->curr_time;
    // apply default field restrictions for min_limit
@@ -1064,13 +1090,13 @@ _elm_datetime_value_min_set(Eo *obj, Elm_Datetime_Data *sd, const struct tm *min
    _apply_field_limits(obj);
 
    if (!_date_cmp(&old_time, &sd->curr_time))
-     evas_object_smart_callback_call(obj, SIG_CHANGED, NULL);
+     eo_do(obj, eo_event_callback_call(ELM_DATETIME_EVENT_CHANGED, NULL));
 
    return EINA_TRUE;
 }
 
 EOLIAN static Eina_Bool
-_elm_datetime_value_max_get(Eo *obj EINA_UNUSED, Elm_Datetime_Data *sd, struct tm *maxtime)
+_elm_datetime_value_max_get(const Eo *obj EINA_UNUSED, Elm_Datetime_Data *sd, struct tm *maxtime)
 {
    EINA_SAFETY_ON_NULL_RETURN_VAL(maxtime, EINA_FALSE);
 
@@ -1085,6 +1111,7 @@ _elm_datetime_value_max_set(Eo *obj, Elm_Datetime_Data *sd, const struct tm *max
 
    EINA_SAFETY_ON_NULL_RETURN_VAL(maxtime, EINA_FALSE);
 
+   if (_date_cmp(&sd->max_limit, maxtime)) return EINA_TRUE;
    sd->max_limit = *maxtime;
    old_time = sd->curr_time;
    // apply default field restrictions for max_limit
@@ -1095,7 +1122,7 @@ _elm_datetime_value_max_set(Eo *obj, Elm_Datetime_Data *sd, const struct tm *max
    _apply_field_limits(obj);
 
    if (!_date_cmp(&old_time, &sd->curr_time))
-     evas_object_smart_callback_call(obj, SIG_CHANGED, NULL);
+     eo_do(obj, eo_event_callback_call(ELM_DATETIME_EVENT_CHANGED, NULL));
 
    return EINA_TRUE;
 }

@@ -265,7 +265,7 @@ gears_draw(GLData *gld)
    static const GLfloat blue[4] = { 0.2, 0.2, 1.0, 1.0 };
    GLfloat m[16];
 
-   gl->glClearColor(0.8, 0.8, 0.1, 0.5);
+   gl->glClearColor(0x25 / 255., 0x13 / 255., 0.0, 1.0);
    gl->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
    memcpy(m, gld->proj, sizeof m);
@@ -344,22 +344,22 @@ static void
 _print_gl_log(Evas_GL_API *gl, GLuint id)
 {
    GLint log_len = 0;
-   char *log;
+   char *log_info;
 
    if (gl->glIsShader(id))
      gl->glGetShaderiv(id, GL_INFO_LOG_LENGTH, &log_len);
    else if (gl->glIsProgram(id))
      gl->glGetProgramiv(id, GL_INFO_LOG_LENGTH, &log_len);
 
-   log = malloc(log_len * sizeof(char));
+   log_info = malloc(log_len * sizeof(char));
 
    if (gl->glIsShader(id))
-     gl->glGetShaderInfoLog(id, log_len, NULL, log);
+     gl->glGetShaderInfoLog(id, log_len, NULL, log_info);
    else if (gl->glIsProgram(id))
-     gl->glGetProgramInfoLog(id, log_len, NULL, log);
+     gl->glGetProgramInfoLog(id, log_len, NULL, log_info);
 
-   printf("%s", log);
-   free(log);
+   printf("%s", log_info);
+   free(log_info);
 }
 
 static void
@@ -510,6 +510,8 @@ _on_direct(void *data,
 {
    if (!data) return;
 
+   // ON_DEMAND is necessary for Direct Rendering
+   elm_glview_render_policy_set(data, ELM_GLVIEW_RENDER_POLICY_ON_DEMAND);
    elm_glview_mode_set(data, 0
                        | ELM_GLVIEW_ALPHA
                        | ELM_GLVIEW_DEPTH
@@ -524,6 +526,8 @@ _on_indirect(void *data,
 {
    if (!data) return;
 
+   // note that with policy ALWAYS the window will flicker on resize
+   elm_glview_render_policy_set(data, ELM_GLVIEW_RENDER_POLICY_ALWAYS);
    elm_glview_mode_set(data, 0
                        | ELM_GLVIEW_ALPHA
                        | ELM_GLVIEW_DEPTH
@@ -613,14 +617,23 @@ test_glview(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_in
    Evas_Object *win, *bx, *bt, *gl, *lb;
    Ecore_Animator *ani;
    GLData *gld = NULL;
+   const char *accel;
 
    // alloc a data struct to hold our relevant gl info in
    if (!(gld = calloc(1, sizeof(GLData)))) return;
    gldata_init(gld);
 
+   // add a Z-depth buffer to the window and try to use GL
+   accel = eina_stringshare_add(elm_config_accel_preference_get());
+   elm_config_accel_preference_set("gl:depth");
+
    // new window - do the usual and give it a name, title and delete handler
    win = elm_win_util_standard_add("glview", "GLView");
    elm_win_autodel_set(win, EINA_TRUE);
+
+   // restore previous accel preference
+   elm_config_accel_preference_set(accel);
+   eina_stringshare_del(accel);
 
    bx = elm_box_add(win);
    evas_object_size_hint_weight_set(bx, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
@@ -642,7 +655,7 @@ test_glview(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_in
         elm_glview_init_func_set(gl, _init_gl);
         elm_glview_del_func_set(gl, _del_gl);
         elm_glview_resize_func_set(gl, _resize_gl);
-        elm_glview_render_func_set(gl, (Elm_GLView_Func_Cb)_draw_gl);
+        elm_glview_render_func_set(gl, _draw_gl);
         elm_box_pack_end(bx, gl);
         evas_object_show(gl);
 

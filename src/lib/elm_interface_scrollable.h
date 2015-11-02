@@ -104,6 +104,8 @@ struct _Elm_Scrollable_Smart_Interface_Data
       double          onhold_vx, onhold_vy, onhold_tlast,
                       onhold_vxe, onhold_vye;
       double          extra_time;
+      double          last_time_x_wheel;
+      double          last_time_y_wheel;
 
       Evas_Coord      hold_x, hold_y;
       Evas_Coord      locked_x, locked_y;
@@ -112,10 +114,12 @@ struct _Elm_Scrollable_Smart_Interface_Data
       Ecore_Idle_Enterer *hold_enterer;
       Ecore_Animator *hold_animator;
       Ecore_Animator *onhold_animator;
-      Ecore_Animator *momentum_animator;
-      Ecore_Animator *bounce_x_animator;
-      Ecore_Animator *bounce_y_animator;
+      Ecore_Animator *momentum_animator; /**< an animator which is called whenever a scroller is moving due to a flick action(mouse down, move, up) */
+      Ecore_Animator *bounce_x_animator; /**< an animator to express the bouncing animation on x axis. */
+      Ecore_Animator *bounce_y_animator; /**< an animator to express the bouncing animation on y axis. */
 
+      Eina_Bool       last_hold_x_wheel : 1;
+      Eina_Bool       last_hold_y_wheel : 1;
       Eina_Bool       bounce_x_hold : 1;
       Eina_Bool       bounce_y_hold : 1;
       Eina_Bool       dragged_began : 1;
@@ -185,8 +189,11 @@ struct _Elm_Scrollable_Smart_Interface_Data
    int        page_limit_h, page_limit_v;
    int        current_calc;
 
+   unsigned int last_wheel;
+
    unsigned char size_adjust_recurse;
    unsigned char size_count;
+   void         *event_info;
    Eina_Bool  size_adjust_recurse_abort : 1;
 
    Eina_Bool  momentum_animator_disabled : 1;

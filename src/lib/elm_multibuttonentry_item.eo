@@ -1,54 +1,32 @@
-class Elm_Multibuttonentry_Item(Elm_Widget_Item)
+class Elm.Multibuttonentry_Item(Elm.Widget_Item)
 {
    eo_prefix: elm_obj_multibuttonentry_item;
-   properties {
-        selected {
+   methods {
+        @property selected {
+             [[Control the selected state of an item]]
              get {
-                 /*@
-                  Get the selected state of an item
-
-                  @ingroup Multibuttonentry
-                 */
              }
              set {
-                 /*@
-                  Set the selected state of an item
-
-                  @ingroup Multibuttonentry
-                 */
              }
              values {
-                 Eina_Bool selected; /*@ EINA_TRUE if selected EINA_FALSE otherwise */
+                 selected: bool; [[$true if selected $false otherwise]]
              }
         }
-   }
-   methods {
-      prev_get @const {
-            /*@
-             Get the previous item in the multibuttonentry
-
-             @return The item before the item @p it
-
-             @ingroup Multibuttonentry
-            */
-            return: Elm_Object_Item *;
+        prev_get @const {
+             [[Get the previous item in the multibuttonentry]]
+             return: Elm.Widget_Item *; [[The item before the item]]
         }
-      next_get @const {
-            /*@
-             Get the next item in the multibuttonentry
-
-             @return The item after the item @p it
-
-             @ingroup Multibuttonentry
-              */
-             return: Elm_Object_Item *;
+        next_get @const {
+             [[Get the next item in the multibuttonentry]]
+             return: Elm.Widget_Item *; [[The item after the item]]
         }
    }
    implements {
         Eo.Base.constructor;
         Eo.Base.destructor;
-        Elm_Widget_Item.signal_emit;
-        Elm_Widget_Item.part_text.get;
-        Elm_Widget_Item.part_text.set;
+        Elm.Widget_Item.signal_emit;
+        Elm.Widget_Item.part_text.get;
+        Elm.Widget_Item.part_text.set;
+        Elm.Widget_Item.disable;
    }
 }

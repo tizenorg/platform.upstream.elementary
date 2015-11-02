@@ -5,6 +5,7 @@
  */
 
 /**
+<<<<<<< HEAD
  * Defines the types of window that can be created
  *
  * These are hints set on the window so that a running Window Manager knows
@@ -158,6 +159,8 @@ typedef enum
 } Elm_Win_Keygrab_Mode;
 
 /**
+=======
+>>>>>>> opensource/master
  * @typedef Elm_Win_Trap
  *
  * Trap can be set with elm_win_trap_set() and will intercept the

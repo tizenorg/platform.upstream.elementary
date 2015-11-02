@@ -243,8 +243,8 @@ _elm_hover_smt_sub_re_eval(Evas_Object *obj)
    sd->smt_sub->obj = sub;
 
    if (sd->smt_sub != prev)
-     evas_object_smart_callback_call
-       (obj, SIG_SMART_LOCATION_CHANGED, (void *)sd->smt_sub->swallow);
+     eo_do(obj, eo_event_callback_call
+       (ELM_HOVER_EVENT_SMART_CHANGED, (void *)sd->smt_sub->swallow));
 
    if (elm_widget_mirrored_get(obj))
      {
@@ -327,10 +327,10 @@ _elm_hover_elm_layout_sizing_eval(Eo *obj, Elm_Hover_Data *sd)
    else ofs_x = x2 - x;
 
    ELM_WIDGET_DATA_GET_OR_RETURN(obj, wd);
-   evas_object_move(wd->resize_obj, x, y);
-   evas_object_resize(wd->resize_obj, w, h);
    evas_object_size_hint_min_set(sd->offset, ofs_x, y2 - y);
    evas_object_size_hint_min_set(sd->size, w2, h2);
+   evas_object_move(wd->resize_obj, x, y);
+   evas_object_resize(wd->resize_obj, w, h);
 }
 
 static void
@@ -511,14 +511,65 @@ _target_move_cb(void *data,
 }
 
 static void
+_hide_signals_emit(Evas_Object *obj)
+{
+   ELM_HOVER_DATA_GET(obj, sd);
+
+   elm_layout_signal_emit(obj, "elm,action,hide", "elm");
+
+   ELM_HOVER_PARTS_FOREACH
+     {
+        char buf[1024];
+
+        if (sd->subs[i].obj)
+          {
+             snprintf(buf, sizeof(buf), "elm,action,slot,%s,hide",
+                      sd->subs[i].swallow);
+             elm_layout_signal_emit(obj, buf, "elm");
+          }
+     }
+}
+
+static void
+_hov_hide_cb(void *data,
+                Evas_Object *obj EINA_UNUSED,
+                const char *emission EINA_UNUSED,
+                const char *source EINA_UNUSED)
+{
+   const char *dismissstr;
+
+   dismissstr = edje_object_data_get(elm_layout_edje_get(data), "dismiss");
+
+   if (dismissstr && !strcmp(dismissstr, "on"))
+     {
+        evas_object_hide(data);
+        eo_do(data, eo_event_callback_call(ELM_HOVER_EVENT_DISMISSED, NULL));
+     }
+}
+
+static void
 _hov_dismiss_cb(void *data,
                 Evas_Object *obj EINA_UNUSED,
                 const char *emission EINA_UNUSED,
                 const char *source EINA_UNUSED)
 {
-   evas_object_hide(data);
-   evas_object_smart_callback_call(data, SIG_CLICKED, NULL);
-   evas_object_smart_callback_call(data, SIG_DISMISSED, NULL);
+   const char *dismissstr;
+
+   dismissstr = edje_object_data_get(elm_layout_edje_get(data), "dismiss");
+
+   if (dismissstr && !strcmp(dismissstr, "on"))
+     {
+        _hide_signals_emit(data);
+        eo_do(data, eo_event_callback_call
+          (EVAS_CLICKABLE_INTERFACE_EVENT_CLICKED, NULL));
+     }
+   else
+     {
+        evas_object_hide(data);
+        eo_do(data, eo_event_callback_call
+          (EVAS_CLICKABLE_INTERFACE_EVENT_CLICKED, NULL));
+        eo_do(data, eo_event_callback_call(ELM_HOVER_EVENT_DISMISSED, NULL));
+     } // for backward compatibility
 }
 
 EOLIAN static void
@@ -537,6 +588,8 @@ _elm_hover_evas_object_smart_add(Eo *obj, Elm_Hover_Data *priv)
 
    elm_layout_signal_callback_add
      (obj, "elm,action,dismiss", "*", _hov_dismiss_cb, obj);
+   elm_layout_signal_callback_add
+     (obj, "elm,action,hide,finished", "elm", _hov_hide_cb, obj);
 
    priv->offset = evas_object_rectangle_add(evas_object_evas_get(obj));
    evas_object_pass_events_set(priv->offset, EINA_TRUE);
@@ -560,8 +613,9 @@ _elm_hover_evas_object_smart_del(Eo *obj, Elm_Hover_Data *sd)
 
    if (evas_object_visible_get(obj))
      {
-        evas_object_smart_callback_call(obj, SIG_CLICKED, NULL);
-        evas_object_smart_callback_call(obj, SIG_DISMISSED, NULL);
+        eo_do(obj, eo_event_callback_call
+          (EVAS_CLICKABLE_INTERFACE_EVENT_CLICKED, NULL));
+        eo_do(obj, eo_event_callback_call(ELM_HOVER_EVENT_DISMISSED, NULL));
      }
 
    elm_hover_target_set(obj, NULL);
@@ -597,23 +651,17 @@ _elm_hover_evas_object_smart_show(Eo *obj, Elm_Hover_Data *_pd EINA_UNUSED)
 }
 
 EOLIAN static void
-_elm_hover_evas_object_smart_hide(Eo *obj, Elm_Hover_Data *sd)
+_elm_hover_evas_object_smart_hide(Eo *obj, Elm_Hover_Data *_pd EINA_UNUSED)
 {
+   const char *dismissstr;
+
    eo_do_super(obj, MY_CLASS, evas_obj_smart_hide());
 
-   elm_layout_signal_emit(obj, "elm,action,hide", "elm");
+   // for backward compatibility
+   dismissstr = edje_object_data_get(elm_layout_edje_get(obj), "dismiss");
 
-   ELM_HOVER_PARTS_FOREACH
-   {
-      char buf[1024];
-
-      if (sd->subs[i].obj)
-        {
-           snprintf(buf, sizeof(buf), "elm,action,slot,%s,hide",
-                    sd->subs[i].swallow);
-           elm_layout_signal_emit(obj, buf, "elm");
-        }
-   }
+   if (!dismissstr || strcmp(dismissstr, "on"))
+     _hide_signals_emit(obj);
 }
 
 EOLIAN static const Elm_Layout_Part_Alias_Description*
@@ -630,14 +678,16 @@ elm_hover_add(Evas_Object *parent)
    return obj;
 }
 
-EOLIAN static void
+EOLIAN static Eo *
 _elm_hover_eo_base_constructor(Eo *obj, Elm_Hover_Data *_pd EINA_UNUSED)
 {
-   eo_do_super(obj, MY_CLASS, eo_constructor());
+   obj = eo_do_super_ret(obj, MY_CLASS, obj, eo_constructor());
    eo_do(obj,
          evas_obj_type_set(MY_CLASS_NAME_LEGACY),
          evas_obj_smart_callbacks_descriptions_set(_smart_callbacks),
          elm_interface_atspi_accessible_role_set(ELM_ATSPI_ROLE_GLASS_PANE));
+
+   return obj;
 }
 
 EOLIAN static void
@@ -718,7 +768,7 @@ _elm_hover_elm_widget_parent_get(Eo *obj EINA_UNUSED, Elm_Hover_Data *sd)
 }
 
 EOLIAN static const char*
-_elm_hover_best_content_location_get(Eo *obj EINA_UNUSED, Elm_Hover_Data *sd, Elm_Hover_Axis pref_axis)
+_elm_hover_best_content_location_get(const Eo *obj EINA_UNUSED, Elm_Hover_Data *sd, Elm_Hover_Axis pref_axis)
 {
    Evas_Coord spc_l, spc_r, spc_t, spc_b;
 
@@ -758,7 +808,12 @@ _elm_hover_best_content_location_get(Eo *obj EINA_UNUSED, Elm_Hover_Data *sd, El
 EOLIAN static void
 _elm_hover_dismiss(Eo *obj, Elm_Hover_Data *_pd EINA_UNUSED)
 {
-   elm_layout_signal_emit(obj, "elm,action,dismiss", ""); // XXX: for compat
+   const char *dismissstr;
+
+   dismissstr = edje_object_data_get(elm_layout_edje_get(obj), "dismiss");
+
+   if (!dismissstr || strcmp(dismissstr, "on"))
+     elm_layout_signal_emit(obj, "elm,action,dismiss", ""); // XXX: for compat
    elm_layout_signal_emit(obj, "elm,action,dismiss", "elm");
 }
 

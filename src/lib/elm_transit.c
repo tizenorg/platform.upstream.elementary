@@ -30,7 +30,11 @@ struct _Elm_Transit
    EINA_MAGIC;
 
    Ecore_Animator *animator;
+<<<<<<< HEAD
    Ecore_Timer *timer;
+=======
+   Ecore_Timer *go_in_timer; /**< Timer used by elm_transit_go_in() */
+>>>>>>> opensource/master
    Eina_Inlist *effect_list;
    Eina_List *objs;
    Elm_Transit *prev_chain_transit;
@@ -117,6 +121,11 @@ _transit_obj_data_save(Evas_Object *obj)
      }
 
    obj_data = ELM_NEW(Elm_Transit_Obj_Data);
+   if (!obj_data)
+     {
+        ERR("Failed to allocate memory");
+        return;
+     }
 
    evas_object_geometry_get(obj, &obj_data->state.x, &obj_data->state.y,
                             &obj_data->state.w, &obj_data->state.h);
@@ -267,7 +276,11 @@ _transit_del(Elm_Transit *transit)
    if (transit->del_data.func)
      transit->del_data.func(transit->del_data.arg, transit);
 
+<<<<<<< HEAD
    ecore_timer_del(transit->timer);
+=======
+   ecore_timer_del(transit->go_in_timer);
+>>>>>>> opensource/master
 
    //cut off the chain transit relationship
    EINA_LIST_FOREACH_SAFE(transit->next_chain_transits, elist, elist_next, chain_transit)
@@ -464,11 +477,19 @@ _recover_image_uv(Evas_Object *obj, Evas_Map *map, Eina_Bool revert, Eina_Bool b
 }
 
 static Eina_Bool
+<<<<<<< HEAD
 _transit_go_in_cb(void *data)
 {
    Elm_Transit *transit = data;
 
    transit->timer = NULL;
+=======
+_go_in_timer_cb(void *data)
+{
+   Elm_Transit *transit = data;
+
+   transit->go_in_timer = NULL;
+>>>>>>> opensource/master
    elm_transit_go(transit);
 
    return ECORE_CALLBACK_CANCEL;
@@ -738,7 +759,11 @@ elm_transit_go(Elm_Transit *transit)
 {
    ELM_TRANSIT_CHECK_OR_RETURN(transit);
 
+<<<<<<< HEAD
    ELM_SAFE_FREE(transit->timer, ecore_timer_del);
+=======
+   ELM_SAFE_FREE(transit->go_in_timer, ecore_timer_del);
+>>>>>>> opensource/master
 
    Eina_List *elist;
    Evas_Object *obj;
@@ -767,8 +792,13 @@ elm_transit_go_in(Elm_Transit *transit, double in)
 {
    ELM_TRANSIT_CHECK_OR_RETURN(transit);
 
+<<<<<<< HEAD
    if (transit->timer) ecore_timer_del(transit->timer);
    transit->timer = ecore_timer_add(in, _transit_go_in_cb, transit);
+=======
+   ecore_timer_del(transit->go_in_timer);
+   transit->go_in_timer = ecore_timer_add(in, _go_in_timer_cb, transit);
+>>>>>>> opensource/master
 }
 
 EAPI void
@@ -1119,7 +1149,7 @@ _transit_effect_zoom_op(Elm_Transit_Effect *effect, Elm_Transit *transit , doubl
    EINA_LIST_FOREACH(transit->objs, elist, obj)
      {
         obj_data = evas_object_data_get(obj, _transit_key);
-        if (obj_data->state.map_enabled)
+        if (obj_data && obj_data->state.map_enabled)
           {
              base_map = obj_data->state.map;
              if (!base_map) return;
@@ -2341,7 +2371,7 @@ _transit_effect_rotation_op(Elm_Transit_Effect *effect, Elm_Transit *transit, do
    EINA_LIST_FOREACH(transit->objs, elist, obj)
      {
         obj_data = evas_object_data_get(obj, _transit_key);
-        if (obj_data->state.map_enabled)
+        if (obj_data && obj_data->state.map_enabled)
           {
              base_map = obj_data->state.map;
              if (!base_map) return;

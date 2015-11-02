@@ -34,12 +34,13 @@
  */
 
 /**
- * Focus directions.
+ * Focus region show mode.
  *
  * @ingroup Focus
  */
 typedef enum
 {
+<<<<<<< HEAD
    ELM_FOCUS_PREVIOUS, /**< previous direction */
    ELM_FOCUS_NEXT,     /**< next direction */
    ELM_FOCUS_UP,       /**< up direction */
@@ -47,6 +48,11 @@ typedef enum
    ELM_FOCUS_RIGHT,    /**< right direction */
    ELM_FOCUS_LEFT,      /**< left direction */
 } Elm_Focus_Direction;
+=======
+   ELM_FOCUS_REGION_SHOW_WIDGET, /**< as a widget */
+   ELM_FOCUS_REGION_SHOW_ITEM, /**< as an item */
+} Elm_Focus_Region_Show_Mode;
+>>>>>>> opensource/master
 
 /**
  * Focus region show mode.
@@ -348,7 +354,11 @@ EAPI void                 elm_object_focus_move_policy_set(Evas_Object *obj, Elm
  * @param obj The Elementary widget to get the information from
  * @return The focus movement policy
  *
+<<<<<<< HEAD
  * Get how the focus is moved to the give Elemenray object. It can be
+=======
+ * Get how the focus is moved to the give Elementary object. It can be
+>>>>>>> opensource/master
  * #ELM_FOCUS_MOVE_POLICY_CLICK, #ELM_FOCUS_MOVE_POLICY_IN,
  * or #ELM_FOCUS_MOVE_POLICY_KEY_ONLY.
  * The first means elementary focus is moved on elementary object click.
@@ -362,7 +372,11 @@ EAPI void                 elm_object_focus_move_policy_set(Evas_Object *obj, Elm
  *
  * @ingroup Focus
  */
+<<<<<<< HEAD
 EAPI Elm_Focus_Move_Policy  elm_object_focus_move_policy_get(Evas_Object *obj);
+=======
+EAPI Elm_Focus_Move_Policy  elm_object_focus_move_policy_get(const Evas_Object *obj);
+>>>>>>> opensource/master
 
 /**
  * Set the focus region show mode to a given Elementary object.

@@ -57,18 +57,28 @@ _activate(Evas_Object *obj)
    if (sd->statep) *sd->statep = sd->state;
    if (sd->state)
      {
+        // FIXME: to do animation during state change , we need different signal
+        // so that we can distinguish between state change by user or state change
+        // by calling state_change() api. Keep both the signal for backward compatibility
+        // and remove "elm,state,check,on" signal emission when we can break ABI.
+        elm_layout_signal_emit(obj, "elm,activate,check,on", "elm");
         elm_layout_signal_emit(obj, "elm,state,check,on", "elm");
         if (_elm_config->access_mode != ELM_ACCESS_MODE_OFF)
              _elm_access_say(E_("State: On"));
      }
    else
      {
+        // FIXME: to do animation during state change , we need different signal
+        // so that we can distinguish between state change by user or state change
+        // by calling state_change() api. Keep both the signal for backward compatibility
+        // and remove "elm,state,check,off" signal emission when we can break ABI.
+        elm_layout_signal_emit(obj, "elm,activate,check,off", "elm");
         elm_layout_signal_emit(obj, "elm,state,check,off", "elm");
         if (_elm_config->access_mode != ELM_ACCESS_MODE_OFF)
              _elm_access_say(E_("State: Off"));
      }
 
-   evas_object_smart_callback_call(obj, SIG_CHANGED, NULL);
+   eo_do(obj, eo_event_callback_call(ELM_CHECK_EVENT_CHANGED, NULL));
 
    if (_elm_config->atspi_mode)
        elm_interface_atspi_accessible_state_changed_signal_emit(obj,
@@ -277,7 +287,7 @@ _on_check_off(void *data,
    if (sd->statep) *sd->statep = sd->state;
 
    elm_layout_signal_emit(obj, "elm,state,check,off", "elm");
-   evas_object_smart_callback_call(data, SIG_CHANGED, NULL);
+   eo_do(obj, eo_event_callback_call(ELM_CHECK_EVENT_CHANGED, NULL));
 
    if (_elm_config->atspi_mode)
        elm_interface_atspi_accessible_state_changed_signal_emit(data,
@@ -298,7 +308,7 @@ _on_check_on(void *data,
    sd->state = EINA_TRUE;
    if (sd->statep) *sd->statep = sd->state;
    elm_layout_signal_emit(obj, "elm,state,check,on", "elm");
-   evas_object_smart_callback_call(data, SIG_CHANGED, NULL);
+   eo_do(obj, eo_event_callback_call(ELM_CHECK_EVENT_CHANGED, NULL));
 
    if (_elm_config->atspi_mode)
        elm_interface_atspi_accessible_state_changed_signal_emit(data,
@@ -374,14 +384,16 @@ elm_check_add(Evas_Object *parent)
    return obj;
 }
 
-EOLIAN static void
+EOLIAN static Eo *
 _elm_check_eo_base_constructor(Eo *obj, Elm_Check_Data *_pd EINA_UNUSED)
 {
-   eo_do_super(obj, MY_CLASS, eo_constructor());
+   obj = eo_do_super_ret(obj, MY_CLASS, obj, eo_constructor());
    eo_do(obj,
          evas_obj_type_set(MY_CLASS_NAME_LEGACY),
          evas_obj_smart_callbacks_descriptions_set(_smart_callbacks),
          elm_interface_atspi_accessible_role_set(ELM_ATSPI_ROLE_CHECK_BOX));
+
+   return obj;
 }
 
 EOLIAN static void

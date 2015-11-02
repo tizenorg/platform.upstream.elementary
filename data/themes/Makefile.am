@@ -101,6 +101,7 @@ edc/elm/calendar.edc \
 edc/elm/check.edc \
 edc/elm/clock.edc \
 edc/elm/colorsel.edc \
+edc/elm/colorclass.edc \
 edc/elm/conform.edc \
 edc/elm/ctxpopup.edc \
 edc/elm/cursor.edc \
@@ -219,6 +220,7 @@ img/col_sel_end_top.png \
 img/darken_rounded_square_half_h.png \
 img/darken_rounded_square_half.png \
 img/darken_rounded_square.png \
+img/darken_square.png \
 img/day_left_normal.png \
 img/day_left_press.png \
 img/day_left_selected.png \
@@ -263,6 +265,12 @@ img/efm_generic_icon_content_executable.png \
 img/efm_generic_icon_content_font.png \
 img/efm_generic_icon_content_formula.png \
 img/efm_generic_icon_content_image.png \
+img/efm_generic_icon_content_inode_block.png \
+img/efm_generic_icon_content_inode_char.png \
+img/efm_generic_icon_content_inode_dir.png \
+img/efm_generic_icon_content_inode_fifo.png \
+img/efm_generic_icon_content_inode_file.png \
+img/efm_generic_icon_content_inode_socket.png \
 img/efm_generic_icon_content_install.png \
 img/efm_generic_icon_content_iso.png \
 img/efm_generic_icon_content_lib.png \

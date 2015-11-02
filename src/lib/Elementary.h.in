@@ -190,6 +190,7 @@ EAPI extern Elm_Version *elm_version;
 #include <elm_app_client_view.h>
 #include <elm_app.h>
 #include <elm_atspi_app_object.h>
+#include <elm_atspi_bridge.h>
 #include <elm_bg.h>
 #include <elm_box.h>
 
@@ -201,6 +202,10 @@ EAPI extern Elm_Version *elm_version;
 #include <elm_clock.h>
 #include <elm_cnp.h>
 #include <elm_colorselector.h>
+<<<<<<< HEAD
+=======
+#include <elm_color_class.h>
+>>>>>>> opensource/master
 #include <elm_conform.h>
 #include <elm_container.h>
 #include <elm_cursor.h>
@@ -259,11 +264,16 @@ EAPI extern Elm_Version *elm_version;
 #include <elm_toolbar.h>
 #include <elm_transit.h>
 #include <elm_video.h>
+#include <elm_view_list.h>
+#include <elm_view_form.h>
 #include <elm_web.h>
 #include <elm_win.h>
+#include <elm_win_standard.h>
 
 /* include deprecated calls last of all */
 #include <elm_deprecated.h>
+
+#include <elm_helper.h>
 
 #ifdef __cplusplus
 }

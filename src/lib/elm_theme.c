@@ -66,7 +66,7 @@ _elm_theme_file_item_add(Elm_Theme_Files *files, const char *item, Eina_Bool pre
    Eina_File *f = NULL;
    const char *home;
 
-   home = getenv("HOME") ? getenv("HOME") : "";
+   home = eina_environment_home_get();
    buf = eina_strbuf_new();
 
    if ((item[0] == '/') ||
@@ -293,7 +293,6 @@ _elm_theme_set(Elm_Theme *th, Evas_Object *o, const char *clas, const char *grou
 
    if ((!clas) || (!group) || (!style)) return EINA_FALSE;
    if (!th) th = &(theme_default);
-
    snprintf(buf2, sizeof(buf2), "elm/%s/%s/%s", clas, group, style);
    if (!eina_hash_find(th->cache_style_load_failed, buf2))
      {
@@ -387,6 +386,13 @@ _elm_theme_parse(Elm_Theme *th, const char *theme)
                {
                   eina_strbuf_append_char(buf, ':');
                   pe += 2;
+               }
+             else if ((pe[0] == ':') && (pe[1] == '\\'))
+               {
+                  eina_strbuf_append_char(buf, *pe);
+                  pe++;
+                  eina_strbuf_append_char(buf, *pe);
+                  pe++;
                }
              else if ((*pe == ':') || (!*pe))
                { // p -> pe == 'name:'
@@ -520,7 +526,7 @@ elm_theme_ref_set(Elm_Theme *th, Elm_Theme *thref)
 }
 
 EAPI Elm_Theme *
-elm_theme_ref_get(Elm_Theme *th)
+elm_theme_ref_get(const Elm_Theme *th)
 {
    if (!th) th = &(theme_default);
    return th->ref_theme;
@@ -682,7 +688,7 @@ elm_theme_list_item_path_get(const char *f, Eina_Bool *in_search_path)
 
    if (!home)
      {
-        home = getenv("HOME");
+        home = eina_environment_home_get();
         if (!home) home = "";
      }
 
@@ -761,7 +767,7 @@ elm_theme_name_available_list_new(void)
 
    if (!home)
      {
-        home = getenv("HOME");
+        home = eina_environment_home_get();
         if (!home) home = "";
      }
 
@@ -772,11 +778,10 @@ elm_theme_name_available_list_new(void)
         snprintf(buf, sizeof(buf), "%s/"ELEMENTARY_BASE_DIR"/themes/%s", home, file);
         if ((!ecore_file_is_dir(buf)) && (ecore_file_size(buf) > 0))
           {
-             s = strchr(file, '.');
-             if ((s) && (!strcasecmp(s, ".edj")))
+             if (eina_str_has_extension(file, "edj"))
                {
                   th = strdup(file);
-                  s = strchr(th, '.');
+                  s = strrchr(th, '.');
                   *s = 0;
                   list = eina_list_append(list, th);
                }
@@ -791,13 +796,12 @@ elm_theme_name_available_list_new(void)
         snprintf(buf, sizeof(buf), "%s/themes/%s", _elm_data_dir, file);
         if ((!ecore_file_is_dir(buf)) && (ecore_file_size(buf) > 0))
           {
-             s = strchr(file, '.');
-             if ((s) && (!strcasecmp(s, ".edj")))
+             if (eina_str_has_extension(file, "edj"))
                {
                   int dupp;
 
                   th = strdup(file);
-                  s = strchr(th, '.');
+                  s = strrchr(th, '.');
                   *s = 0;
                   dupp = 0;
                   EINA_LIST_FOREACH(list, l, s)
@@ -937,12 +941,11 @@ elm_theme_user_dir_get(void)
 {
    static char *path = NULL;
    char buf[PATH_MAX];
+   const char *home;
 
    if (path) return path;
 
-   char *home = getenv("HOME");
-   if (!home) home = "";
-
+   home = eina_environment_home_get();
    snprintf(buf, sizeof(buf), "%s/"ELEMENTARY_BASE_DIR"/themes", home);
    path = strdup(buf);
 

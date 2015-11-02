@@ -3,15 +3,6 @@
 
 static Evas_Object *slideshow, *bt_start, *bt_stop;
 static Elm_Slideshow_Item_Class itc;
-static const char *img1 = PACKAGE_DATA_DIR"/images/logo.png";
-static const char *img2 = PACKAGE_DATA_DIR"/images/plant_01.jpg";
-static const char *img3 = PACKAGE_DATA_DIR"/images/rock_01.jpg";
-static const char *img4 = PACKAGE_DATA_DIR"/images/rock_02.jpg";
-static const char *img5 = PACKAGE_DATA_DIR"/images/sky_01.jpg";
-static const char *img6 = PACKAGE_DATA_DIR"/images/sky_04.jpg";
-static const char *img7 = PACKAGE_DATA_DIR"/images/wood_01.jpg";
-static const char *img8 = PACKAGE_DATA_DIR"/images/mystrale.jpg";
-static const char *img9 = PACKAGE_DATA_DIR"/images/mystrale_2.jpg";
 
 static void
 _notify_show(void *data, Evas *e EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
@@ -89,6 +80,7 @@ _get(void *data, Evas_Object *obj)
    //elm_photocam_file_set(photo, data);
    //elm_photocam_zoom_mode_set(photo, ELM_PHOTOCAM_ZOOM_MODE_AUTO_FIT);
 
+   printf("_get (item data: '%s')\n", (char*)data);
    Evas_Object *photo = elm_image_add(obj);
    elm_image_file_set(photo, data, NULL);
    elm_image_fill_outside_set(photo, EINA_FALSE);
@@ -97,9 +89,26 @@ _get(void *data, Evas_Object *obj)
 }
 
 static void
-_slide_transition(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
+_del(void *data, Evas_Object *obj EINA_UNUSED)
+{
+   printf("_del (item data: '%s')\n", (char*)data);
+}
+
+
+static void
+_changed_cb(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info)
 {
    Elm_Object_Item *slide_it = (Elm_Object_Item *) event_info;
+   printf("CHANGED (item data: '%s')\n",
+          (char*)elm_object_item_data_get(slide_it));
+}
+
+static void
+_transition_end_cb(void *data, Evas_Object *obj EINA_UNUSED, void *event_info)
+{
+   Elm_Object_Item *slide_it = (Elm_Object_Item *) event_info;
+   printf("TRANSITION,END (item data: '%s')\n",
+          (char*)elm_object_item_data_get(slide_it));
    if (data == slide_it)
      printf("Reaches to End of slides\n");
 }
@@ -110,7 +119,21 @@ test_slideshow(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event
    Evas_Object *win, *notify, *bx, *bt, *hv, *spin;
    const Eina_List *l;
    const char *transition, *layout;
-   Elm_Object_Item *slide_last_it;
+   Elm_Object_Item *slide_last_it = NULL;
+   unsigned long i;
+
+   const char *imgs[] = {
+     "logo.png",
+     "rock_01.jpg",
+     "rock_02.jpg",
+     "sky_01.jpg",
+     "sky_04.jpg",
+     "wood_01.jpg",
+     "mystrale.jpg",
+     "mystrale_2.jpg",
+     NULL
+   };
+
 
    win = elm_win_util_standard_add("slideshow", "Slideshow");
    elm_win_autodel_set(win, EINA_TRUE);
@@ -118,22 +141,21 @@ test_slideshow(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event
    slideshow = elm_slideshow_add(win);
    elm_slideshow_loop_set(slideshow, EINA_TRUE);
    evas_object_size_hint_weight_set(slideshow, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   evas_object_smart_callback_add(slideshow, "changed", _changed_cb, NULL);
    elm_win_resize_object_add(win, slideshow);
    evas_object_show(slideshow);
 
    itc.func.get = _get;
-   itc.func.del = NULL;
+   itc.func.del = _del;
 
-   elm_slideshow_item_add(slideshow, &itc, img1);
-   elm_slideshow_item_add(slideshow, &itc, img2);
-   elm_slideshow_item_add(slideshow, &itc, img3);
-   elm_slideshow_item_add(slideshow, &itc, img4);
-   elm_slideshow_item_add(slideshow, &itc, img9);
-   elm_slideshow_item_add(slideshow, &itc, img5);
-   elm_slideshow_item_add(slideshow, &itc, img6);
-   elm_slideshow_item_add(slideshow, &itc, img7);
-   slide_last_it = elm_slideshow_item_add(slideshow, &itc, img8);
-   evas_object_smart_callback_add(slideshow, "transition,end", _slide_transition, slide_last_it);
+   for (i = 0; imgs[i]; i++)
+     {
+        const char *img = eina_stringshare_printf("%s/images/%s", elm_app_data_dir_get(), imgs[i]);
+        slide_last_it = elm_slideshow_item_add(slideshow, &itc, img);
+     }
+
+   evas_object_smart_callback_add(slideshow, "transition,end",
+                                  _transition_end_cb, slide_last_it);
 
    notify = elm_notify_add(win);
    elm_notify_align_set(notify, 0.5, 1.0);

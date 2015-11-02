@@ -230,8 +230,8 @@ _on_item_changed(Elm_Flipselector_Data *sd)
 
    if (item->func)
      item->func((void *)WIDGET_ITEM_DATA_GET(eo_item), WIDGET(item), eo_item);
-   evas_object_smart_callback_call
-      (sd->obj, SIG_SELECTED, eo_item);
+   eo_do(sd->obj, eo_event_callback_call
+     (EVAS_SELECTABLE_INTERFACE_EVENT_SELECTED, eo_item));
 }
 
 static void
@@ -293,11 +293,13 @@ _elm_flipselector_item_eo_base_destructor(Eo *eo_item, Elm_Flipselector_Item_Dat
    eo_do_super(eo_item, ELM_FLIPSELECTOR_ITEM_CLASS, eo_destructor());
 }
 
-EOLIAN static void
+EOLIAN static Eo *
 _elm_flipselector_item_eo_base_constructor(Eo *obj, Elm_Flipselector_Item_Data *it)
 {
-   eo_do_super(obj, ELM_FLIPSELECTOR_ITEM_CLASS, eo_constructor());
+   obj = eo_do_super_ret(obj, ELM_FLIPSELECTOR_ITEM_CLASS, obj, eo_constructor());
    it->base = eo_data_scope_get(obj, ELM_WIDGET_ITEM_CLASS);
+
+   return obj;
 }
 
 static Elm_Object_Item *
@@ -365,8 +367,8 @@ _flip_up(Elm_Flipselector_Data *sd)
    if (sd->current == sd->items)
      {
         sd->current = eina_list_last(sd->items);
-        evas_object_smart_callback_call
-          (sd->obj, SIG_UNDERFLOWED, NULL);
+        eo_do(sd->obj, eo_event_callback_call
+          (ELM_FLIPSELECTOR_EVENT_UNDERFLOWED, NULL));
      }
    else
      sd->current = eina_list_prev(sd->current);
@@ -390,8 +392,8 @@ _flip_down(Elm_Flipselector_Data *sd)
    if (!sd->current)
      {
         sd->current = sd->items;
-        evas_object_smart_callback_call
-          (sd->obj, SIG_OVERFLOWED, NULL);
+        eo_do(sd->obj, eo_event_callback_call
+          (ELM_FLIPSELECTOR_EVENT_OVERFLOWED, NULL));
      }
 
    eo_item = DATA_GET(sd->current);
@@ -564,15 +566,17 @@ elm_flipselector_add(Evas_Object *parent)
    return obj;
 }
 
-EOLIAN static void
+EOLIAN static Eo *
 _elm_flipselector_eo_base_constructor(Eo *obj, Elm_Flipselector_Data *sd)
 {
+   obj = eo_do_super_ret(obj, MY_CLASS, obj, eo_constructor());
    sd->obj = obj;
-   eo_do_super(obj, MY_CLASS, eo_constructor());
    eo_do(obj,
          evas_obj_type_set(MY_CLASS_NAME_LEGACY),
          evas_obj_smart_callbacks_descriptions_set(_smart_callbacks),
          elm_interface_atspi_accessible_role_set(ELM_ATSPI_ROLE_LIST));
+
+   return obj;
 }
 
 EOLIAN static void
@@ -732,7 +736,7 @@ _elm_flipselector_item_selected_get(Eo *eo_item,
 }
 
 EOLIAN static Elm_Object_Item *
-_elm_flipselector_item_prev_get(Eo *eo_item,
+_elm_flipselector_item_prev_get(const Eo *eo_item,
                                 Elm_Flipselector_Item_Data *item)
 {
    Eina_List *l;
@@ -748,7 +752,7 @@ _elm_flipselector_item_prev_get(Eo *eo_item,
 }
 
 EOLIAN static Elm_Object_Item *
-_elm_flipselector_item_next_get(Eo *eo_item,
+_elm_flipselector_item_next_get(const Eo *eo_item,
                                 Elm_Flipselector_Item_Data *item)
 {
    Eina_List *l;

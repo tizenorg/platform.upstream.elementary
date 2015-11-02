@@ -128,16 +128,31 @@ static void
 _omit_calc(void *data, int num_of_items, int max_num_of_items)
 {
    Elm_Index_Data *sd = data;
-   int max_group_num, num_of_extra_items, i, g, size, sum, *group_pos, *omit_info;
+   int max_group_num, num_of_extra_items, i, g, size, sum, start, *group_pos, *omit_info;
    Elm_Index_Omit *o;
 
    if ((max_num_of_items < 3) || (num_of_items <= max_num_of_items)) return;
+
+   if (sd->group_num > 0)
+     start = sd->show_group + sd->default_num;
+   else start = 0;
 
    max_group_num = (max_num_of_items - 1) / 2;
    num_of_extra_items = num_of_items - max_num_of_items;
 
    group_pos = (int *)malloc(sizeof(int) * max_group_num);
+   if (!group_pos)
+     {
+        ERR("failed to allocate memory!");
+        return;
+     }
    omit_info = (int *)malloc(sizeof(int) * max_num_of_items);
+   if (!omit_info)
+     {
+        ERR("failed to allocate memory!");
+        free(group_pos);
+        return;
+     }
 
    if (num_of_extra_items >= max_group_num)
      {
@@ -169,7 +184,12 @@ _omit_calc(void *data, int num_of_items, int max_num_of_items)
         if (omit_info[i] > 1)
           {
              o = (Elm_Index_Omit *)malloc(sizeof(Elm_Index_Omit));
-             o->offset = sum;
+             if (!o)
+               {
+                  ERR("failed to allocate memory!");
+                  break;
+               }
+             o->offset = sum + start;
              o->count = omit_info[i];
              sd->omit = eina_list_append(sd->omit, o);
           }
@@ -189,7 +209,7 @@ _index_box_auto_fill(Evas_Object *obj,
    Eina_List *l;
    Eina_Bool rtl;
    Elm_Object_Item *eo_item;
-   Elm_Index_Item_Data *head = NULL;
+   Elm_Index_Item_Data *head = NULL, *last_it = NULL;
    Evas_Coord mw, mh, ih;
    Evas_Object *o;
    Elm_Index_Omit *om;
@@ -228,11 +248,13 @@ _index_box_auto_fill(Evas_Object *obj,
         EINA_LIST_FOREACH(sd->items, l, eo_item)
           {
              ELM_INDEX_ITEM_DATA_GET(eo_item, it);
-             if (it->level == level) num_of_items++;
+             if (it->level == level && it->priority == sd->show_group) num_of_items++;
           }
 
         if (mh != 0)
           max_num_of_items = ih / mh;
+        if (sd->group_num)
+          max_num_of_items -= (sd->group_num + sd->default_num - 1);
 
         _omit_calc(sd, num_of_items, max_num_of_items);
      }
@@ -244,6 +266,29 @@ _index_box_auto_fill(Evas_Object *obj,
         ELM_INDEX_ITEM_DATA_GET(eo_item, it);
 
         if (it->level != level) continue;
+
+        /** when index has more than one group,
+         * one group is shown completely and other groups are represented by one item
+         */
+        if (it->priority != -1)
+          {
+             // for groups of higher priority, the first item represents the group
+             if (it->priority < sd->show_group)
+               {
+                  if (last_it && (last_it->priority == it->priority)) continue;
+               }
+             // for groups of lower priority, the last item represents the group
+             else if (it->priority > sd->show_group)
+               {
+                  l = eina_list_next(l);
+                  if (l)
+                    {
+                       ELM_INDEX_ITEM_DATA_GET(eina_list_data_get(l), next_it);
+                       l = eina_list_prev(l);
+                       if (next_it->priority == it->priority) continue;
+                    }
+               }
+          }
 
         if ((om) && (i == om->offset))
           {
@@ -322,10 +367,54 @@ _index_box_auto_fill(Evas_Object *obj,
         if ((it->level == 0) &&
             (_elm_config->access_mode == ELM_ACCESS_MODE_ON))
           eo_do(eo_item, elm_wdg_item_access_register());
+
+        last_it = it;
      }
 
    evas_object_smart_calculate(sd->bx[level]);
    sd->level_active[level] = EINA_TRUE;
+}
+
+static void
+_priority_change_job(void *data)
+{
+   ELM_INDEX_DATA_GET(data, sd);
+   Elm_Object_Item *selected_it;
+
+   sd->show_group = sd->next_group;
+   _index_box_clear(data, 0);
+   _index_box_auto_fill(data, 0);
+
+   selected_it = elm_index_selected_item_get(data, sd->level);
+   if (selected_it)
+     elm_index_item_selected_set(selected_it, EINA_FALSE);
+}
+
+static void
+_priority_up_cb(void *data)
+{
+   _priority_change_job(data);
+}
+
+static void
+_priority_down_cb(void *data)
+{
+   _priority_change_job(data);
+}
+
+static void
+_index_priority_change(void *data, Elm_Index_Item_Data *it)
+{
+   ELM_INDEX_DATA_GET(data, sd);
+
+   if ((it->priority != -1) && (it->priority != sd->show_group))
+     {
+        sd->next_group = it->priority;
+        if (it->priority < sd->show_group)
+          _priority_up_cb(data);
+        else
+          _priority_down_cb(data);
+     }
 }
 
 EOLIAN static Eina_Bool
@@ -435,11 +524,13 @@ _elm_index_item_eo_base_destructor(Eo *eo_item EINA_UNUSED, Elm_Index_Item_Data 
    eo_do_super(eo_item, ELM_INDEX_ITEM_CLASS, eo_destructor());
 }
 
-EOLIAN static void
+EOLIAN static Eo *
 _elm_index_item_eo_base_constructor(Eo *obj, Elm_Index_Item_Data *it)
 {
-   eo_do_super(obj, ELM_INDEX_ITEM_CLASS, eo_constructor());
+   obj = eo_do_super_ret(obj, ELM_INDEX_ITEM_CLASS, obj, eo_constructor());
    it->base = eo_data_scope_get(obj, ELM_WIDGET_ITEM_CLASS);
+
+   return obj;
 }
 
 static Elm_Object_Item *
@@ -461,6 +552,7 @@ _item_new(Evas_Object *obj,
    it->func = func;
    WIDGET_ITEM_DATA_SET(EO_OBJ(it), data);
    it->level = sd->level;
+   it->priority = -1;
 
    return eo_item;
 }
@@ -491,8 +583,14 @@ _delay_change_cb(void *data)
 
    sd->delay = NULL;
    item = elm_index_selected_item_get(data, sd->level);
-   if (item) evas_object_smart_callback_call(data, SIG_DELAY_CHANGED, item);
 
+   if (item)
+     {
+        eo_do(data, eo_event_callback_call
+              (ELM_INDEX_EVENT_DELAY_CHANGED, item));
+        ELM_INDEX_ITEM_DATA_GET(item, it);
+        _index_priority_change(data, it);
+     }
    return ECORE_CALLBACK_CANCEL;
 }
 
@@ -649,12 +747,12 @@ _sel_eval(Evas_Object *obj,
                        _elm_access_say(ret);
                     }
 
-                  if (om_closest)
-                    evas_object_smart_callback_call
-                       (obj, SIG_CHANGED, EO_OBJ(om_closest));
+                  if (om_closest) 
+                    eo_do(obj, eo_event_callback_call
+                      (ELM_INDEX_EVENT_CHANGED, EO_OBJ(om_closest)));
                   else
-                    evas_object_smart_callback_call
-                       (obj, SIG_CHANGED, EO_OBJ(it));
+                    eo_do(obj, eo_event_callback_call
+                      (ELM_INDEX_EVENT_CHANGED, EO_OBJ(it)));
                   ecore_timer_del(sd->delay);
                   sd->delay = ecore_timer_add(sd->delay_change_time,
                                               _delay_change_cb, obj);
@@ -672,14 +770,17 @@ _sel_eval(Evas_Object *obj,
                     {
                        if (label && last)
                          {
-                            label = realloc(label, strlen(label) +
+                            char *temp;
+
+                            temp = realloc(label, strlen(label) +
                                             strlen(last) + 1);
-                            if (!label)
+                            if (!temp)
                               {
+                                 free(label);
                                  free(last);
                                  return;
                               }
-                            strcat(label, last);
+                            label = strcat(temp, last);
                          }
                     }
                   free(last);
@@ -745,7 +846,8 @@ _on_mouse_up(void *data,
    eo_item = elm_index_selected_item_get(data, sd->level);
    if (eo_item)
      {
-        evas_object_smart_callback_call(data, SIG_SELECTED, eo_item);
+        eo_do(data, eo_event_callback_call
+          (EVAS_CLICKABLE_INTERFACE_EVENT_CLICKED, eo_item));
         eo_id_item = eo_item;
         ELM_INDEX_ITEM_DATA_GET(eo_id_item, id_item);
         if (id_item->func)
@@ -793,7 +895,8 @@ _on_mouse_move(void *data,
                   sd->level = 1;
                   snprintf(buf, sizeof(buf), "elm,state,level,%i", sd->level);
                   elm_layout_signal_emit(data, buf, "elm");
-                  evas_object_smart_callback_call(data, SIG_LEVEL_UP, NULL);
+                  eo_do(data, eo_event_callback_call
+                    (ELM_INDEX_EVENT_LEVEL_UP, NULL));
                }
           }
         else
@@ -803,7 +906,8 @@ _on_mouse_move(void *data,
                   sd->level = 0;
                   snprintf(buf, sizeof(buf), "elm,state,level,%i", sd->level);
                   elm_layout_signal_emit(data, buf, "elm");
-                  evas_object_smart_callback_call(data, SIG_LEVEL_DOWN, NULL);
+                  eo_do(data, eo_event_callback_call
+                    (ELM_INDEX_EVENT_LEVEL_DOWN, NULL));
                }
           }
      }
@@ -903,6 +1007,18 @@ _index_resize_cb(void *data EINA_UNUSED,
           edje_object_signal_emit(VIEW(it), "elm,state,active", "elm");
      }
 }
+
+static int
+_sort_cb(const void *d1, const void *d2)
+{
+   Elm_Object_Item *eo_it1 = (Elm_Object_Item *)d1, *eo_it2 = (Elm_Object_Item *)d2;
+
+   ELM_INDEX_ITEM_DATA_GET(eo_it1, it1);
+   ELM_INDEX_ITEM_DATA_GET(eo_it2, it2);
+   if (it1->priority <= it2->priority) return -1;
+   else return 1;
+}
+
 
 EOLIAN static void
 _elm_index_evas_object_smart_add(Eo *obj, Elm_Index_Data *priv)
@@ -1106,14 +1222,16 @@ elm_index_add(Evas_Object *parent)
    return obj;
 }
 
-EOLIAN static void
+EOLIAN static Eo *
 _elm_index_eo_base_constructor(Eo *obj, Elm_Index_Data *_pd EINA_UNUSED)
 {
-   eo_do_super(obj, MY_CLASS, eo_constructor());
+   obj = eo_do_super_ret(obj, MY_CLASS, obj, eo_constructor());
    eo_do(obj,
          evas_obj_type_set(MY_CLASS_NAME_LEGACY),
          evas_obj_smart_callbacks_descriptions_set(_smart_callbacks),
          elm_interface_atspi_accessible_role_set(ELM_ATSPI_ROLE_LIST));
+
+   return obj;
 }
 
 EOLIAN static void
@@ -1196,10 +1314,10 @@ _elm_index_item_selected_set(Eo *eo_it,
         edje_object_signal_emit(VIEW(it_active), "elm,state,active", "elm");
         edje_object_message_signal_process(VIEW(it_active));
 
-        evas_object_smart_callback_call
-           (obj, SIG_CHANGED, eo_it);
-        evas_object_smart_callback_call
-           (obj, SIG_SELECTED, eo_it);
+        eo_do(obj, eo_event_callback_call
+          (ELM_INDEX_EVENT_CHANGED, eo_it));
+        eo_do(obj, eo_event_callback_call
+          (EVAS_SELECTABLE_INTERFACE_EVENT_SELECTED, eo_it));
         ecore_timer_del(sd->delay);
         sd->delay = ecore_timer_add(sd->delay_change_time,
                                     _delay_change_cb, obj);
@@ -1221,7 +1339,7 @@ _elm_index_item_selected_set(Eo *eo_it,
 }
 
 EOLIAN static Elm_Object_Item*
-_elm_index_selected_item_get(Eo *obj EINA_UNUSED, Elm_Index_Data *sd, int level)
+_elm_index_selected_item_get(const Eo *obj EINA_UNUSED, Elm_Index_Data *sd, int level)
 {
    Eina_List *l;
    Elm_Object_Item *eo_item;
@@ -1374,7 +1492,31 @@ _elm_index_item_clear(Eo *obj, Elm_Index_Data *sd)
 EOLIAN static void
 _elm_index_level_go(Eo *obj, Elm_Index_Data *sd, int level)
 {
-   (void) level;
+   Elm_Object_Item *eo_it;
+   Eina_List *l;
+   int prev;
+
+   sd->items = eina_list_sort(sd->items, 0, EINA_COMPARE_CB(_sort_cb));
+
+   if (level == 0)
+     {
+        sd->default_num = 0;
+        sd->group_num = 0;
+        sd->show_group = -1;
+        prev = -1;
+        EINA_LIST_FOREACH(sd->items, l, eo_it)
+          {
+             ELM_INDEX_ITEM_DATA_GET(eo_it, it);
+             if (it->priority == -1) sd->default_num++;
+             if (it->priority != prev)
+               {
+                  if (prev == -1) sd->show_group = it->priority;
+                  sd->group_num++;
+                  prev = it->priority;
+               }
+          }
+     }
+
    _index_box_clear(obj, 0);
    _index_box_auto_fill(obj, 0);
    if (sd->level == 1)
@@ -1404,7 +1546,7 @@ _elm_index_indicator_disabled_get(Eo *obj EINA_UNUSED, Elm_Index_Data *sd)
 }
 
 EOLIAN static const char *
-_elm_index_item_letter_get(Eo *item EINA_UNUSED, Elm_Index_Item_Data *it)
+_elm_index_item_letter_get(const Eo *item EINA_UNUSED, Elm_Index_Item_Data *it)
 {
    return it->letter;
 }
@@ -1459,6 +1601,42 @@ EOLIAN static Eina_Bool
 _elm_index_omit_enabled_get(Eo *obj EINA_UNUSED, Elm_Index_Data *sd)
 {
    return sd->omit_enabled;
+}
+
+EOLIAN static void
+_elm_index_item_priority_set(Eo *eo_it EINA_UNUSED, Elm_Index_Item_Data *it, int priority)
+{
+   if (priority < -1)
+     {
+        WRN("priority value should be greater than or equal to -1.");
+        return;
+     }
+
+   it->priority = priority;
+}
+
+EOLIAN static void
+_elm_index_standard_priority_set(Eo *obj, Elm_Index_Data *sd, int priority)
+{
+   if (priority < -1)
+     {
+        WRN("priority value should be greater than or equal to -1.");
+        return;
+     }
+   if (priority != sd->show_group)
+     {
+        sd->next_group = priority;
+        if (priority > sd->show_group)
+          _priority_up_cb((void *)obj);
+        else
+          _priority_down_cb((void *)obj);
+     }
+}
+
+EOLIAN static int
+_elm_index_standard_priority_get(Eo *obj EINA_UNUSED, Elm_Index_Data *sd)
+{
+   return sd->show_group;
 }
 
 static void

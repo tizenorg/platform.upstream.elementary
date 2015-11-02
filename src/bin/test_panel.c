@@ -2,6 +2,7 @@
 # include "elementary_config.h"
 #endif
 #include <Elementary.h>
+#include <dirent.h>
 
 #define LIST_ITEM_MAX 20
 
@@ -90,12 +91,12 @@ _fill_list(Evas_Object *obj, Elm_Genlist_Item_Class *itc)
    struct dirent *de;
    Eina_List *l;
    char *real;
-   char *home_env = NULL;
+   const char *home_env = NULL;
    unsigned int x = 0;
 
    if (!dirs)
      {
-        home_env = getenv("HOME");
+        home_env = eina_environment_home_get();
         if (!home_env) return;
         if (!(d = opendir(home_env))) return;
         while ((de = readdir(d)) && (x < LIST_ITEM_MAX))
@@ -103,7 +104,8 @@ _fill_list(Evas_Object *obj, Elm_Genlist_Item_Class *itc)
              char buff[PATH_MAX];
 
              if (de->d_name[0] == '.') continue;
-             snprintf(buff, sizeof(buff), "%s/%s", getenv("HOME"), de->d_name);
+             snprintf(buff, sizeof(buff), "%s/%s", home_env, de->d_name);
+
              if (!ecore_file_is_dir(buff)) continue;
              x++;
              real = ecore_file_realpath(buff);
@@ -278,12 +280,18 @@ _clicked_cb(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUS
    elm_panel_toggle(panel);
 }
 
+static void
+_changed_cb(void *data EINA_UNUSED, Evas_Object *obj, void *event_info EINA_UNUSED)
+{
+   elm_config_scroll_thumbscroll_enabled_set(elm_check_state_get(obj));
+}
+
 void
 test_panel2(void *data EINA_UNUSED,
            Evas_Object *obj EINA_UNUSED,
            void *event_info EINA_UNUSED)
 {
-   Evas_Object *win, *box, *table, *panel, *list, *button;
+   Evas_Object *win, *box, *label, *check, *table, *panel, *list, *button;
    int i;
 
    // Left Panel
@@ -297,6 +305,22 @@ test_panel2(void *data EINA_UNUSED,
    evas_object_size_hint_weight_set(box, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    evas_object_show(box);
    elm_win_resize_object_add(win, box);
+
+   // label
+   label = elm_label_add(box);
+   elm_object_text_set(label, "You should enable thumb scroll to use scrollable panel.<br/>"
+                              "Check below or enable thumb scroll in elementary_config.");
+   evas_object_show(label);
+   elm_box_pack_end(box, label);
+
+   // check
+   check = elm_check_add(box);
+   elm_check_state_set(check, elm_config_scroll_thumbscroll_enabled_get());
+   elm_object_text_set(check, "Enable thumb scroll (temporarily)");
+   evas_object_show(check);
+   elm_box_pack_end(box, check);
+
+   evas_object_smart_callback_add(check, "changed", _changed_cb, NULL);
 
    // toggle button
    button = elm_button_add(box);

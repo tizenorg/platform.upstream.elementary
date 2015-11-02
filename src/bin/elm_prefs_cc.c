@@ -14,7 +14,7 @@ static void main_help(void);
 
 Eina_Prefix *pfx = NULL;
 char *file_in = NULL;
-char *tmp_dir = NULL;
+const char *tmp_dir = NULL;
 char *file_out = NULL;
 
 static const char *progname = NULL;
@@ -102,7 +102,7 @@ main(int argc, char **argv)
    progname = ecore_file_file_get(argv[0]);
    eina_log_print_cb_set(_elm_prefs_cc_log_cb, NULL);
 
-   tmp_dir = getenv("TMPDIR");
+   tmp_dir = eina_environment_tmp_get();
 
    for (i = 1; i < argc; i++)
      {

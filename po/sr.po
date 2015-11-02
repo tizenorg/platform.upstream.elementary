@@ -1,12 +1,12 @@
 #
 # Саша Петровић <salepetronije@gmail.com>, 2012, 2015.
 #
-#: src/lib/elm_config.c:3174
+#: src/lib/elm_config.c:3271
 msgid ""
 msgstr ""
 "Project-Id-Version: а\n"
 "Report-Msgid-Bugs-To: enlightenment-devel@lists.sourceforge.net\n"
-"POT-Creation-Date: 2015-02-04 18:11+0900\n"
+"POT-Creation-Date: 2015-10-25 11:43+0100\n"
 "PO-Revision-Date: 2015-01-31 14:06+0100\n"
 "Last-Translator: Саша Петровић <salepetronije@gmail.com>\n"
 "Language-Team: српски <xfce4@xfce4.org>\n"
@@ -19,56 +19,56 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
-#: src/lib/elc_fileselector.c:1449
+#: src/lib/elc_fileselector.c:1505
 msgid "Up"
 msgstr "Горе"
 
-#: src/lib/elc_fileselector.c:1464
+#: src/lib/elc_fileselector.c:1521
 msgid "Home"
 msgstr "Лична фасцикла"
 
-#: src/lib/elc_fileselector.c:1527
+#: src/lib/elc_fileselector.c:1588
 msgid "Search"
 msgstr "Тражи"
 
-#: src/lib/elc_fileselector.c:1693 src/lib/elm_entry.c:1487
-#: src/lib/elm_entry.c:1512
+#: src/lib/elc_fileselector.c:1757 src/lib/elm_entry.c:1588
+#: src/lib/elm_entry.c:1613
 msgid "Cancel"
 msgstr "Откажи"
 
-#: src/lib/elc_fileselector.c:1702
+#: src/lib/elc_fileselector.c:1767
 msgid "OK"
 msgstr "У реду"
 
-#: src/lib/elc_multibuttonentry.c:611
+#: src/lib/elc_multibuttonentry.c:667
 msgid "multi button entry label"
 msgstr "ознака улаза са више дугмади"
 
-#: src/lib/elc_multibuttonentry.c:633
+#: src/lib/elc_multibuttonentry.c:689
 msgid "multi button entry item"
 msgstr "ставка улаза са више дугмади"
 
-#: src/lib/elc_multibuttonentry.c:1497
+#: src/lib/elc_multibuttonentry.c:1560
 msgid "multi button entry"
 msgstr "улаз са више дугмади"
 
-#: src/lib/elc_naviframe.c:431
+#: src/lib/elc_naviframe.c:432
 msgid "Title"
 msgstr "Наслов"
 
-#: src/lib/elc_naviframe.c:957 src/lib/elc_naviframe.c:1156
+#: src/lib/elc_naviframe.c:978 src/lib/elc_naviframe.c:1183
 msgid "Back"
 msgstr "Назад"
 
-#: src/lib/elc_naviframe.c:1249
+#: src/lib/elc_naviframe.c:1279
 msgid "Next"
 msgstr "Следеће"
 
-#: src/lib/elc_popup.c:261 src/lib/elc_popup.c:868
+#: src/lib/elc_popup.c:275 src/lib/elc_popup.c:941
 msgid "Popup Title"
 msgstr "Искачући наслов"
 
-#: src/lib/elc_popup.c:271 src/lib/elc_popup.c:934
+#: src/lib/elc_popup.c:285 src/lib/elc_popup.c:1017
 msgid "Popup Body Text"
 msgstr "Тело искачућег текста"
 
@@ -80,71 +80,71 @@ msgstr "Мехур"
 msgid "Clicked"
 msgstr "Кликнуто"
 
-#: src/lib/elm_button.c:271 src/lib/elm_check.c:235 src/lib/elm_gengrid.c:814
-#: src/lib/elm_genlist.c:1572 src/lib/elm_list.c:2178 src/lib/elm_radio.c:256
-#: src/lib/elm_segment_control.c:525 src/lib/elm_spinner.c:578
-#: src/lib/elm_toolbar.c:2226
+#: src/lib/elm_button.c:275 src/lib/elm_check.c:244 src/lib/elm_gengrid.c:1255
+#: src/lib/elm_genlist.c:1659 src/lib/elm_list.c:2189 src/lib/elm_radio.c:268
+#: src/lib/elm_segment_control.c:524 src/lib/elm_spinner.c:902
+#: src/lib/elm_toolbar.c:2246
 msgid "State: Disabled"
 msgstr "Стање: онемогућено"
 
-#: src/lib/elm_button.c:296
+#: src/lib/elm_button.c:300
 msgid "Button"
 msgstr "Дугме"
 
-#: src/lib/elm_calendar.c:153
+#: src/lib/elm_calendar.c:219
 msgid "%B %Y"
 msgstr "%B %Y"
 
-#: src/lib/elm_calendar.c:162
+#: src/lib/elm_calendar.c:225
 msgid "%B"
 msgstr "%B"
 
-#: src/lib/elm_calendar.c:171
+#: src/lib/elm_calendar.c:231
 msgid "%Y"
 msgstr "%Y"
 
-#: src/lib/elm_calendar.c:286
+#: src/lib/elm_calendar.c:345
 msgid "calendar item"
 msgstr "ставка календара"
 
-#: src/lib/elm_calendar.c:312
+#: src/lib/elm_calendar.c:371
 msgid "calendar decrement month button"
 msgstr "дугме померања месеца календара  уназад"
 
-#: src/lib/elm_calendar.c:317
+#: src/lib/elm_calendar.c:376
 msgid "calendar decrement year button"
 msgstr "дугме померања година календара уназад"
 
-#: src/lib/elm_calendar.c:322
+#: src/lib/elm_calendar.c:381
 msgid "calendar increment month button"
 msgstr "дугме померања месеца календара унапред"
 
-#: src/lib/elm_calendar.c:327
+#: src/lib/elm_calendar.c:386
 msgid "calendar increment year button"
 msgstr "дугме померања година календара унапред"
 
-#: src/lib/elm_calendar.c:332
+#: src/lib/elm_calendar.c:391
 msgid "calendar month"
 msgstr "месец календара"
 
-#: src/lib/elm_calendar.c:337
+#: src/lib/elm_calendar.c:396
 msgid "calendar year"
 msgstr "година календара"
 
-#: src/lib/elm_check.c:62 src/lib/elm_check.c:248 src/lib/elm_radio.c:102
-#: src/lib/elm_radio.c:257
+#: src/lib/elm_check.c:67 src/lib/elm_check.c:257 src/lib/elm_radio.c:125
+#: src/lib/elm_radio.c:269
 msgid "State: On"
 msgstr "Стање : укључен"
 
-#: src/lib/elm_check.c:68 src/lib/elm_check.c:260 src/lib/elm_radio.c:259
+#: src/lib/elm_check.c:78 src/lib/elm_check.c:269 src/lib/elm_radio.c:271
 msgid "State: Off"
 msgstr "Стање: искључен"
 
-#: src/lib/elm_check.c:244 src/lib/elm_check.c:257
+#: src/lib/elm_check.c:253 src/lib/elm_check.c:266
 msgid "State"
 msgstr "Стање"
 
-#: src/lib/elm_check.c:335
+#: src/lib/elm_check.c:344
 msgid "Check"
 msgstr "Провера"
 
@@ -156,51 +156,71 @@ msgstr "дугме за увећање часовника са am,pm"
 msgid "clock decrement button for am,pm"
 msgstr "дугме за смањивање часовника са am,pm"
 
-#: src/lib/elm_clock.c:649
+#: src/lib/elm_clock.c:647
 msgid "State: Editable"
 msgstr "Стање: уредиво"
 
-#: src/lib/elm_clock.c:684
+#: src/lib/elm_clock.c:682
 msgid "Clock"
 msgstr "Сат"
 
-#: src/lib/elm_colorselector.c:1391
+#: src/lib/elm_colorselector.c:731
+msgid "Pick a color"
+msgstr ""
+
+#: src/lib/elm_colorselector.c:769
+msgid "R:"
+msgstr ""
+
+#: src/lib/elm_colorselector.c:771
+msgid "G:"
+msgstr ""
+
+#: src/lib/elm_colorselector.c:773
+msgid "B:"
+msgstr ""
+
+#: src/lib/elm_colorselector.c:775
+msgid "A:"
+msgstr ""
+
+#: src/lib/elm_colorselector.c:1498
 msgid "color selector palette item"
 msgstr "ставка избирача палете боја"
 
-#: src/lib/elm_config.c:3190
+#: src/lib/elm_config.c:3287
 msgid "default:LTR"
 msgstr "задато:слева на десно"
 
-#: src/lib/elm_dayselector.c:404
+#: src/lib/elm_dayselector.c:409
 msgid "day selector item"
 msgstr "ставка одабирач дана"
 
-#: src/lib/elm_diskselector.c:693
+#: src/lib/elm_diskselector.c:700
 msgid "diskselector item"
 msgstr "ставка одабира диска"
 
-#: src/lib/elm_entry.c:1474
+#: src/lib/elm_entry.c:1575
 msgid "Copy"
 msgstr "Умножи"
 
-#: src/lib/elm_entry.c:1479
+#: src/lib/elm_entry.c:1580
 msgid "Cut"
 msgstr "Исеци"
 
-#: src/lib/elm_entry.c:1483 src/lib/elm_entry.c:1506
+#: src/lib/elm_entry.c:1584 src/lib/elm_entry.c:1607
 msgid "Paste"
 msgstr "Прилепи"
 
-#: src/lib/elm_entry.c:1499
+#: src/lib/elm_entry.c:1600
 msgid "Select"
 msgstr "Изаберите"
 
-#: src/lib/elm_entry.c:3488
+#: src/lib/elm_entry.c:3539
 msgid "Entry"
 msgstr "Улаз"
 
-#: src/lib/elm_gengrid.c:844
+#: src/lib/elm_gengrid.c:1285
 msgid "Gengrid Item"
 msgstr "Ставка родне мреже"
 
@@ -212,27 +232,27 @@ msgstr "Садржина"
 msgid "Index Item"
 msgstr "Ставка садржине"
 
-#: src/lib/elm_label.c:389
+#: src/lib/elm_label.c:392
 msgid "Label"
 msgstr "Натпис"
 
-#: src/lib/elm_panel.c:69
+#: src/lib/elm_panel.c:71
 msgid "state: opened"
 msgstr "стање: отворено"
 
-#: src/lib/elm_panel.c:70
+#: src/lib/elm_panel.c:72
 msgid "state: closed"
 msgstr "стање: затворено"
 
-#: src/lib/elm_panel.c:110
+#: src/lib/elm_panel.c:112
 msgid "A panel is open"
 msgstr "Полица је отворена"
 
-#: src/lib/elm_panel.c:112
+#: src/lib/elm_panel.c:114
 msgid "Double tap to close panel menu"
 msgstr "Двапут додирните за затварање изборника полице"
 
-#: src/lib/elm_panel.c:182
+#: src/lib/elm_panel.c:166
 msgid "panel button"
 msgstr "дугме полице"
 
@@ -240,54 +260,67 @@ msgstr "дугме полице"
 msgid "progressbar"
 msgstr "трака напретка"
 
-#: src/lib/elm_radio.c:285
+#: src/lib/elm_radio.c:297
 msgid "Radio"
 msgstr "Искључујуће дугме"
 
-#: src/lib/elm_segment_control.c:528 src/lib/elm_toolbar.c:2228
+#: src/lib/elm_segment_control.c:527 src/lib/elm_toolbar.c:2248
 msgid "State: Selected"
 msgstr "Стање: означено"
 
-#: src/lib/elm_segment_control.c:530
+#: src/lib/elm_segment_control.c:529
 msgid "State: Unselected"
 msgstr "Стање: неозначено"
 
-#: src/lib/elm_segment_control.c:544
+#: src/lib/elm_segment_control.c:543
 msgid "Segment Control Item"
 msgstr "Ставка провере дела"
 
-#: src/lib/elm_slider.c:887
+#: src/lib/elm_slider.c:893
 msgid "slider"
 msgstr "клизач"
 
-#: src/lib/elm_spinner.c:667
-msgid "spinner increment button"
-msgstr "стрелица избирача увећaња"
+#: src/lib/elm_spinner.c:932
+msgid "incremented"
+msgstr ""
 
-#: src/lib/elm_spinner.c:676
-msgid "spinner decrement button"
-msgstr "стрелица избирача смањења"
+#: src/lib/elm_spinner.c:938
+msgid "decremented"
+msgstr ""
 
-#: src/lib/elm_spinner.c:684
+#: src/lib/elm_spinner.c:971 src/lib/elm_spinner.c:1038
 msgid "spinner"
 msgstr "избирач са стрелицама"
 
-#: src/lib/elm_toolbar.c:1688 src/lib/elm_toolbar.c:2284
+#: src/lib/elm_spinner.c:980 src/lib/elm_spinner.c:1021
+msgid "spinner increment button"
+msgstr "стрелица избирача увећaња"
+
+#: src/lib/elm_spinner.c:983 src/lib/elm_spinner.c:1030
+msgid "spinner decrement button"
+msgstr "стрелица избирача смањења"
+
+#: src/lib/elm_spinner.c:985
+#, fuzzy
+msgid "spinner text"
+msgstr "избирач са стрелицама"
+
+#: src/lib/elm_toolbar.c:1706 src/lib/elm_toolbar.c:2305
 msgid "Selected"
 msgstr "Изабрано"
 
-#: src/lib/elm_toolbar.c:2224
+#: src/lib/elm_toolbar.c:2244
 msgid "Separator"
 msgstr "Одвајач"
 
-#: src/lib/elm_toolbar.c:2230
+#: src/lib/elm_toolbar.c:2250
 msgid "Has menu"
 msgstr "Има изборник"
 
-#: src/lib/elm_toolbar.c:2279
+#: src/lib/elm_toolbar.c:2300
 msgid "Unselected"
 msgstr "Неозначено"
 
-#: src/lib/elm_toolbar.c:2296
+#: src/lib/elm_toolbar.c:2317
 msgid "Toolbar Item"
 msgstr "Ставка траке алата"
