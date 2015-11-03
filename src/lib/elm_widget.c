@@ -850,10 +850,6 @@ _parent_focus(Evas_Object *obj, Elm_Object_Item *item)
      {
         sd->focused = EINA_TRUE;
         eo_do(obj, elm_obj_widget_on_focus(item));
-<<<<<<< HEAD
-        elm_widget_focus_region_show(obj);
-=======
->>>>>>> opensource/master
      }
    sd->focus_order_on_calc = EINA_FALSE;
 
