@@ -1025,14 +1025,8 @@ _elm_datetime_field_limit_set(Eo *obj, Elm_Datetime_Data *sd, Elm_Datetime_Field
 
    _apply_field_limits(obj);
 
-<<<<<<< HEAD
-   if (!_date_cmp(&old_time, &sd->curr_time))
-     evas_object_smart_callback_call(obj, SIG_CHANGED, NULL);
-=======
    if (!_field_cmp(fieldtype, &old_time, &sd->curr_time))
      eo_do(obj, eo_event_callback_call(ELM_DATETIME_EVENT_CHANGED, NULL));
-
->>>>>>> opensource/master
 }
 
 EOLIAN static Eina_Bool
