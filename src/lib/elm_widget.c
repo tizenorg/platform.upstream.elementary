@@ -4479,13 +4479,6 @@ _elm_widget_item_eo_base_destructor(Eo *eo_item, Elm_Widget_Item_Data *item)
      }
    eina_hash_free(item->labels);
 
-<<<<<<< HEAD
-   if (item->description)
-     eina_stringshare_del(item->description);
-
-   if (_elm_config->atspi_mode)
-	 elm_interface_atspi_accessible_children_changed_del_signal_emit(item->widget, eo_item);
-=======
    eo_do(eo_item,
          elm_interface_atspi_accessible_description_set(NULL),
          elm_interface_atspi_accessible_name_set(NULL),
@@ -4497,7 +4490,6 @@ _elm_widget_item_eo_base_destructor(Eo *eo_item, Elm_Widget_Item_Data *item)
      elm_interface_atspi_accessible_children_changed_del_signal_emit(item->widget, eo_item);
 
    elm_interface_atspi_accessible_removed(eo_item);
->>>>>>> opensource/master
 
    EINA_MAGIC_SET(item, EINA_MAGIC_NONE);
 
@@ -4621,38 +4613,6 @@ _elm_widget_item_widget_get(const Eo *eo_item EINA_UNUSED, Elm_Widget_Item_Data 
    return item->widget;
 }
 
-<<<<<<< HEAD
-EOLIAN static const char*
-_elm_widget_item_elm_interface_atspi_accessible_description_get(Eo *eo_item EINA_UNUSED,
-                                                                Elm_Widget_Item_Data *item)
-{
-   return item->description;
-}
-
-EOLIAN static void
-_elm_widget_item_elm_interface_atspi_accessible_description_set(Eo *eo_item EINA_UNUSED,
-                                                                Elm_Widget_Item_Data *item,
-                                                                const char *descr)
-{
-   eina_stringshare_replace(&item->description, descr);
-}
-
-EOLIAN static Elm_Atspi_Role
-_elm_widget_item_elm_interface_atspi_accessible_role_get(Eo *eo_item EINA_UNUSED, Elm_Widget_Item_Data *item)
-{
-   return item->role;
-}
-
-EOLIAN static void
-_elm_widget_item_elm_interface_atspi_accessible_role_set(Eo *eo_item EINA_UNUSED, Elm_Widget_Item_Data *item,
-                                                         Elm_Atspi_Role role)
-{
-   item->role = role;
-}
-
-EOLIAN static Elm_Atspi_State_Set
-_elm_widget_item_elm_interface_atspi_accessible_state_set_get(Eo *eo_item EINA_UNUSED,
-=======
 EAPI Eina_Bool
 _elm_widget_onscreen_is(Evas_Object *widget)
 {
@@ -4710,7 +4670,6 @@ _elm_widget_item_onscreen_is(Elm_Object_Item *item)
 
 EOLIAN static Elm_Atspi_State_Set
 _elm_widget_item_elm_interface_atspi_accessible_state_set_get(Eo *eo_item,
->>>>>>> opensource/master
                                                               Elm_Widget_Item_Data *item EINA_UNUSED)
 {
    Elm_Atspi_State_Set states = 0;
@@ -4721,19 +4680,12 @@ _elm_widget_item_elm_interface_atspi_accessible_state_set_get(Eo *eo_item,
      STATE_TYPE_SET(states, ELM_ATSPI_STATE_FOCUSED);
    if (!elm_object_item_disabled_get(eo_item))
      {
-<<<<<<< HEAD
-        STATE_TYPE_SET(states, ELM_ATSPI_STATE_ACTIVE);
-        STATE_TYPE_SET(states, ELM_ATSPI_STATE_ENABLED);
-        STATE_TYPE_SET(states, ELM_ATSPI_STATE_SENSITIVE);
-     }
-=======
         STATE_TYPE_SET(states, ELM_ATSPI_STATE_ENABLED);
         STATE_TYPE_SET(states, ELM_ATSPI_STATE_SENSITIVE);
         STATE_TYPE_SET(states, ELM_ATSPI_STATE_VISIBLE);
      }
    if (_elm_widget_item_onscreen_is(eo_item))
      STATE_TYPE_SET(states, ELM_ATSPI_STATE_SHOWING);
->>>>>>> opensource/master
 
    return states;
 }
@@ -5784,20 +5736,8 @@ elm_widget_tree_dot_dump(const Evas_Object *top,
 #endif
 }
 
-<<<<<<< HEAD
-static void
-_on_focus_change(void *data, Evas_Object *obj, void *event_info EINA_UNUSED)
-{
-   Eina_Bool val = data ? EINA_TRUE : EINA_FALSE;
-   elm_interface_atspi_accessible_state_changed_signal_emit(obj, ELM_ATSPI_STATE_FOCUSED, val);
-}
-
-EOLIAN static void
-_elm_widget_eo_base_constructor(Eo *obj, Elm_Widget_Smart_Data *sd)
-=======
 EOLIAN static Eo *
 _elm_widget_eo_base_constructor(Eo *obj, Elm_Widget_Smart_Data *sd EINA_UNUSED)
->>>>>>> opensource/master
 {
    Eo *parent = NULL;
 
@@ -5810,24 +5750,6 @@ _elm_widget_eo_base_constructor(Eo *obj, Elm_Widget_Smart_Data *sd EINA_UNUSED)
    eo_do(obj, elm_obj_widget_parent_set(parent));
    sd->on_create = EINA_FALSE;
 
-<<<<<<< HEAD
-   sd->role = ELM_ATSPI_ROLE_UNKNOWN;
-   evas_object_smart_callback_add(obj, "focused", _on_focus_change, (void*)1);
-   evas_object_smart_callback_add(obj, "unfocused", _on_focus_change, NULL);
-}
-
-EOLIAN static void
-_elm_widget_eo_base_destructor(Eo *obj, Elm_Widget_Smart_Data *sd)
-{
-   Eo *parent;
-   if (sd->description) eina_stringshare_del(sd->description);
-
-   eo_do(obj, parent = elm_interface_atspi_accessible_parent_get());
-   if (parent && !eo_destructed_is(parent))
-     elm_interface_atspi_accessible_children_changed_del_signal_emit(parent, obj);
-
-   eo_do_super(obj, ELM_WIDGET_CLASS, eo_destructor());
-=======
    eo_do(obj, elm_interface_atspi_accessible_role_set(ELM_ATSPI_ROLE_UNKNOWN));
    return obj;
 }
@@ -5846,7 +5768,6 @@ _elm_widget_eo_base_destructor(Eo *obj, Elm_Widget_Smart_Data *sd EINA_UNUSED)
    sd->on_destroy = EINA_FALSE;
 
    elm_interface_atspi_accessible_removed(obj);
->>>>>>> opensource/master
 }
 
 EOLIAN static Eina_Bool
@@ -5939,47 +5860,17 @@ EOLIAN static char*
 _elm_widget_elm_interface_atspi_accessible_name_get(Eo *obj EINA_UNUSED, Elm_Widget_Smart_Data *_pd EINA_UNUSED)
 {
    const char *ret;
-<<<<<<< HEAD
-=======
    char *name;
    eo_do_super(obj, ELM_WIDGET_CLASS, name = elm_interface_atspi_accessible_name_get());
 
    if (name) return name;
 
->>>>>>> opensource/master
    ret = elm_object_text_get(obj);
    if (!ret) return NULL;
 
    return _elm_util_mkup_to_text(ret);
 }
 
-<<<<<<< HEAD
-EOLIAN static const char*
-_elm_widget_elm_interface_atspi_accessible_description_get(Eo *obj EINA_UNUSED, Elm_Widget_Smart_Data *_pd)
-{
-   return _pd->description;
-}
-
-EOLIAN static void
-_elm_widget_elm_interface_atspi_accessible_description_set(Eo *obj EINA_UNUSED, Elm_Widget_Smart_Data *_pd, const char *descr)
-{
-   eina_stringshare_replace(&_pd->description, descr);
-}
-
-EOLIAN static Elm_Atspi_Role
-_elm_widget_elm_interface_atspi_accessible_role_get(Eo *obj EINA_UNUSED, Elm_Widget_Smart_Data *pd EINA_UNUSED)
-{
-   return pd->role;
-}
-
-EOLIAN static void
-_elm_widget_elm_interface_atspi_accessible_role_set(Eo *obj EINA_UNUSED, Elm_Widget_Smart_Data *pd, Elm_Atspi_Role role)
-{
-   pd->role = role;
-}
-
-=======
->>>>>>> opensource/master
 EOLIAN static Eina_List*
 _elm_widget_elm_interface_atspi_accessible_children_get(Eo *obj EINA_UNUSED, Elm_Widget_Smart_Data *pd EINA_UNUSED)
 {
@@ -6002,59 +5893,20 @@ _elm_widget_elm_interface_atspi_accessible_children_get(Eo *obj EINA_UNUSED, Elm
 EOLIAN static Eo*
 _elm_widget_elm_interface_atspi_accessible_parent_get(Eo *obj EINA_UNUSED, Elm_Widget_Smart_Data *pd)
 {
-<<<<<<< HEAD
-   if (pd->atspi_custom_parent)
-     return pd->atspi_custom_parent;
-   else
-     return pd->parent_obj;
-}
-
-EOLIAN static void
-_elm_widget_elm_interface_atspi_accessible_parent_set(Eo *obj EINA_UNUSED, Elm_Widget_Smart_Data *pd, Eo *parent)
-{
-   pd->atspi_custom_parent = parent;
-=======
    Eo *ret;
    eo_do_super(obj, ELM_WIDGET_CLASS, ret = elm_interface_atspi_accessible_parent_get());
 
    return ret ? ret : pd->parent_obj;
->>>>>>> opensource/master
 }
 
 EOLIAN static Elm_Atspi_State_Set
 _elm_widget_elm_interface_atspi_accessible_state_set_get(Eo *obj, Elm_Widget_Smart_Data *pd EINA_UNUSED)
 {
    Elm_Atspi_State_Set states = 0;
-<<<<<<< HEAD
-   Evas *evas = NULL;
-=======
->>>>>>> opensource/master
 
    eo_do_super(obj, ELM_WIDGET_CLASS, states = elm_interface_atspi_accessible_state_set_get());
 
    if (evas_object_visible_get(obj))
-<<<<<<< HEAD
-     STATE_TYPE_SET(states, ELM_ATSPI_STATE_VISIBLE);
-   evas = evas_object_evas_get(obj);
-   if (evas)
-     {
-        Evas_Coord x, y, w, h, wx, wy, ww, wh;
-
-        evas_output_viewport_get(evas, &x, &y, &w, &h);
-        evas_object_geometry_get(obj, &wx, &wy, &ww, &wh);
-        if (!(((wx < x) && (wx + ww < x)) || ((wx > x + w) && (wx + ww > x + w)) ||
-              ((wy < y) && (wy + wh < y)) || ((wy > y+ h) && (wy + wh > y + h))))
-          STATE_TYPE_SET(states, ELM_ATSPI_STATE_SHOWING);
-     }
-   if (elm_object_focus_get(obj))
-     STATE_TYPE_SET(states, ELM_ATSPI_STATE_FOCUSED);
-   if (elm_object_focus_allow_get(obj))
-     STATE_TYPE_SET(states, ELM_ATSPI_STATE_FOCUSABLE);
-   if (!elm_object_disabled_get(obj))
-     {
-        STATE_TYPE_SET(states, ELM_ATSPI_STATE_ENABLED);
-        STATE_TYPE_SET(states, ELM_ATSPI_STATE_ACTIVE);
-=======
      {
         STATE_TYPE_SET(states, ELM_ATSPI_STATE_VISIBLE);
         if (_elm_widget_onscreen_is(obj))
@@ -6070,7 +5922,6 @@ _elm_widget_elm_interface_atspi_accessible_state_set_get(Eo *obj, Elm_Widget_Sma
    if (!elm_object_disabled_get(obj))
      {
         STATE_TYPE_SET(states, ELM_ATSPI_STATE_ENABLED);
->>>>>>> opensource/master
         STATE_TYPE_SET(states, ELM_ATSPI_STATE_SENSITIVE);
      }
 
@@ -6091,42 +5942,6 @@ _elm_widget_elm_interface_atspi_accessible_attributes_get(Eo *obj, Elm_Widget_Sm
    return ret;
 }
 
-<<<<<<< HEAD
-static Elm_Atspi_Relation*
-_relation_new(Elm_Atspi_Relation_Type type, Eo *obj)
-{
-   Elm_Atspi_Relation *rel = calloc(1, sizeof(Elm_Atspi_Relation));
-   if (!rel) return NULL;
-
-   rel->type = type;
-   rel->obj = obj;
-
-   return rel;
-}
-
-EOLIAN static Eina_List*
-_elm_widget_elm_interface_atspi_accessible_relation_set_get(Eo *obj, Elm_Widget_Smart_Data *pd EINA_UNUSED)
-{
-   Eina_List *list = NULL;
-   Elm_Atspi_Relation *rel;
-   Evas_Object *rel_obj;
-
-   rel_obj = elm_object_focus_next_object_get(obj, ELM_FOCUS_NEXT);
-   if (eo_isa(rel_obj, ELM_INTERFACE_ATSPI_ACCESSIBLE_MIXIN))
-     {
-        rel = _relation_new(ELM_ATSPI_RELATION_FLOWS_TO, rel_obj);
-        list = eina_list_append(list, rel);
-     }
-
-   rel_obj = elm_object_focus_next_object_get(obj, ELM_FOCUS_PREVIOUS);
-   if (eo_isa(rel_obj, ELM_INTERFACE_ATSPI_ACCESSIBLE_MIXIN))
-     {
-        rel = _relation_new(ELM_ATSPI_RELATION_FLOWS_FROM, rel_obj);
-        list = eina_list_append(list, rel);
-     }
-
-   return list;
-=======
 EOLIAN static void
 _elm_widget_item_elm_interface_atspi_component_extents_get(Eo *obj EINA_UNUSED, Elm_Widget_Item_Data *sd EINA_UNUSED, Eina_Bool screen_coords, int *x, int *y, int *w, int *h)
 {
@@ -6181,7 +5996,6 @@ _elm_widget_item_elm_interface_atspi_component_alpha_get(Eo *obj EINA_UNUSED, El
    if (!sd->view) return -1.0;
    evas_object_color_get(sd->view, NULL, NULL, NULL, &alpha);
    return (double)alpha / 255.0;
->>>>>>> opensource/master
 }
 
 #include "elm_widget_item.eo.c"
