@@ -1408,21 +1408,7 @@ _item_realize(Elm_Gen_Item *it)
 
    if (eo_it == sd->focused_item)
      {
-<<<<<<< HEAD
-        const char *focus_raise;
-        if (elm_widget_focus_highlight_enabled_get(WIDGET(it)))
-          {
-             edje_object_signal_emit
-                (VIEW(it), "elm,state,focused", "elm");
-          }
-
-        focus_raise = edje_object_data_get(VIEW(it), "focusraise");
-        if ((focus_raise) && (!strcmp(focus_raise, "on")))
-          evas_object_raise(VIEW(it));
-
-=======
         _elm_gengrid_item_focus_update(it);
->>>>>>> opensource/master
         _elm_widget_item_highlight_in_theme(WIDGET(it), EO_OBJ(it));
         _elm_widget_highlight_in_theme_update(WIDGET(it));
         _elm_widget_focus_highlight_start(WIDGET(it));
@@ -2040,21 +2026,6 @@ _elm_gengrid_item_focused(Elm_Object_Item *eo_it)
 
    sd->focused_item = eo_it;
 
-<<<<<<< HEAD
-   if (it->realized)
-     {
-        if (elm_widget_focus_highlight_enabled_get(obj))
-          {
-             edje_object_signal_emit
-                (VIEW(it), "elm,state,focused", "elm");
-          }
-
-        focus_raise = edje_object_data_get(VIEW(it), "focusraise");
-        if ((focus_raise) && (!strcmp(focus_raise, "on")))
-          evas_object_raise(VIEW(it));
-     }
-   evas_object_smart_callback_call(obj, SIG_ITEM_FOCUSED, eo_it);
-=======
    /* If item is not realized state, widget couldn't get focus_highlight data. */
    if (it->realized)
      {
@@ -2065,7 +2036,6 @@ _elm_gengrid_item_focused(Elm_Object_Item *eo_it)
      }
 
    eo_do(obj, eo_event_callback_call(ELM_GENGRID_EVENT_ITEM_FOCUSED, eo_it));
->>>>>>> opensource/master
    if (_elm_config->atspi_mode)
      elm_interface_atspi_accessible_state_changed_signal_emit(eo_it, ELM_ATSPI_STATE_FOCUSED, EINA_TRUE);
 }
@@ -2095,11 +2065,7 @@ _elm_gengrid_item_unfocused(Elm_Object_Item *eo_it)
      }
 
    sd->focused_item = NULL;
-<<<<<<< HEAD
-   evas_object_smart_callback_call(obj, SIG_ITEM_UNFOCUSED, eo_it);
-=======
    eo_do(obj, eo_event_callback_call(ELM_GENGRID_EVENT_ITEM_UNFOCUSED, eo_it));
->>>>>>> opensource/master
    if (_elm_config->atspi_mode)
      elm_interface_atspi_accessible_state_changed_signal_emit(eo_it, ELM_ATSPI_STATE_FOCUSED, EINA_FALSE);
 }
@@ -3552,11 +3518,7 @@ _key_action_select(Evas_Object *obj, const char *params)
      }
 
    if (!sd->multi)
-<<<<<<< HEAD
-     evas_object_smart_callback_call(WIDGET(it), SIG_ACTIVATED, eo_it);
-=======
      eo_do(WIDGET(it), eo_event_callback_call(ELM_GENGRID_EVENT_ACTIVATED, eo_it));
->>>>>>> opensource/master
 
    return EINA_TRUE;
 }
@@ -4059,28 +4021,6 @@ _elm_gengrid_item_elm_widget_item_focus_set(Eo *eo_it, Elm_Gen_Item *it, Eina_Bo
              if (sd->focused_item)
                _elm_gengrid_item_unfocused(sd->focused_item);
              _elm_gengrid_item_focused(eo_it);
-<<<<<<< HEAD
-
-             /* If item is not realized state, widget couldn't get focus_highlight data. */
-             if (it->realized)
-               {
-                  const char *focus_raise;
-                  if (elm_widget_focus_highlight_enabled_get(obj))
-                    {
-                       edje_object_signal_emit
-                          (VIEW(it), "elm,state,focused", "elm");
-                    }
-
-                  focus_raise = edje_object_data_get(VIEW(it), "focusraise");
-                  if ((focus_raise) && (!strcmp(focus_raise, "on")))
-                    evas_object_raise(VIEW(it));
-
-                  _elm_widget_item_highlight_in_theme(obj, eo_it);
-                  _elm_widget_highlight_in_theme_update(obj);
-                  _elm_widget_focus_highlight_start(obj);
-               }
-=======
->>>>>>> opensource/master
           }
      }
    else
@@ -4216,11 +4156,8 @@ _elm_gengrid_item_eo_base_constructor(Eo *eo_it, Elm_Gen_Item *it)
    eo_it = eo_do_super_ret(eo_it, ELM_GENGRID_ITEM_CLASS, eo_it, eo_constructor());
    it->base = eo_data_scope_get(eo_it, ELM_WIDGET_ITEM_CLASS);
    eo_do(eo_it, elm_interface_atspi_accessible_role_set(ELM_ATSPI_ROLE_LIST_ITEM));
-<<<<<<< HEAD
-=======
 
    return eo_it;
->>>>>>> opensource/master
 }
 
 static Elm_Gen_Item *
@@ -4414,11 +4351,8 @@ _elm_gengrid_eo_base_constructor(Eo *obj, Elm_Gengrid_Data *sd)
          evas_obj_type_set(MY_CLASS_NAME_LEGACY),
          evas_obj_smart_callbacks_descriptions_set(_smart_callbacks),
          elm_interface_atspi_accessible_role_set(ELM_ATSPI_ROLE_TREE_TABLE));
-<<<<<<< HEAD
-=======
 
    return obj;
->>>>>>> opensource/master
 }
 
 EOLIAN static void
@@ -5078,11 +5012,7 @@ elm_gengrid_item_cursor_engine_only_get(const Elm_Object_Item *eo_it)
    ELM_GENGRID_ITEM_DATA_GET(eo_it, it);
    Eina_Bool ret;
    if (it->realized)
-<<<<<<< HEAD
-     return eo_do(eo_it, elm_wdg_item_cursor_engine_only_get());
-=======
      return eo_do_ret(eo_it, ret, elm_wdg_item_cursor_engine_only_get());
->>>>>>> opensource/master
    else return it->cursor_engine_only;
 }
 
@@ -5579,19 +5509,6 @@ _elm_gengrid_item_elm_interface_atspi_accessible_name_get(Eo *eo_it EINA_UNUSED,
 
         EINA_LIST_FREE(texts, key)
           {
-<<<<<<< HEAD
-             char *s = it->itc->func.text_get
-                ((void *)WIDGET_ITEM_DATA_GET(EO_OBJ(it)), WIDGET(it), key);
-
-             s = _elm_util_mkup_to_text(s);
-
-             if (s)
-               {
-                  if (eina_strbuf_length_get(buf) > 0)
-                    eina_strbuf_append(buf, ", ");
-                  eina_strbuf_append(buf, s);
-                  free(s);
-=======
              char *str_markup = it->itc->func.text_get
                 ((void *)WIDGET_ITEM_DATA_GET(EO_OBJ(it)), WIDGET(it), key);
 
@@ -5605,7 +5522,6 @@ _elm_gengrid_item_elm_interface_atspi_accessible_name_get(Eo *eo_it EINA_UNUSED,
                     eina_strbuf_append(buf, ", ");
                   eina_strbuf_append(buf, str_utf8);
                   free(str_utf8);
->>>>>>> opensource/master
                }
           }
      }
@@ -5791,8 +5707,6 @@ _elm_gengrid_elm_interface_atspi_accessible_state_set_get(Eo *obj, Elm_Gengrid_D
    return ret;
 }
 
-<<<<<<< HEAD
-=======
 EOLIAN int
 _elm_gengrid_elm_interface_atspi_selection_selected_children_count_get(Eo *objm EINA_UNUSED, Elm_Gengrid_Data *pd)
 {
@@ -5893,6 +5807,5 @@ _elm_gengrid_elm_interface_atspi_selection_child_deselect(Eo *obj EINA_UNUSED, E
    return EINA_FALSE;
 }
 
->>>>>>> opensource/master
 #include "elm_gengrid.eo.c"
 #include "elm_gengrid_item.eo.c"

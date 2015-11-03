@@ -2299,11 +2299,7 @@ _elm_widget_focus_direction_weight_get(const Evas_Object *obj1,
  */
 
 EOLIAN static Eina_Bool
-<<<<<<< HEAD
-_elm_widget_focus_direction_get(Eo *obj, Elm_Widget_Smart_Data *sd, const Evas_Object *base, double degree, Evas_Object **direction, Elm_Object_Item **direction_item, double *weight)
-=======
 _elm_widget_focus_direction_get(const Eo *obj, Elm_Widget_Smart_Data *sd, const Evas_Object *base, double degree, Evas_Object **direction, Elm_Object_Item **direction_item, double *weight)
->>>>>>> opensource/master
 {
    double c_weight;
 
@@ -2376,11 +2372,7 @@ _elm_widget_focus_direction_get(const Eo *obj, Elm_Widget_Smart_Data *sd, const 
  * @ingroup Widget
  */
 EOLIAN static Eina_Bool
-<<<<<<< HEAD
-_elm_widget_focus_list_direction_get(Eo *obj EINA_UNUSED, Elm_Widget_Smart_Data *_pd EINA_UNUSED, const Evas_Object *base, const Eina_List *items, list_data_get_func_type list_data_get, double degree, Evas_Object **direction, Elm_Object_Item **direction_item, double *weight)
-=======
 _elm_widget_focus_list_direction_get(const Eo *obj EINA_UNUSED, Elm_Widget_Smart_Data *_pd EINA_UNUSED, const Evas_Object *base, const Eina_List *items, list_data_get_func_type list_data_get, double degree, Evas_Object **direction, Elm_Object_Item **direction_item, double *weight)
->>>>>>> opensource/master
 {
    if (!direction || !weight || !base || !items)
      return EINA_FALSE;
@@ -2417,11 +2409,7 @@ _elm_widget_focus_list_direction_get(const Eo *obj EINA_UNUSED, Elm_Widget_Smart
  * @ingroup Widget
  */
 EOLIAN static Eina_Bool
-<<<<<<< HEAD
-_elm_widget_focus_next_get(Eo *obj, Elm_Widget_Smart_Data *sd, Elm_Focus_Direction dir, Evas_Object **next, Elm_Object_Item **next_item)
-=======
 _elm_widget_focus_next_get(const Eo *obj, Elm_Widget_Smart_Data *sd, Elm_Focus_Direction dir, Evas_Object **next, Elm_Object_Item **next_item)
->>>>>>> opensource/master
 {
    Elm_Access_Info *ac;
 
@@ -2565,11 +2553,7 @@ _elm_widget_focus_next_get(const Eo *obj, Elm_Widget_Smart_Data *sd, Elm_Focus_D
  * @ingroup Widget
  */
 EOLIAN static Eina_Bool
-<<<<<<< HEAD
-_elm_widget_focus_list_next_get(Eo *obj, Elm_Widget_Smart_Data *_pd EINA_UNUSED, const Eina_List *items, list_data_get_func_type list_data_get, Elm_Focus_Direction dir, Evas_Object **next, Elm_Object_Item **next_item)
-=======
 _elm_widget_focus_list_next_get(const Eo *obj, Elm_Widget_Smart_Data *_pd EINA_UNUSED, const Eina_List *items, list_data_get_func_type list_data_get, Elm_Focus_Direction dir, Evas_Object **next, Elm_Object_Item **next_item)
->>>>>>> opensource/master
 {
    Eina_List *(*list_next)(const Eina_List *list) = NULL;
    Evas_Object *focused_object = NULL;
@@ -2794,11 +2778,7 @@ _elm_widget_focus_next_object_set(Eo *obj EINA_UNUSED, Elm_Widget_Smart_Data *sd
 }
 
 EOLIAN static Elm_Object_Item*
-<<<<<<< HEAD
-_elm_widget_focus_next_item_get(Eo *obj EINA_UNUSED, Elm_Widget_Smart_Data *sd, Elm_Focus_Direction dir)
-=======
 _elm_widget_focus_next_item_get(const Eo *obj EINA_UNUSED, Elm_Widget_Smart_Data *sd, Elm_Focus_Direction dir)
->>>>>>> opensource/master
 {
    Elm_Object_Item *ret = NULL;
 
@@ -3030,10 +3010,7 @@ _elm_widget_focus_steal(Eo *obj, Elm_Widget_Smart_Data *sd, Elm_Object_Item *ite
           }
      }
    _parent_focus(obj, item);
-<<<<<<< HEAD
-=======
    elm_widget_focus_region_show(obj);
->>>>>>> opensource/master
    return;
 }
 
@@ -4006,11 +3983,8 @@ _elm_widget_focus_mouse_up_handle(Eo *obj, Elm_Widget_Smart_Data *_pd EINA_UNUSE
 
    if (!obj) return;
    if (!_is_focusable(obj)) return;
-<<<<<<< HEAD
-=======
    top = elm_widget_top_get(obj);
    if (top && eo_isa(top, ELM_WIN_CLASS)) _elm_win_focus_auto_hide(top);
->>>>>>> opensource/master
    elm_widget_focus_steal(obj, NULL);
 }
 
@@ -4313,11 +4287,7 @@ _elm_widget_focus_move_policy_get(Eo *obj EINA_UNUSED, Elm_Widget_Smart_Data *sd
  * Sets the widget's focus move policy.
  *
  * @param obj The widget.
-<<<<<<< HEAD
- * @param policy Elm_Focus_Momve_Policy to set object's focus move policy.
-=======
  * @param policy Elm_Focus_Move_Policy to set object's focus move policy.
->>>>>>> opensource/master
  */
 
 EOLIAN static void
@@ -5633,11 +5603,7 @@ _elm_widget_item_access_object_get(const Eo *eo_item EINA_UNUSED, Elm_Widget_Ite
 }
 
 EOLIAN static Evas_Object *
-<<<<<<< HEAD
-_elm_widget_item_focus_next_object_get(Eo *eo_item EINA_UNUSED, Elm_Widget_Item_Data *item, Elm_Focus_Direction dir)
-=======
 _elm_widget_item_focus_next_object_get(const Eo *eo_item EINA_UNUSED, Elm_Widget_Item_Data *item, Elm_Focus_Direction dir)
->>>>>>> opensource/master
 {
    Evas_Object *ret = NULL;
 
@@ -5675,11 +5641,7 @@ _elm_widget_item_focus_next_object_set(Eo *eo_item EINA_UNUSED, Elm_Widget_Item_
 }
 
 EOLIAN static Elm_Object_Item*
-<<<<<<< HEAD
-_elm_widget_item_focus_next_item_get(Eo *eo_item EINA_UNUSED, Elm_Widget_Item_Data *item, Elm_Focus_Direction dir)
-=======
 _elm_widget_item_focus_next_item_get(const Eo *eo_item EINA_UNUSED, Elm_Widget_Item_Data *item, Elm_Focus_Direction dir)
->>>>>>> opensource/master
 {
    Elm_Object_Item *ret = NULL;
 

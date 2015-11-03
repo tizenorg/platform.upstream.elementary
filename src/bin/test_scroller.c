@@ -130,13 +130,8 @@ _my_bt_block_movements_y_axis(void *data, Evas_Object *obj,
      }
 }
 
-<<<<<<< HEAD
-void
-my_bt_loop_x_axis(void *data, Evas_Object *obj EINA_UNUSED,
-=======
 static void
 _my_bt_loop_x_axis(void *data, Evas_Object *obj EINA_UNUSED,
->>>>>>> opensource/master
                   void *event_info EINA_UNUSED)
 {
    Eina_Bool loop_h, loop_v;
@@ -146,13 +141,8 @@ _my_bt_loop_x_axis(void *data, Evas_Object *obj EINA_UNUSED,
    elm_scroller_loop_set(scroller, !loop_h, loop_v);
 }
 
-<<<<<<< HEAD
-void
-my_bt_loop_y_axis(void *data, Evas_Object *obj EINA_UNUSED,
-=======
 static void
 _my_bt_loop_y_axis(void *data, Evas_Object *obj EINA_UNUSED,
->>>>>>> opensource/master
                   void *event_info EINA_UNUSED)
 {
    Eina_Bool loop_h, loop_v;
@@ -162,10 +152,6 @@ _my_bt_loop_y_axis(void *data, Evas_Object *obj EINA_UNUSED,
    elm_scroller_loop_set(scroller, loop_h, !loop_v);
 }
 
-<<<<<<< HEAD
-void
-page_change_cb(void *data EINA_UNUSED,
-=======
 static void
 _my_bt_wheel_disable_cb(void *data, Evas_Object *obj EINA_UNUSED,
                   void *event_info EINA_UNUSED)
@@ -177,7 +163,6 @@ _my_bt_wheel_disable_cb(void *data, Evas_Object *obj EINA_UNUSED,
 
 static void
 _page_change_cb(void *data EINA_UNUSED,
->>>>>>> opensource/master
                Evas_Object *obj,
                void *event_info EINA_UNUSED)
 {
@@ -216,11 +201,7 @@ void
 test_scroller(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *win, *bg2, *tb, *tb2, *sc, *bt, *ck1, *ck2, *bx, *bx2, *fr,
-<<<<<<< HEAD
-       *ck3, *ck4, *ck5, *ck6, *ck7;
-=======
        *ck3, *ck4, *ck5, *ck6, *ck7, *ck8;
->>>>>>> opensource/master
    int i, j, n;
    char buf[PATH_MAX];
    Evas_Coord x = 0, y = 0, w = 0, h = 0;
@@ -292,14 +273,11 @@ test_scroller(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_
    elm_box_pack_end(bx2, ck7);
    evas_object_show(ck7);
 
-<<<<<<< HEAD
-=======
    ck8 = elm_check_add(win);
    elm_object_text_set(ck8, "Wheel Disable");
    elm_box_pack_end(bx2, ck8);
    evas_object_show(ck8);
 
->>>>>>> opensource/master
    sc = elm_scroller_add(win);
    evas_object_size_hint_weight_set(sc, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    evas_object_size_hint_align_set(sc, EVAS_HINT_FILL, EVAS_HINT_FILL);
@@ -341,16 +319,10 @@ test_scroller(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_
                                   sc);
    evas_object_smart_callback_add(ck4, "changed", _my_bt_block_movements_y_axis,
                                   sc);
-<<<<<<< HEAD
-   evas_object_smart_callback_add(ck5, "changed", my_bt_snap_to_pages, sc);
-   evas_object_smart_callback_add(ck6, "changed", my_bt_loop_x_axis, sc);
-   evas_object_smart_callback_add(ck7, "changed", my_bt_loop_y_axis, sc);
-=======
    evas_object_smart_callback_add(ck5, "changed", _my_bt_snap_to_pages, sc);
    evas_object_smart_callback_add(ck6, "changed", _my_bt_loop_x_axis, sc);
    evas_object_smart_callback_add(ck7, "changed", _my_bt_loop_y_axis, sc);
    evas_object_smart_callback_add(ck8, "changed", _my_bt_wheel_disable_cb, sc);
->>>>>>> opensource/master
 
    bt = elm_spinner_add(win);
    elm_spinner_min_max_set(bt, 0, 500);

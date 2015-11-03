@@ -951,22 +951,15 @@ _elm_conformant_evas_object_smart_del(Eo *obj, Elm_Conformant_Data *sd)
 
    evas_object_data_set(sd->win, "\377 elm,conformant", NULL);
 
-<<<<<<< HEAD
-   evas_object_smart_callback_del_full
-     (sd->win, "indicator,prop,changed", _on_indicator_mode_changed, obj);
-   evas_object_smart_callback_del_full
-     (sd->win, "rotation,changed", _on_rotation_changed, obj);
-   // TIZEN_ONLY(20150707): implemented elm_win_conformant_set/get for wayland
-   evas_object_smart_callback_del_full
-     (sd->win, "conformant,changed", _on_conformant_changed, obj);
-   //
-=======
    eo_do(sd->win,
          eo_event_callback_del(ELM_WIN_EVENT_INDICATOR_PROP_CHANGED,
             _on_indicator_mode_changed, obj),
          eo_event_callback_del(ELM_WIN_EVENT_ROTATION_CHANGED,
             _on_rotation_changed, obj));
->>>>>>> opensource/master
+   // TIZEN_ONLY(20150707): implemented elm_win_conformant_set/get for wayland
+   evas_object_smart_callback_del_full
+     (sd->win, "conformant,changed", _on_conformant_changed, obj);
+   //
 
    eo_do_super(obj, MY_CLASS, evas_obj_smart_del());
 }
@@ -1007,48 +1000,32 @@ elm_conformant_add(Evas_Object *parent)
 EOLIAN static Eo *
 _elm_conformant_eo_base_constructor(Eo *obj, Elm_Conformant_Data *sd)
 {
-<<<<<<< HEAD
-   eo_do_super(obj, MY_CLASS, eo_constructor());
-=======
    obj = eo_do_super_ret(obj, MY_CLASS, obj, eo_constructor());
->>>>>>> opensource/master
    eo_do(obj,
          evas_obj_type_set(MY_CLASS_NAME_LEGACY),
          evas_obj_smart_callbacks_descriptions_set(_smart_callbacks),
          elm_interface_atspi_accessible_role_set(ELM_ATSPI_ROLE_FILLER));
 
    sd->win = elm_widget_top_get(obj);
-<<<<<<< HEAD
-   _on_indicator_mode_changed(obj, sd->win, NULL);
-   _on_rotation_changed(obj, sd->win, NULL);
-=======
    _on_indicator_mode_changed(obj, sd->win, NULL, NULL);
    _on_rotation_changed(obj, sd->win, NULL, NULL);
->>>>>>> opensource/master
 
    sd->indmode = elm_win_indicator_mode_get(sd->win);
    sd->ind_o_mode = elm_win_indicator_opacity_get(sd->win);
    sd->rot = elm_win_rotation_get(sd->win);
    evas_object_data_set(sd->win, "\377 elm,conformant", obj);
 
-<<<<<<< HEAD
-   evas_object_smart_callback_add
-     (sd->win, "indicator,prop,changed", _on_indicator_mode_changed, obj);
-   evas_object_smart_callback_add
-     (sd->win, "rotation,changed", _on_rotation_changed, obj);
-   // TIZEN_ONLY(20150707): implemented elm_win_conformant_set/get for wayland
-   evas_object_smart_callback_add
-     (sd->win, "conformant,changed", _on_conformant_changed, obj);
-   //
-=======
    eo_do(sd->win,
          eo_event_callback_add(ELM_WIN_EVENT_INDICATOR_PROP_CHANGED,
             _on_indicator_mode_changed, obj),
          eo_event_callback_add(ELM_WIN_EVENT_ROTATION_CHANGED,
             _on_rotation_changed, obj));
+   // TIZEN_ONLY(20150707): implemented elm_win_conformant_set/get for wayland
+   evas_object_smart_callback_add
+     (sd->win, "conformant,changed", _on_conformant_changed, obj);
+   //
 
    return obj;
->>>>>>> opensource/master
 }
 
 static void

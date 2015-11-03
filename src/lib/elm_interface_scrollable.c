@@ -1231,20 +1231,11 @@ _elm_scroll_wanted_coordinates_update(Elm_Scrollable_Smart_Interface_Data *sid,
    eo_do(sid->obj, elm_interface_scrollable_content_viewport_geometry_get
          (NULL, NULL, &sid->ww, &sid->wh));
 
-<<<<<<< HEAD
-   if (x < minx)
-=======
    if (x < minx && !sid->is_mirrored)
->>>>>>> opensource/master
      {
         if (!sid->loop_h) sid->wx = minx;
         else sid->wx = mx;
      }
-<<<<<<< HEAD
-   else if (!sid->loop_h && (x > mx)) sid->wx = mx;
-   else if (sid->loop_h && x >= (sid->ww + mx)) sid->wx = 0;
-=======
->>>>>>> opensource/master
    else if (sid->is_mirrored)
      sid->wx = _elm_scroll_x_mirrored_get(sid->obj, x);
    else if (!sid->loop_h && (x > mx)) sid->wx = mx;
@@ -2130,11 +2121,7 @@ _elm_scroll_momentum_animator(void *data)
         if (!_elm_config->thumbscroll_bounce_enable || !sid->bounce_vert)
           {
              if (y <= miny) no_bounce_y_end = EINA_TRUE;
-<<<<<<< HEAD
-             if (sid->loop_v && (y - miny) >= maxy) no_bounce_y_end = EINA_TRUE;
-=======
              if (!sid->loop_v && (y - miny) >= maxy) no_bounce_y_end = EINA_TRUE;
->>>>>>> opensource/master
           }
         if ((dt >= 1.0) ||
             ((sid->down.bounce_x_hold) && (sid->down.bounce_y_hold)) ||
@@ -4473,8 +4460,6 @@ _elm_interface_scrollable_loop_set(Eo *obj EINA_UNUSED, Elm_Scrollable_Smart_Int
 
    sid->loop_h = loop_h;
    sid->loop_v = loop_v;
-<<<<<<< HEAD
-=======
 
    if(sid->loop_h)
      edje_object_signal_emit(sid->edje_obj, "elm,loop_x,set", "elm");
@@ -4485,7 +4470,6 @@ _elm_interface_scrollable_loop_set(Eo *obj EINA_UNUSED, Elm_Scrollable_Smart_Int
      edje_object_signal_emit(sid->edje_obj, "elm,loop_y,set", "elm");
    else
      edje_object_signal_emit(sid->edje_obj, "elm,loop_y,unset", "elm");
->>>>>>> opensource/master
 }
 
 EOLIAN static void
