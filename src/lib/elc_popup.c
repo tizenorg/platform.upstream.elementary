@@ -44,15 +44,12 @@ static const Evas_Smart_Cb_Description _smart_callbacks[] = {
 
 static Eina_Bool _key_action_move(Evas_Object *obj, const char *params);
 static void _parent_geom_cb(void *data, Evas *e EINA_UNUSED, Evas_Object *obj, void *event_info EINA_UNUSED);
-<<<<<<< HEAD
-=======
 static Eina_Bool
 _block_clicked_cb(void *data, Eo *obj EINA_UNUSED,
                   const Eo_Event_Description *desc EINA_UNUSED, void *event_info EINA_UNUSED);
 static Eina_Bool
 _timeout_cb(void *data, Eo *obj EINA_UNUSED,
             const Eo_Event_Description *desc EINA_UNUSED, void *event_info EINA_UNUSED);
->>>>>>> opensource/master
 
 static const Elm_Action key_actions[] = {
    {"move", _key_action_move},
@@ -396,10 +393,7 @@ _elm_popup_elm_widget_theme_apply(Eo *obj, Elm_Popup_Data *sd)
      elm_layout_signal_emit(sd->content_area, "elm,scroll,enable", "elm");
 
    _visuals_set(obj);
-<<<<<<< HEAD
-=======
    _scroller_size_calc(obj);
->>>>>>> opensource/master
    elm_layout_sizing_eval(obj);
 
    /* access */
@@ -492,10 +486,6 @@ _elm_popup_elm_widget_sub_object_del(Eo *obj, Elm_Popup_Data *sd, Evas_Object *s
    if (sobj == sd->title_icon)
      {
         elm_layout_signal_emit(sd->main_layout, "elm,state,title,icon,hidden", "elm");
-<<<<<<< HEAD
-        sd->title_icon = NULL;
-=======
->>>>>>> opensource/master
      }
    else if ((it =
                evas_object_data_get(sobj, "_popup_icon_parent_item")) != NULL)
@@ -1220,8 +1210,6 @@ _action_button_set(Evas_Object *obj,
    elm_object_part_content_set
      (sd->action_area, buf, sd->buttons[idx]->btn);
 <<<<<<< HEAD
-
-   if (sd->items) _scroller_size_calc(obj);
 
    elm_layout_sizing_eval(obj);
 =======

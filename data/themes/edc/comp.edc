@@ -289,12 +289,7 @@ group { name: "e/comp/frame/default";
             image.normal: "win_glow.png";
             image.border: 9 9 9 9;
             image.middle: 0;
-<<<<<<< HEAD
-            rel1.to: "gspacer";
-            rel2.to: "gspacer";
-=======
             rel.to: "gspacer";
->>>>>>> opensource/master
             fill.smooth: 0;
             color: 255 255 255 0;
             visible: 0;

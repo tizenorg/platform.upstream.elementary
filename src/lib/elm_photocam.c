@@ -590,11 +590,8 @@ _grid_clear(Evas_Object *obj,
                        edje_object_signal_emit
                          (wd->resize_obj,
                          "elm,state,busy,stop", "elm");
-<<<<<<< HEAD
-=======
                        eo_do(obj, eo_event_callback_call
                          (ELM_PHOTOCAM_EVENT_LOAD_DETAIL, NULL));
->>>>>>> opensource/master
                     }
                }
           }
@@ -779,9 +776,6 @@ _main_img_preloaded_cb(void *data,
      }
    ecore_job_del(sd->calc_job);
    sd->calc_job = ecore_job_add(_calc_job_cb, data);
-<<<<<<< HEAD
-   evas_object_smart_callback_call(data, SIG_LOADED, NULL);
-=======
    eo_do(data, eo_event_callback_call(ELM_PHOTOCAM_EVENT_LOADED, NULL));
    sd->preload_num--;
    if (!sd->preload_num)
@@ -791,7 +785,6 @@ _main_img_preloaded_cb(void *data,
         eo_do(obj, eo_event_callback_call
           (ELM_PHOTOCAM_EVENT_LOADED_DETAIL, NULL));
      }
->>>>>>> opensource/master
 }
 
 static Eina_Bool
@@ -1011,9 +1004,6 @@ static void
 _scroll_cb(Evas_Object *obj,
            void *data EINA_UNUSED)
 {
-<<<<<<< HEAD
-   evas_object_smart_callback_call(obj, SIG_SCROLL, NULL);
-=======
    ELM_PHOTOCAM_DATA_GET(obj, sd);
 
    if (!sd->scr_timer)
@@ -1027,7 +1017,6 @@ _scroll_cb(Evas_Object *obj,
 
    eo_do(obj, eo_event_callback_call
      (EVAS_SCROLLABLE_INTERFACE_EVENT_SCROLL, NULL));
->>>>>>> opensource/master
 }
 
 static Eina_Bool
@@ -1409,10 +1398,7 @@ _elm_photocam_image_orient_set(Eo *obj, Elm_Photocam_Data *sd, Evas_Image_Orient
 
    if (sd->orient == orient) return;
 
-<<<<<<< HEAD
-=======
    sd->orientation_changed = EINA_TRUE;
->>>>>>> opensource/master
    sd->orient = orient;
    g = _grid_create(obj);
    if (g)
@@ -1633,8 +1619,6 @@ _internal_file_set(Eo *obj, Elm_Photocam_Data *sd, const char *file, Eina_File *
    sd->size.imh = h;
    sd->size.w = sd->size.imw / sd->zoom;
    sd->size.h = sd->size.imh / sd->zoom;
-<<<<<<< HEAD
-=======
    evas_object_image_file_set(sd->img, NULL, NULL);
    _photocam_image_file_set(sd->img, sd);
    err = evas_object_image_load_error_get(sd->img);
@@ -1644,7 +1628,6 @@ _internal_file_set(Eo *obj, Elm_Photocam_Data *sd, const char *file, Eina_File *
         if (ret) *ret = err;
         return;
      }
->>>>>>> opensource/master
 
    // load low resolution image
    evas_object_image_load_scale_down_set(sd->img, 8);
@@ -1653,8 +1636,6 @@ _internal_file_set(Eo *obj, Elm_Photocam_Data *sd, const char *file, Eina_File *
    sd->main_load_pending = EINA_TRUE;
 
    sd->calc_job = ecore_job_add(_calc_job_cb, obj);
-<<<<<<< HEAD
-=======
    eo_do(obj, eo_event_callback_call(ELM_PHOTOCAM_EVENT_LOAD, NULL));
    sd->preload_num++;
    if (sd->preload_num == 1)
@@ -1663,16 +1644,12 @@ _internal_file_set(Eo *obj, Elm_Photocam_Data *sd, const char *file, Eina_File *
           (wd->resize_obj, "elm,state,busy,start", "elm");
         eo_do(obj, eo_event_callback_call(ELM_PHOTOCAM_EVENT_LOAD_DETAIL, NULL));
      }
->>>>>>> opensource/master
 
    tz = sd->zoom;
    sd->zoom = 0.0;
    elm_photocam_zoom_set(obj, tz);
    sd->orient = EVAS_IMAGE_ORIENT_NONE;
-<<<<<<< HEAD
-=======
    sd->orientation_changed = EINA_FALSE;
->>>>>>> opensource/master
 
    if (ret) *ret = evas_object_image_load_error_get(sd->img);
 }
@@ -1958,13 +1935,8 @@ done:
         if (!an)
           eo_do(obj, eo_event_callback_call(EVAS_ZOOMABLE_INTERFACE_EVENT_ZOOM_STOP, NULL));
      }
-<<<<<<< HEAD
-   if (sd->zoom != z)
-     evas_object_smart_callback_call(obj, SIG_ZOOM_CHANGE, NULL);
-=======
    if (zoom_changed)
      eo_do(obj, eo_event_callback_call(EVAS_ZOOMABLE_INTERFACE_EVENT_ZOOM_CHANGE, NULL));
->>>>>>> opensource/master
 }
 
 EOLIAN static double

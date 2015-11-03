@@ -2,12 +2,6 @@ group { name: "elm/spinner/base/default";
    alias: "elm/spinner/base/colorselector/default";
    images.image: "vert_bar_inset.png" COMP;
    parts {
-<<<<<<< HEAD
-      part { name: "bg";
-         type: SPACER;
-         scale: 1;
-         description { state: "default" 0.0;
-=======
       part { name: "clip"; type: RECT;
          description { state: "default" 0.0;
             rel1.to: "elm.swallow.text_button";
@@ -18,7 +12,6 @@ group { name: "elm/spinner/base/default";
          type: SPACER;
          scale: 1;
          description { state: "default" 0.0;
->>>>>>> opensource/master
          }
       }
       part { name: "inset"; mouse_events: 0;
@@ -48,14 +41,9 @@ group { name: "elm/spinner/base/default";
       }
       part { name: "elm.swallow.entry";
          type: SWALLOW;
-<<<<<<< HEAD
-         description { state: "default" 0.0;
-            fixed: 1 0;
-=======
          clip_to: "clip";
          description { state: "default" 0.0;
             fixed: 1 1;
->>>>>>> opensource/master
             rel1.to: "elm.swallow.text_button";
             rel2.to: "elm.swallow.text_button";
             visible: 0;
@@ -195,7 +183,6 @@ group { name: "elm/spinner/base/vertical";
       part { name: "elm.swallow.inc_button";
          type: SWALLOW;
          scale: 1;
-<<<<<<< HEAD
          description { state: "default" 0.0;
             rel1.to: "inset";
             rel1.offset: 1 1;
@@ -214,26 +201,6 @@ group { name: "elm/spinner/base/vertical";
             rel1.to_x: "elm.swallow.dec_button";
             rel1.relative: 1.0 0.0;
             rel1.offset: 1 1;
-=======
-         description { state: "default" 0.0;
-            rel1.to: "inset";
-            rel1.offset: 1 1;
-            rel1.relative: 1.0 0.0;
-            rel2.to: "inset";
-            rel2.offset: 1 -2;
-            align: 1.0 0.5;
-         }
-      }
-      part { name: "elm.swallow.text_button";
-         type: SWALLOW;
-         scale: 1;
-         description { state: "default" 0.0;
-            visible: 1;
-            rel1.to_y: "inset";
-            rel1.to_x: "elm.swallow.dec_button";
-            rel1.relative: 1.0 0.0;
-            rel1.offset: 1 1;
->>>>>>> opensource/master
             rel2.to_y: "inset";
             rel2.to_x: "elm.swallow.inc_button";
             rel2.relative: 0.0 1.0;

@@ -526,9 +526,6 @@ EAPI void                          elm_scroller_loop_set(Evas_Object *obj, Eina_
  */
 EAPI void                          elm_scroller_loop_get(const Evas_Object *obj, Eina_Bool *loop_h, Eina_Bool *loop_v);
 
-<<<<<<< HEAD
-#include "elm_scroller.eo.legacy.h"
-=======
 /**
  * @brief Enable or disable mouse wheel to be used to scroll the scroller.
  *
@@ -561,4 +558,3 @@ EAPI void                          elm_scroller_wheel_disabled_set(Evas_Object *
  * @ingroup Scroller
  */
 EAPI Eina_Bool                     elm_scroller_wheel_disabled_get(const Evas_Object *obj);
->>>>>>> opensource/master

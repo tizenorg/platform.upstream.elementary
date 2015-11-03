@@ -63,9 +63,6 @@ _state_set(Evas_Object *obj, Eina_Bool state, Eina_Bool activate)
              elm_layout_signal_emit(obj, "elm,state,radio,on", "elm");
           }
         else
-<<<<<<< HEAD
-          elm_layout_signal_emit(obj, "elm,state,radio,off", "elm");
-=======
           {
              // FIXME: to do animation during state change , we need different signal
              // so that we can distinguish between state change by user or state change
@@ -74,7 +71,6 @@ _state_set(Evas_Object *obj, Eina_Bool state, Eina_Bool activate)
              if (activate) elm_layout_signal_emit(obj, "elm,activate,radio,off", "elm");
              elm_layout_signal_emit(obj, "elm,state,radio,off", "elm");
           }
->>>>>>> opensource/master
         if (_elm_config->atspi_mode)
           {
              if (sd->state)

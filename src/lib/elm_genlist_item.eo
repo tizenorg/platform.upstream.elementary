@@ -163,21 +163,11 @@ class Elm.Genlist_Item(Elm.Widget_Item)
                 get {
                      [[Get the index of the item. It is only valid once displayed.
 
-<<<<<<< HEAD
-                      The index start from 1.
-
-                      @ingroup Genlist
-                      */
-                }
-                values {
-                     int index(-1); /*@ @return the position inside the list of item. */
-=======
                        The index start from 1.
                      ]]
                 }
                 values {
                      index: int(-1); [[The position inside the list of item.]]
->>>>>>> opensource/master
                 }
            }
            @property decorate_mode {
@@ -248,11 +238,7 @@ class Elm.Genlist_Item(Elm.Widget_Item)
                      ]]
                 }
                 values {
-<<<<<<< HEAD
-                     Elm_Object_Select_Mode mode(4); /*@ The selected mode */
-=======
                      mode: Elm.Object.Select_Mode(Elm.Object.Select_Mode.max); [[The selected mode.]]
->>>>>>> opensource/master
                 }
            }
            @property type {
@@ -265,11 +251,7 @@ class Elm.Genlist_Item(Elm.Widget_Item)
                      ]]
                 }
                 values {
-<<<<<<< HEAD
-                     Elm_Genlist_Item_Type type(4); /*@ Item tupe */
-=======
                      type: Elm.Genlist.Item.Type(Elm.Genlist.Item.Type.max); [[Item type.]]
->>>>>>> opensource/master
                 }
            }
            /*      init { FIXME
@@ -430,23 +412,6 @@ class Elm.Genlist_Item(Elm.Widget_Item)
       }
       implements {
            Eo.Base.constructor;
-<<<<<<< HEAD
-           Elm_Widget_Item.del_pre;
-           Elm_Widget_Item.disable;
-           Elm_Widget_Item.signal_emit;
-           Elm_Widget_Item.focus.set;
-           Elm_Widget_Item.focus.get;
-           Elm_Widget_Item.part_text.get;
-           Elm_Widget_Item.part_content.get;
-           Elm_Widget_Item.tooltip_text_set;
-           Elm_Widget_Item.tooltip_style.set;
-           Elm_Widget_Item.tooltip_style.get;
-           Elm_Widget_Item.tooltip_window_mode.set;
-           Elm_Widget_Item.tooltip_content_cb_set;
-           Elm_Widget_Item.tooltip_unset;
-           Elm_Widget_Item.cursor.set;
-           Elm_Widget_Item.cursor_unset;
-=======
            Elm.Widget_Item.del_pre;
            Elm.Widget_Item.disable;
            Elm.Widget_Item.signal_emit;
@@ -463,7 +428,6 @@ class Elm.Genlist_Item(Elm.Widget_Item)
            Elm.Widget_Item.tooltip_unset;
            Elm.Widget_Item.cursor.set;
            Elm.Widget_Item.cursor_unset;
->>>>>>> opensource/master
            Elm_Interface_Atspi_Accessible.name.get;
            Elm_Interface_Atspi_Accessible.state_set.get;
            Elm_Interface_Atspi_Accessible.children.get;

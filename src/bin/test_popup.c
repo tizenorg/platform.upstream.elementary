@@ -656,57 +656,6 @@ _popup_center_title_list_content_1button_cb(void *data, Evas_Object *obj EINA_UN
 
 static void
 _popup_center_title_genlist_content_1button_cb(void *data, Evas_Object *obj EINA_UNUSED,
-<<<<<<< HEAD
-                                            void *event_info EINA_UNUSED)
-{
-   Evas_Object *popup, *genlist;
-   Evas_Object *btn;
-   int i;
-
-   popup = elm_popup_add(data);
-   elm_object_part_text_set(popup, "title,text", "Title");
-
-   Elm_Genlist_Item_Class *itc1 = elm_genlist_item_class_new();
-   itc1->item_style = "default";
-   itc1->func.text_get = gl_popup_text_get;
-   itc1->func.content_get = NULL;
-   itc1->func.state_get = NULL;
-   itc1->func.del = NULL;
-
-   // genlist as a popup content
-   genlist = elm_genlist_add(popup);
-   elm_genlist_mode_set(genlist, ELM_LIST_COMPRESS);
-   elm_scroller_content_min_limit(genlist, EINA_FALSE, EINA_TRUE);
-
-   for (i = 0; i < 10; i++)
-     {
-        elm_genlist_item_append(genlist,
-                                itc1,
-                                (void *)(uintptr_t)i/* item data */,
-                                NULL/* parent */,
-                                ELM_GENLIST_ITEM_NONE,
-                                NULL,
-                                NULL);
-     }
-   elm_genlist_item_class_free(itc1);
-   elm_object_content_set(popup, genlist);
-
-   // popup buttons
-   btn = elm_button_add(popup);
-   elm_object_text_set(btn, "OK");
-   elm_object_part_content_set(popup, "button1", btn);
-   evas_object_smart_callback_add(btn, "clicked", _popup_close_cb, popup);
-
-   // popup show should be called after adding all the contents and the buttons
-   // of popup to set the focus into popup's contents correctly.
-   evas_object_show(popup);
-}
-
-
-static void
-_subpopup_cb(void *data, Evas_Object *obj EINA_UNUSED,
-=======
->>>>>>> opensource/master
                                             void *event_info EINA_UNUSED)
 {
    Evas_Object *popup, *genlist;

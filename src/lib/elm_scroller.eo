@@ -98,20 +98,6 @@ class Elm.Scroller (Elm.Layout, Elm_Interface_Scrollable,
       Evas.Object_Smart.add;
       Evas.Object_Smart.member_add;
       Evas.Object_Smart.resize;
-<<<<<<< HEAD
-      Elm_Widget.theme_apply;
-      Elm_Widget.activate;
-      Elm_Widget.focus_next_manager_is;
-      Elm_Widget.focus_direction_manager_is;
-      Elm_Widget.focus_next;
-      Elm_Widget.focus_direction;
-      Elm_Widget.sub_object_del;
-      Elm_Widget.event;
-      Elm_Container.content_get;
-      Elm_Container.content_set;
-      Elm_Container.content_unset;
-      Elm_Layout.sizing_eval;
-=======
       Elm.Widget.theme_apply;
       Elm.Widget.activate;
       Elm.Widget.focus_next_manager_is;
@@ -124,7 +110,6 @@ class Elm.Scroller (Elm.Layout, Elm_Interface_Scrollable,
       Elm.Container.content_set;
       Elm.Container.content_unset;
       Elm.Layout.sizing_eval;
->>>>>>> opensource/master
       Elm_Interface_Scrollable.page_size.set;
       Elm_Interface_Scrollable.policy.set;
       Elm_Interface_Scrollable.single_direction;

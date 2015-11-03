@@ -1161,13 +1161,8 @@ _elm_list_item_focused(Elm_Object_Item *eo_it)
    focus_raise = edje_object_data_get(VIEW(it), "focusraise");
    if ((focus_raise) && (!strcmp(focus_raise, "on")))
      evas_object_raise(VIEW(it));
-<<<<<<< HEAD
-   evas_object_smart_callback_call
-      (WIDGET(it), SIG_ITEM_FOCUSED, eo_it);
-=======
    eo_do(WIDGET(it), eo_event_callback_call
      (ELM_LIST_EVENT_ITEM_FOCUSED, eo_it));
->>>>>>> opensource/master
    if (_elm_config->atspi_mode)
      elm_interface_atspi_accessible_state_changed_signal_emit(eo_it, ELM_ATSPI_STATE_FOCUSED, EINA_TRUE);
 }
@@ -1194,11 +1189,7 @@ _elm_list_item_unfocused(Elm_Object_Item *eo_it)
      }
 
    sd->focused_item = NULL;
-<<<<<<< HEAD
-   evas_object_smart_callback_call(obj, SIG_ITEM_UNFOCUSED, eo_it);
-=======
    eo_do(obj, eo_event_callback_call(ELM_LIST_EVENT_ITEM_UNFOCUSED, eo_it));
->>>>>>> opensource/master
    if (_elm_config->atspi_mode)
      elm_interface_atspi_accessible_state_changed_signal_emit(eo_it, ELM_ATSPI_STATE_FOCUSED, EINA_FALSE);
 }
@@ -2141,10 +2132,6 @@ _elm_list_item_elm_interface_atspi_accessible_state_set_get(Eo *eo_it, Elm_List_
    Eina_Bool sel;
 
    eo_do_super(eo_it, ELM_LIST_ITEM_CLASS, ret = elm_interface_atspi_accessible_state_set_get());
-<<<<<<< HEAD
-   eo_do(eo_it, sel = elm_obj_list_item_selected_get());
-
-=======
 
    if (elm_object_item_disabled_get(eo_it))
      return ret;
@@ -2152,7 +2139,6 @@ _elm_list_item_elm_interface_atspi_accessible_state_set_get(Eo *eo_it, Elm_List_
    STATE_TYPE_SET(ret, ELM_ATSPI_STATE_SELECTABLE);
 
    eo_do(eo_it, sel = elm_obj_list_item_selected_get());
->>>>>>> opensource/master
    if (sel)
      STATE_TYPE_SET(ret, ELM_ATSPI_STATE_SELECTED);
    else
@@ -2303,11 +2289,8 @@ _elm_list_item_eo_base_constructor(Eo *eo_it, Elm_List_Item_Data *it)
    eo_it = eo_do_super_ret(eo_it, ELM_LIST_ITEM_CLASS, eo_it, eo_constructor());
    it->base = eo_data_scope_get(eo_it, ELM_WIDGET_ITEM_CLASS);
    eo_do(eo_it, elm_interface_atspi_accessible_role_set(ELM_ATSPI_ROLE_LIST_ITEM));
-<<<<<<< HEAD
-=======
 
    return eo_it;
->>>>>>> opensource/master
 }
 
 static Elm_List_Item_Data *

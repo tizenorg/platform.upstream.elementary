@@ -539,12 +539,6 @@ void                  _elm_widget_highlight_in_theme_update(Eo *obj);
 // win focus highlight
 void                  _elm_win_focus_highlight_start(Evas_Object *obj);
 void                  _elm_win_focus_highlight_in_theme_update(Evas_Object *obj, Eina_Bool in_theme);
-<<<<<<< HEAD
-void                  _elm_win_focus_highlight_signal_emit(Evas_Object *obj, const char *emission, const char *source);
-void                  _elm_win_focus_highlight_signal_callback_add(Evas_Object *obj, const char *emission, const char *source, Edje_Signal_Cb _focus_highlight_signal_cb, void *data);
-void                  _elm_win_focus_highlight_signal_callback_del(Evas_Object *obj, const char *emission, const char *source, Edje_Signal_Cb _focus_highlight_signal_cb);
-=======
->>>>>>> opensource/master
 Evas_Object          *_elm_win_focus_highlight_object_get(Evas_Object *obj);
 void                  _elm_win_focus_auto_show(Evas_Object *obj);
 void                  _elm_win_focus_auto_hide(Evas_Object *obj);
