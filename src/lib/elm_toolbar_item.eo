@@ -295,16 +295,6 @@ class Elm.Toolbar_Item(Elm.Widget_Item)
       implements {
            Eo.Base.constructor;
            Eo.Base.destructor;
-<<<<<<< HEAD
-           Elm_Widget_Item.disable;
-           Elm_Widget_Item.focus.set;
-           Elm_Widget_Item.focus.get;
-           Elm_Widget_Item.part_text.get;
-           Elm_Widget_Item.part_text.set;
-           Elm_Widget_Item.part_content.get;
-           Elm_Widget_Item.part_content.set;
-           Elm_Widget_Item.part_content_unset;
-=======
            Elm.Widget_Item.disable;
            Elm.Widget_Item.focus.set;
            Elm.Widget_Item.focus.get;
@@ -313,7 +303,6 @@ class Elm.Toolbar_Item(Elm.Widget_Item)
            Elm.Widget_Item.part_content.get;
            Elm.Widget_Item.part_content.set;
            Elm.Widget_Item.part_content_unset;
->>>>>>> opensource/master
            Elm_Interface_Atspi_Accessible.name.get;
            Elm_Interface_Atspi_Accessible.state_set.get;
       }
