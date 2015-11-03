@@ -14,21 +14,12 @@ mixin Elm_Interface_Atspi_Accessible ()
       }
       @property name @protected {
          get {
-<<<<<<< HEAD
-            /*@ Gets an string describing ATSPI widget role name. 
-                Should be free by a user. */
-=======
             [[Gets an string describing ATSPI widget role name.  Should be free by a user.]]
->>>>>>> opensource/master
          }
          set {
          }
          values {
-<<<<<<< HEAD
-            char* name; /*@ obj name */
-=======
             name: char*; [[obj name]]
->>>>>>> opensource/master
          }
       }
       @property relation_set @protected {

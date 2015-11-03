@@ -348,11 +348,7 @@ EAPI Elm_Atspi_Relation_Set elm_atspi_relation_set_clone(const Elm_Atspi_Relatio
 #define elm_interface_atspi_accessible_children_changed_added_signal_emit(obj, child) \
    do { \
       Elm_Atspi_Event_Children_Changed_Data atspi_data = { EINA_TRUE, child }; \
-<<<<<<< HEAD
-      eo_do(obj, eo_event_callback_call(ELM_INTERFACE_ATSPI_ACCESSIBLE_EVENT_CHILDREN_CHANGED, &atspi_data)); \
-=======
    eo_do(ELM_INTERFACE_ATSPI_ACCESSIBLE_MIXIN, elm_interface_atspi_accessible_event_emit(obj, ELM_INTERFACE_ATSPI_ACCESSIBLE_EVENT_CHILDREN_CHANGED, &atspi_data)); \
->>>>>>> opensource/master
    } while(0);
 
 /**
@@ -361,11 +357,7 @@ EAPI Elm_Atspi_Relation_Set elm_atspi_relation_set_clone(const Elm_Atspi_Relatio
 #define elm_interface_atspi_accessible_children_changed_del_signal_emit(obj, child) \
    do { \
       Elm_Atspi_Event_Children_Changed_Data atspi_data = { EINA_FALSE, child }; \
-<<<<<<< HEAD
-      eo_do(obj, eo_event_callback_call(ELM_INTERFACE_ATSPI_ACCESSIBLE_EVENT_CHILDREN_CHANGED, &atspi_data)); \
-=======
       eo_do(ELM_INTERFACE_ATSPI_ACCESSIBLE_MIXIN, elm_interface_atspi_accessible_event_emit(obj, ELM_INTERFACE_ATSPI_ACCESSIBLE_EVENT_CHILDREN_CHANGED, &atspi_data)); \
->>>>>>> opensource/master
    } while(0);
 
 /**

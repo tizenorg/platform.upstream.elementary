@@ -1,16 +1,4 @@
-<<<<<<< HEAD
-class Elm_List (Elm_Layout, Elm_Interface_Scrollable,
-                Elm_Interface_Atspi_Widget_Action, Elm_Interface_Atspi_Selection)
-{
-   eo_prefix: elm_obj_list;
-   properties {
-      horizontal {
-         set {
-            /*@
-            Enable or disable horizontal mode on the list object.
-=======
 import elm_general;
->>>>>>> opensource/master
 
 enum Elm.List.Mode
 {
