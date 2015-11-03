@@ -12,10 +12,6 @@
 #include "elm_interface_atspi_image.eo.h"
 #include "elm_interface_atspi_selection.eo.h"
 #include "elm_interface_atspi_value.eo.h"
-<<<<<<< HEAD
-#include "elm_interface_atspi_window.eo.h"
-=======
->>>>>>> opensource/master
 #endif
 #endif
 #ifndef EFL_NOLEGACY_API_SUPPORT
@@ -26,9 +22,5 @@
 #include "elm_interface_atspi_image.eo.legacy.h"
 #include "elm_interface_atspi_selection.eo.legacy.h"
 #include "elm_interface_atspi_value.eo.legacy.h"
-<<<<<<< HEAD
-#include "elm_interface_atspi_window.eo.legacy.h"
-=======
->>>>>>> opensource/master
 #endif
 #endif

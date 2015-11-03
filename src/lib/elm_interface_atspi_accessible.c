@@ -215,11 +215,7 @@ _elm_interface_atspi_accessible_role_name_get(Eo *obj EINA_UNUSED, Elm_Interface
 }
 
 EOLIAN char *
-<<<<<<< HEAD
-_elm_interface_atspi_accessible_name_get(Eo *obj EINA_UNUSED, void *pd EINA_UNUSED)
-=======
 _elm_interface_atspi_accessible_name_get(Eo *obj EINA_UNUSED, Elm_Interface_Atspi_Accessible_Data *pd)
->>>>>>> opensource/master
 {
    if (pd->name)
      {
@@ -237,11 +233,7 @@ _elm_interface_atspi_accessible_name_get(Eo *obj EINA_UNUSED, Elm_Interface_Atsp
 }
 
 EOLIAN static void
-<<<<<<< HEAD
-_elm_interface_atspi_accessible_name_set(Eo *obj, void *pd EINA_UNUSED, char *val EINA_UNUSED)
-=======
 _elm_interface_atspi_accessible_name_set(Eo *obj EINA_UNUSED, Elm_Interface_Atspi_Accessible_Data *pd, char *val)
->>>>>>> opensource/master
 {
    eina_stringshare_replace(&pd->name, val);
 }
