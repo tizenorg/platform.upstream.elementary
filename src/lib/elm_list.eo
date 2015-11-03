@@ -1,16 +1,4 @@
-<<<<<<< HEAD
-class Elm_List (Elm_Layout, Elm_Interface_Scrollable,
-                Elm_Interface_Atspi_Widget_Action, Elm_Interface_Atspi_Selection)
-{
-   eo_prefix: elm_obj_list;
-   properties {
-      horizontal {
-         set {
-            /*@
-            Enable or disable horizontal mode on the list object.
-=======
 import elm_general;
->>>>>>> opensource/master
 
 enum Elm.List.Mode
 {
@@ -139,11 +127,7 @@ class Elm.List (Elm.Layout, Elm_Interface_Scrollable,
          get {
          }
          values {
-<<<<<<< HEAD
-            Elm_Object_Multi_Select_Mode mode(2); /*@ The multi select mode */
-=======
             mode: Elm.Object.Multi_Select_Mode(Elm.Object.Multi_Select_Mode.max); [[The multi select mode]]
->>>>>>> opensource/master
          }
       }
       @property mode {
@@ -166,12 +150,7 @@ class Elm.List (Elm.Layout, Elm_Interface_Scrollable,
          get {
          }
          values {
-<<<<<<< HEAD
-            Elm_List_Mode mode(4); /*@ One of #Elm_List_Mode: #ELM_LIST_COMPRESS,
-            #ELM_LIST_SCROLL, #ELM_LIST_LIMIT or #ELM_LIST_EXPAND. */
-=======
             mode: Elm.List.Mode(Elm.List.Mode.last); [[One of #Elm_List_Mode: #ELM_LIST_COMPRESS, #ELM_LIST_SCROLL, #ELM_LIST_LIMIT or #ELM_LIST_EXPAND.]]
->>>>>>> opensource/master
          }
       }
       @property selected_item {
