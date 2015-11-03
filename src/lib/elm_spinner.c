@@ -1260,7 +1260,6 @@ EOLIAN static Eina_Bool
 _elm_spinner_elm_widget_theme_apply(Eo *obj, Elm_Spinner_Data *sd)
 {
    ELM_WIDGET_DATA_GET_OR_RETURN(obj, wd, EINA_FALSE);
-<<<<<<< HEAD
 
    if (!elm_layout_theme_set(obj, "spinner", "base", elm_widget_style_get(obj)))
      CRI("Failed to set layout!");
@@ -1278,25 +1277,6 @@ _elm_spinner_elm_widget_theme_apply(Eo *obj, Elm_Spinner_Data *sd)
         eina_strbuf_free(buf);
      }
 
-=======
-
-   if (!elm_layout_theme_set(obj, "spinner", "base", elm_widget_style_get(obj)))
-     CRI("Failed to set layout!");
-
-   if (edje_object_part_exists(wd->resize_obj, "elm.swallow.dec_button"))
-     sd->button_layout = EINA_TRUE;
-   else
-     sd->button_layout = EINA_FALSE;
-
-   if (sd->ent)
-     {
-        Eina_Strbuf *buf = eina_strbuf_new();
-        eina_strbuf_append_printf(buf, "spinner/%s", elm_widget_style_get(obj));
-        elm_widget_style_set(sd->ent, eina_strbuf_string_get(buf));
-        eina_strbuf_free(buf);
-     }
-
->>>>>>> opensource/master
    if (sd->inc_button)
      {
         Eina_Strbuf *buf = eina_strbuf_new();
