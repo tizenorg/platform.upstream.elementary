@@ -3125,10 +3125,7 @@ _wl_dnd_drop(void *data EINA_UNUSED, int type EINA_UNUSED, void *event)
      }
 
    ecore_wl_dnd_drag_end(ecore_wl_input_get());
-<<<<<<< HEAD
 
-=======
->>>>>>> opensource/master
    return ECORE_CALLBACK_PASS_ON;
 }
 

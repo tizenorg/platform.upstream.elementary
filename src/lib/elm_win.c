@@ -178,11 +178,8 @@ struct _Elm_Win_Data
    const char  *title;
    const char  *icon_name;
    const char  *role;
-<<<<<<< HEAD
    const char  *frame_style;
-=======
    Eina_Stringshare *name;
->>>>>>> opensource/master
 
    Evas_Object *main_menu;
 
@@ -251,12 +248,9 @@ static const char SIG_INDICATOR_PROP_CHANGED[] = "indicator,prop,changed";
 static const char SIG_ROTATION_CHANGED[] = "rotation,changed";
 static const char SIG_PROFILE_CHANGED[] = "profile,changed";
 static const char SIG_WM_ROTATION_CHANGED[] = "wm,rotation,changed";
-<<<<<<< HEAD
 static const char SIG_THEME_CHANGED[] = "theme,changed";
 static const char SIG_CONFORMANT_CHANGED[] = "conformant,changed";
 static const char SIG_AUX_HINT_ALLOWED[] = "aux,hint,allowed";
-=======
->>>>>>> opensource/master
 
 static const Evas_Smart_Cb_Description _smart_callbacks[] = {
    {SIG_DELETE_REQUEST, ""},
@@ -2023,11 +2017,8 @@ _elm_win_evas_object_smart_del(Eo *obj, Elm_Win_Data *sd)
    eina_stringshare_del(sd->title);
    eina_stringshare_del(sd->icon_name);
    eina_stringshare_del(sd->role);
-<<<<<<< HEAD
    eina_stringshare_del(sd->frame_style);
-=======
    eina_stringshare_del(sd->name);
->>>>>>> opensource/master
    evas_object_del(sd->icon);
    evas_object_del(sd->main_menu);
 
@@ -3893,22 +3884,8 @@ _elm_win_finalize_internal(Eo *obj, Elm_Win_Data *sd, const char *name, Elm_Win_
 #endif
 
    /* do not append to list; all windows render as black rects */
-<<<<<<< HEAD
-   if (type == ELM_WIN_FAKE) return;
-   _elm_win_list = eina_list_append(_elm_win_list, obj);
-   _elm_win_count++;
 
    sd->frame_style = eina_stringshare_add("default");
-   if ((engine) && ((!strcmp(engine, ELM_SOFTWARE_FB)) || (!strcmp(engine, ELM_DRM))))
-     {
-        TRAP(sd, fullscreen_set, 1);
-     }
-   else if ((type != ELM_WIN_INLINED_IMAGE) &&
-            ((engine) &&
-             ((!strcmp(engine, ELM_WAYLAND_SHM) ||
-              (!strcmp(engine, ELM_WAYLAND_EGL))))))
-     _elm_win_frame_add(sd, sd->frame_style);
-=======
    if (type != ELM_WIN_FAKE)
      {
         _elm_win_list = eina_list_append(_elm_win_list, obj);
@@ -3922,8 +3899,7 @@ _elm_win_finalize_internal(Eo *obj, Elm_Win_Data *sd, const char *name, Elm_Win_
                  ((engine) &&
                   ((!strcmp(engine, ELM_WAYLAND_SHM) ||
                    (!strcmp(engine, ELM_WAYLAND_EGL))))))
-          _elm_win_frame_add(sd, "default");
->>>>>>> opensource/master
+          _elm_win_frame_add(sd, sd->frame_style);
 
         if (_elm_config->focus_highlight_enable)
           elm_win_focus_highlight_enabled_set(obj, EINA_TRUE);
@@ -3988,6 +3964,9 @@ _elm_win_finalize_internal(Eo *obj, Elm_Win_Data *sd, const char *name, Elm_Win_
    if (_elm_config->atspi_mode)
      elm_interface_atspi_window_created_signal_emit(obj);
 
+   if(_elm_config->win_no_border)
+     _elm_win_borderless_set(obj, sd, EINA_TRUE);
+
    evas_object_show(sd->edje);
 
    eo_do(obj, eo_event_callback_add(EO_EV_CALLBACK_ADD, _cb_added, sd),
@@ -4000,13 +3979,6 @@ _elm_win_finalize_internal(Eo *obj, Elm_Win_Data *sd, const char *name, Elm_Win_
    return obj;
 }
 
-<<<<<<< HEAD
-
-   if(_elm_config->win_no_border)
-     _elm_win_borderless_set(obj, sd, EINA_TRUE);
-
-   evas_object_show(sd->edje);
-=======
 EOLIAN static Eo *
 _elm_win_eo_base_finalize(Eo *obj, Elm_Win_Data *_pd)
 {
@@ -4016,7 +3988,6 @@ _elm_win_eo_base_finalize(Eo *obj, Elm_Win_Data *_pd)
         eo_do_super(obj, MY_CLASS, obj = eo_finalize());
      }
    return obj;
->>>>>>> opensource/master
 }
 
 EOLIAN static Eo *
@@ -5097,8 +5068,7 @@ _elm_win_indicator_mode_set(Eo *obj EINA_UNUSED, Elm_Win_Data *sd, Elm_Win_Indic
             (sd->x.xwin, ECORE_X_ILLUME_INDICATOR_STATE_OFF);
      }
 #endif
-<<<<<<< HEAD
-#if HAVE_ELEMENTARY_WAYLAND
+#ifdef HAVE_ELEMENTARY_WAYLAND
    _elm_win_wlwindow_get(sd);
    if (sd->wl.win)
      {
@@ -5110,11 +5080,8 @@ _elm_win_indicator_mode_set(Eo *obj EINA_UNUSED, Elm_Win_Data *sd, Elm_Win_Indic
             (sd->wl.win, ECORE_WL_INDICATOR_STATE_OFF);
      }
 #endif
-   evas_object_smart_callback_call(obj, SIG_INDICATOR_PROP_CHANGED, NULL);
-=======
    eo_do(obj, eo_event_callback_call
      (ELM_WIN_EVENT_INDICATOR_PROP_CHANGED, NULL));
->>>>>>> opensource/master
 }
 
 EOLIAN static Elm_Win_Indicator_Mode
@@ -5143,8 +5110,7 @@ _elm_win_indicator_opacity_set(Eo *obj EINA_UNUSED, Elm_Win_Data *sd, Elm_Win_In
             (sd->x.xwin, ECORE_X_ILLUME_INDICATOR_TRANSPARENT);
      }
 #endif
-<<<<<<< HEAD
-#if HAVE_ELEMENTARY_WAYLAND
+#ifdef HAVE_ELEMENTARY_WAYLAND
    _elm_win_wlwindow_get(sd);
    if (sd->wl.win)
      {
@@ -5159,11 +5125,8 @@ _elm_win_indicator_opacity_set(Eo *obj EINA_UNUSED, Elm_Win_Data *sd, Elm_Win_In
             (sd->wl.win, ECORE_WL_INDICATOR_TRANSPARENT);
      }
 #endif
-   evas_object_smart_callback_call(obj, SIG_INDICATOR_PROP_CHANGED, NULL);
-=======
    eo_do(obj, eo_event_callback_call
      (ELM_WIN_EVENT_INDICATOR_PROP_CHANGED, NULL));
->>>>>>> opensource/master
 }
 
 EOLIAN static Elm_Win_Indicator_Opacity_Mode
