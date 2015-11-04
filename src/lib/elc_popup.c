@@ -953,11 +953,6 @@ _title_text_set(Evas_Object *obj,
    if (title_visibility_old != title_visibility_current)
      _visuals_set(obj);
 
-<<<<<<< HEAD
-   elm_layout_sizing_eval(obj);
-
-=======
->>>>>>> opensource/master
    return EINA_TRUE;
 }
 
@@ -1025,11 +1020,6 @@ _content_text_set(Evas_Object *obj,
      }
 
 end:
-<<<<<<< HEAD
-   elm_layout_sizing_eval(obj);
-
-=======
->>>>>>> opensource/master
    return EINA_TRUE;
 }
 
@@ -1105,11 +1095,6 @@ _title_icon_set(Evas_Object *obj,
      elm_layout_signal_emit(sd->main_layout, "elm,state,title,icon,visible", "elm");
    if (title_visibility_old != title_visibility_current) _visuals_set(obj);
 
-<<<<<<< HEAD
-   elm_layout_sizing_eval(obj);
-
-=======
->>>>>>> opensource/master
    return EINA_TRUE;
 }
 
@@ -1141,10 +1126,6 @@ _content_set(Evas_Object *obj,
         evas_object_event_callback_add
           (content, EVAS_CALLBACK_DEL, _on_content_del, obj);
      }
-<<<<<<< HEAD
-   elm_layout_sizing_eval(obj);
-=======
->>>>>>> opensource/master
 
    return EINA_TRUE;
 }
@@ -1209,11 +1190,6 @@ _action_button_set(Evas_Object *obj,
    snprintf(buf, sizeof(buf), "elm.swallow.content.button%i", idx + 1);
    elm_object_part_content_set
      (sd->action_area, buf, sd->buttons[idx]->btn);
-<<<<<<< HEAD
-
-   elm_layout_sizing_eval(obj);
-=======
->>>>>>> opensource/master
 }
 
 EOLIAN static Eina_Bool
