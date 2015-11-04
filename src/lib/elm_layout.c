@@ -307,7 +307,6 @@ _elm_layout_highlight_in_theme(Evas_Object *obj)
      elm_widget_access_highlight_in_theme_set(obj, EINA_FALSE);
 }
 
-<<<<<<< HEAD
 static Eina_Bool
 _visuals_refresh(Evas_Object *obj,
                  Elm_Layout_Smart_Data *sd)
@@ -352,47 +351,6 @@ _elm_layout_elm_widget_disable(Eo *obj, Elm_Layout_Smart_Data *_pd EINA_UNUSED)
    return EINA_TRUE;
 }
 
-=======
->>>>>>> opensource/master
-static Eina_Bool
-_visuals_refresh(Evas_Object *obj,
-                 Elm_Layout_Smart_Data *sd)
-{
-   Eina_Bool ret = EINA_FALSE;
-
-   ELM_WIDGET_DATA_GET_OR_RETURN(obj, wd, EINA_FALSE);
-
-   _parts_swallow_fix(sd, wd);
-   _parts_text_fix(sd);
-   _parts_signals_emit(sd);
-   _parts_cursors_apply(sd);
-
-   ret = _visuals_refresh(obj, sd);
-
-   eo_do(obj, ret = elm_obj_widget_disable());
-
-<<<<<<< HEAD
-=======
-   eo_do(obj, elm_obj_layout_sizing_eval());
-
-   return ret;
-}
-
-EOLIAN static Eina_Bool
-_elm_layout_elm_widget_disable(Eo *obj, Elm_Layout_Smart_Data *_pd EINA_UNUSED)
-{
-   ELM_WIDGET_DATA_GET_OR_RETURN(obj, wd, EINA_FALSE);
-
-   if (elm_object_disabled_get(obj))
-     edje_object_signal_emit
-       (wd->resize_obj, "elm,state,disabled", "elm");
-   else
-     edje_object_signal_emit
-       (wd->resize_obj, "elm,state,enabled", "elm");
-
-   return EINA_TRUE;
-}
-
 static Eina_Bool
 _elm_layout_theme_internal(Eo *obj, Elm_Layout_Smart_Data *sd)
 {
@@ -413,7 +371,6 @@ _elm_layout_theme_internal(Eo *obj, Elm_Layout_Smart_Data *sd)
 
    ret = _visuals_refresh(obj, sd) && ret;
 
->>>>>>> opensource/master
    return ret;
 }
 
