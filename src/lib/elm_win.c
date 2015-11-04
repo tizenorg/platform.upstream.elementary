@@ -5385,7 +5385,6 @@ _elm_win_keygrab_set(Eo *obj EINA_UNUSED, Elm_Win_Data *sd, const char *key, Eva
          ret = ecore_x_window_keygrab_set(sd->x.xwin, key, 0, 0, 0, x_grab_mode);
      }
 #endif
-<<<<<<< HEAD
 // TIZEN_ONLY(20150722): Add ecore_wl_window_keygrab_* APIs
 #ifdef HAVE_ELEMENTARY_WAYLAND
    _elm_win_wlwindow_get(sd);
@@ -5413,8 +5412,6 @@ _elm_win_keygrab_set(Eo *obj EINA_UNUSED, Elm_Win_Data *sd, const char *key, Eva
      }
 #endif
 //
-=======
->>>>>>> opensource/master
    return ret;
 }
 
@@ -5427,7 +5424,6 @@ _elm_win_keygrab_unset(Eo *obj EINA_UNUSED, Elm_Win_Data *sd, const char *key, E
    if (sd->x.xwin)
      ret = ecore_x_window_keygrab_unset(sd->x.xwin, key, 0, 0);
 #endif
-<<<<<<< HEAD
 // TIZEN_ONLY(20150722): Add ecore_wl_window_keygrab_* APIs
 #ifdef HAVE_ELEMENTARY_WAYLAND
    _elm_win_wlwindow_get(sd);
@@ -5435,8 +5431,6 @@ _elm_win_keygrab_unset(Eo *obj EINA_UNUSED, Elm_Win_Data *sd, const char *key, E
      ret = ecore_wl_window_keygrab_unset(sd->wl.win, key, 0, 0);
 #endif
 //
-=======
->>>>>>> opensource/master
    return ret;
 }
 
