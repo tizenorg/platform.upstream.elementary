@@ -5731,8 +5731,6 @@ _elm_entry_elm_interface_atspi_accessible_state_set_get(Eo *obj, Elm_Entry_Data 
    return ret;
 }
 
-<<<<<<< HEAD
-=======
 EOLIAN static char*
 _elm_entry_elm_interface_atspi_accessible_name_get(Eo *obj EINA_UNUSED, Elm_Entry_Data *sd)
 {
@@ -5740,5 +5738,4 @@ _elm_entry_elm_interface_atspi_accessible_name_get(Eo *obj EINA_UNUSED, Elm_Entr
    return ret ? strdup(ret) : NULL;
 }
 
->>>>>>> opensource/master
 #include "elm_entry.eo.c"

@@ -1333,8 +1333,6 @@ group { name: "elm/scroller/contents/default";
       }
    }
 }
-<<<<<<< HEAD
-=======
 
 group { name: "elm/scroller/base/popup/no_inset_shadow";
    inherit: "elm/scroller/base/default";
@@ -1357,4 +1355,3 @@ group { name: "elm/scroller/base/popup/no_inset_shadow";
       }
    }
 }
->>>>>>> opensource/master

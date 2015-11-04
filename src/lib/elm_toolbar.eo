@@ -377,8 +377,6 @@ class Elm.Toolbar (Elm.Widget, Elm_Interface_Scrollable,
       Elm_Interface_Atspi_Widget_Action.elm_actions.get;
       Elm_Interface_Atspi_Accessible.children.get;
       Elm_Interface_Atspi_Accessible.state_set.get;
-<<<<<<< HEAD
-=======
       Elm_Interface_Atspi_Selection.selected_children_count.get;
       Elm_Interface_Atspi_Selection.selected_child.get;
       Elm_Interface_Atspi_Selection.selected_child_deselect;
@@ -387,7 +385,6 @@ class Elm.Toolbar (Elm.Widget, Elm_Interface_Scrollable,
       Elm_Interface_Atspi_Selection.is_child_selected;
       Elm_Interface_Atspi_Selection.all_children_select;
       Elm_Interface_Atspi_Selection.clear;
->>>>>>> opensource/master
    }
    events {
       language,changed;

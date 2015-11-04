@@ -30,10 +30,7 @@ struct _api_data
    Evas_Object *box;           /* Use this to get box content     */
    Evas_Object *grid;
    Evas_Object *grid2;
-<<<<<<< HEAD
-=======
    Elm_Gengrid_Item_Field_Type field_type;
->>>>>>> opensource/master
 };
 typedef struct _api_data api_data;
 
@@ -1986,8 +1983,6 @@ test_gengrid_focus(void *data EINA_UNUSED,
         if (i == 4)
           elm_object_item_disabled_set(id->item, EINA_TRUE);
      }
-<<<<<<< HEAD
-=======
    elm_gengrid_item_class_free(ic);
 
    evas_object_resize(win, 600, 600);
@@ -2248,7 +2243,6 @@ test_gengrid_update(void *data EINA_UNUSED,
         if (i == 4)
           elm_object_item_disabled_set(id->item, EINA_TRUE);
      }
->>>>>>> opensource/master
    elm_gengrid_item_class_free(ic);
 
    evas_object_resize(win, 600, 600);

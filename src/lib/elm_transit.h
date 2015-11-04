@@ -589,11 +589,7 @@ EAPI void                   elm_transit_go(Elm_Transit *transit);
  * @since 1.14
  * @ingroup Transit
  */
-<<<<<<< HEAD
-EAPI void elm_transit_go_in(Elm_Transit *transit, double in);
-=======
 EAPI void                   elm_transit_go_in(Elm_Transit *transit, double in);
->>>>>>> opensource/master
 
 /**
  * Pause/Resume the transition.

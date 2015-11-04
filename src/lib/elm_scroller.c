@@ -113,11 +113,8 @@ _key_action_move(Evas_Object *obj, const char *params)
          elm_interface_scrollable_content_viewport_geometry_get
          (&v_x, &v_y, &v_w, &v_h));
    evas_object_geometry_get(sd->content, &c_x, &c_y, &max_x, &max_y);
-<<<<<<< HEAD
-=======
 
    _elm_widget_focus_auto_show(obj);
->>>>>>> opensource/master
 
    current_focus = elm_widget_focused_object_get(obj);
    evas_object_geometry_get(current_focus, &f_x, &f_y, &f_w, &f_h);
@@ -150,10 +147,7 @@ _key_action_move(Evas_Object *obj, const char *params)
                   if (cur_weight == 0.0)
                     {
                        elm_widget_focus_steal(cur, NULL);
-<<<<<<< HEAD
-=======
                        eina_list_free(can_focus_list);
->>>>>>> opensource/master
                        return EINA_TRUE;
                     }
                   cur_weight = 1.0 / cur_weight;
@@ -167,10 +161,7 @@ _key_action_move(Evas_Object *obj, const char *params)
         if (new_focus)
           {
              elm_widget_focus_steal(new_focus, NULL);
-<<<<<<< HEAD
-=======
              eina_list_free(can_focus_list);
->>>>>>> opensource/master
              return EINA_TRUE;
           }
      }
@@ -190,10 +181,7 @@ _key_action_move(Evas_Object *obj, const char *params)
         if (r && new_focus)
           {
              elm_widget_focus_steal(new_focus, new_focus_item);
-<<<<<<< HEAD
-=======
              eina_list_free(can_focus_list);
->>>>>>> opensource/master
              return EINA_TRUE;
           }
      }
@@ -1428,8 +1416,6 @@ elm_scroller_loop_get(const Evas_Object *obj,
    eo_do(obj, elm_interface_scrollable_loop_get(loop_h, loop_v));
 }
 
-<<<<<<< HEAD
-=======
 EAPI void
 elm_scroller_wheel_disabled_set(Evas_Object *obj, Eina_Bool disabled)
 {
@@ -1448,7 +1434,6 @@ elm_scroller_wheel_disabled_get(const Evas_Object *obj)
    return eo_do_ret((Eo *) obj, ret, elm_interface_scrollable_wheel_disabled_get());
 }
 
->>>>>>> opensource/master
 EOLIAN static void
 _elm_scroller_propagate_events_set(Eo *obj, Elm_Scroller_Data *_pd EINA_UNUSED, Eina_Bool propagation)
 {
