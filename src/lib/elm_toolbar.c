@@ -159,6 +159,8 @@ _item_unselect(Elm_Toolbar_Item_Data *item)
    if (item->icon)
      elm_widget_signal_emit(item->icon, "elm,state,unselected", "elm");
    evas_object_smart_callback_call(WIDGET(item), SIG_UNSELECTED, EO_OBJ(item));
+   if (_elm_config->atspi_mode)
+    elm_interface_atspi_accessible_state_changed_signal_emit(EO_OBJ(item), ELM_ATSPI_STATE_SELECTED, EINA_FALSE);
 }
 
 static void
@@ -1130,6 +1132,8 @@ _item_select(Elm_Toolbar_Item_Data *it)
      }
    evas_object_smart_callback_call(obj, SIG_CLICKED, EO_OBJ(it));
    evas_object_smart_callback_call(obj, SIG_SELECTED, EO_OBJ(it));
+   if (_elm_config->atspi_mode)
+    elm_interface_atspi_accessible_state_changed_signal_emit(EO_OBJ(it), ELM_ATSPI_STATE_SELECTED, EINA_TRUE);
 }
 
 static void

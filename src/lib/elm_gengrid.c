@@ -374,6 +374,8 @@ _item_unselect(Elm_Gen_Item *it)
         it->selected = EINA_FALSE;
         sd->selected = eina_list_remove(sd->selected, eo_it);
         evas_object_smart_callback_call(WIDGET(it), SIG_UNSELECTED, eo_it);
+        if (_elm_config->atspi_mode)
+          elm_interface_atspi_accessible_state_changed_signal_emit(eo_it, ELM_ATSPI_STATE_SELECTED, EINA_FALSE);
      }
 }
 
@@ -3753,6 +3755,8 @@ _item_select(Elm_Gen_Item *it)
    if (it->generation == sd->generation)
      {
         evas_object_smart_callback_call(WIDGET(it), SIG_SELECTED, eo_it);
+        if (_elm_config->atspi_mode)
+          elm_interface_atspi_accessible_state_changed_signal_emit(eo_it, ELM_ATSPI_STATE_SELECTED, EINA_TRUE);
         elm_object_item_focus_set(eo_it, EINA_TRUE);
      }
 
