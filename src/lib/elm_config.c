@@ -1530,68 +1530,6 @@ _config_flush_get(void)
    ecore_event_add(ELM_EVENT_CONFIG_ALL_CHANGED, NULL, NULL, NULL);
 }
 
-static void
-_config_flush_load(void)
-{
-   Elm_Config *cfg = NULL;
-   Eet_File *ef;
-   char buf[PATH_MAX];
-
-   _elm_config_user_dir_snprintf(buf, sizeof(buf), "config/flush.cfg");
-
-   ef = eet_open(buf, EET_FILE_MODE_READ);
-   if (ef)
-     {
-        cfg = eet_data_read(ef, _config_edd, "config");
-        eet_close(ef);
-     }
-
-   if (cfg)
-     {
-        size_t len;
-
-        len = _elm_config_user_dir_snprintf(buf, sizeof(buf), "themes/");
-        if (len + 1 < sizeof(buf))
-          ecore_file_mkpath(buf);
-
-        _elm_config = cfg;
-
-        if ((_elm_config->config_version >> ELM_CONFIG_VERSION_EPOCH_OFFSET) < ELM_CONFIG_EPOCH)
-           {
-              WRN("User's elementary config seems outdated and unusable. Fallback to load system config.");
-              _config_free(_elm_config);
-              _elm_config = NULL;
-           }
-        else
-          {
-             if (_elm_config->config_version < ELM_CONFIG_VERSION)
-               _config_update();
-          }
-     }
-}
-
-static void
-_config_flush_get(void)
-{
-   _elm_config_font_overlays_cancel();
-   _color_overlays_cancel();
-   _config_free(_elm_config);
-   _elm_config = NULL;
-   _config_flush_load();
-   _env_get();
-   _config_apply();
-   _config_sub_apply();
-   evas_font_reinit();
-   _elm_config_font_overlay_apply();
-   _elm_config_color_overlay_apply();
-   _elm_rescale();
-   _elm_recache();
-   _elm_clouseau_reload();
-   _elm_config_key_binding_hash();
-   _elm_win_access(_elm_config->access_mode);
-   ecore_event_add(ELM_EVENT_CONFIG_ALL_CHANGED, NULL, NULL, NULL);
-}
-
 static const char *
 _elm_config_eet_close_error_get(Eet_File *ef,
                                 char     *file)
@@ -2325,23 +2263,6 @@ elm_config_scale_set(double scale)
    _elm_rescale();
 }
 
-/*
- * Add backwards compatability implementation for elm_scale_get and elm_scale_set
- * to allow running unmodified Tizen applications on a new drop of elementary
- */
-
-EAPI double
-elm_scale_get(void) 
-{ 
-   return elm_config_scale_get(); 
-}
-
-EAPI void
-elm_scale_set(double scale) 
-{ 
-   elm_config_scale_set(scale);
-}
-
 EAPI Eina_Bool
 elm_config_password_show_last_get(void)
 {
@@ -2563,12 +2484,6 @@ EAPI Evas_Coord
 elm_config_finger_size_get(void)
 {
    return _elm_config->finger_size;
-}
-
-EAPI void
-elm_finger_size_set(Evas_Coord size)
-{
-   elm_config_finger_size_set(size);
 }
 
 EAPI void
@@ -3750,9 +3665,31 @@ _elm_config_shutdown(void)
    ELM_SAFE_FREE(_elm_key_bindings, eina_hash_free);
 }
 
+/*
+ * Add backwards compatability implementation for elm_scale_get/set and elm_finger_size_get/set
+ * to allow running unmodified Tizen applications on a new drop of elementary
+ */
+
+EAPI double
+elm_scale_get(void) 
+{ 
+   return elm_config_scale_get(); 
+}
+
+EAPI void
+elm_scale_set(double scale) 
+{ 
+   elm_config_scale_set(scale);
+}
+
 EAPI Evas_Coord
 elm_finger_size_get(void)
 {
    return elm_config_finger_size_get();
 }
 
+EAPI void
+elm_finger_size_set(Evas_Coord size)
+{
+   elm_config_finger_size_set(size);
+}

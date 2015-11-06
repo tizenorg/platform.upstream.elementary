@@ -437,20 +437,6 @@ abstract Elm.Widget (Evas.Object_Smart, Elm_Interface_Atspi_Accessible, Elm_Inte
             @in dir: Elm.Focus_Direction; [[Focus direction]]
          }
       }
-      focus_next_item_set {
-         /*Set the next object item with specific focus direction.*/
-         params {
-            @in Elm_Object_Item *next_item;
-            @in Elm_Focus_Direction dir;
-         }
-      }
-      focus_next_item_get @const {
-         /*Get the next object item with specific focus direction.*/
-         return: Elm_Object_Item *;
-         params {
-            @in Elm_Focus_Direction dir;
-         }
-      }
       focus_tree_unfocusable_handle {
       }
       focus_custom_chain_prepend {

@@ -337,14 +337,6 @@ group { name: "e/comp/frame/default";
             rel2.offset: 4 4;
          }
       }
-      spacer { "gspacer";
-         desc {
-            rel1.to: "e.swallow.content";
-            rel1.offset: -5  -5;
-            rel2.to: "e.swallow.content";
-            rel2.offset: 4 4;
-         }
-      }
    }
    programs {
        program {

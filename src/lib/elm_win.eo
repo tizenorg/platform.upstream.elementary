@@ -1260,36 +1260,6 @@ class Elm.Win (Elm.Widget, Elm_Interface_Atspi_Window,
             @in not_modifiers: Evas_Modifier_Mask; [[This is for the keymask feature. Currently this feature is not supported.]]
          }
       }
-      keygrab_set {
-         /*@
-         Set keygrab value of the window
-
-         This function grabs the @p key of window using @p grab_mode.
-         @ingroup Win */
-
-         return: bool;
-         params {
-            @in const(char)* key; /*@ This string is the keyname to grab. */
-            @in Evas_Modifier_Mask modifiers; /*@ This is for the keymask feature. Currently this feature is not supported. */
-            @in Evas_Modifier_Mask not_modifiers; /*@ This is for the keymask feature. Currently this feature is not supported. */
-            @in int proirity; /*@ This is for the priority of keygrab. Currently this feature is not supported. */
-            @in Elm_Win_Keygrab_Mode grab_mode; /*@  According to the grabmode, it can grab key differently */
-         }
-      }
-      keygrab_unset {
-         /*@
-         Unset keygrab value of the window
-
-         This function unset keygrab value. Ungrab @p key of window.
-         @ingroup Win */
-
-         return: bool;
-         params {
-            @in const(char)* key; /*@ This string is the keyname to grab. */
-            @in Evas_Modifier_Mask modifiers; /*@ This is for the keymask feature. Currently this feature is not supported. */
-            @in Evas_Modifier_Mask not_modifiers; /*@ This is for the keymask feature. Currently this feature is not supported. */
-         }
-      }
    }
    implements {
       class.constructor;

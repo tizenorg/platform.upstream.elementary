@@ -761,54 +761,6 @@ _loop_content_set(Evas_Object *obj, Elm_Scroller_Data *sd, Evas_Object *content)
      }
 }
 
-static void
-_loop_content_set(Evas_Object *obj, Elm_Scroller_Data *sd, Evas_Object *content)
-{
-   if (!sd->contents)
-     {
-        sd->contents = elm_layout_add(obj);
-        evas_object_smart_member_add(sd->contents, obj);
-        elm_layout_theme_set(sd->contents, "scroller", "contents", elm_widget_style_get(obj));
-        evas_object_size_hint_weight_set(sd->contents, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-        evas_object_size_hint_align_set(sd->contents, EVAS_HINT_FILL, EVAS_HINT_FILL);
-
-        elm_widget_sub_object_add(obj, sd->contents);
-        elm_widget_on_show_region_hook_set(sd->contents, _show_region_hook, obj);
-     }
-   elm_object_part_content_set(sd->contents, "elm.swallow.content", content);
-   sd->content = content;
-
-   if (sd->loop_h)
-     {
-       if (!sd->proxy_content[0])
-          sd->proxy_content[0] =
-             evas_object_image_add(evas_object_evas_get(sd->contents));
-        _elm_scroller_proxy_set(obj, sd, sd->proxy_content[0]);
-        elm_object_part_content_set(sd->contents, "elm.swallow.content_r",
-                                    sd->proxy_content[0]);
-     }
-
-   if (sd->loop_v)
-     {
-        if (!sd->proxy_content[1])
-          sd->proxy_content[1] =
-             evas_object_image_add(evas_object_evas_get(sd->contents));
-        _elm_scroller_proxy_set(obj, sd, sd->proxy_content[1]);
-        elm_object_part_content_set(sd->contents, "elm.swallow.content_b",
-                                    sd->proxy_content[1]);
-     }
-
-   if (sd->loop_h && sd->loop_v)
-     {
-        if (!sd->proxy_content[2])
-          sd->proxy_content[2] =
-             evas_object_image_add(evas_object_evas_get(sd->contents));
-        _elm_scroller_proxy_set(obj, sd, sd->proxy_content[2]);
-        elm_object_part_content_set(sd->contents, "elm.swallow.content_rb",
-                                    sd->proxy_content[2]);
-     }
-}
-
 EOLIAN static Eina_Bool
 _elm_scroller_elm_container_content_set(Eo *obj, Elm_Scroller_Data *sd, const char *part, Evas_Object *content)
 {

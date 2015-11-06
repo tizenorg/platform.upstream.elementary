@@ -5477,13 +5477,6 @@ _evas_viewport_resize_cb(void *d, Evas *e EINA_UNUSED, void *ei EINA_UNUSED)
    evas_object_smart_changed(priv->pan_obj);
 }
 
-static void
-_evas_viewport_resize_cb(void *d, Evas *e EINA_UNUSED, void *ei EINA_UNUSED)
-{
-   Elm_Genlist_Data *priv = d;
-   evas_object_smart_changed(priv->pan_obj);
-}
-
 EOLIAN static void
 _elm_genlist_evas_object_smart_add(Eo *obj, Elm_Genlist_Data *priv)
 {
@@ -7151,12 +7144,6 @@ elm_genlist_item_tooltip_style_get(const Elm_Object_Item *it)
 {
    const char *ret;
    return eo_do_ret(it, ret, elm_wdg_item_tooltip_style_get());
-}
-
-EOLIAN static const char *
-_elm_genlist_item_elm_widget_item_tooltip_style_get(Eo *eo_it EINA_UNUSED, Elm_Gen_Item *it)
-{
-   return it->tooltip.style;
 }
 
 EOLIAN static const char *

@@ -183,16 +183,6 @@ _elm_widget_focus_highlight_object_get(const Evas_Object *obj)
    return NULL;
 }
 
-Evas_Object *
-_elm_widget_focus_highlight_object_get(const Evas_Object *obj)
-{
-	Evas_Object *top = elm_widget_top_get(obj);
-
-	if (top && eo_isa(top, ELM_WIN_CLASS))
-		return _elm_win_focus_highlight_object_get(top);
-	return NULL;
-}
-
 EAPI Eina_Bool
 elm_widget_focus_highlight_enabled_get(const Evas_Object *obj)
 {
