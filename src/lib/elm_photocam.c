@@ -308,7 +308,7 @@ _image_place(Evas_Object *obj,
      }
    evas_object_move(sd->img, ox + 0 - px + ax, oy + 0 - py + ay);
 
-   if (rw != 0 && rh != 0) // TIZEN_ONLY(20150813): resize image only viewport has a size
+   if (rw != 0 && rh != 0) // TIZEN_ONLY(20150813): resize image only when viewport has a size
      evas_object_resize(sd->img, gw, gh);
 
    if (sd->show.show)
@@ -387,7 +387,7 @@ _grid_load(Evas_Object *obj,
              else if ((g->grid[tn].want) && (!visible))
                {
                   sd->preload_num--;
-                  if (sd->preload_num == 0)
+                  if (!sd->preload_num)
                     {
                        edje_object_signal_emit
                          (wd->resize_obj,
@@ -477,17 +477,17 @@ _elm_photocam_pan_evas_object_smart_calculate(Eo *obj, Elm_Photocam_Pan_Data *ps
 
    evas_object_geometry_get(obj, &ox, &oy, &ow, &oh);
    _image_place(
-      wd->obj, psd->wsd->pan_x, psd->wsd->pan_y,
-      ox - psd->wsd->g_layer_zoom.imx, oy - psd->wsd->g_layer_zoom.imy, ow,
-      oh);
+       wd->obj, psd->wsd->pan_x, psd->wsd->pan_y,
+       ox - psd->wsd->g_layer_zoom.imx, oy - psd->wsd->g_layer_zoom.imy, ow,
+       oh);
 
    EINA_LIST_FOREACH(psd->wsd->grids, l, g)
      {
         _grid_load(wd->obj, g);
         _grid_place(
-           wd->obj, g, psd->wsd->pan_x,
-           psd->wsd->pan_y, ox - psd->wsd->g_layer_zoom.imx,
-           oy - psd->wsd->g_layer_zoom.imy, ow, oh);
+              wd->obj, g, psd->wsd->pan_x,
+             psd->wsd->pan_y, ox - psd->wsd->g_layer_zoom.imx,
+             oy - psd->wsd->g_layer_zoom.imy, ow, oh);
      }
 }
 
@@ -585,7 +585,7 @@ _grid_clear(Evas_Object *obj,
              if (g->grid[tn].want)
                {
                   sd->preload_num--;
-                  if (sd->preload_num == 0)
+                  if (!sd->preload_num)
                     {
                        edje_object_signal_emit
                          (wd->resize_obj,
@@ -618,7 +618,7 @@ _tile_preloaded_cb(void *data,
         evas_object_show(git->img);
         git->have = 1;
         sd->preload_num--;
-        if (sd->preload_num == 0)
+        if (!sd->preload_num)
           {
              edje_object_signal_emit
                (wd->resize_obj, "elm,state,busy,stop",
@@ -635,7 +635,7 @@ _grid_zoom_calc(double zoom)
    int z = zoom;
 
    if (z < 1) z = 1;
-   if (z > 8) z = 8;
+   if (z > 8) z = 8; // TIZEN_ONLY(20150813): need to create 1x1 grid when zoom >= 8 to load high res img
    return _nearest_pow2_get(z);
 }
 
@@ -658,12 +658,13 @@ _grid_create(Evas_Object *obj)
    g->w = g->iw / g->zoom;
    g->h = g->ih / g->zoom;
 
+   // TIZEN_ONLY(20150813): need to create 1x1 grid when zoom >= 8 to load high res img
    if ((sd->do_region) && (g->zoom < 8))
      {
         g->gw = (g->w + g->tsize - 1) / g->tsize;
         g->gh = (g->h + g->tsize - 1) / g->tsize;
      }
-   else //need to create 1x1 grid when zoom >= 8 to load high res img
+   else
      {
         g->gw = 1;
         g->gh = 1;
@@ -738,6 +739,33 @@ _grid_clear_all(Evas_Object *obj)
 }
 
 static void
+_smooth_update(Evas_Object *obj)
+{
+   Elm_Phocam_Grid *g;
+   int x, y;
+   Eina_List *l;
+
+   ELM_PHOTOCAM_DATA_GET(obj, sd);
+
+   EINA_LIST_FOREACH(sd->grids, l, g)
+     {
+        for (y = 0; y < g->gh; y++)
+          {
+             for (x = 0; x < g->gw; x++)
+               {
+                  int tn;
+
+                  tn = (y * g->gw) + x;
+                  evas_object_image_smooth_scale_set
+                    (g->grid[tn].img, (!sd->no_smooth));
+               }
+          }
+     }
+
+   evas_object_image_smooth_scale_set(sd->img, (!sd->no_smooth));
+}
+
+static void
 _grid_raise(Elm_Phocam_Grid *g)
 {
    int x, y;
@@ -754,6 +782,19 @@ _grid_raise(Elm_Phocam_Grid *g)
      }
 }
 
+static Eina_Bool
+_scroll_timeout_cb(void *data)
+{
+   ELM_PHOTOCAM_DATA_GET(data, sd);
+
+   sd->no_smooth--;
+   if (!sd->no_smooth) _smooth_update(data);
+
+   sd->scr_timer = NULL;
+
+   return ECORE_CALLBACK_CANCEL;
+}
+
 static void
 _main_img_preloaded_cb(void *data,
                        Evas *e EINA_UNUSED,
@@ -767,7 +808,7 @@ _main_img_preloaded_cb(void *data,
    ELM_WIDGET_DATA_GET_OR_RETURN(data, wd);
 
    evas_object_show(sd->img);
-   sd->main_load_pending = EINA_FALSE;
+   sd->main_load_pending = 0;
    g = _grid_create(obj);
    if (g)
      {
@@ -846,14 +887,14 @@ _zoom_do(Evas_Object *obj,
 static Eina_Bool
 _zoom_anim_cb(void *data)
 {
-//   double t;
+   //double t; // TIZEN_ONLY(20150501): temporarily disable zoom effect
    Eina_Bool go;
    Evas_Object *obj = data;
 
    ELM_PHOTOCAM_DATA_GET(obj, sd);
 
-/** TIZEN_ONLY(20150501): temporarily disable zoom effect
-   t = ecore_loop_time_get();
+   // TIZEN_ONLY(20150501): temporarily disable zoom effect
+   /*t = ecore_loop_time_get();
    if (t >= sd->t_end)
      t = 1.0;
    else if (sd->t_end > sd->t_start)
@@ -865,6 +906,7 @@ _zoom_anim_cb(void *data)
    go = _zoom_do(obj, t);*/
 
    go = _zoom_do(obj, 1.0);
+   //
    if (!go)
      {
         sd->zoom_animator = NULL;
@@ -1611,9 +1653,9 @@ _internal_file_set(Eo *obj, Elm_Photocam_Data *sd, const char *file, Eina_File *
         return;
      }
 
-   // get image size
-   evas_object_image_load_scale_down_set(sd->img, 0);
+   evas_object_image_load_scale_down_set(sd->img, 0); // TIZEN_ONLY(20150430): get scaled down image size
    evas_object_image_size_get(sd->img, &w, &h);
+
    sd->do_region = evas_object_image_region_support_get(sd->img);
    sd->size.imw = w;
    sd->size.imh = h;
@@ -1629,10 +1671,9 @@ _internal_file_set(Eo *obj, Elm_Photocam_Data *sd, const char *file, Eina_File *
         return;
      }
 
-   // load low resolution image
-   evas_object_image_load_scale_down_set(sd->img, 8);
+   evas_object_image_load_scale_down_set(sd->img, 8); // TIZEN_ONLY(20150430): load low resolution image
    evas_object_image_preload(sd->img, 0);
-   evas_object_smart_callback_call(obj, SIG_LOAD, NULL);
+   evas_object_smart_callback_call(obj, SIG_LOAD, NULL); // TIZEN_ONLY(20150430): call load callback
    sd->main_load_pending = EINA_TRUE;
 
    sd->calc_job = ecore_job_add(_calc_job_cb, obj);
@@ -1724,6 +1765,7 @@ _elm_photocam_file_set_internal(Eo *obj, Elm_Photocam_Data *sd, const char *file
    Evas_Load_Error ret = EVAS_LOAD_ERROR_NONE;
    unsigned int i;
 
+   // TIZEN_ONLY(20150430): use macro
    // return if the file name is the same as the previous one
    if ((sd->file) && (file) && !strcmp(sd->file, file)) return EVAS_LOAD_ERROR_NONE;
 
@@ -1741,6 +1783,7 @@ _elm_photocam_file_set_internal(Eo *obj, Elm_Photocam_Data *sd, const char *file
         _elm_url_cancel(sd->remote);
         sd->remote = NULL;
      }
+   //
 
    sd->preload_num = 0;
 
@@ -1827,8 +1870,8 @@ _elm_photocam_zoom_set(Eo *obj, Elm_Photocam_Data *sd, double zoom)
    Eina_List *l;
    Ecore_Animator *an;
    Elm_Phocam_Grid *g, *g_zoom = NULL;
-   Evas_Coord rx, ry, rw, rh;
-   int started = 0;
+   Evas_Coord rx, ry, rw, rh; // TIZEN_ONLY(20150813): make as a function for reusability
+   int zoom_changed = 0, started = 0;
 
    if (zoom <= (1.0 / 256.0)) zoom = (1.0 / 256.0);
    if (zoom == sd->zoom) return;
@@ -1841,6 +1884,7 @@ _elm_photocam_zoom_set(Eo *obj, Elm_Photocam_Data *sd, double zoom)
          (NULL, NULL, &rw, &rh));
    if ((rw <= 0) || (rh <= 0)) return;
 
+   // TIZEN_ONLY(20150813): make as a function for reusability
    z = sd->zoom;
    _image_size_calc(obj, sd);
 
@@ -1848,6 +1892,7 @@ _elm_photocam_zoom_set(Eo *obj, Elm_Photocam_Data *sd, double zoom)
    sd->size.h = sd->size.nh;
 
    if (sd->main_load_pending) goto done;
+   //
 
    EINA_LIST_FOREACH(sd->grids, l, g)
      {
