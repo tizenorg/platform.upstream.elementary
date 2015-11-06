@@ -248,7 +248,6 @@ static const char SIG_INDICATOR_PROP_CHANGED[] = "indicator,prop,changed";
 static const char SIG_ROTATION_CHANGED[] = "rotation,changed";
 static const char SIG_PROFILE_CHANGED[] = "profile,changed";
 static const char SIG_WM_ROTATION_CHANGED[] = "wm,rotation,changed";
-static const char SIG_THEME_CHANGED[] = "theme,changed";
 static const char SIG_CONFORMANT_CHANGED[] = "conformant,changed";
 static const char SIG_AUX_HINT_ALLOWED[] = "aux,hint,allowed";
 
@@ -5185,7 +5184,6 @@ _elm_win_conformant_set(Eo *obj EINA_UNUSED, Elm_Win_Data *sd, Eina_Bool conform
      ecore_wl_window_conformant_set(sd->wl.win, conformant);
 #else
    (void)conformant;
-
 #endif
 }
 

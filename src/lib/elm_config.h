@@ -830,13 +830,6 @@ EAPI double elm_config_scale_get(void);
  */
 EAPI void   elm_config_scale_set(double scale);
 
-/*
- * Add backwards compatability implementation for elm_scale_get and elm_scale_set
- * to allow running unmodified Tizen applications on a new drop of elementary
- */
-EAPI double elm_scale_get(void);
-EAPI void   elm_scale_set(double scale);
-
 /**
  * @defgroup Password_last_show Password show last
  * @ingroup Elementary
@@ -1959,5 +1952,11 @@ EAPI double elm_config_transition_duration_factor_get(void);
  * @}
  */
 
+/*
+ * Add backwards compatability implementation for elm_scale_get and elm_scale_set
+ * to allow running unmodified Tizen applications on a new drop of elementary
+ */
+EAPI double elm_scale_get(void);
+EAPI void   elm_scale_set(double scale);
 EAPI Evas_Coord elm_finger_size_get(void);
 EAPI void       elm_finger_size_set(Evas_Coord size);
