@@ -123,7 +123,7 @@ struct _Elm_Theme
  * the users config doesn't need to be wiped - simply new values need
  * to be put in
  */
-#define ELM_CONFIG_FILE_GENERATION 0x0001
+#define ELM_CONFIG_FILE_GENERATION 0x0006
 #define ELM_CONFIG_VERSION_EPOCH_OFFSET 16
 #define ELM_CONFIG_VERSION         ((ELM_CONFIG_EPOCH << ELM_CONFIG_VERSION_EPOCH_OFFSET) | \
                                     ELM_CONFIG_FILE_GENERATION)
@@ -164,6 +164,10 @@ extern const char *_elm_engines[];
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
 #undef CEIL
 #define CEIL(a)   (((a) % 2 != 0) ? ((a) / 2 + 1) : ((a) / 2))
+#undef IS_INSIDE
+#define IS_INSIDE(x, y, xx, yy, ww, hh) \
+  (((x) < ((xx) + (ww))) && ((y) < ((yy) + (hh))) && \
+  ((x) >= (xx)) && ((y) >= (yy)))
 
 
 #define ELM_SAFE_FREE(_h, _fn) do { _fn((void*)_h); _h = NULL; } while (0)
@@ -200,10 +204,10 @@ struct _Elm_Config
    double        thumbscroll_border_friction;
    double        thumbscroll_sensitivity_friction;
    unsigned char scroll_smooth_start_enable;
-   double        scroll_smooth_time_interval;
+//   double        scroll_smooth_time_interval;; // not used anymore
    double        scroll_smooth_amount;
-   double        scroll_smooth_history_weight;
-   double        scroll_smooth_future_time;
+//   double        scroll_smooth_history_weight;; // not used anymore
+//   double        scroll_smooth_future_time;; // not used anymore
    double        scroll_smooth_time_window;
    double        scale;
    int           win_no_border;
@@ -287,8 +291,15 @@ struct _Elm_Config
    unsigned char audio_mute_input;
    unsigned char audio_mute_alert;
    unsigned char audio_mute_all;
+   unsigned char win_auto_focus_enable;
+   unsigned char win_auto_focus_animate;
+   double        transition_duration_factor;
+   unsigned char naviframe_prev_btn_auto_pushed;
    Eina_List    *bindings;
    Eina_Bool     atspi_mode;
+   int           gl_depth;
+   int           gl_stencil;
+   int           gl_msaa;
 
    /* Not part of the EET file */
    Eina_Bool     is_mirrored : 1;
@@ -332,7 +343,7 @@ struct _Elm_Module
    int          references;
 };
 
-Eo                   *_elm_atspi_bridge_root_get(void);
+Eo                   *_elm_atspi_bridge_get(void);
 void                 _elm_atspi_bridge_init(void);
 void                 _elm_atspi_bridge_shutdown(void);
 
@@ -392,6 +403,7 @@ void                 _elm_module_unload(Elm_Module *m);
 const void          *_elm_module_symbol_get(Elm_Module *m,
                                             const char *name);
 
+void                 _elm_widget_focus_auto_show(Evas_Object *obj);
 void                 _elm_widget_top_win_focused_set(Evas_Object *obj,
                                                      Eina_Bool top_win_focused);
 Eina_Bool            _elm_widget_top_win_focused_get(const Evas_Object *obj);
@@ -413,7 +425,8 @@ void                 _elm_config_reload(void);
 size_t               _elm_config_user_dir_snprintf(char *dst, size_t size,
                                                    const char *fmt, ...)
                                                    EINA_PRINTF(3, 4);
-
+void                 elm_color_class_init(void);
+void                 elm_color_class_shutdown(void);
 void                 _elm_recache(void);
 
 const char          *_elm_config_current_profile_get(void);

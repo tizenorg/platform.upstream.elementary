@@ -517,6 +517,7 @@ test_fileselector(void *data       EINA_UNUSED,
                   void *event_info EINA_UNUSED)
 {
    Evas_Object *win, *fs, *box, *vbox, *sep;
+   const char * home_env;
 
    /* Set the locale according to the system pref.
     * If you don't do so the file selector will order the files list in
@@ -548,7 +549,8 @@ test_fileselector(void *data       EINA_UNUSED,
    /* make the file list a tree with dir expandable in place */
    elm_fileselector_expandable_set(fs, EINA_FALSE);
    /* start the fileselector in the home dir */
-   elm_fileselector_path_set(fs, getenv("HOME"));
+   home_env = eina_environment_home_get();
+   elm_fileselector_path_set(fs, home_env);
 
    /* provides suggested name (just for showing) */
    elm_fileselector_current_name_set(fs, "No name");

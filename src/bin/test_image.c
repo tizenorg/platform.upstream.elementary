@@ -4,17 +4,17 @@
 #include <Elementary.h>
 
 static const struct {
-   Elm_Image_Orient orient;
+   Evas_Image_Orient orient;
    const char *name;
 } images_orient[] = {
-  { ELM_IMAGE_ORIENT_NONE, "None" },
-  { ELM_IMAGE_ROTATE_90, "Rotate 90" },
-  { ELM_IMAGE_ROTATE_180, "Rotate 180" },
-  { ELM_IMAGE_ROTATE_270, "Rotate 270" },
-  { ELM_IMAGE_FLIP_HORIZONTAL, "Horizontal Flip" },
-  { ELM_IMAGE_FLIP_VERTICAL, "Vertical Flip" },
-  { ELM_IMAGE_FLIP_TRANSPOSE, "Transpose" },
-  { ELM_IMAGE_FLIP_TRANSVERSE, "Transverse" },
+  { EVAS_IMAGE_ORIENT_NONE, "None" },
+  { EVAS_IMAGE_ORIENT_90, "Rotate 90" },
+  { EVAS_IMAGE_ORIENT_180, "Rotate 180" },
+  { EVAS_IMAGE_ORIENT_270, "Rotate 270" },
+  { EVAS_IMAGE_FLIP_HORIZONTAL, "Horizontal Flip" },
+  { EVAS_IMAGE_FLIP_VERTICAL, "Vertical Flip" },
+  { EVAS_IMAGE_FLIP_TRANSPOSE, "Transpose" },
+  { EVAS_IMAGE_FLIP_TRANSVERSE, "Transverse" },
   { 0, NULL }
 };
 
@@ -24,7 +24,7 @@ my_im_ch(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
    Evas_Object *win = data;
    Evas_Object *im = evas_object_data_get(win, "im");
    Evas_Object *rdg = evas_object_data_get(win, "rdg");
-   Elm_Image_Orient v = elm_radio_value_get(rdg);
+   Evas_Image_Orient v = elm_radio_value_get(rdg);
 
    elm_image_orient_set(im, v);
    fprintf(stderr, "Set %i and got %i\n",
@@ -96,7 +96,7 @@ test_remote_image(void *data EINA_UNUSED, Evas_Object *obj  EINA_UNUSED, void *e
    evas_object_show(box);
 
    im = elm_image_add(win);
-   elm_image_file_set(im, "http://31.media.tumblr.com/29f1ecd4f98aaff73fb21f479b450d4c/tumblr_mqsxdciQmB1rrju89o1_1280.jpg", NULL);
+   elm_image_file_set(im, "http://41.media.tumblr.com/29f1ecd4f98aaff73fb21f479b450d4c/tumblr_mqsxdciQmB1rrju89o1_1280.jpg", NULL);
    evas_object_size_hint_weight_set(im, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    evas_object_size_hint_align_set(im, EVAS_HINT_FILL, EVAS_HINT_FILL);
 

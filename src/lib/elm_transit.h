@@ -589,7 +589,7 @@ EAPI void                   elm_transit_go(Elm_Transit *transit);
  * @since 1.14
  * @ingroup Transit
  */
-EAPI void elm_transit_go_in(Elm_Transit *transit, double in);
+EAPI void                   elm_transit_go_in(Elm_Transit *transit, double in);
 
 /**
  * Pause/Resume the transition.
@@ -713,7 +713,7 @@ EAPI void                   elm_transit_smooth_set(Elm_Transit *transit, Eina_Bo
  * @since 1.8
  *
  */
-Eina_Bool                   elm_transit_smooth_get(const Elm_Transit *transit);
+EAPI Eina_Bool              elm_transit_smooth_get(const Elm_Transit *transit);
 
 /**
  * Add the Resizing Effect to Elm_Transit.

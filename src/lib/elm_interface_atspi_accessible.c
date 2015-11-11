@@ -115,9 +115,29 @@ const char* Atspi_Name[] = {
     "last defined"
 };
 
+struct _Elm_Atspi_Event_Handler
+{
+   Eo_Event_Cb cb;
+   void *data;
+};
+
+struct _Elm_Interface_Atspi_Accessible_Data
+{
+   Elm_Atspi_Role role;
+   const char    *name;
+   const char    *description;
+   const char    *translation_domain;
+   Elm_Atspi_Relation_Set relations;
+   Elm_Interface_Atspi_Accessible *parent;
+};
+
+typedef struct _Elm_Interface_Atspi_Accessible_Data Elm_Interface_Atspi_Accessible_Data;
+
+
+static Eina_List *global_callbacks;
 
 EOLIAN static int
-_elm_interface_atspi_accessible_index_in_parent_get(Eo *obj, void *pd EINA_UNUSED)
+_elm_interface_atspi_accessible_index_in_parent_get(Eo *obj, Elm_Interface_Atspi_Accessible_Data *pd EINA_UNUSED)
 {
    Eina_List *l, *children = NULL;
    Eo *chld, *parent = NULL;
@@ -144,27 +164,24 @@ _elm_interface_atspi_accessible_index_in_parent_get(Eo *obj, void *pd EINA_UNUSE
    return ret;
 }
 
-EOLIAN static Eo *
-_elm_interface_atspi_accessible_parent_get(Eo *obj EINA_UNUSED, void *pd EINA_UNUSED)
+EOLIAN static Elm_Interface_Atspi_Accessible *
+_elm_interface_atspi_accessible_parent_get(Eo *obj EINA_UNUSED, Elm_Interface_Atspi_Accessible_Data *pd)
 {
-   Eo *parent = NULL;
-
-   /* By default using Eo_Base object hierarchy */
-   eo_do(obj, parent = eo_parent_get());
-   if (!parent) return NULL;
-
-   return eo_isa(parent, ELM_INTERFACE_ATSPI_ACCESSIBLE_MIXIN) ? parent : NULL;
+   return pd->parent;
 }
 
 EOLIAN static void
-_elm_interface_atspi_accessible_parent_set(Eo *obj, void *priv EINA_UNUSED, Eo *new_parent EINA_UNUSED)
+_elm_interface_atspi_accessible_parent_set(Eo *obj, Elm_Interface_Atspi_Accessible_Data *pd, Elm_Interface_Atspi_Accessible *new_parent)
 {
-   WRN("The %s object does not implement the \"accessible_parent_set\" function.",
-       eo_class_name_get(eo_class_get(obj)));
+   if (pd->parent != new_parent)
+     {
+        pd->parent = new_parent;
+        elm_interface_atspi_accessible_parent_changed_signal_emit(obj);
+     }
 }
 
 EOLIAN Eina_List*
-_elm_interface_atspi_accessible_attributes_get(Eo *obj EINA_UNUSED, void *pd EINA_UNUSED)
+_elm_interface_atspi_accessible_attributes_get(Eo *obj EINA_UNUSED, Elm_Interface_Atspi_Accessible_Data *pd EINA_UNUSED)
 {
    WRN("The %s object does not implement the \"accessible_attributes_set\" function.",
        eo_class_name_get(eo_class_get(obj)));
@@ -172,20 +189,23 @@ _elm_interface_atspi_accessible_attributes_get(Eo *obj EINA_UNUSED, void *pd EIN
 }
 
 EOLIAN static Elm_Atspi_Role
-_elm_interface_atspi_accessible_role_get(Eo *obj EINA_UNUSED, void *pd EINA_UNUSED)
+_elm_interface_atspi_accessible_role_get(Eo *obj EINA_UNUSED, Elm_Interface_Atspi_Accessible_Data *pd EINA_UNUSED)
 {
-   return ELM_ATSPI_ROLE_UNKNOWN;
+   return pd->role;
 }
 
 EOLIAN static void
-_elm_interface_atspi_accessible_role_set(Eo *obj EINA_UNUSED, void *pd EINA_UNUSED, Elm_Atspi_Role role EINA_UNUSED)
+_elm_interface_atspi_accessible_role_set(Eo *obj, Elm_Interface_Atspi_Accessible_Data *pd EINA_UNUSED, Elm_Atspi_Role role)
 {
-   WRN("The %s object does not implement the \"accessible_role_set\" function.",
-       eo_class_name_get(eo_class_get(obj)));
+   if (pd->role != role)
+     {
+        pd->role = role;
+        elm_interface_atspi_accessible_role_changed_signal_emit(obj);
+     }
 }
 
 EOLIAN const char *
-_elm_interface_atspi_accessible_role_name_get(Eo *obj EINA_UNUSED, void *pd EINA_UNUSED)
+_elm_interface_atspi_accessible_role_name_get(Eo *obj EINA_UNUSED, Elm_Interface_Atspi_Accessible_Data *pd EINA_UNUSED)
 {
    Elm_Atspi_Role role;
 
@@ -195,36 +215,46 @@ _elm_interface_atspi_accessible_role_name_get(Eo *obj EINA_UNUSED, void *pd EINA
 }
 
 EOLIAN char *
-_elm_interface_atspi_accessible_name_get(Eo *obj EINA_UNUSED, void *pd EINA_UNUSED)
+_elm_interface_atspi_accessible_name_get(Eo *obj EINA_UNUSED, Elm_Interface_Atspi_Accessible_Data *pd)
 {
-   WRN("The %s object does not implement the \"accessible_name_get\" function.",
-       eo_class_name_get(eo_class_get(obj)));
+   if (pd->name)
+     {
+#ifdef ENABLE_NLS
+        if (pd->translation_domain)
+          return strdup(dgettext(pd->translation_domain, pd->name));
+        else
+          return strdup(pd->name);
+#else
+        return strdup(pd->name);
+#endif
+     }
+
    return NULL;
 }
 
 EOLIAN static void
-_elm_interface_atspi_accessible_name_set(Eo *obj, void *pd EINA_UNUSED, char *val EINA_UNUSED)
+_elm_interface_atspi_accessible_name_set(Eo *obj EINA_UNUSED, Elm_Interface_Atspi_Accessible_Data *pd, char *val)
 {
-   WRN("The %s object does not implement the \"accessible_name_set\" function.",
-       eo_class_name_get(eo_class_get(obj)));
+   eina_stringshare_replace(&pd->name, val);
 }
 
-const char * _elm_interface_atspi_accessible_description_get(Eo *obj EINA_UNUSED, void *pd EINA_UNUSED)
+const char * _elm_interface_atspi_accessible_description_get(Eo *obj EINA_UNUSED, Elm_Interface_Atspi_Accessible_Data *pd)
 {
-   WRN("The %s object does not implement the \"accessible_description_get\" function.",
-       eo_class_name_get(eo_class_get(obj)));
-   return NULL;
+#ifdef ENABLE_NLS
+   if (pd->translation_domain)
+      return dgettext(pd->translation_domain, pd->description);
+#endif
+   return pd->description;
 }
 
 EOLIAN static void
-_elm_interface_atspi_accessible_description_set(Eo *obj, void *pd EINA_UNUSED, const char *val EINA_UNUSED)
+_elm_interface_atspi_accessible_description_set(Eo *obj EINA_UNUSED, Elm_Interface_Atspi_Accessible_Data *pd, const char *val)
 {
-   WRN("The %s object does not implement the \"accessible_description_set\" function.",
-       eo_class_name_get(eo_class_get(obj)));
+   eina_stringshare_replace(&pd->description, val);
 }
 
 EOLIAN static const char *
-_elm_interface_atspi_accessible_localized_role_name_get(Eo *obj EINA_UNUSED, void *pd EINA_UNUSED)
+_elm_interface_atspi_accessible_localized_role_name_get(Eo *obj EINA_UNUSED, Elm_Interface_Atspi_Accessible_Data *pd EINA_UNUSED)
 {
    const char *ret = NULL;
    eo_do(obj, ret = elm_interface_atspi_accessible_role_name_get());
@@ -235,7 +265,7 @@ _elm_interface_atspi_accessible_localized_role_name_get(Eo *obj EINA_UNUSED, voi
 }
 
 EOLIAN static Eina_List *
-_elm_interface_atspi_accessible_children_get(Eo *obj EINA_UNUSED, void *pd EINA_UNUSED)
+_elm_interface_atspi_accessible_children_get(Eo *obj EINA_UNUSED, Elm_Interface_Atspi_Accessible_Data *pd EINA_UNUSED)
 {
    Eina_List *children = NULL;
    Eina_Iterator *iter = NULL;
@@ -256,18 +286,15 @@ _elm_interface_atspi_accessible_children_get(Eo *obj EINA_UNUSED, void *pd EINA_
 }
 
 EOLIAN static Elm_Atspi_State_Set
-_elm_interface_atspi_accessible_state_set_get(Eo *obj EINA_UNUSED, void *pd EINA_UNUSED)
+_elm_interface_atspi_accessible_state_set_get(Eo *obj EINA_UNUSED, Elm_Interface_Atspi_Accessible_Data *pd EINA_UNUSED)
 {
-   Elm_Atspi_State_Set ret = 0;
-   return ret;
+   return 0;
 }
 
-EOLIAN Eina_List*
-_elm_interface_atspi_accessible_relation_set_get(Eo *obj EINA_UNUSED, void *pd EINA_UNUSED)
+EOLIAN Elm_Atspi_Relation_Set
+_elm_interface_atspi_accessible_relation_set_get(Eo *obj EINA_UNUSED, Elm_Interface_Atspi_Accessible_Data *pd EINA_UNUSED)
 {
-   WRN("The %s object does not implement the \"accessible_relation_set\" function.",
-       eo_class_name_get(eo_class_get(obj)));
-   return NULL;
+   return elm_atspi_relation_set_clone(pd->relations);
 }
 
 EAPI void elm_atspi_attributes_list_free(Eina_List *list)
@@ -279,6 +306,239 @@ EAPI void elm_atspi_attributes_list_free(Eina_List *list)
         eina_stringshare_del(attr->value);
         free(attr);
      }
+}
+
+EOLIAN void
+_elm_interface_atspi_accessible_event_emit(Eo *class EINA_UNUSED, void *pd EINA_UNUSED, Eo *accessible, const Eo_Event_Description *event, void *event_info)
+{
+   Eina_List *l;
+   Elm_Atspi_Event_Handler *hdl;
+
+   if (!accessible || !event || !eo_isa(accessible, ELM_INTERFACE_ATSPI_ACCESSIBLE_MIXIN))
+     {
+        CRI("Invalid parameters, event: %s, obj: %s", event ? event->name : "NULL", accessible ? eo_class_name_get(accessible) : "NULL");
+        return;
+     }
+
+   EINA_LIST_FOREACH(global_callbacks, l, hdl)
+     {
+        if (hdl->cb)
+          hdl->cb(hdl->data, accessible, event, event_info);
+     }
+}
+
+EOLIAN Elm_Atspi_Event_Handler *
+_elm_interface_atspi_accessible_event_handler_add(Eo *class EINA_UNUSED, void *pd EINA_UNUSED, Eo_Event_Cb cb, void *data)
+{
+   Elm_Atspi_Event_Handler *ret = calloc(sizeof(Elm_Atspi_Event_Handler), 1);
+
+   ret->cb = cb;
+   ret->data = data;
+
+   global_callbacks = eina_list_append(global_callbacks, ret);
+
+   return ret;
+}
+
+EOLIAN void 
+_elm_interface_atspi_accessible_event_handler_del(Eo *class EINA_UNUSED, void *pd EINA_UNUSED, Elm_Atspi_Event_Handler *handler)
+{
+   Eina_List *l, *l2;
+   Elm_Atspi_Event_Handler *hdl;
+   EINA_LIST_FOREACH_SAFE(global_callbacks, l, l2, hdl)
+     {
+        if (hdl == handler)
+          {
+             global_callbacks = eina_list_remove_list(global_callbacks, l);
+             free(hdl);
+             break;
+          }
+     }
+}
+
+EOLIAN void
+_elm_interface_atspi_accessible_translation_domain_set(Eo *obj EINA_UNUSED, Elm_Interface_Atspi_Accessible_Data *pd, const char *domain)
+{
+   eina_stringshare_replace(&pd->translation_domain, domain);
+}
+
+EOLIAN const char*
+_elm_interface_atspi_accessible_translation_domain_get(Eo *obj EINA_UNUSED, Elm_Interface_Atspi_Accessible_Data *pd)
+{
+   return pd->translation_domain;
+}
+
+EAPI void
+elm_atspi_relation_free(Elm_Atspi_Relation *relation)
+{
+   eina_list_free(relation->objects);
+   free(relation);
+}
+
+EAPI Elm_Atspi_Relation *
+elm_atspi_relation_clone(const Elm_Atspi_Relation *relation)
+{
+   Elm_Atspi_Relation *ret = calloc(sizeof(Elm_Atspi_Relation), 1);
+   if (!ret) return NULL;
+
+   ret->type = relation->type;
+   ret->objects = eina_list_clone(relation->objects);
+   return ret;
+}
+
+static Eina_Bool
+_on_rel_obj_del(void *data, Eo *obj, const Eo_Event_Description *desc EINA_UNUSED, void *event_info EINA_UNUSED)
+{
+   Elm_Atspi_Relation_Set *set = data;
+   Elm_Atspi_Relation *rel;
+   Eina_List *l, *l2, *p, *p2;
+   Eo *rel_obj;
+
+   EINA_LIST_FOREACH_SAFE(*set, l, l2, rel)
+     {
+        EINA_LIST_FOREACH_SAFE(rel->objects, p, p2, rel_obj)
+          {
+             if (rel_obj == obj)
+               rel->objects = eina_list_remove_list(rel->objects, p);
+          }
+        if (!rel->objects)
+          {
+             *set = eina_list_remove_list(*set, l);
+             free(rel);
+          }
+     }
+   return EINA_TRUE;
+}
+
+EAPI Eina_Bool
+elm_atspi_relation_set_relation_append(Elm_Atspi_Relation_Set *set, Elm_Atspi_Relation_Type type, const Eo *rel_obj)
+{
+   Elm_Atspi_Relation *rel;
+   Eina_List *l;
+
+   if (!eo_isa(rel_obj, ELM_INTERFACE_ATSPI_ACCESSIBLE_MIXIN))
+     return EINA_FALSE;
+
+   EINA_LIST_FOREACH(*set, l, rel)
+     {
+        if (rel->type == type)
+          {
+             if (!eina_list_data_find(rel->objects, rel_obj))
+               {
+                  rel->objects = eina_list_append(rel->objects, rel_obj);
+                  eo_do(rel_obj, eo_event_callback_add(EO_BASE_EVENT_DEL, _on_rel_obj_del, set));
+               }
+             return EINA_TRUE;
+          }
+     }
+
+   rel = calloc(sizeof(Elm_Atspi_Relation), 1);
+   if (!rel) return EINA_FALSE;
+
+   rel->type = type;
+   rel->objects = eina_list_append(rel->objects, rel_obj);
+   *set = eina_list_append(*set, rel);
+
+   eo_do(rel_obj, eo_event_callback_add(EO_BASE_EVENT_DEL, _on_rel_obj_del, set));
+   return EINA_TRUE;
+}
+
+EAPI void
+elm_atspi_relation_set_relation_remove(Elm_Atspi_Relation_Set *set, Elm_Atspi_Relation_Type type, const Eo *rel_obj)
+{
+   Eina_List *l;
+   Elm_Atspi_Relation *rel;
+
+   EINA_LIST_FOREACH(*set, l, rel)
+     {
+        if (rel->type == type)
+          {
+             if (eina_list_data_find(rel->objects, rel_obj))
+               {
+                  eo_do(rel_obj, eo_event_callback_del(EO_BASE_EVENT_DEL, _on_rel_obj_del, set));
+                  rel->objects = eina_list_remove(rel->objects, rel_obj);
+               }
+             if (!rel->objects)
+               {
+                  *set = eina_list_remove(*set, rel);
+                  elm_atspi_relation_free(rel);
+               }
+             return;
+          }
+     }
+}
+
+EAPI void
+elm_atspi_relation_set_relation_type_remove(Elm_Atspi_Relation_Set *set, Elm_Atspi_Relation_Type type)
+{
+   Eina_List *l;
+   Elm_Atspi_Relation *rel;
+   Eo *obj;
+
+   EINA_LIST_FOREACH(*set, l, rel)
+     {
+        if (rel->type == type)
+          {
+             EINA_LIST_FOREACH(rel->objects, l, obj)
+                eo_do(obj, eo_event_callback_del(EO_BASE_EVENT_DEL, _on_rel_obj_del, set));
+             *set = eina_list_remove(*set, rel);
+             elm_atspi_relation_free(rel);
+             return;
+          }
+     }
+}
+
+EAPI void
+elm_atspi_relation_set_free(Elm_Atspi_Relation_Set set)
+{
+   Elm_Atspi_Relation *rel;
+   Eina_List *l;
+   Eo *obj;
+
+   EINA_LIST_FREE(set, rel)
+     {
+        EINA_LIST_FOREACH(rel->objects, l, obj)
+           eo_do(obj, eo_event_callback_del(EO_BASE_EVENT_DEL, _on_rel_obj_del, set));
+        elm_atspi_relation_free(rel);
+     }
+}
+
+EAPI Elm_Atspi_Relation_Set
+elm_atspi_relation_set_clone(const Elm_Atspi_Relation_Set set)
+{
+   Elm_Atspi_Relation_Set ret = NULL;
+   Eina_List *l;
+   Elm_Atspi_Relation *rel;
+
+   EINA_LIST_FOREACH(set, l, rel)
+     {
+        Elm_Atspi_Relation *cpy = elm_atspi_relation_clone(rel);
+        ret = eina_list_append(ret, cpy);
+     }
+
+   return ret;
+}
+
+EOLIAN static Eina_Bool
+_elm_interface_atspi_accessible_relationship_append(Eo *obj EINA_UNUSED, Elm_Interface_Atspi_Accessible_Data *sd, Elm_Atspi_Relation_Type type, const Elm_Interface_Atspi_Accessible *relation_obj)
+{
+   return elm_atspi_relation_set_relation_append(&sd->relations, type, relation_obj);
+}
+
+EOLIAN static void
+_elm_interface_atspi_accessible_relationship_remove(Eo *obj EINA_UNUSED, Elm_Interface_Atspi_Accessible_Data *sd, Elm_Atspi_Relation_Type type, const Elm_Interface_Atspi_Accessible *relation_obj)
+{
+   if (relation_obj)
+     elm_atspi_relation_set_relation_remove(&sd->relations, type, relation_obj);
+   else
+     elm_atspi_relation_set_relation_type_remove(&sd->relations, type);
+}
+
+EOLIAN static void
+_elm_interface_atspi_accessible_relationships_clear(Eo *obj EINA_UNUSED, Elm_Interface_Atspi_Accessible_Data *sd)
+{
+   elm_atspi_relation_set_free(sd->relations);
+   sd->relations = NULL;
 }
 
 #include "elm_interface_atspi_accessible.eo.c"

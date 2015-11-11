@@ -1394,7 +1394,7 @@ _inside(Evas_Coord xx1,
 {
    w >>= 1; /* Use half the distance, from center to all directions */
    if (!w)  /* use system default instead */
-     w = elm_config_finger_size_get() >> 1; /* Finger size devided by 2 */
+     w = elm_config_finger_size_get() >> 1; /* Finger size divided by 2 */
 
    if (xx1 < (xx2 - w))
      return EINA_FALSE;
@@ -1660,7 +1660,7 @@ static Eina_Bool
 _tap_gesture_check_finish(Gesture_Info *gesture, Evas_Coord tap_finger_size)
 {
    /* Here we check if taps-gesture was completed successfuly */
-   /* Count how many taps were recieved on each device then   */
+   /* Count how many taps were received on each device then   */
    /* determine if it matches n_taps_needed defined on START  */
    unsigned int i;
    Taps_Type *st = gesture->data;
@@ -1781,6 +1781,9 @@ static Eina_Bool
 _long_tap_timeout(void *data)
 {
    Gesture_Info *gesture = data;
+   Long_Tap_Type *st = gesture->data;
+
+   st->info.timestamp = ecore_time_get() * 1000;
 
    _state_set(gesture, ELM_GESTURE_STATE_MOVE,
               gesture->data, EINA_TRUE);
@@ -1900,7 +1903,7 @@ _tap_gesture_test(Evas_Object *obj,
            }
          else if (eina_list_count(pe_list) > st->n_taps_needed)
            {  /* If we arleady got too many touches for this gesture. */
-              ev_flag = _state_set(gesture, ELM_GESTURE_STATE_ABORT,
+              _state_set(gesture, ELM_GESTURE_STATE_ABORT,
                     &st->info, EINA_FALSE);
            }
 
@@ -1925,7 +1928,7 @@ _tap_gesture_test(Evas_Object *obj,
 
               if (move && (n > 0))
                 {
-                   ev_flag = _state_set(gesture, ELM_GESTURE_STATE_MOVE,
+                   _state_set(gesture, ELM_GESTURE_STATE_MOVE,
                          &st->info, EINA_TRUE);
                 }
            }
@@ -1977,7 +1980,7 @@ _tap_gesture_test(Evas_Object *obj,
                    /* We don't report MOVE when (n >= st->n_taps_needed)
                       because will be END or ABORT at this stage */
                    st->info.n = eina_list_count(st->l);
-                   ev_flag = _state_set(gesture, ELM_GESTURE_STATE_MOVE,
+                   _state_set(gesture, ELM_GESTURE_STATE_MOVE,
                          &st->info, EINA_TRUE);
                 }
            }
@@ -2109,13 +2112,13 @@ _n_long_tap_test(Evas_Object *obj,
         _compute_taps_center(st, &st->info.x, &st->info.y, pe);
         st->center_x = st->info.x;  /* Update coords for */
         st->center_y = st->info.y;  /* reporting START  */
+        st->info.timestamp = pe->timestamp;
 
         /* This is the first mouse down we got */
         if (eina_list_count(st->touched) == 1)
           {
              _state_set(gesture, ELM_GESTURE_STATE_START,
                    gesture->data, EINA_FALSE);
-             st->info.timestamp = pe->timestamp;
 
              /* To test long tap */
              /* When this timer expires, gesture STARTED */
@@ -2135,6 +2138,7 @@ _n_long_tap_test(Evas_Object *obj,
       case EVAS_CALLBACK_MOUSE_UP:
         st->touched = _touched_device_remove(st->touched, pe);
         _compute_taps_center(st, &st->center_x, &st->center_y, pe);
+        st->info.timestamp = pe->timestamp;
         if (st->info.n)
           {
              if (gesture->state == ELM_GESTURE_STATE_MOVE)
@@ -2161,6 +2165,7 @@ _n_long_tap_test(Evas_Object *obj,
              Evas_Coord y = 0;
 
              _compute_taps_center(st, &x, &y, pe);
+             st->info.timestamp = pe->timestamp;
              /* ABORT if user moved fingers out of tap area */
              if (!_inside(x, y, st->center_x, st->center_y,
                       sd->tap_finger_size))
@@ -2260,8 +2265,8 @@ _angle_get(Evas_Coord xx1,
 {
    double a, xx, yy, rt = (-1);
 
-   xx = fabs(xx2 - xx1);
-   yy = fabs(yy2 - yy1);
+   xx = abs(xx2 - xx1);
+   yy = abs(yy2 - yy1);
 
    if (((int)xx) && ((int)yy))
      {
@@ -2528,8 +2533,8 @@ _momentum_test(Evas_Object *obj,
         st->line_end.y = pe_local.y;
         st->t_end = pe_local.timestamp;
 
-        if ((fabs(st->info.mx) > ELM_GESTURE_MINIMUM_MOMENTUM) ||
-            (fabs(st->info.my) > ELM_GESTURE_MINIMUM_MOMENTUM))
+        if ((abs(st->info.mx) > ELM_GESTURE_MINIMUM_MOMENTUM) ||
+            (abs(st->info.my) > ELM_GESTURE_MINIMUM_MOMENTUM))
           state_to_report = ELM_GESTURE_STATE_END;
         else
           state_to_report = ELM_GESTURE_STATE_ABORT;
@@ -2997,8 +3002,8 @@ _finger_gap_length_get(Evas_Coord xx1,
                        Evas_Coord *y)
 {
    double a, b, xx, yy, gap;
-   xx = fabs(xx2 - xx1);
-   yy = fabs(yy2 - yy1);
+   xx = abs(xx2 - xx1);
+   yy = abs(yy2 - yy1);
    gap = sqrt((xx * xx) + (yy * yy));
 
    /* START - Compute zoom center point */
@@ -3816,11 +3821,13 @@ elm_gesture_layer_add(Evas_Object *parent)
    return obj;
 }
 
-EOLIAN static void
+EOLIAN static Eo *
 _elm_gesture_layer_eo_base_constructor(Eo *obj, Elm_Gesture_Layer_Data *_pd EINA_UNUSED)
 {
-   eo_do_super(obj, MY_CLASS, eo_constructor());
+   obj = eo_do_super_ret(obj, MY_CLASS, obj, eo_constructor());
    eo_do(obj, evas_obj_type_set(MY_CLASS_NAME_LEGACY));
+
+   return obj;
 }
 
 EOLIAN static Eina_Bool

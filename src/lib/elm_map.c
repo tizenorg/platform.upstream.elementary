@@ -260,7 +260,7 @@ _scale_cb(const Evas_Object *obj EINA_UNUSED,
        (zoom >= (int)(sizeof(_osm_scale_meter) / sizeof(_osm_scale_meter[0])))
       )
      return 0;
-   return _osm_scale_meter[zoom] / cos(lat * ELM_PI / 180.0);
+   return _osm_scale_meter[zoom] * cos(lat * ELM_PI / 180.0);
 }
 
 const Source_Tile src_tiles[] =
@@ -595,8 +595,8 @@ _loaded_timeout_cb(void *data)
 
    sd->loaded_timer = NULL;
    if (!(sd->download_num) && !(sd->download_idler))
-     evas_object_smart_callback_call
-       (sd->obj, SIG_LOADED, NULL);
+      eo_do(sd->obj, eo_event_callback_call
+        (ELM_MAP_EVENT_LOADED, NULL));
    return ECORE_CALLBACK_CANCEL;
 }
 
@@ -747,8 +747,8 @@ _downloaded_cb(void *data,
 
         _grid_item_update(gi);
         gi->wsd->finish_num++;
-        evas_object_smart_callback_call
-          ((gi->wsd)->obj, SIG_TILE_LOADED, NULL);
+        eo_do((gi->wsd)->obj, eo_event_callback_call
+          (ELM_MAP_EVENT_TILE_LOADED, NULL));
      }
    else
      {
@@ -756,8 +756,8 @@ _downloaded_cb(void *data,
 
         ecore_file_remove(gi->file);
         gi->file_have = EINA_FALSE;
-        evas_object_smart_callback_call
-          ((gi->wsd)->obj, SIG_TILE_LOADED_FAIL, NULL);
+        eo_do((gi->wsd)->obj, eo_event_callback_call
+          (ELM_MAP_EVENT_TILE_LOADED_FAIL, NULL));
      }
 
    ELM_WIDGET_DATA_GET_OR_RETURN(gi->wsd->obj, wd);
@@ -805,8 +805,8 @@ _download_job(void *data)
            sd->download_list = eina_list_remove(sd->download_list, gi);
            sd->try_num++;
            sd->download_num++;
-           evas_object_smart_callback_call
-             (obj, SIG_TILE_LOAD, NULL);
+           eo_do(obj, eo_event_callback_call
+             (ELM_MAP_EVENT_TILE_LOAD, NULL));
            if (sd->download_num == 1)
              edje_object_signal_emit(wd->resize_obj,
                                      "elm,state,busy,start", "elm");
@@ -1066,8 +1066,8 @@ _zoom_timeout_cb(void *data)
 
    _smooth_update(sd);
    sd->zoom_timer = NULL;
-   evas_object_smart_callback_call
-     (sd->obj, SIG_ZOOM_STOP, NULL);
+   eo_do(sd->obj, eo_event_callback_call
+     (EVAS_ZOOMABLE_INTERFACE_EVENT_ZOOM_STOP, NULL));
 
    return ECORE_CALLBACK_CANCEL;
 }
@@ -1122,16 +1122,22 @@ _zoom_do(Elm_Map_Data *sd,
               (x, y, vw, vh));
      }
 
-   if (sd->zoom_timer) ecore_timer_del(sd->zoom_timer);
+   if (sd->zoom_timer)
+     {
+        ecore_timer_del(sd->zoom_timer);
+        sd->zoom_timer = NULL;
+     }
    else
-     evas_object_smart_callback_call
-       (sd->obj, SIG_ZOOM_START, NULL);
+      eo_do(sd->obj, eo_event_callback_call
+        (EVAS_ZOOMABLE_INTERFACE_EVENT_ZOOM_START, NULL));
 
-   sd->zoom_timer = ecore_timer_add(0.25, _zoom_timeout_cb, sd->obj);
-   evas_object_smart_callback_call
-     (sd->obj, SIG_ZOOM_CHANGE, NULL);
+   if (sd->obj)
+     sd->zoom_timer = ecore_timer_add(0.25, _zoom_timeout_cb, sd->obj);
+   eo_do(sd->obj, eo_event_callback_call
+     (ELM_MAP_EVENT_ZOOM_CHANGE, NULL));
 
-   evas_object_smart_callback_call(sd->pan_obj, "changed", NULL);
+   eo_do(sd->pan_obj, eo_event_callback_call
+     (ELM_PAN_EVENT_CHANGED, NULL));
    evas_object_smart_changed(sd->pan_obj);
 }
 
@@ -1267,8 +1273,8 @@ _scr_timeout_cb(void *data)
 
    _smooth_update(sd);
    sd->scr_timer = NULL;
-   evas_object_smart_callback_call
-     (sd->obj, SIG_SCROLL_DRAG_STOP, NULL);
+   eo_do(sd->obj, eo_event_callback_call
+     (EVAS_SCROLLABLE_INTERFACE_EVENT_SCROLL_DRAG_STOP, NULL));
 
    return ECORE_CALLBACK_CANCEL;
 }
@@ -1281,10 +1287,12 @@ _scroll_cb(Evas_Object *obj,
 
    if (sd->scr_timer) ecore_timer_del(sd->scr_timer);
    else
-     evas_object_smart_callback_call
-       (sd->obj, SIG_SCROLL_DRAG_START, NULL);
+      eo_do(sd->obj, eo_event_callback_call
+        (EVAS_SCROLLABLE_INTERFACE_EVENT_SCROLL_DRAG_START, NULL));
+   ELM_SAFE_FREE(sd->long_timer, ecore_timer_del);
    sd->scr_timer = ecore_timer_add(0.25, _scr_timeout_cb, obj);
-   evas_object_smart_callback_call(sd->obj, SIG_SCROLL, NULL);
+   eo_do(sd->obj, eo_event_callback_call
+     (EVAS_SCROLLABLE_INTERFACE_EVENT_SCROLL, NULL));
 }
 
 static void
@@ -1293,8 +1301,8 @@ _scroll_animate_start_cb(Evas_Object *obj,
 {
    ELM_MAP_DATA_GET(obj, sd);
 
-   evas_object_smart_callback_call
-     (sd->obj, SIG_SCROLL_ANIM_START, NULL);
+   eo_do(sd->obj, eo_event_callback_call
+     (EVAS_SCROLLABLE_INTERFACE_EVENT_SCROLL_ANIM_START, NULL));
 }
 
 static void
@@ -1303,8 +1311,8 @@ _scroll_animate_stop_cb(Evas_Object *obj,
 {
    ELM_MAP_DATA_GET(obj, sd);
 
-   evas_object_smart_callback_call
-     (sd->obj, SIG_SCROLL_ANIM_STOP, NULL);
+   eo_do(sd->obj, eo_event_callback_call
+     (EVAS_SCROLLABLE_INTERFACE_EVENT_SCROLL_ANIM_STOP, NULL));
 }
 
 static Eina_Bool
@@ -1313,8 +1321,8 @@ _long_press_cb(void *data)
    ELM_MAP_DATA_GET(data, sd);
 
    sd->long_timer = NULL;
-   evas_object_smart_callback_call
-     (sd->obj, SIG_LONGPRESSED, &sd->ev);
+   eo_do(sd->obj, eo_event_callback_call
+     (EVAS_CLICKABLE_INTERFACE_EVENT_LONGPRESSED, &sd->ev));
 
    return ECORE_CALLBACK_CANCEL;
 }
@@ -1333,11 +1341,11 @@ _mouse_down_cb(void *data,
    else sd->on_hold = EINA_FALSE;
 
    if (ev->flags & EVAS_BUTTON_DOUBLE_CLICK)
-     evas_object_smart_callback_call
-       (sd->obj, SIG_CLICKED_DOUBLE, ev);
+     eo_do(sd->obj, eo_event_callback_call
+       (EVAS_CLICKABLE_INTERFACE_EVENT_CLICKED_DOUBLE, ev));
    else
-     evas_object_smart_callback_call
-       (sd->obj, SIG_PRESS, ev);
+     eo_do(sd->obj, eo_event_callback_call
+       (ELM_MAP_EVENT_PRESS, ev));
 
    ecore_timer_del(sd->long_timer);
    sd->ev = *ev;
@@ -1364,8 +1372,8 @@ _mouse_up_cb(void *data,
    ELM_SAFE_FREE(sd->long_timer, ecore_timer_del);
 
    if (!sd->on_hold)
-     evas_object_smart_callback_call
-       (sd->obj, SIG_CLICKED, ev);
+   eo_do(sd->obj, eo_event_callback_call
+     (EVAS_CLICKABLE_INTERFACE_EVENT_CLICKED, ev));
    sd->on_hold = EINA_FALSE;
 }
 
@@ -1476,8 +1484,8 @@ _overlay_clicked_cb(void *data,
 
    EINA_SAFETY_ON_NULL_RETURN(data);
 
-   evas_object_smart_callback_call
-     ((overlay->wsd)->obj, SIG_OVERLAY_CLICKED, overlay);
+   eo_do((overlay->wsd)->obj, eo_event_callback_call
+     (ELM_MAP_EVENT_OVERLAY_CLICKED, overlay));
    if (overlay->cb)
      overlay->cb(overlay->cb_data, (overlay->wsd)->obj, overlay);
 }
@@ -3058,15 +3066,15 @@ _route_cb(void *data,
         INF("Route request success from (%lf, %lf) to (%lf, %lf)",
             route->flon, route->flat, route->tlon, route->tlat);
         if (route->cb) route->cb(route->data, sd->obj, route);
-        evas_object_smart_callback_call
-          (sd->obj, SIG_ROUTE_LOADED, NULL);
+        eo_do(sd->obj, eo_event_callback_call
+          (ELM_MAP_EVENT_ROUTE_LOADED, NULL));
      }
    else
      {
         ERR("Route request failed: %d", status);
         if (route->cb) route->cb(route->data, sd->obj, NULL);
-        evas_object_smart_callback_call
-          (sd->obj, SIG_ROUTE_LOADED_FAIL, NULL);
+        eo_do(sd->obj, eo_event_callback_call
+          (ELM_MAP_EVENT_ROUTE_LOADED_FAIL, NULL));
      }
 
    edje_object_signal_emit(wd->resize_obj,
@@ -3095,15 +3103,15 @@ _name_cb(void *data,
         INF("Name request success address:%s, lon:%lf, lat:%lf",
             name->address, name->lon, name->lat);
         if (name->cb) name->cb(name->data, sd->obj, name);
-        evas_object_smart_callback_call
-          (sd->obj, SIG_NAME_LOADED, NULL);
+        eo_do(sd->obj, eo_event_callback_call
+          (ELM_MAP_EVENT_NAME_LOADED, NULL));
      }
    else
      {
         ERR("Name request failed: %d", status);
         if (name->cb) name->cb(name->data, sd->obj, NULL);
-        evas_object_smart_callback_call
-          (sd->obj, SIG_NAME_LOADED_FAIL, NULL);
+        eo_do(sd->obj, eo_event_callback_call
+          (ELM_MAP_EVENT_NAME_LOADED_FAIL, NULL));
      }
    edje_object_signal_emit(wd->resize_obj,
                            "elm,state,busy,stop", "elm");
@@ -3132,16 +3140,16 @@ _name_list_cb(void *data,
         if (name_list->cb)
           name_list->cb(name_list->data, wd->obj,
                         name_list->names);
-        evas_object_smart_callback_call
-          (wd->obj, SIG_NAME_LOADED, NULL);
+        eo_do(wd->obj, eo_event_callback_call
+          (ELM_MAP_EVENT_NAME_LOADED, NULL));
      }
    else
      {
         ERR("Name List request failed: %d", status);
         if (name_list->cb)
           name_list->cb(name_list->data, wd->obj, NULL);
-        evas_object_smart_callback_call
-          (wd->obj, SIG_NAME_LOADED_FAIL, NULL);
+        eo_do(wd->obj, eo_event_callback_call
+          (ELM_MAP_EVENT_NAME_LOADED_FAIL, NULL));
      }
 
    edje_object_signal_emit(wd->resize_obj,
@@ -3218,8 +3226,8 @@ _name_request(const Evas_Object *obj,
    free(fname);
 
    sd->names = eina_list_append(sd->names, name);
-   evas_object_smart_callback_call
-     (sd->obj, SIG_NAME_LOAD, name);
+   eo_do(sd->obj, eo_event_callback_call
+     (ELM_MAP_EVENT_NAME_LOAD, name));
    edje_object_signal_emit(wd->resize_obj,
                            "elm,state,busy,start", "elm");
    return name;
@@ -3272,8 +3280,8 @@ _name_list_request(const Evas_Object *obj,
    free(url);
    free(fname);
 
-   evas_object_smart_callback_call
-     (wd->obj, SIG_NAME_LOAD, name_list->names);
+   eo_do(wd->obj, eo_event_callback_call
+     (ELM_MAP_EVENT_NAME_LOAD, name_list->names));
    edje_object_signal_emit(wd->resize_obj,
                            "elm,state,busy,start", "elm");
    return name_list->names;
@@ -3288,6 +3296,7 @@ _pinch_zoom_start_cb(void *data,
    EINA_SAFETY_ON_NULL_RETURN_VAL(data, EVAS_EVENT_FLAG_NONE);
 
    sd->pinch_zoom = sd->zoom_detail;
+   ELM_SAFE_FREE(sd->long_timer, ecore_timer_del);
 
    return EVAS_EVENT_FLAG_NONE;
 }
@@ -3331,6 +3340,7 @@ _pinch_rotate_cb(void *data,
 
         evas_object_smart_changed(sd->pan_obj);
      }
+   ELM_SAFE_FREE(sd->long_timer, ecore_timer_del);
 
    return EVAS_EVENT_FLAG_NONE;
 }
@@ -3449,6 +3459,8 @@ _source_mod_cb(Eina_Module *m,
 {
    const char *file;
    Elm_Map_Data *sd = data;
+   char *dir;
+   const char *subfile;
 
    Elm_Map_Module_Source_Name_Func name_cb;
    Elm_Map_Module_Tile_Url_Func tile_url_cb;
@@ -3463,17 +3475,28 @@ _source_mod_cb(Eina_Module *m,
    EINA_SAFETY_ON_NULL_RETURN_VAL(data, EINA_FALSE);
 
    file = eina_module_file_get(m);
-   if (!eina_module_load(m))
+   if (!file) return EINA_FALSE;
+
+   dir = ecore_file_dir_get(file);
+   if (!dir) return EINA_FALSE;
+   subfile = ecore_file_file_get(dir);
+   if (!subfile)
      {
-        ERR("Could not load module \"%s\": %s", file,
-            eina_error_msg_get(eina_error_get()));
+        free(dir);
         return EINA_FALSE;
      }
+   if (strcmp(subfile, MODULE_ARCH))
+     {
+        free(dir);
+        return EINA_FALSE;
+     }
+   free(dir);
+
+   if (!eina_module_load(m)) return EINA_FALSE;
+
    name_cb = eina_module_symbol_get(m, "map_module_source_name_get");
    if ((!name_cb))
      {
-        WRN("Could not find map module name from module \"%s\": %s",
-            file, eina_error_msg_get(eina_error_get()));
         eina_module_unload(m);
         return EINA_FALSE;
      }
@@ -4193,16 +4216,18 @@ elm_map_add(Evas_Object *parent)
    return obj;
 }
 
-EOLIAN static void
+EOLIAN static Eo *
 _elm_map_eo_base_constructor(Eo *obj, Elm_Map_Data *sd)
 {
+   obj = eo_do_super_ret(obj, MY_CLASS, obj, eo_constructor());
    sd->obj = obj;
 
-   eo_do_super(obj, MY_CLASS, eo_constructor());
    eo_do(obj,
          evas_obj_type_set(MY_CLASS_NAME_LEGACY),
          evas_obj_smart_callbacks_descriptions_set(_smart_callbacks),
          elm_interface_atspi_accessible_role_set(ELM_ATSPI_ROLE_IMAGE_MAP));
+
+   return obj;
 }
 
 EOLIAN static void
@@ -4394,7 +4419,7 @@ _elm_map_tile_load_status_get(Eo *obj EINA_UNUSED, Elm_Map_Data *sd, int *try_nu
 }
 
 EOLIAN static void
-_elm_map_canvas_to_region_convert(Eo *obj EINA_UNUSED, Elm_Map_Data *sd, Evas_Coord x, Evas_Coord y, double *lon, double *lat)
+_elm_map_canvas_to_region_convert(const Eo *obj EINA_UNUSED, Elm_Map_Data *sd, Evas_Coord x, Evas_Coord y, double *lon, double *lat)
 {
    EINA_SAFETY_ON_NULL_RETURN(lon);
    EINA_SAFETY_ON_NULL_RETURN(lat);
@@ -4404,7 +4429,7 @@ _elm_map_canvas_to_region_convert(Eo *obj EINA_UNUSED, Elm_Map_Data *sd, Evas_Co
 }
 
 EOLIAN static void
-_elm_map_region_to_canvas_convert(Eo *obj EINA_UNUSED, Elm_Map_Data *sd, double lon, double lat, Evas_Coord *x, Evas_Coord *y)
+_elm_map_region_to_canvas_convert(const Eo *obj EINA_UNUSED, Elm_Map_Data *sd, double lon, double lat, Evas_Coord *x, Evas_Coord *y)
 {
    EINA_SAFETY_ON_NULL_RETURN(x);
    EINA_SAFETY_ON_NULL_RETURN(y);
@@ -4445,7 +4470,7 @@ _elm_map_source_set(Eo *obj EINA_UNUSED, Elm_Map_Data *sd, Elm_Map_Source_Type t
 }
 
 EOLIAN static const char*
-_elm_map_source_get(Eo *obj EINA_UNUSED, Elm_Map_Data *sd, Elm_Map_Source_Type type)
+_elm_map_source_get(const Eo *obj EINA_UNUSED, Elm_Map_Data *sd, Elm_Map_Source_Type type)
 {
    EINA_SAFETY_ON_NULL_RETURN_VAL(sd->src_tile, NULL);
 
@@ -4459,7 +4484,7 @@ _elm_map_source_get(Eo *obj EINA_UNUSED, Elm_Map_Data *sd, Elm_Map_Source_Type t
 }
 
 EOLIAN static const char**
-_elm_map_sources_get(Eo *obj EINA_UNUSED, Elm_Map_Data *sd, Elm_Map_Source_Type type)
+_elm_map_sources_get(const Eo *obj EINA_UNUSED, Elm_Map_Data *sd, Elm_Map_Source_Type type)
 {
    const char **ret;
    ret = NULL;
@@ -4537,8 +4562,8 @@ _elm_map_route_add(Eo *obj, Elm_Map_Data *sd, Elm_Map_Route_Type type, Elm_Map_R
    free(url);
 
    sd->routes = eina_list_append(sd->routes, route);
-   evas_object_smart_callback_call
-     (sd->obj, SIG_ROUTE_LOAD, route);
+   eo_do(sd->obj, eo_event_callback_call
+     (ELM_MAP_EVENT_ROUTE_LOAD, route));
    edje_object_signal_emit(wd->resize_obj,
                            "elm,state,busy,start", "elm");
    ret = route;
@@ -4602,7 +4627,7 @@ elm_map_route_waypoint_get(const Elm_Map_Route *route)
 }
 
 EOLIAN static Elm_Map_Name*
-_elm_map_name_add(Eo *obj, Elm_Map_Data *_pd EINA_UNUSED, const char *address, double lon, double lat, Elm_Map_Name_Cb name_cb, void *data)
+_elm_map_name_add(const Eo *obj, Elm_Map_Data *_pd EINA_UNUSED, const char *address, double lon, double lat, Elm_Map_Name_Cb name_cb, void *data)
 {
    if (address)
      return _name_request(obj, ELM_MAP_NAME_METHOD_SEARCH, address, 0, 0,
@@ -4613,7 +4638,7 @@ _elm_map_name_add(Eo *obj, Elm_Map_Data *_pd EINA_UNUSED, const char *address, d
 }
 
 EOLIAN static void
-_elm_map_name_search(Eo *obj, Elm_Map_Data *_pd EINA_UNUSED, const char *address, Elm_Map_Name_List_Cb name_cb, void *data)
+_elm_map_name_search(const Eo *obj, Elm_Map_Data *_pd EINA_UNUSED, const char *address, Elm_Map_Name_List_Cb name_cb, void *data)
 {
    if (address)
      _name_list_request(obj, ELM_MAP_NAME_METHOD_SEARCH, address, 0, 0,
@@ -4706,8 +4731,8 @@ elm_map_overlay_del(Elm_Map_Overlay *overlay)
    EINA_SAFETY_ON_NULL_RETURN(overlay->wsd);
    ELM_MAP_CHECK((overlay->wsd)->obj);
 
-   evas_object_smart_callback_call
-     ((overlay->wsd)->obj, SIG_OVERLAY_DEL, overlay);
+   eo_do((overlay->wsd)->obj, eo_event_callback_call
+     (ELM_MAP_EVENT_OVERLAY_DEL, overlay));
    if (overlay->del_cb)
      overlay->del_cb
        (overlay->del_cb_data, (overlay->wsd)->obj, overlay);

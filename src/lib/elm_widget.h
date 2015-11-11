@@ -447,6 +447,7 @@ typedef struct _Elm_Widget_Smart_Data
    Eina_Bool                     highlight_root : 1;
    Eina_Bool                     on_translate : 1; /**< This is true when any types of elm translate function is being called. */
    Eina_Bool                     on_create : 1; /**< This is true when the widget is on creation(general widget constructor). */
+   Eina_Bool                     on_destroy: 1; /**< This is true when the widget is on destruction(general widget destructor). */
 } Elm_Widget_Smart_Data;
 
 /**
@@ -534,16 +535,10 @@ void                  _elm_access_widget_item_access_order_unset(Elm_Widget_Item
 // widget focus highlight
 void                  _elm_widget_focus_highlight_start(const Evas_Object *obj);
 void                  _elm_widget_highlight_in_theme_update(Eo *obj);
-void                  _elm_widget_focus_highlight_signal_emit(Evas_Object *obj, const char *emission, const char *source);
-void                  _elm_widget_focus_highlight_signal_callback_add(Evas_Object *obj, const char *emission, const char *source, Edje_Signal_Cb _focus_highlight_signal_cb, void *data);
-void                  _elm_widget_focus_highlight_signal_callback_del(Evas_Object *obj, const char *emission, const char *source, Edje_Signal_Cb _focus_highlight_signal_cb);
 
 // win focus highlight
 void                  _elm_win_focus_highlight_start(Evas_Object *obj);
 void                  _elm_win_focus_highlight_in_theme_update(Evas_Object *obj, Eina_Bool in_theme);
-void                  _elm_win_focus_highlight_signal_emit(Evas_Object *obj, const char *emission, const char *source);
-void                  _elm_win_focus_highlight_signal_callback_add(Evas_Object *obj, const char *emission, const char *source, Edje_Signal_Cb _focus_highlight_signal_cb, void *data);
-void                  _elm_win_focus_highlight_signal_callback_del(Evas_Object *obj, const char *emission, const char *source, Edje_Signal_Cb _focus_highlight_signal_cb);
 Evas_Object          *_elm_win_focus_highlight_object_get(Evas_Object *obj);
 void                  _elm_win_focus_auto_show(Evas_Object *obj);
 void                  _elm_win_focus_auto_hide(Evas_Object *obj);
@@ -589,12 +584,13 @@ struct _Elm_Widget_Item_Signal_Data
 
 #define WIDGET_ITEM_DATA_GET(eo_obj) \
    ({ \
-    eo_do(eo_obj, eo_key_data_get("__elm_widget_item_data")); \
+    void *_data; \
+    eo_do_ret(eo_obj, _data, eo_key_data_get("__elm_widget_item_data")); \
     })
 
 #define WIDGET_ITEM_DATA_SET(eo_obj, data) \
 { \
-    eo_do(eo_obj, eo_key_data_set("__elm_widget_item_data", data, NULL)); \
+    eo_do(eo_obj, eo_key_data_set("__elm_widget_item_data", data)); \
 }
 
 struct _Elm_Widget_Item_Data
@@ -612,8 +608,6 @@ struct _Elm_Widget_Item_Data
    Eo                            *eo_obj;
    /**< the base view object */
    Evas_Object                   *view;
-   /**< item specific data. used for del callback */
-   const void                    *data;
    /**< user delete callback function */
    Evas_Smart_Cb                  del_func;
    /**< widget delete callback function. don't expose this callback call */
@@ -639,6 +633,7 @@ struct _Elm_Widget_Item_Data
    Eina_Bool                      disabled : 1;
    Eina_Bool                      on_deletion : 1;
    Eina_Bool                      on_translate : 1;
+   Eina_Bool                      still_in : 1;
 };
 
 #define ELM_NEW(t) calloc(1, sizeof(t))
@@ -806,6 +801,8 @@ EAPI Eina_List       *elm_widget_scrollable_children_get(const Evas_Object *obj)
 /* debug function. don't use it unless you are tracking parenting issues */
 EAPI void             elm_widget_tree_dump(const Evas_Object *top);
 EAPI void             elm_widget_tree_dot_dump(const Evas_Object *top, FILE *output);
+EAPI Eina_Bool        _elm_widget_onscreen_is(Evas_Object *widget);
+EAPI Eina_Bool        _elm_widget_item_onscreen_is(Elm_Object_Item *item);
 
 #define ELM_WIDGET_DATA_GET_OR_RETURN(o, ptr, ...)   \
   Elm_Widget_Smart_Data *ptr;                        \

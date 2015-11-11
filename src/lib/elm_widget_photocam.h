@@ -116,6 +116,7 @@ struct _Elm_Photocam_Data
 
    int          tsize;
    Evas_Object *img;  /* low res version of image (scale down == 8) */
+   int          no_smooth;
    int          preload_num;
 
    Eina_List   *grids;
@@ -129,6 +130,7 @@ struct _Elm_Photocam_Data
    Eina_Bool    resized : 1;
    Eina_Bool    on_hold : 1;
    Eina_Bool    paused : 1;
+   Eina_Bool    orientation_changed : 1;
 };
 
 struct _Elm_Photocam_Pan_Data

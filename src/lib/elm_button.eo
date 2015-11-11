@@ -1,98 +1,85 @@
-class Elm_Button (Elm_Layout, Evas.Clickable_Interface,
+class Elm.Button (Elm.Layout, Evas.Clickable_Interface,
                   Elm_Interface_Atspi_Widget_Action)
 {
    eo_prefix: elm_obj_button;
-   properties {
-      autorepeat_initial_timeout {
+   methods {
+      @property autorepeat_initial_timeout {
          set {
-            /*@
-            Set the initial timeout before the autorepeat event is generated
+            [[Set the initial timeout before the autorepeat event is generated
 
-            Sets the timeout, in seconds, since the button is pressed until the
-            first @c repeated signal is emitted. If @p t is 0.0 or less, there
-            won't be any delay and the event will be fired the moment the button is
-            pressed.
+              Sets the timeout, in seconds, since the button is pressed until the
+              first $repeated signal is emitted. If $t is 0.0 or less, there
+              won't be any delay and the event will be fired the moment the button is
+              pressed.
 
-            @see elm_button_autorepeat_set()
-            @see elm_button_autorepeat_gap_timeout_set()
+              See also @.autorepeat.set,
+              @.autorepeat_gap_timeout.set.
 
-            @ingroup Button */
+            ]]
          }
          get {
-            /*@
-            Get the initial timeout before the autorepeat event is generated
+            [[Get the initial timeout before the autorepeat event is generated
 
-            @return Timeout in seconds
+              See also @.autorepeat_initial_timeout.set.
 
-            @see elm_button_autorepeat_initial_timeout_set()
-
-            @ingroup Button */
+            ]]
          }
          values {
-            double t; /*@ Timeout in seconds */
+            t: double; [[Timeout in seconds]]
          }
       }
-      autorepeat_gap_timeout {
+      @property autorepeat_gap_timeout {
          set {
-            /*@
-            Set the interval between each generated autorepeat event
+            [[Set the interval between each generated autorepeat event
 
-            After the first @c repeated event is fired, all subsequent ones will
-            follow after a delay of @p t seconds for each.
+              After the first $repeated event is fired, all subsequent ones will
+              follow after a delay of $t seconds for each.
 
-            @see elm_button_autorepeat_initial_timeout_set()
+              See also @.autorepeat_initial_timeout.set.
 
-            @ingroup Button */
+            ]]
          }
          get {
-            /*@
-            Get the interval between each generated autorepeat event
-
-            @return Interval in seconds
-
-            @ingroup Button */
+            [[Get the interval between each generated autorepeat event]]
          }
          values {
-            double t; /*@ Interval in seconds */
+            t: double; [[Interval in seconds]]
          }
       }
-      autorepeat {
+      @property autorepeat {
          set {
-            /*@
-            Turn on/off the autorepeat event generated when the button is kept pressed
+            [[Turn on/off the autorepeat event generated when the button is kept pressed
 
-            When off, no autorepeat is performed and buttons emit a normal @c clicked
-            signal when they are clicked.
+              When off, no autorepeat is performed and buttons emit a normal $clicked
+              signal when they are clicked.
 
-            When on, keeping a button pressed will continuously emit a @c repeated
-            signal until the button is released. The time it takes until it starts
-            emitting the signal is given by
-            elm_button_autorepeat_initial_timeout_set(), and the time between each
-            new emission by elm_button_autorepeat_gap_timeout_set().
+              When on, keeping a button pressed will continuously emit a $repeated
+              signal until the button is released. The time it takes until it starts
+              emitting the signal is given by
+              @.autorepeat_initial_timeout.set, and the time between each
+              new emission by @.autorepeat_gap_timeout.set.
 
-            @ingroup Button */
+            ]]
          }
          get {
-            /*@
-            Get whether the autorepeat feature is enabled
+            [[Get whether the autorepeat feature is enabled
+              ($true if autorepeat is on, $false otherwise)
 
-            @return @c EINA_TRUE if autorepeat is on, @c EINA_FALSE otherwise
+              See also @.autorepeat.set.
 
-            @see elm_button_autorepeat_set()
-
-            @ingroup Button */
+            ]]
          }
          values {
-            bool on; /*@ A bool to turn on/off the event */
+            on: bool; [[A bool to turn on/off the event]]
          }
       }
-      admits_autorepeat {
+      @property admits_autorepeat {
          get {
-            /*@ Get whether the button supports autorepeat. */
+            [[Get whether the button supports autorepeat.]]
             legacy: null;
          }
          values {
-            bool ret;
+            ret: bool;
          }
       }
    }
@@ -100,16 +87,16 @@ class Elm_Button (Elm_Layout, Evas.Clickable_Interface,
       class.constructor;
       Eo.Base.constructor;
       Evas.Object_Smart.add;
-      Elm_Widget.activate;
-      Elm_Widget.focus_next_manager_is;
-      Elm_Widget.focus_direction_manager_is;
-      Elm_Widget.theme_apply;
-      Elm_Widget.sub_object_del;
-      Elm_Widget.event;
-      Elm_Container.content_set;
-      Elm_Layout.text_aliases.get;
-      Elm_Layout.content_aliases.get;
-      Elm_Layout.sizing_eval;
+      Elm.Widget.activate;
+      Elm.Widget.focus_next_manager_is;
+      Elm.Widget.focus_direction_manager_is;
+      Elm.Widget.theme_apply;
+      Elm.Widget.sub_object_del;
+      Elm.Widget.event;
+      Elm.Container.content_set;
+      Elm.Layout.text_aliases.get;
+      Elm.Layout.content_aliases.get;
+      Elm.Layout.sizing_eval;
       Elm_Interface_Atspi_Widget_Action.elm_actions.get;
    }
 }

@@ -1,4 +1,4 @@
-class Elm_Photocam_Pan (Elm_Pan)
+class Elm.Photocam_Pan (Elm_Pan)
 {
    eo_prefix: elm_obj_photocam_pan;
    implements {
@@ -13,28 +13,14 @@ class Elm_Photocam_Pan (Elm_Pan)
       Elm_Pan.pos_max.get;
    }
    events {
-      clicked;
-      press;
-      longpressed;
-      clicked,double;
       load;
       loaded;
       load,detail;
       loaded,detail;
-      zoom,start;
-      zoom,stop;
-      zoom,change;
-      scroll;
-      scroll,anim,start;
-      scroll,anim,stop;
-      scroll,drag,start;
-      scroll,drag,stop;
       download,start;
       download,progress;
       download,done;
       download,error;
-      focused;
-      unfocused;
    }
 
 }

@@ -419,14 +419,17 @@ _menu_hide(void *data,
      }
 }
 
-static void
+static Eina_Bool
 _hover_dismissed_cb(void *data,
-                    Evas_Object *obj,
+                    Eo *obj, const Eo_Event_Description *desc EINA_UNUSED,
                     void *event_info)
 {
    _menu_hide(data, obj, event_info);
-   evas_object_smart_callback_call(data, SIG_CLICKED, NULL);
-   evas_object_smart_callback_call(data, SIG_DISMISSED, NULL);
+   eo_do(data, eo_event_callback_call
+     (EVAS_CLICKABLE_INTERFACE_EVENT_CLICKED, NULL));
+   eo_do(data, eo_event_callback_call(ELM_MENU_EVENT_DISMISSED, NULL));
+
+   return EINA_TRUE;
 }
 
 static void
@@ -509,8 +512,9 @@ _menu_item_inactivate_cb(void *data,
    if (item->submenu.open) _submenu_hide(item);
 }
 
-static void
-_block_menu(void *_sd, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
+static Eina_Bool
+_block_menu(void *_sd,
+      Eo *obj EINA_UNUSED, const Eo_Event_Description *desc EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    const Eina_List *l;
    Elm_Object_Item *eo_current;
@@ -518,15 +522,19 @@ _block_menu(void *_sd, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSE
    Eina_List *items = sd->items;
    EINA_LIST_FOREACH(items, l, eo_current)
      {
+        Eina_Bool tmp;
         ELM_MENU_ITEM_DATA_GET(eo_current, current);
-        if (!current->blocked) current->was_enabled = !eo_do(eo_current, elm_wdg_item_disabled_get());
+        if (!current->blocked) current->was_enabled = !eo_do_ret(eo_current, tmp, elm_wdg_item_disabled_get());
         current->blocked = EINA_TRUE;
         elm_object_item_disabled_set(eo_current, EINA_TRUE);
      }
+
+   return EINA_TRUE;
 }
 
-static void
-_unblock_menu(void *_sd, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
+static Eina_Bool
+_unblock_menu(void *_sd,
+      Eo *obj EINA_UNUSED, const Eo_Event_Description *desc EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    const Eina_List *l;
    Elm_Object_Item *eo_current;
@@ -538,6 +546,8 @@ _unblock_menu(void *_sd, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNU
         elm_object_item_disabled_set(eo_current, !current->was_enabled);
         current->blocked = EINA_FALSE;
      }
+
+   return EINA_TRUE;
 }
 
 EOLIAN static void
@@ -604,8 +614,8 @@ _item_submenu_obj_create(Elm_Menu_Item_Data *item)
      {
         snprintf(style, sizeof(style), "main_menu_submenu/%s", elm_widget_style_get(WIDGET(item)));
         elm_object_style_set(hv, style);
-        evas_object_smart_callback_add(hv, "dismissed",
-                                       _hover_dismissed_cb, WIDGET(item));
+        eo_do(hv, eo_event_callback_add
+          (ELM_HOVER_EVENT_DISMISSED, _hover_dismissed_cb, WIDGET(item)));
      }
    else
      {
@@ -666,8 +676,8 @@ _elm_menu_evas_object_smart_add(Eo *obj, Elm_Menu_Data *priv)
    elm_widget_mirrored_set(priv->hv, EINA_FALSE);
 
    elm_object_style_set(priv->hv, "menu/default");
-   evas_object_smart_callback_add(priv->hv, "dismissed",
-                                  _hover_dismissed_cb, obj);
+   eo_do(priv->hv, eo_event_callback_add
+     (ELM_HOVER_EVENT_DISMISSED, _hover_dismissed_cb, obj));
 
    priv->bx = elm_box_add(obj);
    elm_widget_mirrored_set(priv->bx, EINA_FALSE);
@@ -740,16 +750,17 @@ _elm_menu_menu_bar_set(Eo *obj, Eina_Bool menu_bar)
 
         if (menu_bar)
           {
-             evas_object_smart_callback_add(item->submenu.hv, "clicked",
-                                            _hover_dismissed_cb, WIDGET(item));
+             eo_do(item->submenu.hv, eo_event_callback_add
+               (EVAS_CLICKABLE_INTERFACE_EVENT_CLICKED,
+                _hover_dismissed_cb, WIDGET(item)));
              snprintf(style, sizeof(style), "main_menu_submenu//%s", elm_widget_style_get(obj));
              elm_object_style_set(item->submenu.hv, style);
           }
         else
           {
-             evas_object_smart_callback_del_full(item->submenu.hv, "clicked",
-                                                 _hover_dismissed_cb,
-                                                 WIDGET(item));
+             eo_do(item->submenu.hv, eo_event_callback_del(
+               EVAS_CLICKABLE_INTERFACE_EVENT_CLICKED,
+               _hover_dismissed_cb, WIDGET(item)));
              snprintf(style, sizeof(style), "submenu/%s", elm_widget_style_get(obj));
              elm_object_style_set(item->submenu.hv, style);
           }
@@ -766,12 +777,12 @@ elm_menu_add(Evas_Object *parent)
    return obj;
 }
 
-EOLIAN static void
+EOLIAN static Eo *
 _elm_menu_eo_base_constructor(Eo *obj, Elm_Menu_Data *sd)
 {
    Eo *parent = NULL;
 
-   eo_do_super(obj, MY_CLASS, eo_constructor());
+   obj = eo_do_super_ret(obj, MY_CLASS, obj, eo_constructor());
    eo_do(obj,
          evas_obj_type_set(MY_CLASS_NAME_LEGACY),
          evas_obj_smart_callbacks_descriptions_set(_smart_callbacks),
@@ -785,10 +796,12 @@ _elm_menu_eo_base_constructor(Eo *obj, Elm_Menu_Data *sd)
        (sd->hv, ELM_HOVER_AXIS_VERTICAL), sd->bx);
 
    _sizing_eval(obj);
-   evas_object_smart_callback_add(obj, "elm,action,block_menu",
-                                  _block_menu, sd);
-   evas_object_smart_callback_add(obj, "elm,action,unblock_menu",
-                                  _unblock_menu, sd);
+   eo_do(obj, eo_event_callback_add
+     (ELM_MENU_EVENT_ELM_ACTION_BLOCK_MENU, _block_menu, sd));
+   eo_do(obj, eo_event_callback_add
+     (ELM_MENU_EVENT_ELM_ACTION_UNBLOCK_MENU, _unblock_menu, sd));
+
+   return obj;
 }
 
 EOLIAN static void
@@ -883,7 +896,7 @@ _elm_menu_close(Eo *obj, Elm_Menu_Data *sd)
 }
 
 EOLIAN static Evas_Object *
-_elm_menu_item_object_get(Eo *eo_it EINA_UNUSED, Elm_Menu_Item_Data *it)
+_elm_menu_item_object_get(const Eo *eo_it EINA_UNUSED, Elm_Menu_Item_Data *it)
 {
    return VIEW(it);
 }
@@ -908,7 +921,8 @@ _item_clone(Evas_Object *obj,
                                   item->func,
                                   WIDGET_ITEM_DATA_GET(EO_OBJ(item)));
 
-   Eina_Bool disabled = eo_do(eo_item, elm_wdg_item_disabled_get());
+   Eina_Bool disabled;
+   eo_do(eo_item, disabled = elm_wdg_item_disabled_get());
    eo_do(new_item, elm_wdg_item_disabled_set(disabled));
 
    EINA_LIST_FOREACH(item->submenu.items, iter, subitem)
@@ -980,11 +994,13 @@ _elm_menu_item_eo_base_destructor(Eo *eo_item, Elm_Menu_Item_Data *item)
    eo_do_super(eo_item, ELM_MENU_ITEM_CLASS, eo_destructor());
 }
 
-EOLIAN static void
+EOLIAN static Eo *
 _elm_menu_item_eo_base_constructor(Eo *eo_item, Elm_Menu_Item_Data *item)
 {
-   eo_do_super(eo_item, ELM_MENU_ITEM_CLASS, eo_constructor());
+   eo_item = eo_do_super_ret(eo_item, ELM_MENU_ITEM_CLASS, eo_item, eo_constructor());
    item->base = eo_data_scope_get(eo_item, ELM_WIDGET_ITEM_CLASS);
+
+   return eo_item;
 }
 
 EOLIAN static Elm_Object_Item*
@@ -1029,7 +1045,7 @@ _elm_menu_item_add(Eo *obj, Elm_Menu_Data *sd, Elm_Object_Item *parent, const ch
 }
 
 EOLIAN static unsigned int
-_elm_menu_item_index_get(Eo *eo_it EINA_UNUSED, Elm_Menu_Item_Data *it)
+_elm_menu_item_index_get(const Eo *eo_it EINA_UNUSED, Elm_Menu_Item_Data *it)
 {
    return it->idx;
 }
@@ -1113,13 +1129,13 @@ _elm_menu_item_icon_name_get(Eo *eo_item EINA_UNUSED, Elm_Menu_Item_Data *item)
 }
 
 EOLIAN static Eina_Bool
-_elm_menu_item_is_separator(Eo *eo_item EINA_UNUSED, Elm_Menu_Item_Data *item)
+_elm_menu_item_is_separator(const Eo *eo_item EINA_UNUSED, Elm_Menu_Item_Data *item)
 {
    return item->separator;
 }
 
 EOLIAN static const Eina_List *
-_elm_menu_item_subitems_get(Eo *eo_item EINA_UNUSED, Elm_Menu_Item_Data *item)
+_elm_menu_item_subitems_get(const Eo *eo_item EINA_UNUSED, Elm_Menu_Item_Data *item)
 {
    return item->submenu.items;
 }
@@ -1168,7 +1184,7 @@ _elm_menu_item_selected_get(Eo *eo_item EINA_UNUSED, Elm_Menu_Item_Data *item)
 }
 
 EOLIAN static Elm_Object_Item *
-_elm_menu_item_prev_get(Eo *eo_item, Elm_Menu_Item_Data *item)
+_elm_menu_item_prev_get(const Eo *eo_item, Elm_Menu_Item_Data *item)
 {
    if (item->parent)
      {
@@ -1192,7 +1208,7 @@ _elm_menu_item_prev_get(Eo *eo_item, Elm_Menu_Item_Data *item)
 }
 
 EOLIAN static Elm_Object_Item *
-_elm_menu_item_next_get(Eo *eo_item, Elm_Menu_Item_Data *item)
+_elm_menu_item_next_get(const Eo *eo_item, Elm_Menu_Item_Data *item)
 {
    if (item->parent)
      {

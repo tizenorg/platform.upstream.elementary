@@ -102,17 +102,23 @@ struct _Elm_Multibuttonentry_Data
    Elm_Multibuttonentry_Item_Filter_Cb add_callback;
    void                               *add_callback_data;
 
-   Eina_Bool                           last_btn_select : 1;
+   Eina_Bool                           last_it_select : 1;
    Eina_Bool                           editable : 1;
    Eina_Bool                           focused : 1;
+   Eina_Bool                           label_packed : 1;
+
+   Ecore_Timer                         *longpress_timer;
 };
 
 /**
  * @}
  */
 
+#define ELM_MULTIBUTTONENTRY_DATA_GET(o, sd) \
+  Elm_Multibuttonentry_Data *sd = eo_data_scope_get(o, ELM_MULTIBUTTONENTRY_CLASS);
+
 #define ELM_MULTIBUTTONENTRY_DATA_GET_OR_RETURN(o, ptr) \
-  Elm_Multibuttonentry_Data *ptr = eo_data_scope_get(o, ELM_MULTIBUTTONENTRY_CLASS); \
+  ELM_MULTIBUTTONENTRY_DATA_GET(o, ptr);                \
   if (EINA_UNLIKELY(!ptr))                              \
     {                                                   \
        CRI("No widget data for object %p (%s)",         \

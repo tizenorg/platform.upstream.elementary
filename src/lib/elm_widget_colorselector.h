@@ -35,7 +35,7 @@ struct _Elm_Colorselector_Data
    Evas_Object           *palette_box;
    Evas_Object           *picker;
    Evas_Object           *picker_display;
-   Evas_Object           *entries[4];
+   Evas_Object           *spinners[4];
    Evas_Object           *button;
 
    struct {
@@ -96,6 +96,8 @@ struct _Elm_Color_Item_Data
 
    Evas_Object    *color_obj;
    Elm_Color_RGBA *color;
+
+   Eina_Bool       still_in : 1;
 };
 
 /**

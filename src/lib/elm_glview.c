@@ -16,7 +16,6 @@
 
 static const char SIG_FOCUSED[] = "focused";
 static const char SIG_UNFOCUSED[] = "unfocused";
-static const char SIG_LANG_CHANGED[] = "language,changed";
 
 /* smart callbacks coming from elm glview objects: */
 static const Evas_Smart_Cb_Description _smart_callbacks[] = {
@@ -48,9 +47,13 @@ static void
 _glview_update_surface(Evas_Object *obj)
 {
    Evas_Native_Surface ns = { 0 };
+   Evas_GL_Options_Bits opt;
+
    ELM_GLVIEW_DATA_GET(obj, sd);
    ELM_WIDGET_DATA_GET_OR_RETURN(obj, wd);
    if (!sd) return;
+
+   evas_gl_make_current(sd->evasgl, NULL, NULL);
 
    if (sd->surface)
      {
@@ -60,10 +63,26 @@ _glview_update_surface(Evas_Object *obj)
 
    evas_object_image_size_set(wd->resize_obj, sd->w, sd->h);
 
+   opt = sd->config->options_bits;
+   if ((opt & EVAS_GL_OPTIONS_DIRECT) &&
+       (sd->render_policy != ELM_GLVIEW_RENDER_POLICY_ON_DEMAND))
+     {
+        if (!sd->warned_about_dr)
+          {
+             WRN("App requested direct rendering but render policy is not ON_DEMAND. "
+                 "Disabling direct rendering...");
+             sd->warned_about_dr = EINA_TRUE;
+          }
+        sd->config->options_bits &= ~(EVAS_GL_OPTIONS_DIRECT);
+     }
    sd->surface = evas_gl_surface_create(sd->evasgl, sd->config, sd->w, sd->h);
+   sd->config->options_bits = opt;
    evas_gl_native_surface_get(sd->evasgl, sd->surface, &ns);
    evas_object_image_native_surface_set(wd->resize_obj, &ns);
    elm_glview_changed_set(obj);
+
+   // fake a resize event so that clients can reconfigure their viewport
+   sd->resized = EINA_TRUE;
 }
 
 EOLIAN static void
@@ -94,6 +113,9 @@ static Eina_Bool
 _render_cb(void *obj)
 {
    ELM_GLVIEW_DATA_GET(obj, sd);
+   ELM_WIDGET_DATA_GET_OR_RETURN(obj, wd, EINA_FALSE);
+
+   evas_object_render_op_set(wd->resize_obj, evas_object_render_op_get(obj));
 
    // Do a make current
    if (!evas_gl_make_current(sd->evasgl, sd->surface, sd->context))
@@ -149,6 +171,8 @@ _set_render_policy_callback(Evas_Object *obj)
    switch (sd->render_policy)
      {
       case ELM_GLVIEW_RENDER_POLICY_ON_DEMAND:
+         if (sd->render_idle_enterer)
+              evas_object_image_pixels_dirty_set(wd->resize_obj, EINA_TRUE);
          // Delete idle_enterer if it for some reason is around
          ELM_SAFE_FREE(sd->render_idle_enterer, ecore_idle_enterer_del);
 
@@ -160,6 +184,8 @@ _set_render_policy_callback(Evas_Object *obj)
         break;
 
       case ELM_GLVIEW_RENDER_POLICY_ALWAYS:
+        if (evas_object_image_pixels_dirty_get(wd->resize_obj))
+          sd->render_idle_enterer = ecore_idle_enterer_before_add((Ecore_Task_Cb)_render_cb, obj);
         // Unset the pixel getter callback if set already
         evas_object_image_pixels_get_callback_set
           (wd->resize_obj, NULL, NULL);
@@ -252,6 +278,7 @@ _elm_glview_evas_object_smart_del(Eo *obj, Elm_Glview_Data *sd)
      }
 
    ecore_idle_enterer_del(sd->render_idle_enterer);
+   evas_gl_make_current(sd->evasgl, NULL, NULL);
 
    if (sd->surface)
      {
@@ -284,12 +311,6 @@ elm_glview_version_add(Evas_Object *parent, Evas_GL_Context_Version version)
 }
 
 EOLIAN static void
-_elm_glview_eo_base_constructor(Eo *obj, Elm_Glview_Data *sd EINA_UNUSED)
-{
-   eo_do_super(obj, MY_CLASS, eo_constructor());
-}
-
-EOLIAN static void
 _elm_glview_version_constructor(Eo *obj, Elm_Glview_Data *sd,
                                 Evas_GL_Context_Version version)
 {
@@ -301,12 +322,18 @@ _elm_glview_version_constructor(Eo *obj, Elm_Glview_Data *sd,
          evas_obj_type_set(MY_CLASS_NAME_LEGACY),
          evas_obj_smart_callbacks_descriptions_set(_smart_callbacks),
          elm_interface_atspi_accessible_role_set(ELM_ATSPI_ROLE_ANIMATION));
+}
 
+EOLIAN static Eo *
+_elm_glview_eo_base_finalize(Eo *obj, Elm_Glview_Data *sd)
+{
    if (!sd->evasgl)
      {
-        eo_error_set(obj);
-        return;
+        ERR("Failed");
+        return NULL;
      }
+
+   return eo_do_super_ret(obj, MY_CLASS, obj, eo_finalize());
 }
 
 EOLIAN static Evas_GL_API*
@@ -385,9 +412,14 @@ _elm_glview_mode_set(Eo *obj, Elm_Glview_Data *sd, Elm_GLView_Mode mode)
      evas_object_image_alpha_set(wd->resize_obj, EINA_FALSE);
 
    sd->mode = mode;
+   sd->warned_about_dr = EINA_FALSE;
 
    _glview_update_surface(obj);
-   elm_glview_changed_set(obj);
+   if (!sd->surface)
+     {
+        ERR("Failed to create a surface with the requested configuration.");
+        return EINA_FALSE;
+     }
 
    return EINA_TRUE;
 }
@@ -425,6 +457,7 @@ _elm_glview_render_policy_set(Eo *obj, Elm_Glview_Data *sd, Elm_GLView_Render_Po
 
    if (sd->render_policy == policy) return EINA_TRUE;
 
+   sd->warned_about_dr = EINA_FALSE;
    sd->render_policy = policy;
    _set_render_policy_callback(obj);
 

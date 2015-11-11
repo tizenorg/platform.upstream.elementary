@@ -336,14 +336,16 @@ elm_progressbar_add(Evas_Object *parent)
    return obj;
 }
 
-EOLIAN static void
+EOLIAN static Eo *
 _elm_progressbar_eo_base_constructor(Eo *obj, Elm_Progressbar_Data *_pd EINA_UNUSED)
 {
-   eo_do_super(obj, MY_CLASS, eo_constructor());
+   obj = eo_do_super_ret(obj, MY_CLASS, obj, eo_constructor());
    eo_do(obj,
          evas_obj_type_set(MY_CLASS_NAME_LEGACY),
          evas_obj_smart_callbacks_descriptions_set(_smart_callbacks),
          elm_interface_atspi_accessible_role_set(ELM_ATSPI_ROLE_PROGRESS_BAR));
+
+   return obj;
 }
 
 EOLIAN static void
@@ -409,11 +411,12 @@ _elm_progressbar_part_value_set(Eo *obj EINA_UNUSED, Elm_Progressbar_Data *sd, c
 
    _val_set(obj);
    _units_set(obj);
-   evas_object_smart_callback_call(obj, SIG_CHANGED, NULL);
+   eo_do(obj, eo_event_callback_call
+     (ELM_PROGRESSBAR_EVENT_CHANGED, NULL));
 }
 
 EOLIAN static double
-_elm_progressbar_part_value_get(Eo *obj EINA_UNUSED, Elm_Progressbar_Data *sd, const char* part)
+_elm_progressbar_part_value_get(const Eo *obj EINA_UNUSED, Elm_Progressbar_Data *sd, const char* part)
 {
    Elm_Progress_Status *ps;
    Eina_List *l;
@@ -429,19 +432,9 @@ _elm_progressbar_part_value_get(Eo *obj EINA_UNUSED, Elm_Progressbar_Data *sd, c
 EOLIAN static void
 _elm_progressbar_value_set(Eo *obj, Elm_Progressbar_Data *sd, double val)
 {
-   Elm_Progress_Status *ps;
-
    if (sd->val == val) return;
 
-   sd->val = val;
-   if (sd->val < MIN_RATIO_LVL) sd->val = MIN_RATIO_LVL;
-   if (sd->val > MAX_RATIO_LVL) sd->val = MAX_RATIO_LVL;
-
-   ps = _progress_status_new("elm.cur.progressbar", sd->val);
-   sd->progress_status = eina_list_append(sd->progress_status, ps);
-   _val_set(obj);
-   _units_set(obj);
-   evas_object_smart_callback_call(obj, SIG_CHANGED, NULL);
+   elm_progressbar_part_value_set(obj, "elm.cur.progressbar", val);
 }
 
 EOLIAN static double

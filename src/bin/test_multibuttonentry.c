@@ -120,6 +120,16 @@ _shrink_state_changed_cb(void *data EINA_UNUSED,
    printf("contracted state changed! \n");
 }
 
+// "longpressed" smart callback
+static void
+_longpressed_cb(void *data EINA_UNUSED,
+                Evas_Object *obj EINA_UNUSED,
+                void *event_info)
+{
+   printf("item = %p longpressed! \n", event_info);
+}
+
+
 // "item verified" confirm callback
 static Eina_Bool
 _item_filter_cb(Evas_Object *obj EINA_UNUSED,
@@ -161,6 +171,13 @@ _format_change_btn_add(Evas_Object *mbe)
    return btn;
 }
 
+void
+_select_cb(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info)
+{
+   Elm_Object_Item *it = (Elm_Object_Item *)event_info;
+   printf("select function called, item = %s\n", elm_object_item_text_get(it));
+}
+
 static Evas_Object*
 _add_multibuttonentry(Evas_Object *parent)
 {
@@ -180,6 +197,7 @@ _add_multibuttonentry(Evas_Object *parent)
    evas_object_size_hint_weight_set(mbe, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    evas_object_size_hint_align_set(mbe, EVAS_HINT_FILL, EVAS_HINT_FILL);
    elm_object_content_set(scr, mbe);
+   elm_multibuttonentry_item_append(mbe, "mbe", _select_cb, NULL);
 
    // Add item verify callback to Multibuttonentry
    elm_multibuttonentry_item_filter_append(mbe, _item_filter_cb, data);
@@ -198,6 +216,7 @@ _add_multibuttonentry(Evas_Object *parent)
    evas_object_smart_callback_add(mbe, "expanded", _expanded_cb, NULL);
    evas_object_smart_callback_add(mbe, "contracted", _contracted_cb, NULL);
    evas_object_smart_callback_add(mbe, "shrink,state,changed", _shrink_state_changed_cb, NULL);
+   evas_object_smart_callback_add(mbe, "item,longpressed", _longpressed_cb, NULL);
 
    btn = _format_change_btn_add(mbe);
    elm_object_part_content_set(parent, "box", btn);

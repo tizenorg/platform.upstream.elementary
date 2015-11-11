@@ -31,7 +31,7 @@ typedef Evas_Object                  *(*Elm_Gen_Item_Content_Get_Cb)(void *data,
  * @param data The data passed in the item creation function
  * @param obj The base widget object
  * @param part The part name of the swallow
- * @return The hell if I know
+ * @return The boolean state of this element (resulting in the edje object being emitted a signal of "elm,state,partname,active" or "elm.state,partname,passve"
  */
 typedef Eina_Bool                     (*Elm_Gen_Item_State_Get_Cb)(void *data, Evas_Object *obj, const char *part); /**< State fetching class function for gen item classes. */
 
@@ -41,6 +41,15 @@ typedef Eina_Bool                     (*Elm_Gen_Item_State_Get_Cb)(void *data, E
  * @param obj The base widget object
  */
 typedef void                          (*Elm_Gen_Item_Del_Cb)(void *data, Evas_Object *obj); /**< Deletion class function for gen item classes. */
+
+/**
+ * Filter class function for Elm_Gen_Item_Class.
+ * @param data The data passed in the item creation function
+ * @param obj The base widget object
+ * @param key The key needed for item filter to be decided on
+ * @return The boolean state of filter for this element
+ */
+typedef Eina_Bool                     (*Elm_Gen_Item_Filter_Get_Cb)(void *data, Evas_Object *obj, void *key); /**< Filter seeking class function for gen item classes. */
 
 struct _Elm_Gen_Item_Class
 {
@@ -56,6 +65,7 @@ struct _Elm_Gen_Item_Class
         Elm_Gen_Item_Content_Get_Cb content_get; /**< Content fetching class function for genlist/gengrid item classes. */
         Elm_Gen_Item_State_Get_Cb   state_get; /**< State fetching class function for genlist/gengrid item classes. */
         Elm_Gen_Item_Del_Cb         del; /**< Deletion class function for genlist/gengrid item classes. */
+        Elm_Gen_Item_Filter_Get_Cb  filter_get;  /**< Filter seeking class function for genlist/gengrid item classes. */
      } func;
 }; /**< #Elm_Gen_Item_Class member definitions */
 

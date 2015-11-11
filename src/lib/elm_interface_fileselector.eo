@@ -1,158 +1,178 @@
+enum Elm.Fileselector.Mode
+{
+   [[Defines how a file selector widget is to layout its contents
+     (file system entries).
+   ]]
+   legacy: elm_fileselector;
+   list = 0, [[Layout as a list.]]
+   grid, [[Layout as a grid.]]
+   last [[Sentinel (helper) value, not used.]]
+}
+
+enum Elm.Fileselector.Sort
+{
+   by_filename_asc = 0,
+   by_filename_desc,
+   by_type_asc,
+   by_type_desc,
+   by_size_asc,
+   by_size_desc,
+   by_modified_asc,
+   by_modified_desc,
+   last [[Sentinel (helper) value, not used.]]
+}
+
 interface Elm_Interface_Fileselector ()
 {
    legacy_prefix: null;
    eo_prefix: elm_interface_fileselector;
-   properties {
-      folder_only {
+   methods {
+      @property folder_only {
          set {
-            /*@ Enable/disable folder-only view for a given file selector widget */
+            [[Enable/disable folder-only view for a given file selector widget]]
          }
          get {
-            /*@ Get whether folder-only view is set for a given file selector */
+            [[Get whether folder-only view is set for a given file selector]]
          }
          values {
-            bool only;
+            only: bool;
          }
       }
-      selected {
+      @property selected {
          set {
-            /*@ Set, programmatically, the currently selected file/directory in the given file selector widget */
+            [[Set, programmatically, the currently selected file/directory in the given file selector widget]]
             return: bool;
          }
          get {
-            /*@ Get the currently selected item's (full) path, in the given file the given file selector widget */
+            [[Get the currently selected item's (full) path, in the given file the given file selector widget]]
          }
          values {
-            const(char)* path;
+            path: const(char)*;
          }
       }
-      thumbnail_size {
+      @property thumbnail_size {
          set {
-            /*@ Set the size for the thumbnail of the file selector widget's view. */
+            [[Set the size for the thumbnail of the file selector widget's view.]]
          }
          get {
-            /*@ Get the size for the thumbnail of a given file selector widget */
+            [[Get the size for the thumbnail of a given file selector widget]]
          }
          values {
-            Evas_Coord w;
-            Evas_Coord h;
+            w: Evas.Coord;
+            h: Evas.Coord;
          }
       }
-      hidden_visible {
+      @property hidden_visible {
          set {
-            /*@ Enable or disable visibility of hidden files/directories in the file selector widget. */
+            [[Enable or disable visibility of hidden files/directories in the file selector widget.]]
          }
          get {
-            /*@ Get if hiden files/directories in the file selector are visible or not. */
+            [[Get if hiden files/directories in the file selector are visible or not.]]
          }
          values {
-            bool multi;
+            multi: bool;
          }
       }
-      sort_method {
+      @property sort_method {
          set {
-            /*@ Set the sort method of the file selector widget. */
+            [[Set the sort method of the file selector widget.]]
          }
          get {
-            /*@ Get the sort method of the file selector widget. */
+            [[Get the sort method of the file selector widget.]]
          }
          values {
-            Elm_Fileselector_Sort sort;
+            sort: Elm.Fileselector.Sort;
          }
       }
-      multi_select {
+      @property multi_select {
          set {
-            /*@ Enable or disable multi-selection in the fileselector */
+            [[Enable or disable multi-selection in the fileselector]]
          }
          get {
-            /*@ Gets if multi-selection in fileselector is enabled or disabled. */
+            [[Gets if multi-selection in fileselector is enabled or disabled.]]
          }
          values {
-            bool multi;
+            multi: bool;
          }
       }
-      expandable {
+      @property expandable {
          set {
-            /*@ Enable/disable a tree view in the given file selector widget, <b>if it's in */
+            [[Enable/disable a tree view in the given file selector widget, <b>if it's in]]
          }
          get {
-            /*@ Get whether tree view is enabled for the given file selector */
+            [[Get whether tree view is enabled for the given file selector]]
          }
          values {
-            bool expand;
+            expand: bool;
          }
       }
-      path {
+      @property path {
          set {
-            /*@ Set, programmatically, the directory that a given file selector widget will display contents from */
+            [[Set, programmatically, the directory that a given file selector widget will display contents from]]
          }
          get {
-            /*@ Get the parent directory's path that a given file selector selector widget will display contents from */
+            [[Get the parent directory's path that a given file selector selector widget will display contents from]]
          }
          values {
-            const(char)* path;
+            path: const(char)*;
          }
       }
-      mode {
+      @property mode {
          set {
-            /*@ Set the mode in which a given file selector widget will display (layout) file system entries in its view */
+            [[Set the mode in which a given file selector widget will display (layout) file system entries in its view]]
          }
          get {
-            /*@ Get the mode in which a given file selector widget is displaying */
+            [[Get the mode in which a given file selector widget is displaying]]
          }
          values {
-            Elm_Fileselector_Mode mode;
+            mode: Elm.Fileselector.Mode;
          }
       }
-      is_save {
+      @property is_save {
          set {
-            /*@ Enable/disable the file name entry box where the user can type in a name for a file, in a given file selector widget */
+            [[Enable/disable the file name entry box where the user can type in a name for a file, in a given file selector widget]]
          }
          get {
-            /*@ Get whether the given file selector is in "saving dialog" mode */
+            [[Get whether the given file selector is in "saving dialog" mode]]
          }
          values {
-            bool is_save;
+            is_save: bool;
          }
       }
-      selected_paths {
+      @property selected_paths {
          get {
-            /*@ Get a list of selected paths in the fileselector. */
+            [[Get a list of selected paths in the fileselector.]]
          }
          values {
-            const(list)* ret;
+            ret: const(list<const(char)*>)*;
          }
       }
-      current_name {
+      @property current_name {
          set {
-            /*@ Set, */
          }
          get {
-            /*@ Get */
          }
          values {
-            const(char)* name;
+            name: const(char)*;
          }
       }
-   }
-   methods {
       custom_filter_append {
-         /*@ Append custom filter into filter list */
+         [[Append custom filter into filter list]]
          params {
-            @in Elm_Fileselector_Filter_Func func; /*@ function */
-            @in void *data;
-            @in const(char)* filter_name;
+            @in func: Elm_Fileselector_Filter_Func; [[function]]
+            @in data: void *;
+            @in filter_name: const(char)*;
          }
          return: bool;
       }
       filters_clear {
-         /*@ Clear all filters registered */
+         [[Clear all filters registered]]
       }
       mime_types_filter_append {
-         /*@ Append mime type based filter into filter list */
+         [[Append mime type based filter into filter list]]
          params {
-            @in const(char)* mime_types;
-            @in const(char)* filter_name;
+            @in mime_types: const(char)*;
+            @in filter_name: const(char)*;
          }
          return: bool;
       }

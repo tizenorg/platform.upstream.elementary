@@ -136,8 +136,8 @@ _elm_prefs_save(void *data)
      {
         elm_prefs_data_save(sd->prefs_data, NULL, NULL);
 
-        evas_object_smart_callback_call
-          (wd->obj, SIG_PAGE_SAVED, (char *)sd->root->name);
+        eo_do(wd->obj, eo_event_callback_call
+          (ELM_PREFS_EVENT_PAGE_SAVED, (char *)sd->root->name));
      }
 
    sd->dirty = EINA_FALSE;
@@ -300,8 +300,8 @@ _elm_prefs_item_changed_report(Eo *obj,
 
    snprintf(buf, sizeof(buf), "%s:%s", it->page->name, it->name);
 
-   evas_object_smart_callback_call
-     (wd->obj, SIG_ITEM_CHANGED, buf);
+   eo_do(wd->obj, eo_event_callback_call
+     (ELM_PREFS_EVENT_ITEM_CHANGED, buf));
 }
 
 static Elm_Prefs_Item_Node *
@@ -400,8 +400,8 @@ _prefs_data_autosaved_cb(void *cb_data,
    ELM_PREFS_DATA_GET(cb_data, sd);
    ELM_WIDGET_DATA_GET_OR_RETURN(cb_data, wd);
 
-   evas_object_smart_callback_call
-     (wd->obj, SIG_PAGE_SAVED, event_info);
+   eo_do(wd->obj, eo_event_callback_call
+     (ELM_PREFS_EVENT_PAGE_SAVED, event_info));
 
    sd->dirty = EINA_FALSE;
 }
@@ -512,14 +512,16 @@ elm_prefs_add(Evas_Object *parent)
    return obj;
 }
 
-EOLIAN static void
+EOLIAN static Eo *
 _elm_prefs_eo_base_constructor(Eo *obj, Elm_Prefs_Data *_pd EINA_UNUSED)
 {
-   eo_do_super(obj, MY_CLASS, eo_constructor());
+   obj = eo_do_super_ret(obj, MY_CLASS, obj, eo_constructor());
    eo_do(obj,
          evas_obj_type_set(MY_CLASS_NAME_LEGACY),
          evas_obj_smart_callbacks_descriptions_set(_elm_prefs_smart_callbacks),
          elm_interface_atspi_accessible_role_set(ELM_ATSPI_ROLE_REDUNDANT_OBJECT));
+
+   return obj;
 }
 
 static Eina_Bool
@@ -554,8 +556,8 @@ _item_changed_cb(Evas_Object *it_obj)
    /* we use the changed cb on ACTION/RESET/SAVE items specially */
    if (it->type == ELM_PREFS_TYPE_ACTION)
      {
-        evas_object_smart_callback_call
-          (wd->obj, SIG_ACTION, buf);
+        eo_do(wd->obj, eo_event_callback_call
+          (ELM_PREFS_EVENT_ACTION, buf));
 
         return;
      }
@@ -1146,7 +1148,11 @@ _elm_prefs_efl_file_file_set(Eo *obj, Elm_Prefs_Data *sd, const char *file, cons
      sd->file = eina_stringshare_printf("%s/%s", prefix, "preferences.epb");
    else
      {
+#ifndef _WIN32
         if (*file != '/') /* relative */
+#else
+        if (!evil_path_is_absolute(file)) /* relative */
+#endif
           sd->file = eina_stringshare_printf("%s/%s", prefix, file);
         else
           sd->file = eina_stringshare_add(file);
@@ -1169,8 +1175,8 @@ _elm_prefs_efl_file_file_set(Eo *obj, Elm_Prefs_Data *sd, const char *file, cons
 
    _elm_prefs_values_get_default(sd->root, EINA_FALSE);
 
-   evas_object_smart_callback_call
-      (obj, SIG_PAGE_LOADED, (char *)sd->root->name);
+   eo_do(obj, eo_event_callback_call
+     (ELM_PREFS_EVENT_PAGE_LOADED, (char *)sd->root->name));
 
    return EINA_TRUE;
 }
@@ -1214,8 +1220,8 @@ _elm_prefs_data_set(Eo *obj, Elm_Prefs_Data *sd, Elm_Prefs_Data *prefs_data)
    sd->values_fetching = EINA_FALSE;
 
 end:
-   evas_object_smart_callback_call
-     (obj, SIG_PAGE_CHANGED, (char *)sd->root->name);
+   eo_do(obj, eo_event_callback_call
+     (ELM_PREFS_EVENT_PAGE_CHANGED, (char *)sd->root->name));
 
    return EINA_TRUE;
 }
@@ -1350,7 +1356,7 @@ err:
 }
 
 EOLIAN static Eina_Bool
-_elm_prefs_item_value_get(Eo *obj, Elm_Prefs_Data *_pd EINA_UNUSED, const char *name, Eina_Value *value)
+_elm_prefs_item_value_get(const Eo *obj, Elm_Prefs_Data *_pd EINA_UNUSED, const char *name, Eina_Value *value)
 {
    Elm_Prefs_Item_Node *it;
 
@@ -1475,7 +1481,7 @@ _elm_prefs_item_visible_set(Eo *obj EINA_UNUSED, Elm_Prefs_Data *sd, const char 
 }
 
 EOLIAN static Eina_Bool
-_elm_prefs_item_visible_get(Eo *obj, Elm_Prefs_Data *_pd EINA_UNUSED, const char *name)
+_elm_prefs_item_visible_get(const Eo *obj, Elm_Prefs_Data *_pd EINA_UNUSED, const char *name)
 {
    Elm_Prefs_Item_Node *it;
 
@@ -1511,7 +1517,7 @@ _elm_prefs_item_disabled_set(Eo *obj, Elm_Prefs_Data *_pd EINA_UNUSED, const cha
 }
 
 EOLIAN static Eina_Bool
-_elm_prefs_item_disabled_get(Eo *obj, Elm_Prefs_Data *_pd EINA_UNUSED, const char *name)
+_elm_prefs_item_disabled_get(const Eo *obj, Elm_Prefs_Data *_pd EINA_UNUSED, const char *name)
 {
    Elm_Prefs_Item_Node *it;
 
@@ -1547,7 +1553,7 @@ _elm_prefs_item_editable_set(Eo *obj, Elm_Prefs_Data *_pd EINA_UNUSED, const cha
 }
 
 EOLIAN static Eina_Bool
-_elm_prefs_item_editable_get(Eo *obj, Elm_Prefs_Data *_pd EINA_UNUSED, const char *name)
+_elm_prefs_item_editable_get(const Eo *obj, Elm_Prefs_Data *_pd EINA_UNUSED, const char *name)
 {
    Elm_Prefs_Item_Node *it;
 
@@ -1872,7 +1878,8 @@ _elm_prefs_class_constructor(Eo_Class *klass)
 EAPI Eina_Bool
 elm_prefs_file_set(Eo *obj, const char *file, const char *page)
 {
-   return eo_do((Eo *) obj, efl_file_set(file, page));
+   Eina_Bool ret;
+   return eo_do_ret((Eo *) obj, ret, efl_file_set(file, page));
 }
 
 EAPI Eina_Bool

@@ -66,7 +66,8 @@ _activate(Evas_Object *obj)
           _elm_access_say(E_("Clicked"));
         if (!elm_widget_disabled_get(obj) &&
             !evas_object_freeze_events_get(obj))
-          evas_object_smart_callback_call(obj, SIG_CLICKED, NULL);
+          eo_do(obj, eo_event_callback_call
+            (EVAS_CLICKABLE_INTERFACE_EVENT_CLICKED, NULL));
      }
 }
 
@@ -89,7 +90,8 @@ _elm_button_elm_widget_activate(Eo *obj, Elm_Button_Data *_pd EINA_UNUSED, Elm_A
    if (act != ELM_ACTIVATE_DEFAULT) return EINA_FALSE;
    if (evas_object_freeze_events_get(obj)) return EINA_FALSE;
 
-   evas_object_smart_callback_call(obj, SIG_CLICKED, NULL);
+   eo_do(obj, eo_event_callback_call
+     (EVAS_CLICKABLE_INTERFACE_EVENT_CLICKED, NULL));
    elm_layout_signal_emit(obj, "elm,anim,activate", "elm");
 
    return EINA_TRUE;
@@ -200,7 +202,8 @@ _autorepeat_send(void *data)
 {
    ELM_BUTTON_DATA_GET_OR_RETURN_VAL(data, sd, ECORE_CALLBACK_CANCEL);
 
-   evas_object_smart_callback_call(data, SIG_REPEATED, NULL);
+   eo_do(data, eo_event_callback_call
+     (EVAS_CLICKABLE_INTERFACE_EVENT_REPEATED, NULL));
    if (!sd->repeating)
      {
         sd->timer = NULL;
@@ -240,7 +243,8 @@ _on_pressed_signal(void *data,
               (sd->ar_initial_timeout, _autorepeat_initial_send, data);
      }
 
-   evas_object_smart_callback_call(data, SIG_PRESSED, NULL);
+   eo_do(data, eo_event_callback_call
+     (EVAS_CLICKABLE_INTERFACE_EVENT_PRESSED, NULL));
 }
 
 static void
@@ -253,7 +257,8 @@ _on_unpressed_signal(void *data,
 
    ELM_SAFE_FREE(sd->timer, ecore_timer_del);
    sd->repeating = EINA_FALSE;
-   evas_object_smart_callback_call(data, SIG_UNPRESSED, NULL);
+   eo_do(data, eo_event_callback_call
+     (EVAS_CLICKABLE_INTERFACE_EVENT_UNPRESSED, NULL));
 }
 
 static char *
@@ -332,14 +337,16 @@ elm_button_add(Evas_Object *parent)
    return obj;
 }
 
-EOLIAN static void
+EOLIAN static Eo *
 _elm_button_eo_base_constructor(Eo *obj, Elm_Button_Data *_pd EINA_UNUSED)
 {
-   eo_do_super(obj, MY_CLASS, eo_constructor());
+   obj = eo_do_super_ret(obj, MY_CLASS, obj, eo_constructor());
    eo_do(obj,
          evas_obj_type_set(MY_CLASS_NAME_LEGACY),
          evas_obj_smart_callbacks_descriptions_set(_smart_callbacks),
          elm_interface_atspi_accessible_role_set(ELM_ATSPI_ROLE_PUSH_BUTTON));
+
+   return obj;
 }
 
 EOLIAN static void

@@ -139,7 +139,7 @@ _on_clicked(void *data,
             const char *emission EINA_UNUSED,
             const char *source EINA_UNUSED)
 {
-   evas_object_smart_callback_call(data, SIG_CLICKED, NULL);
+   eo_do(data, eo_event_callback_call(EVAS_CLICKABLE_INTERFACE_EVENT_CLICKED, NULL));
 }
 
 static void
@@ -159,7 +159,7 @@ _on_pressed(void *data,
             const char *emission EINA_UNUSED,
             const char *source EINA_UNUSED)
 {
-   evas_object_smart_callback_call(data, SIG_PRESS, NULL);
+   eo_do(data, eo_event_callback_call(ELM_PANES_EVENT_PRESS, NULL));
 }
 
 static void
@@ -169,11 +169,11 @@ _on_unpressed(void *data,
               const char *source EINA_UNUSED)
 {
    ELM_PANES_DATA_GET(data, sd);
-   evas_object_smart_callback_call(data, SIG_UNPRESS, NULL);
+   eo_do(data, eo_event_callback_call(ELM_PANES_EVENT_UNPRESS, NULL));
 
    if (sd->double_clicked)
      {
-        evas_object_smart_callback_call(data, SIG_DOUBLE_CLICKED, NULL);
+        eo_do(data, eo_event_callback_call(EVAS_CLICKABLE_INTERFACE_EVENT_CLICKED_DOUBLE, NULL));
         sd->double_clicked = EINA_FALSE;
      }
 }
@@ -325,14 +325,16 @@ elm_panes_add(Evas_Object *parent)
    return obj;
 }
 
-EOLIAN static void
+EOLIAN static Eo *
 _elm_panes_eo_base_constructor(Eo *obj, Elm_Panes_Data *_pd EINA_UNUSED)
 {
-   eo_do_super(obj, MY_CLASS, eo_constructor());
+   obj = eo_do_super_ret(obj, MY_CLASS, obj, eo_constructor());
    eo_do(obj,
          evas_obj_type_set(MY_CLASS_NAME_LEGACY),
          evas_obj_smart_callbacks_descriptions_set(_smart_callbacks),
          elm_interface_atspi_accessible_role_set(ELM_ATSPI_ROLE_SPLIT_PANE));
+
+   return obj;
 }
 
 EINA_DEPRECATED EAPI void

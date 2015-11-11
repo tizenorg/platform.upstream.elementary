@@ -155,4 +155,4 @@ install -m 0644 %SOURCE100 %{buildroot}%{_tmpfilesdir}/elementary.conf
 %{_libdir}/pkgconfig/*.pc
 %{_libdir}/cmake/Elementary/ElementaryConfig.cmake
 %{_libdir}/cmake/Elementary/ElementaryConfigVersion.cmake
-
+/usr/share/eolian/include/elementary-*1/*.eot

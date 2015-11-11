@@ -1,41 +1,29 @@
-class Elm_Plug (Elm_Widget)
+class Elm.Plug (Elm.Widget, Evas.Clickable_Interface)
 {
    eo_prefix: elm_obj_plug;
    data: null;
-   properties {
-      image_object {
+   methods {
+      @property image_object {
          get {
-            /*@
-            Get the basic Evas_Image object from this object (widget).
+            [[Get the basic Evas_Image object from this object (widget).
 
-            @return The inlined image object, or NULL if none exists
+              This function allows one to get the underlying Evas object of type
+              Image from this elementary widget. It can be useful to do things
+              like get the pixel data, save the image to a file, etc.
 
-            This function allows one to get the underlying @c Evas_Object of type
-            Image from this elementary widget. It can be useful to do things like get
-            the pixel data, save the image to a file, etc.
-
-            @note Be careful to not manipulate it, as it is under control of
-            elementary.
-
-            @ingroup Plug */
-            return: Evas_Object *;
+              Note: Be careful to not manipulate it, as it is under control of
+              elementary.
+            ]]
+            return: Evas.Object *; [[The inlined image object or $null.]]
          }
       }
-   }
-   methods {
       connect {
-         /*@
-         Connect a plug widget to service provided by socket image.
-
-         @return (@c EINA_TRUE = success, @c EINA_FALSE = error)
-
-         @ingroup Plug */
-
-         return: bool;
+         [[Connect a plug widget to service provided by socket image.]]
+         return: bool; [[$true on success, $false on error.]]
          params {
-            @in const(char)* svcname; /*@ The service name to connect to set up by the socket. */
-            @in int svcnum; /*@ The service number to connect to (set up by socket). */
-            @in bool svcsys; /*@ Boolean to set if the service is a system one or not (set up by socket). */
+            @in svcname: const(char)*; [[The service name to connect to set up by the socket.]]
+            @in svcnum: int; [[The service number to connect to (set up by socket).]]
+            @in svcsys: bool; [[Boolean to set if the service is a system one or not (set up by socket).]]
          }
       }
    }
@@ -43,13 +31,12 @@ class Elm_Plug (Elm_Widget)
       class.constructor;
       Eo.Base.constructor;
       Evas.Object_Smart.add;
-      Elm_Widget.theme_apply;
-      Elm_Widget.on_focus;
+      Elm.Widget.theme_apply;
+      Elm.Widget.on_focus;
    }
    events {
-      clicked;
       image,deleted;
-      image,resized; /*@ ii */
+      image,resized; [[ii]]
    }
 
 }

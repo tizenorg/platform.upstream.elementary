@@ -61,9 +61,9 @@ _elm_fileselector_button_elm_widget_theme_apply(Eo *obj, Elm_Fileselector_Button
    return EINA_TRUE;
 }
 
-static void
+static Eina_Bool
 _selection_done(void *data,
-                Evas_Object *obj EINA_UNUSED,
+                Eo *obj EINA_UNUSED, const Eo_Event_Description *desc EINA_UNUSED,
                 void *event_info)
 {
    Elm_Fileselector_Button_Data *sd = data;
@@ -77,8 +77,10 @@ _selection_done(void *data,
    sd->fsw = NULL;
    evas_object_del(del);
 
-   evas_object_smart_callback_call
-     (sd->obj, SIG_FILE_CHOSEN, (void *)file);
+   eo_do(sd->obj, eo_event_callback_call
+     (ELM_FILESELECTOR_BUTTON_EVENT_FILE_CHOSEN, (void *)file));
+
+   return EINA_TRUE;
 }
 
 static Evas_Object *
@@ -89,11 +91,12 @@ _new_window_add(Elm_Fileselector_Button_Data *sd)
    win = elm_win_add(NULL, "fileselector_button", ELM_WIN_DIALOG_BASIC);
    elm_win_title_set(win, sd->window_title);
    elm_win_autodel_set(win, EINA_TRUE);
-   evas_object_smart_callback_add(win, "delete,request", _selection_done, sd);
+   eo_do(win, eo_event_callback_add
+         (ELM_WIN_EVENT_DELETE_REQUEST, _selection_done, sd));
 
    bg = elm_bg_add(win);
-   elm_win_resize_object_add(win, bg);
    evas_object_size_hint_weight_set(bg, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   elm_win_resize_object_add(win, bg);
    evas_object_show(bg);
 
    evas_object_resize(win, sd->w, sd->h);
@@ -103,7 +106,7 @@ _new_window_add(Elm_Fileselector_Button_Data *sd)
 static Evas_Object *
 _parent_win_get(Evas_Object *obj)
 {
-   while ((obj) && (strcmp(evas_object_type_get(obj), "elm_win")))
+   while (!eo_isa(obj, ELM_WIN_CLASS))
      obj = elm_object_parent_widget_get(obj);
 
    return obj;
@@ -142,7 +145,8 @@ _activate(Elm_Fileselector_Button_Data *sd)
    evas_object_size_hint_weight_set
      (sd->fs, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    evas_object_size_hint_align_set(sd->fs, EVAS_HINT_FILL, EVAS_HINT_FILL);
-   evas_object_smart_callback_add(sd->fs, "done", _selection_done, sd);
+   eo_do(sd->fs, eo_event_callback_add
+         (ELM_FILESELECTOR_EVENT_DONE, _selection_done, sd));
    evas_object_show(sd->fs);
 
    if (is_inwin)
@@ -157,22 +161,27 @@ _activate(Elm_Fileselector_Button_Data *sd)
      }
 }
 
-static void
+static Eina_Bool
 _button_clicked(void *data,
-                Evas_Object *obj EINA_UNUSED,
+                Eo *obj EINA_UNUSED, const Eo_Event_Description *desc EINA_UNUSED,
                 void *event_info EINA_UNUSED)
 {
    _activate(data);
+
+   return EINA_TRUE;
 }
 
 EOLIAN static void
 _elm_fileselector_button_evas_object_smart_add(Eo *obj, Elm_Fileselector_Button_Data *priv)
 {
+   const char *path;
+
    eo_do_super(obj, MY_CLASS, evas_obj_smart_add());
    elm_widget_sub_object_parent_add(obj);
 
    priv->window_title = eina_stringshare_add(DEFAULT_WINDOW_TITLE);
-   if (getenv("HOME")) priv->fsd.path = eina_stringshare_add(getenv("HOME"));
+   path = eina_environment_home_get();
+   if (path) priv->fsd.path = eina_stringshare_add(path);
    else priv->fsd.path = eina_stringshare_add("/");
 
    priv->fsd.expandable = _elm_config->fileselector_expand_enable;
@@ -182,7 +191,8 @@ _elm_fileselector_button_evas_object_smart_add(Eo *obj, Elm_Fileselector_Button_
 
    elm_widget_mirrored_automatic_set(obj, EINA_FALSE);
 
-   evas_object_smart_callback_add(obj, "clicked", _button_clicked, priv);
+   eo_do(obj, eo_event_callback_add
+         (EVAS_CLICKABLE_INTERFACE_EVENT_CLICKED, _button_clicked, priv));
 
    eo_do(obj, elm_obj_widget_theme_apply());
    elm_widget_can_focus_set(obj, EINA_TRUE);
@@ -213,16 +223,18 @@ elm_fileselector_button_add(Evas_Object *parent)
    return obj;
 }
 
-EOLIAN static void
+EOLIAN static Eo *
 _elm_fileselector_button_eo_base_constructor(Eo *obj, Elm_Fileselector_Button_Data *sd)
 {
+   obj = eo_do_super_ret(obj, MY_CLASS, obj, eo_constructor());
    sd->obj = obj;
 
-   eo_do_super(obj, MY_CLASS, eo_constructor());
    eo_do(obj,
          evas_obj_type_set(MY_CLASS_NAME_LEGACY),
          evas_obj_smart_callbacks_descriptions_set(_smart_callbacks),
          elm_interface_atspi_accessible_role_set(ELM_ATSPI_ROLE_PUSH_BUTTON));
+
+   return obj;
 }
 
 EOLIAN static void
@@ -451,6 +463,7 @@ _elm_fileselector_button_elm_interface_fileselector_selected_set(Eo *obj EINA_UN
              free(path);
              return EINA_FALSE;
           }
+        free(path);
      }
 
    eina_stringshare_replace(&sd->fsd.selection, _path);

@@ -37,6 +37,8 @@
  * rendering using SDL as the buffer)
  * @li "gdi", "software-gdi", "software_gdi" (Windows WIN32 rendering via
  * GDI with software)
+ * @li "ddraw", "software-ddraw", "software_ddraw" (Windows WIN32 rendering via
+ * DirectDraw with software)
  * @li "ews" (rendering to EWS - Ecore + Evas Single Process Windowing System)
  * @li "gl-cocoa", "gl_cocoa", "opengl-cocoa", "opengl_cocoa" (OpenGL rendering in Cocoa)
  * @li "wayland_shm" (Wayland client SHM rendering)
@@ -69,7 +71,7 @@
  * Signals that you can add callbacks for are:
  *
  * @li "delete,request": the user requested to close the window. See
- * elm_win_autodel_set().
+ * elm_win_autodel_set() and elm_win_autohide_set().
  * @li "focus,in": window got focus (deprecated. use "focused" instead.)
  * @li "focus,out": window lost focus (deprecated. use "unfocused" instead.)
  * @li "moved": window that holds the canvas was moved

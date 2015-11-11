@@ -1,3 +1,5 @@
+#include "elm_win.eo.legacy.h"
+
 /**
  * Adds a window object. If this is the first window created, pass NULL as
  * @p parent.
@@ -159,7 +161,7 @@ EAPI void                  elm_win_norender_pop(Evas_Object *obj);
  * @ingroup Win
  * @since 1.7
  */
-EAPI int                   elm_win_norender_get(Evas_Object *obj);
+EAPI int                   elm_win_norender_get(const Evas_Object *obj);
 
 /**
  * This manually asks evas to render the window now
@@ -183,6 +185,9 @@ EAPI void                  elm_win_render(Evas_Object *obj);
 /* Wayland specific call - returns NULL on non-Wayland engines */
 /**
  * Get the Ecore_Wl_Window of an Evas_Object
+ *
+ * Do not use this function if you'd like your application/library be portable.
+ * You have been warned.
  *
  * @param obj the object
  *
@@ -218,7 +223,7 @@ EAPI void                  elm_win_wm_rotation_preferred_rotation_set(const Evas
  *
  * @ingroup Win
  * @since 1.8
+ * @note Unless you are getting the window id for the purpose of communicating between client<->compositor over dbus,
+ * this is definitely not the function you are looking for.
  */
 EAPI Ecore_Window          elm_win_window_id_get(const Evas_Object *obj);
-
-#include "elm_win.eo.legacy.h"

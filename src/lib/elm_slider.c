@@ -63,7 +63,7 @@ _delay_change(void *data)
    ELM_SLIDER_DATA_GET(data, sd);
 
    sd->delay = NULL;
-   evas_object_smart_callback_call(data, SIG_DELAY_CHANGED, NULL);
+   eo_do(data, eo_event_callback_call(ELM_SLIDER_EVENT_DELAY_CHANGED, NULL));
 
    return ECORE_CALLBACK_CANCEL;
 }
@@ -89,12 +89,12 @@ _val_fetch(Evas_Object *obj, Eina_Bool user_event)
      pos = 1.0 - pos;
 
    val = (pos * (sd->val_max - sd->val_min)) + sd->val_min;
-   if (val != sd->val)
+   if (fabs(val - sd->val) > DBL_EPSILON)
      {
         sd->val = val;
         if (user_event)
           {
-             evas_object_smart_callback_call(obj, SIG_CHANGED, NULL);
+             eo_do(obj, eo_event_callback_call(ELM_SLIDER_EVENT_CHANGED, NULL));
              elm_interface_atspi_accessible_value_changed_signal_emit(obj);
              ecore_timer_del(sd->delay);
              sd->delay = ecore_timer_add(SLIDER_DELAY_CHANGED_INTERVAL, _delay_change, obj);
@@ -240,8 +240,10 @@ _drag_start(void *data,
             const char *emission EINA_UNUSED,
             const char *source EINA_UNUSED)
 {
+   if (!elm_widget_focus_get(data))
+     elm_object_focus_set(data, EINA_TRUE);
    _slider_update(data, EINA_TRUE);
-   evas_object_smart_callback_call(data, SIG_DRAG_START, NULL);
+   eo_do(data, eo_event_callback_call(ELM_SLIDER_EVENT_SLIDER_DRAG_START, NULL));
    elm_widget_scroll_freeze_push(data);
 }
 
@@ -252,7 +254,7 @@ _drag_stop(void *data,
            const char *source EINA_UNUSED)
 {
    _slider_update(data, EINA_TRUE);
-   evas_object_smart_callback_call(data, SIG_DRAG_STOP, NULL);
+   eo_do(data, eo_event_callback_call(ELM_SLIDER_EVENT_SLIDER_DRAG_STOP, NULL));
    elm_widget_scroll_freeze_pop(data);
 }
 
@@ -505,10 +507,11 @@ _popup_add(Elm_Slider_Data *sd, Eo *obj)
 
    // XXX popup needs to adapt to theme etc.
    sd->popup = edje_object_add(evas_object_evas_get(obj));
+   evas_object_smart_member_add(sd->popup, obj);
    if (sd->horizontal)
-     _elm_theme_set(NULL, sd->popup, "slider", "horizontal/popup", elm_widget_style_get(obj));
+     _elm_theme_set(elm_widget_theme_get(obj), sd->popup, "slider", "horizontal/popup", elm_widget_style_get(obj));
    else
-     _elm_theme_set(NULL, sd->popup, "slider", "vertical/popup", elm_widget_style_get(obj));
+     _elm_theme_set(elm_widget_theme_get(obj), sd->popup, "slider", "vertical/popup", elm_widget_style_get(obj));
    edje_object_scale_set(sd->popup, elm_widget_scale_get(obj) *
                          elm_config_scale_get());
    edje_object_signal_callback_add(sd->popup, "popup,hide,done", "elm", // XXX: for compat
@@ -539,7 +542,7 @@ _elm_slider_elm_widget_theme_apply(Eo *obj, Elm_Slider_Data *sd)
      {
         eina_stringshare_replace(&ld->group, "horizontal");
         if (sd->popup)
-          _elm_theme_set(NULL, sd->popup,
+          _elm_theme_set(elm_widget_theme_get(obj), sd->popup,
                          "slider", "horizontal/popup",
                          elm_widget_style_get(obj));
      }
@@ -547,7 +550,7 @@ _elm_slider_elm_widget_theme_apply(Eo *obj, Elm_Slider_Data *sd)
      {
         eina_stringshare_replace(&ld->group, "vertical");
         if (sd->popup)
-          _elm_theme_set(NULL, sd->popup,
+          _elm_theme_set(elm_widget_theme_get(obj), sd->popup,
                          "slider", "vertical/popup",
                          elm_widget_style_get(obj));
      }
@@ -647,8 +650,10 @@ _spacer_down_cb(void *data,
    edje_object_part_drag_value_set
      (wd->resize_obj, "elm.dragable.slider",
      button_x, button_y);
+   if (!elm_widget_focus_get(data))
+     elm_object_focus_set(data, EINA_TRUE);
    _slider_update(data, EINA_TRUE);
-   evas_object_smart_callback_call(data, SIG_DRAG_START, NULL);
+   eo_do(data, eo_event_callback_call(ELM_SLIDER_EVENT_SLIDER_DRAG_START, NULL));
    elm_layout_signal_emit(data, "elm,state,indicator,show", "elm");
 }
 
@@ -685,7 +690,8 @@ _spacer_move_cb(void *data,
           {
              if (sd->spacer_down) sd->spacer_down = EINA_FALSE;
              _slider_update(data, EINA_TRUE);
-             evas_object_smart_callback_call(data, SIG_DRAG_STOP, NULL);
+             eo_do(data, eo_event_callback_call
+               (ELM_SLIDER_EVENT_SLIDER_DRAG_STOP, NULL));
              if (sd->frozen)
                {
                   elm_widget_scroll_freeze_pop(data);
@@ -728,7 +734,7 @@ _spacer_up_cb(void *data,
    if (sd->spacer_down) sd->spacer_down = EINA_FALSE;
 
    _slider_update(data, EINA_TRUE);
-   evas_object_smart_callback_call(data, SIG_DRAG_STOP, NULL);
+   eo_do(data, eo_event_callback_call(ELM_SLIDER_EVENT_SLIDER_DRAG_STOP, NULL));
 
    if (sd->frozen)
      {
@@ -932,14 +938,16 @@ elm_slider_add(Evas_Object *parent)
    return obj;
 }
 
-EOLIAN static void
+EOLIAN static Eo *
 _elm_slider_eo_base_constructor(Eo *obj, Elm_Slider_Data *_pd EINA_UNUSED)
 {
-   eo_do_super(obj, MY_CLASS, eo_constructor());
+   obj = eo_do_super_ret(obj, MY_CLASS, obj, eo_constructor());
    eo_do(obj,
          evas_obj_type_set(MY_CLASS_NAME_LEGACY),
          evas_obj_smart_callbacks_descriptions_set(_smart_callbacks),
          elm_interface_atspi_accessible_role_set(ELM_ATSPI_ROLE_SLIDER));
+
+   return obj;
 }
 
 EOLIAN static void
@@ -1043,10 +1051,6 @@ _elm_slider_min_max_set(Eo *obj, Elm_Slider_Data *sd, double min, double max)
 EOLIAN static void
 _elm_slider_min_max_get(Eo *obj EINA_UNUSED, Elm_Slider_Data *sd, double *min, double *max)
 {
-   if (min) *min = 0.0;
-   if (max) *max = 0.0;
-
-
    if (min) *min = sd->val_min;
    if (max) *max = sd->val_max;
 }
@@ -1178,6 +1182,19 @@ _elm_slider_indicator_show_on_focus_get(Eo *obj EINA_UNUSED, Elm_Slider_Data *sd
    return (sd->indicator_visible_mode == ELM_SLIDER_INDICATOR_VISIBLE_MODE_ON_FOCUS);
 }
 
+EOLIAN static void
+_elm_slider_indicator_visible_mode_set(Eo *obj EINA_UNUSED, Elm_Slider_Data *sd, Elm_Slider_Indicator_Visible_Mode indicator_visible_mode)
+{
+   if (sd->indicator_visible_mode == indicator_visible_mode) return;
+   sd->indicator_visible_mode = indicator_visible_mode;
+}
+
+EOLIAN static Elm_Slider_Indicator_Visible_Mode
+_elm_slider_indicator_visible_mode_get(Eo *obj EINA_UNUSED, Elm_Slider_Data *sd)
+{
+   return sd->indicator_visible_mode;
+}
+
 EOLIAN static Eina_Bool
 _elm_slider_elm_widget_focus_next_manager_is(Eo *obj EINA_UNUSED, Elm_Slider_Data *_pd EINA_UNUSED)
 {
@@ -1228,12 +1245,12 @@ _elm_slider_elm_interface_atspi_value_value_and_text_set(Eo *obj, Elm_Slider_Dat
    if (sd->val_min > value) return EINA_FALSE;
    if (sd->val_max < value) return EINA_FALSE;
 
-   evas_object_smart_callback_call(obj, SIG_DRAG_START, NULL);
+   eo_do(obj, eo_event_callback_call(ELM_SLIDER_EVENT_SLIDER_DRAG_START, NULL));
    sd->val = value;
    _visuals_refresh(obj);
    sd->val = oldval;
    _slider_update(obj, EINA_TRUE);
-   evas_object_smart_callback_call(obj, SIG_DRAG_STOP, NULL);
+   eo_do(obj, eo_event_callback_call(ELM_SLIDER_EVENT_SLIDER_DRAG_STOP, NULL));
 
    return EINA_TRUE;
 }

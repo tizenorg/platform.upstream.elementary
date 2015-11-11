@@ -1,3 +1,7 @@
+AM_TESTS_ENVIRONMENT = \
+	ELM_DATA_DIR=${top_builddir}/data \
+	ELM_RUN_IN_TREE=1
+
 AUTOMAKE_OPTIONS     = 1.4 foreign
 MAINTAINERCLEANFILES = Makefile.in
 EXTRA_DIST = \
@@ -76,6 +80,7 @@ elm_suite_SOURCES = \
 
 elm_suite_CPPFLAGS = \
 	-DTESTS_BUILD_DIR=\"${top_builddir}/src/tests\" \
+	-DELM_IMAGE_DATA_DIR=\"${top_srcdir}/data\" \
 	-I$(top_srcdir)/src/lib \
 	-I$(top_builddir)/src/lib \
 	@CHECK_CFLAGS@ \
@@ -93,6 +98,7 @@ check_PROGRAMS += elm_cxx_suite
 elm_cxx_suite_SOURCES = elm_cxx_suite.cc
 elm_cxx_suite_CPPFLAGS = \
 	-DTESTS_BUILD_DIR=\"${top_builddir}/src/tests\" \
+	-DELM_IMAGE_DATA_DIR=\"${top_srcdir}/data\" \
 	-I$(top_srcdir)/src/lib \
 	-I$(top_builddir)/src/lib \
 	@CHECK_CFLAGS@ \

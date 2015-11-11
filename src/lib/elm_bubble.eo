@@ -1,31 +1,39 @@
-class Elm_Bubble (Elm_Layout)
+enum Elm.Bubble.Pos
+{
+  [[Defines the corner values for a bubble.
+
+    The corner will be used to determine where the arrow of the
+    bubble points to.
+  ]]
+  invalid = -1, [[Invalid corner.]]
+  top_left, [[The arrow of the bubble points to the top left corner.]]
+  top_right, [[The arrow of the bubble points to the top right corner.]]
+  bottom_left, [[The arrow of the bubble points to the bottom left corner.]]
+  bottom_right [[The arrow of the bubble points to the bottom right corner.]]
+}
+
+class Elm.Bubble (Elm.Layout, Evas.Clickable_Interface)
 {
    eo_prefix: elm_obj_bubble;
-   properties {
-      pos {
+   methods {
+      @property pos {
          set {
-            /*@
-            Set the corner of the bubble
+            [[Set the corner of the bubble
 
-            This function sets the corner of the bubble. The corner will be used to
-            determine where the arrow in the frame points to and where label, icon and
-            info are shown.
+              This function sets the corner of the bubble. The corner will be used to
+              determine where the arrow in the frame points to and where label, icon and
+              info are shown.
 
-
-            @ingroup Bubble */
+            ]]
          }
          get {
-            /*@
-            Get the corner of the bubble
+            [[Get the corner of the bubble
 
-            @return The given corner for the bubble.
-
-            This function gets the selected corner of the bubble.
-
-            @ingroup Bubble */
+              This function gets the selected corner of the bubble.
+            ]]
          }
          values {
-            Elm_Bubble_Pos pos; /*@ The given corner for the bubble. */
+            pos: Elm.Bubble.Pos; [[The given corner for the bubble.]]
          }
       }
    }
@@ -33,20 +41,14 @@ class Elm_Bubble (Elm_Layout)
       class.constructor;
       Eo.Base.constructor;
       Evas.Object_Smart.add;
-      Elm_Widget.focus_direction;
-      Elm_Widget.focus_next_manager_is;
-      Elm_Widget.focus_next;
-      Elm_Widget.focus_direction_manager_is;
-      Elm_Widget.access;
-      Elm_Layout.text_set;
-      Elm_Layout.text_aliases.get;
-      Elm_Layout.content_aliases.get;
-      Elm_Layout.sizing_eval;
+      Elm.Widget.focus_direction;
+      Elm.Widget.focus_next_manager_is;
+      Elm.Widget.focus_next;
+      Elm.Widget.focus_direction_manager_is;
+      Elm.Widget.access;
+      Elm.Layout.text_set;
+      Elm.Layout.text_aliases.get;
+      Elm.Layout.content_aliases.get;
+      Elm.Layout.sizing_eval;
    }
-   events {
-      clicked;
-      focused;
-      unfocused;
-   }
-
 }

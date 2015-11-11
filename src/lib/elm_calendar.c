@@ -27,6 +27,50 @@ static const Evas_Smart_Cb_Description _smart_callbacks[] = {
    {NULL, NULL}
 };
 
+/* This two functions should be moved in Eina for next release. */
+static Eina_Tmpstr *
+_eina_tmpstr_strftime(const char *format, const struct tm *tm)
+{
+   const size_t flen = strlen(format);
+   size_t buflen = 16; // An arbitrary starting size
+   char *buf = NULL;
+
+   do {
+      char *tmp;
+      size_t len;
+
+      tmp = realloc(buf, buflen * sizeof(char));
+      if (!tmp) goto on_error;
+      buf = tmp;
+
+      len = strftime(buf, buflen, format, tm);
+      // Check if we have the expected result and return it.
+      if ((len > 0 && len < buflen) || (len == 0 && flen == 0))
+        {
+           Eina_Tmpstr *r;
+
+           r = eina_tmpstr_add_length(buf, len + 1);
+           free(buf);
+           return r;
+        }
+
+      /* Possibly buf overflowed - try again with a bigger buffer */
+      buflen <<= 1; // multiply buffer size by 2
+   } while (buflen < 128 * flen);
+
+ on_error:
+   free(buf);
+   return NULL;
+}
+
+static char *
+_eina_tmpstr_steal(Eina_Tmpstr *s)
+{
+   char *r = s ? strdup(s) : NULL;
+   eina_tmpstr_del(s);
+   return r;
+}
+
 static Eina_Bool _key_action_move(Evas_Object *obj, const char *params);
 
 static const Elm_Action key_actions[] = {
@@ -90,12 +134,14 @@ _elm_calendar_elm_layout_sizing_eval(Eo *obj, Elm_Calendar_Data *_pd EINA_UNUSED
 }
 
 static inline int
-_maxdays_get(struct tm *selected_time)
+_maxdays_get(struct tm *selected_time, int month_offset)
 {
    int month, year;
 
-   month = selected_time->tm_mon;
+   month = (selected_time->tm_mon + month_offset) % 12;
    year = selected_time->tm_year + 1900;
+
+   if (month < 0) month += 12;
 
    return _days_in_month
           [((!(year % 4)) && ((!(year % 400)) || (year % 100)))][month];
@@ -145,31 +191,44 @@ _today(Elm_Calendar_Data *sd,
    sd->today_it = it;
 }
 
+static inline void
+_enable(Elm_Calendar_Data *sd,
+        int it)
+{
+   char emission[32];
+
+   snprintf(emission, sizeof(emission), "cit_%i,enable", it);
+   elm_layout_signal_emit(sd->obj, emission, "elm");
+   sd->today_it = it;
+}
+
+static inline void
+_disable(Elm_Calendar_Data *sd,
+         int it)
+{
+   char emission[32];
+
+   snprintf(emission, sizeof(emission), "cit_%i,disable", it);
+   elm_layout_signal_emit(sd->obj, emission, "elm");
+   sd->today_it = it;
+}
+
 static char *
 _format_month_year(struct tm *selected_time)
 {
-   char buf[32];
-
-   if (!strftime(buf, sizeof(buf), E_("%B %Y"), selected_time)) return NULL;
-   return strdup(buf);
+   return _eina_tmpstr_steal(_eina_tmpstr_strftime(E_("%B %Y"), selected_time));
 }
 
 static char *
 _format_month(struct tm *selected_time)
 {
-   char buf[32];
-
-   if (!strftime(buf, sizeof(buf), E_("%B"), selected_time)) return NULL;
-   return strdup(buf);
+   return _eina_tmpstr_steal(_eina_tmpstr_strftime(E_("%B"), selected_time));
 }
 
 static char *
 _format_year(struct tm *selected_time)
 {
-   char buf[32];
-
-   if (!strftime(buf, sizeof(buf), E_("%Y"), selected_time)) return NULL;
-   return strdup(buf);
+   return _eina_tmpstr_steal(_eina_tmpstr_strftime(E_("%Y"), selected_time));
 }
 
 static inline void
@@ -272,7 +331,7 @@ _access_calendar_item_register(Evas_Object *obj)
    ELM_CALENDAR_DATA_GET(obj, sd);
 
    day = 0;
-   maxdays = _maxdays_get(&sd->shown_time);
+   maxdays = _maxdays_get(&sd->shown_time, 0);
    for (i = 0; i < 42; i++)
      {
         if ((!day) && (i == sd->first_day_it)) day = 1;
@@ -355,7 +414,7 @@ _access_calendar_register(Evas_Object *obj)
 static void
 _populate(Evas_Object *obj)
 {
-   int maxdays, day, mon, yr, i;
+   int maxdays, adjusted_wday, prev_month_maxdays, day, mon, yr, i;
    Elm_Calendar_Mark *mark;
    char part[12], day_s[3];
    struct tm first_day;
@@ -369,7 +428,8 @@ _populate(Evas_Object *obj)
    sd->filling = EINA_FALSE;
    if (sd->today_it > 0) _not_today(sd);
 
-   maxdays = _maxdays_get(&sd->shown_time);
+   maxdays = _maxdays_get(&sd->shown_time, 0);
+   prev_month_maxdays = _maxdays_get(&sd->shown_time, -1);
    mon = sd->shown_time.tm_mon;
    yr = sd->shown_time.tm_year;
 
@@ -459,9 +519,19 @@ _populate(Evas_Object *obj)
           }
 
         if ((day) && (day <= maxdays))
-          snprintf(day_s, sizeof(day_s), "%i", day++);
+          {
+             _enable(sd, i);
+             snprintf(day_s, sizeof(day_s), "%i", day++);
+          }
         else
-          day_s[0] = 0;
+          {
+             _disable(sd, i);
+
+             if (day <= maxdays)
+               snprintf(day_s, sizeof(day_s), "%i", prev_month_maxdays - sd->first_day_it + i + 1);
+             else
+               snprintf(day_s, sizeof(day_s), "%i", i - sd->first_day_it - maxdays + 1);
+          }
 
         snprintf(part, sizeof(part), "cit_%i.text", i);
         elm_layout_text_set(obj, part, day_s);
@@ -510,8 +580,13 @@ _populate(Evas_Object *obj)
                day = mtime->tm_mday;
              else
                break;
+
+             adjusted_wday = (mtime->tm_wday - sd->first_week_day);
+             if (adjusted_wday < 0)
+               adjusted_wday = ELM_DAY_LAST + adjusted_wday;
+
              for (; day <= maxdays; day++)
-               if (mtime->tm_wday == _weekday_get(sd->first_day_it, day))
+               if (adjusted_wday == _weekday_get(sd->first_day_it, day))
                  _cit_mark(obj, day + sd->first_day_it - 1,
                            mark->mark_type);
              break;
@@ -539,7 +614,7 @@ _populate(Evas_Object *obj)
    sd->filling = EINA_FALSE;
 
    elm_layout_thaw(obj);
-   elm_layout_sizing_eval(obj);
+   edje_object_message_signal_process(elm_layout_edje_get(obj));
 }
 
 static void
@@ -641,14 +716,14 @@ _update_data(Evas_Object *obj, Eina_Bool month,
    if ((sd->select_mode != ELM_CALENDAR_SELECT_MODE_ONDEMAND)
        && (sd->select_mode != ELM_CALENDAR_SELECT_MODE_NONE))
      {
-        maxdays = _maxdays_get(&sd->shown_time);
+        maxdays = _maxdays_get(&sd->shown_time, 0);
         if (sd->selected_time.tm_mday > maxdays)
           sd->selected_time.tm_mday = maxdays;
 
         _fix_selected_time(sd);
-        evas_object_smart_callback_call(obj, SIG_CHANGED, NULL);
+        eo_do(obj, eo_event_callback_call(ELM_CALENDAR_EVENT_CHANGED, NULL));
      }
-   evas_object_smart_callback_call(obj, SIG_DISPLAY_CHANGED, NULL);
+   eo_do(obj, eo_event_callback_call(ELM_CALENDAR_EVENT_DISPLAY_CHANGED, NULL));
 
    return EINA_TRUE;
 }
@@ -778,7 +853,7 @@ _get_item_day(Evas_Object *obj,
    ELM_CALENDAR_DATA_GET(obj, sd);
 
    day = selected_it - sd->first_day_it + 1;
-   if ((day < 0) || (day > _maxdays_get(&sd->shown_time)))
+   if ((day < 0) || (day > _maxdays_get(&sd->shown_time, 0)))
      return 0;
 
    return day;
@@ -806,7 +881,7 @@ _update_sel_it(Evas_Object *obj,
    sd->selected_time.tm_mday = day;
    _fix_selected_time(sd);
    _select(obj, sel_it);
-   evas_object_smart_callback_call(obj, SIG_CHANGED, NULL);
+   eo_do(obj, eo_event_callback_call(ELM_CALENDAR_EVENT_CHANGED, NULL));
 }
 
 static void
@@ -863,6 +938,7 @@ _key_action_move(Evas_Object *obj, const char *params)
    ELM_CALENDAR_DATA_GET(obj, sd);
    const char *dir = params;
 
+   _elm_widget_focus_auto_show(obj);
    if (!strcmp(dir, "prior"))
      {
         if (_update_data(obj, EINA_TRUE, -1)) _populate(obj);
@@ -1001,20 +1077,27 @@ _elm_calendar_evas_object_smart_add(Eo *obj, Elm_Calendar_Data *priv)
 
    for (i = 0; i < ELM_DAY_LAST; i++)
      {
-        /* FIXME: I'm not aware of a known max, so if it fails,
-         * just make it larger. :| */
-        char buf[20];
+        struct tm *info;
+
         /* I don't know of a better way of doing it */
-        if (strftime(buf, sizeof(buf), "%a", gmtime(&weekday)))
+        info = gmtime(&weekday);
+        if (info)
           {
-             priv->weekdays[i] = eina_stringshare_add(buf);
-          }
-        else
-          {
-             /* If we failed getting day, get a default value */
-             priv->weekdays[i] = _days_abbrev[i];
-             WRN("Failed getting weekday name for '%s' from locale.",
-                 _days_abbrev[i]);
+             Eina_Tmpstr *buf;
+
+             buf = _eina_tmpstr_strftime("%a", info);
+             if (buf)
+               {
+                  priv->weekdays[i] = eina_stringshare_add(buf);
+                  eina_tmpstr_del(buf);
+               }
+             else
+               {
+                  /* If we failed getting day, get a default value */
+                  priv->weekdays[i] = _days_abbrev[i];
+                  WRN("Failed getting weekday name for '%s' from locale.",
+                      _days_abbrev[i]);
+               }
           }
         weekday += 86400; /* Advance by a day */
      }
@@ -1094,7 +1177,7 @@ _elm_calendar_elm_widget_focus_next(Eo *obj, Elm_Calendar_Data *sd, Elm_Focus_Di
    items = eina_list_append(items, sd->inc_btn_year_access);
 
    day = 0;
-   maxdays = _maxdays_get(&sd->shown_time);
+   maxdays = _maxdays_get(&sd->shown_time, 0);
    for (i = 0; i < 42; i++)
      {
         if ((!day) && (i == sd->first_day_it)) day = 1;
@@ -1126,7 +1209,7 @@ _access_obj_process(Evas_Object *obj, Eina_Bool is_access)
    else
      {
         day = 0;
-        maxdays = _maxdays_get(&sd->shown_time);
+        maxdays = _maxdays_get(&sd->shown_time, 0);
         for (i = 0; i < 42; i++)
           {
              if ((!day) && (i == sd->first_day_it)) day = 1;
@@ -1177,16 +1260,18 @@ elm_calendar_add(Evas_Object *parent)
    return obj;
 }
 
-EOLIAN static void
+EOLIAN static Eo *
 _elm_calendar_eo_base_constructor(Eo *obj, Elm_Calendar_Data *sd)
 {
+   obj = eo_do_super_ret(obj, MY_CLASS, obj, eo_constructor());
    sd->obj = obj;
 
-   eo_do_super(obj, MY_CLASS, eo_constructor());
    eo_do(obj,
          evas_obj_type_set(MY_CLASS_NAME_LEGACY),
          evas_obj_smart_callbacks_descriptions_set(_smart_callbacks),
          elm_interface_atspi_accessible_role_set(ELM_ATSPI_ROLE_CALENDAR));
+
+   return obj;
 }
 
 EOLIAN static void
@@ -1299,7 +1384,7 @@ _elm_calendar_selected_time_set(Eo *obj, Elm_Calendar_Data *sd, struct tm *selec
 }
 
 EOLIAN static Eina_Bool
-_elm_calendar_selected_time_get(Eo *obj EINA_UNUSED, Elm_Calendar_Data *sd, struct tm *selected_time)
+_elm_calendar_selected_time_get(const Eo *obj EINA_UNUSED, Elm_Calendar_Data *sd, struct tm *selected_time)
 {
    EINA_SAFETY_ON_NULL_RETURN_VAL(selected_time, EINA_FALSE);
 
@@ -1325,6 +1410,7 @@ _elm_calendar_mark_add(Eo *obj, Elm_Calendar_Data *sd, const char *mark_type, st
    Elm_Calendar_Mark *mark;
 
    mark = _mark_new(obj, mark_type, mark_time, repeat);
+   if (!mark) return NULL;
    sd->marks = eina_list_append(sd->marks, mark);
    mark->node = eina_list_last(sd->marks);
 
@@ -1417,7 +1503,7 @@ _elm_calendar_selectable_get(Eo *obj EINA_UNUSED, Elm_Calendar_Data *sd)
 }
 
 EOLIAN static Eina_Bool
-_elm_calendar_displayed_time_get(Eo *obj EINA_UNUSED, Elm_Calendar_Data *sd, struct tm *displayed_time)
+_elm_calendar_displayed_time_get(const Eo *obj EINA_UNUSED, Elm_Calendar_Data *sd, struct tm *displayed_time)
 {
    EINA_SAFETY_ON_NULL_RETURN_VAL(displayed_time, EINA_FALSE);
    *displayed_time = sd->shown_time;

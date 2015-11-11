@@ -837,7 +837,7 @@ group { name: "elm/button/base/hoversel_vertical/default";
          }
          desc { "visible";
             inherit: "default";
-            rel1.offset: 2 5;
+            rel1.offset: 5 5;
             text.min: 1 1;
             text.ellipsis: -1;
             visible: 1;
@@ -852,7 +852,7 @@ group { name: "elm/button/base/hoversel_vertical/default";
          }
          desc { "disabled_visible";
             inherit: "default";
-            rel1.offset: 2 5;
+            rel1.offset: 5 5;
             color_class: "hoversel_text_disabled";
             text.min: 1 1;
             text.ellipsis: -1;
@@ -1085,21 +1085,27 @@ group { name: "elm/button/base/hoversel_vertical_entry/default";
             visible: 0;
          }
       }
+      spacer { "text_container";
+         desc { "default";
+            rel1.relative: 1.0 0.0;
+            rel1.to_x: "elm.swallow.content";
+            rel1.to_y: "base";
+            rel2.to: "base";
+         }
+      }
       text { "elm.text"; nomouse;
          effect: SHADOW BOTTOM;
          scale: 1;
          clip_to: "click_clip";
          desc { "default";
             rel1.offset: 0 5;
-            rel1.relative: 1.0 0.0;
-            rel1.to_x: "elm.swallow.content";
-            rel1.to_y: "base";
             rel2.offset: -8 -8;
-            rel2.to: "base";
+            rel1.to: "text_container";
+            rel2.to: "text_container";
             color_class: "hoversel_text";
             color3: 255 255 255 255;
             text { font: FN; size: 10;
-               align: 0.0 0.5;
+               align: -1 0.5;
                min: 0 0;
                text_class: "button";
             }
@@ -1148,7 +1154,7 @@ group { name: "elm/button/base/hoversel_vertical_entry/default";
             color3: 255 255 255 255;
             text { font: FN; size: 10;
                text_source: "elm.text";
-               align: 0.0 0.5;
+               align: -1 0.5;
                text_class: "hoversel_item";
             }
             visible: 0;
@@ -1325,6 +1331,7 @@ group { name: "elm/button/base/hoversel_horizontal_entry/default";
 
 /******************* SPINNER BUTTONS STYLES **********************/
    group { name: "elm/button/base/spinner/increase/default";
+      alias: "elm/button/base/spinner/increase/colorselector/default";
       images.image: "sym_right_light_normal.png" COMP;
       images.image: "sym_right_glow_normal.png" COMP;
       images.image: "sym_right_dark_normal.png" COMP;
@@ -1475,6 +1482,7 @@ group { name: "elm/button/base/hoversel_horizontal_entry/default";
    }
 
    group { name: "elm/button/base/spinner/decrease/default";
+      alias: "elm/button/base/spinner/decrease/colorselector/default";
       inherit: "elm/button/base/spinner/increase/default";
       images.image: "sym_left_light_normal.png" COMP;
       images.image: "sym_left_glow_normal.png" COMP;
@@ -1500,6 +1508,7 @@ group { name: "elm/button/base/hoversel_horizontal_entry/default";
    }
 
    group { name: "elm/button/base/spinner/default";
+      alias: "elm/button/base/spinner/colorselector/default";
       alias: "elm/button/base/spinner/vertical";
       parts {
          part { name: "bg";
@@ -1524,7 +1533,7 @@ group { name: "elm/button/base/hoversel_horizontal_entry/default";
                }
             }
             description { state: "disabled" 0.0;
-               inherit: "default" 0 0 ;
+               inherit: "default" 0.0 ;
                color: FN_COL_DISABLE;
                color_class: "spinner_disabled";
             }

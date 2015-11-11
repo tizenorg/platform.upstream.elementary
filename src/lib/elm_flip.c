@@ -746,6 +746,7 @@ _state_update(Evas_Object *obj)
              if (!sl)
                {
                   sl = _slice_new(obj, front);
+                  if (!sl) return 0;
                   sd->slices[nn] = sl;
                }
              _slice_xyz(sd, sl,
@@ -766,6 +767,7 @@ _state_update(Evas_Object *obj)
              if (!sl)
                {
                   sl = _slice_new(obj, back);
+                  if (!sl) return 0;
                   sd->slices2[nn] = sl;
                }
 
@@ -931,11 +933,10 @@ static void
 _map_uv_set(Evas_Object *obj, Evas_Map *map)
 {
    Evas_Coord x, y, w, h;
-   const char *type = evas_object_type_get(obj);
 
    // FIXME: only handles filled obj
-   if ((type) && (!strcmp(type, "image") &&
-                  !evas_object_image_source_get(obj)))
+   if (eo_isa(obj, EVAS_IMAGE_CLASS) &&
+       !evas_object_image_source_get(obj))
      {
         int iw, ih;
         evas_object_image_size_get(obj, &iw, &ih);
@@ -1331,7 +1332,7 @@ _flip(Evas_Object *obj)
           sd->state = sd->next_state;
         _configure(obj);
         _flip_show_hide(obj);
-        evas_object_smart_callback_call(obj, SIG_ANIMATE_DONE, NULL);
+        eo_do(obj, eo_event_callback_call(ELM_FLIP_EVENT_ANIMATE_DONE, NULL));
 
         return ECORE_CALLBACK_CANCEL;
      }
@@ -1512,8 +1513,8 @@ _event_anim(void *data,
    _flip_show_hide(sd->obj);
    _configure(sd->obj);
    sd->animator = NULL;
-   evas_object_smart_callback_call
-     (sd->obj, SIG_ANIMATE_DONE, NULL);
+   eo_do(sd->obj, eo_event_callback_call
+     (ELM_FLIP_EVENT_ANIMATE_DONE, NULL));
 
    return ECORE_CALLBACK_CANCEL;
 }
@@ -1699,7 +1700,7 @@ _move_cb(void *data,
              evas_smart_objects_calculate(evas_object_evas_get(data));
              _configure(fl);
              // FIXME: end hack
-             evas_object_smart_callback_call(fl, SIG_ANIMATE_BEGIN, NULL);
+             eo_do(fl, eo_event_callback_call(ELM_FLIP_EVENT_ANIMATE_BEGIN, NULL));
           }
         else return;
      }
@@ -1859,16 +1860,18 @@ elm_flip_add(Evas_Object *parent)
    return obj;
 }
 
-EOLIAN static void
+EOLIAN static Eo *
 _elm_flip_eo_base_constructor(Eo *obj, Elm_Flip_Data *sd)
 {
+   obj = eo_do_super_ret(obj, MY_CLASS, obj, eo_constructor());
    sd->obj = obj;
 
-   eo_do_super(obj, MY_CLASS, eo_constructor());
    eo_do(obj,
          evas_obj_type_set(MY_CLASS_NAME_LEGACY),
          evas_obj_smart_callbacks_descriptions_set(_smart_callbacks),
          elm_interface_atspi_accessible_role_set(ELM_ATSPI_ROLE_PAGE_TAB_LIST));
+
+   return obj;
 }
 
 EOLIAN static Eina_Bool
@@ -1918,7 +1921,7 @@ _internal_elm_flip_go_to(Evas_Object *obj,
    evas_smart_objects_calculate(evas_object_evas_get(obj));
    _configure(obj);
    // FIXME: end hack
-   evas_object_smart_callback_call(obj, SIG_ANIMATE_BEGIN, NULL);
+   eo_do(obj, eo_event_callback_call(ELM_FLIP_EVENT_ANIMATE_BEGIN, NULL));
 
    // set focus to the content object when flip go to is called
    if (elm_object_focus_get(obj))

@@ -490,6 +490,90 @@ EAPI double       elm_config_scroll_thumbscroll_sensitivity_friction_get(void);
 EAPI void         elm_config_scroll_thumbscroll_sensitivity_friction_set(double friction);
 
 /**
+ * Get the smooth start mode for scrolling with your finger
+ *
+ * @return smooth scroll flag
+ * 
+ * @see elm_config_scroll_thumbscroll_smooth_start_set()
+ *
+ * @since 1.16
+ * @ingroup Scrolling
+ */
+EAPI Eina_Bool    elm_config_scroll_thumbscroll_smooth_start_get(void);
+
+/**
+ * Set the smooth start mode for scrolling with your finger
+ *
+ * This enabled finger scrolling to scroll from the currunt point rather than
+ * jumping and playing catch-up to make start of scrolling look smoother once
+ * the finger or mouse goes past the threshold.
+ * 
+ * @param enable The enabled state of the smooth scroller
+ * 
+ * @see elm_config_scroll_thumbscroll_smooth_start_get()
+ *
+ * @since 1.16
+ * @ingroup Scrolling
+ */
+EAPI void         elm_config_scroll_thumbscroll_smooth_start_set(Eina_Bool enable);
+
+/**
+ * Get the amount of smoothing to apply to scrolling
+ *
+ * @return the amount of smoothing to apply from 0.0 to 1.0
+ *
+ * @see elm_config_scroll_thumbscroll_smooth_amount_set()
+ *
+ * @since 1.16
+ * @ingroup Scrolling
+ */
+EAPI double       elm_config_scroll_thumbscroll_smooth_amount_get(void);
+
+/**
+ * Set the amount of smoothing to apply to scrolling
+ *
+ * Scrolling with your finger can be smoothed out and the amount to smooth
+ * is determined by this parameter. 0.0 means to not smooth at all and
+ * 1.0 is to smoth as much as possible.
+ * 
+ * @param the amount to smooth from 0.0 to 1.0 with 0.0 being none
+ *
+ * @see elm_config_thumbscroll_acceleration_threshold_set()
+ * 
+ * @since 1.16
+ * @ingroup Scrolling
+ */
+EAPI void         elm_config_scroll_thumbscroll_smooth_amount_set(double amount);
+
+/**
+ * Get the time window to look back at for events for smoothing
+ *
+ * @return the time window in seconds (between 0.0 and 1.0)
+ *
+ * @see elm_config_scroll_thumbscroll_smooth_time_window_set()
+ *
+ * @since 1.16
+ * @ingroup Scrolling
+ */
+EAPI double       elm_config_scroll_thumbscroll_smooth_time_window_get(void);
+
+/**
+ * Set the time window to look back at for events for smoothing
+ *
+ * Scrolling with your finger can be smoothed out and the window of time
+ * to look at is determined by this config. The value is in seconds and
+ * is from 0.0 to 1.0
+ * 
+ * @param the time window in seconds (between 0.0 and 1.0)
+ *
+ * @see elm_config_scroll_thumbscroll_smooth_time_window_get()
+ * 
+ * @since 1.16
+ * @ingroup Scrolling
+ */
+EAPI void         elm_config_scroll_thumbscroll_smooth_time_window_set(double amount);
+
+/**
  * Get the minimum speed of mouse cursor movement which will accelerate
  * scrolling velocity after a mouse up event
  * (pixels/second).
@@ -746,13 +830,6 @@ EAPI double elm_config_scale_get(void);
  */
 EAPI void   elm_config_scale_set(double scale);
 
-/*
- * Add backwards compatability implementation for elm_scale_get and elm_scale_set
- * to allow running unmodified Tizen applications on a new drop of elementary
- */
-EAPI double elm_scale_get(void);
-EAPI void   elm_scale_set(double scale);
-
 /**
  * @defgroup Password_last_show Password show last
  * @ingroup Elementary
@@ -870,12 +947,14 @@ EINA_DEPRECATED EAPI void        elm_config_engine_set(const char *engine);
  *
  * This gets the global rendering engine that is applied to all Elementary
  * applications and is PREFERRED by the application. This can (and will)
- * override the engine configured for all applications which.
+ * override the engine configured for all applications which. It is rare to
+ * explicitly ask for an engine (likely need is the buffer engine and not
+ * much more), so use elm_config_accel_preference_get() and
+ * elm_config_accel_preference_set() normally.
  *
  * @see elm_config_preferred_engine_set()
- * @deprecated use elm_config_accel_preference_get() + elm_config_accel_preference_set()
  */
-EINA_DEPRECATED EAPI const char *elm_config_preferred_engine_get(void);
+EAPI const char *elm_config_preferred_engine_get(void);
 
 /**
  * @brief Set Elementary's preferred rendering engine for use.
@@ -885,13 +964,15 @@ EINA_DEPRECATED EAPI const char *elm_config_preferred_engine_get(void);
  * Note that it will take effect only to Elementary windows created after
  * this is called. This overrides the engine set by configuration at
  * application startup. Note that it is a hint and may not be honored.
+ * It is rare to explicitly ask for an engine (likely need is the buffer
+ * engine and not much more), so use elm_config_accel_preference_get() and
+ * elm_config_accel_preference_set() normally.
  *
  * @see elm_win_add()
  * @see elm_config_accel_preference_set()
  * @see elm_config_engine_set()
- * @deprecated use elm_config_accel_preference_get() + elm_config_accel_preference_set()
  */
-EINA_DEPRECATED EAPI void        elm_config_preferred_engine_set(const char *engine);
+EAPI void        elm_config_preferred_engine_set(const char *engine);
 
 /**
  * @brief Get Elementary's preferred engine to use.
@@ -901,7 +982,7 @@ EINA_DEPRECATED EAPI void        elm_config_preferred_engine_set(const char *eng
  *
  * See elm_config_accel_preference_set() for more information, but this simply
  * returns what was set by this call, nothing more.
- * 
+ *
  * @see elm_config_accel_preference_set()
  * @since 1.10
  */
@@ -915,17 +996,37 @@ EAPI const char *elm_config_accel_preference_get(void);
  * Note that it will take effect only to Elementary windows created after
  * this is called. The @p pref string is a freeform C string that indicates
  * what kind of acceleration is preferred. Here "acceleration" majorly
- * means to rendering and which hardware unit application renders guis with.
+ * means to rendering and which hardware unit application renders GUIs with.
  * This may or may not be honored, but a best attempt will
  * be made. Known strings are as follows:
- * 
- * "gl", "opengl" - try use opengl.
+ *
+ * "gl", "opengl" - try use OpenGL.
  * "3d" - try and use a 3d acceleration unit.
  * "hw", "hardware", "accel" - try any acceleration unit (best possible)
- * 
+ * "none" - use no acceleration. try use software (since 1.16)
+ *
+ * Since 1.14, it is also possible to specify some GL properties for the GL
+ * window surface. This allows applications to use GLView with depth, stencil
+ * and MSAA buffers with direct rendering. The new accel preference string
+ * format is thus "{HW Accel}[:depth{value}[:stencil{value}[:msaa{str}]]]".
+ *
+ * Accepted values for depth are for instance "depth", "depth16", "depth24".
+ * Accepted values for stencil are "stencil", "stencil1", "stencil8".
+ * For MSAA, only predefined strings are accepted: "msaa", "msaa_low",
+ * "msaa_mid" and "msaa_high". The selected configuration is not guaranteed
+ * and is only valid in case of GL acceleration. Only the base acceleration
+ * string will be saved (e.g. "gl" or "hw").
+ *
+ * Full examples include:
+ *
+ * "gl", - try to use OpenGL
+ * "hw:depth:stencil", - use HW acceleration with default depth and stencil buffers
+ * "opengl:depth24:stencil8:msaa_mid" - use OpenGL with 24-bit depth,
+ *      8-bit stencil and a medium number of MSAA samples in the backbuffer.
+ *
  * This takes precedence over engine preferences set with
  * elm_config_preferred_engine_set().
- * 
+ *
  * @see elm_win_add()
  * @see elm_config_accel_preference_override_set()
  *
@@ -1265,7 +1366,7 @@ EAPI void       elm_config_cache_edje_collection_cache_size_set(int size);
  * engines to use vsync display if possible.
  *
  * @return If vsync is enabled
- * 
+ *
  * @since 1.11
  */
 EAPI Eina_Bool  elm_config_vsync_get(void);
@@ -1732,6 +1833,54 @@ EAPI Eina_Bool elm_config_audio_mute_get(Edje_Channel channel);
 EAPI void      elm_config_audio_mute_set(Edje_Channel channel, Eina_Bool mute);
 
 /**
+ * Get the auto focus enable flag
+ *
+ * This determines if elementary will show a focus box indicating the focused
+ * widget automatically if keyboard controls like "Tab" are used to switch
+ * focus between widgets. Mouse or touch control will hide this auto shown
+ * focus, unless focus display has been expliccitly forced on for the window.
+ *
+ * @return The enabled state for auto focus display
+ * @since 1.14
+ */
+EAPI Eina_Bool elm_config_window_auto_focus_enable_get(void);
+
+/**
+ * Set the auto focus enabled state
+ *
+ * This determines if elementary will show a focus box indicating the focused
+ * widget automatically if keyboard controls like "Tab" are used to switch
+ * focus between widgets. Mouse or touch control will hide this auto shown
+ * focus, unless focus display has been expliccitly forced on for the window.
+ *
+ * @param enable the auto focus display enabled state
+ * @since 1.14
+ */
+EAPI void      elm_config_window_auto_focus_enable_set(Eina_Bool enable);
+
+/**
+ * Get the auto focus animate flag
+ *
+ * If auto focus - see elm_config_window_auto_focus_enable_set() , is enabled
+ * then this will determine if the focus display will be animated or not.
+ *
+ * @return The enabled state for auto focus animation
+ * @since 1.14
+ */
+EAPI Eina_Bool elm_config_window_auto_focus_animate_get(void);
+
+/**
+ * Set the auto focus animation flag
+ *
+ * If auto focus - see elm_config_window_auto_focus_enable_set() , is enabled
+ * then this will determine if the focus display will be animated or not.
+ *
+ * @param enable the auto focus animation state
+ * @since 1.14
+ */
+EAPI void      elm_config_window_auto_focus_animate_set(Eina_Bool enable);
+
+/**
  * @defgroup ATSPI AT-SPI2 Accessibility
  * @ingroup Elementary
  *
@@ -1775,8 +1924,39 @@ EAPI void             elm_config_atspi_mode_set(Eina_Bool is_atspi);
  */
 
 /**
+ * Set the transition duration factor
+ *
+ * This function sets the edje transition duration factor
+ * It will affect the duration of edje transitions
+ *
+ * @param factor The duration factor for transition in edje
+ *
+ * @note This value affect duration of transitions in edje
+ *
+ * @since 1.15
+ *
+ * @see edje_transition_duration_set() for more details
+ */
+EAPI void elm_config_transition_duration_factor_set(double factor);
+
+/**
+ * Get the duration factor of transitions
+ *
+ * @return The duration factor of transition in edje
+ *
+ * @since 1.15
+ */
+EAPI double elm_config_transition_duration_factor_get(void);
+
+/**
  * @}
  */
 
+/*
+ * Add backwards compatability implementation for elm_scale_get and elm_scale_set
+ * to allow running unmodified Tizen applications on a new drop of elementary
+ */
+EAPI double elm_scale_get(void);
+EAPI void   elm_scale_set(double scale);
 EAPI Evas_Coord elm_finger_size_get(void);
 EAPI void       elm_finger_size_set(Evas_Coord size);
