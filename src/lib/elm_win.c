@@ -2392,6 +2392,22 @@ _elm_win_xwin_update(Elm_Win_Data *sd)
 
 #endif
 
+#ifdef HAVE_ELEMENTARY_WAYLAND
+static void
+_elm_win_wlwin_update(Elm_Win_Data *sd)
+{
+   switch (sd->type)
+     {
+        case ELM_WIN_NOTIFICATION:
+          ecore_evas_wayland_type_set(sd->ee, ECORE_WL_WINDOW_TYPE_NOTIFICATION);
+          break;
+        default:
+          break;
+     }
+}
+
+#endif
+
 /**
   * @internal
   *
@@ -3880,6 +3896,9 @@ _elm_win_finalize_internal(Eo *obj, Elm_Win_Data *sd, const char *name, Elm_Win_
 
 #ifdef HAVE_ELEMENTARY_X
    _elm_win_xwin_update(sd);
+#endif
+#ifdef HAVE_ELEMENTARY_WAYLAND
+   _elm_win_wlwin_update(sd);
 #endif
 
    /* do not append to list; all windows render as black rects */
