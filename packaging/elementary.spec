@@ -3,7 +3,7 @@
 %bcond_with wayland
 %bcond_with x
 Name:           elementary
-Version:        1.13.1
+Version:        1.16.0
 Release:        0
 License:        LGPL-2.1+
 Summary:        EFL toolkit for small touchscreens
