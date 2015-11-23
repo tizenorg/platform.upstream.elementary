@@ -3713,7 +3713,35 @@ _elm_win_finalize_internal(Eo *obj, Elm_Win_Data *sd, const char *name, Elm_Win_
              else if (!strcmp(enginelist[i], ELM_WAYLAND_SHM))
                tmp_sd.ee = ecore_evas_wayland_shm_new(NULL, 0, 0, 0, 1, 1, 0);
              else if (!strcmp(enginelist[i], ELM_WAYLAND_EGL))
-               tmp_sd.ee = ecore_evas_wayland_egl_new(NULL, 0, 0, 0, 1, 1, 0);
+               {
+                  int opt[20], opt_i = 0;
+
+                  if (_elm_config->vsync)
+                    {
+                       opt[opt_i++] = ECORE_EVAS_WAYLAND_EGL_OPT_VSYNC;
+                       opt[opt_i++] = 1;
+                    }
+                  if (_elm_config->gl_depth)
+                    {
+                       opt[opt_i++] = ECORE_EVAS_WAYLAND_EGL_OPT_GL_DEPTH;
+                       opt[opt_i++] = _elm_config->gl_depth;
+                    }
+                  if (_elm_config->gl_stencil)
+                    {
+                       opt[opt_i++] = ECORE_EVAS_WAYLAND_EGL_OPT_GL_STENCIL;
+                       opt[opt_i++] = _elm_config->gl_stencil;
+                    }
+                  if (_elm_config->gl_msaa)
+                    {
+                       opt[opt_i++] = ECORE_EVAS_WAYLAND_EGL_OPT_GL_MSAA;
+                       opt[opt_i++] = _elm_config->gl_msaa;
+                    }
+                  opt[opt_i] = 0;
+                  if (opt_i > 0)
+                    tmp_sd.ee = ecore_evas_wayland_egl_options_new(NULL, 0, 0, 0, 1, 1, 0, opt);
+                  else
+                    tmp_sd.ee = ecore_evas_wayland_egl_new(NULL, 0, 0, 0, 1, 1, 0);
+               }
              else if (!strcmp(enginelist[i], ELM_SOFTWARE_WIN32))
                tmp_sd.ee = ecore_evas_software_gdi_new(NULL, 0, 0, 1, 1);
              else if (!strcmp(enginelist[i], ELM_SOFTWARE_DDRAW))
