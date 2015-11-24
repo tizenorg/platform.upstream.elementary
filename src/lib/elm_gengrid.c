@@ -99,6 +99,8 @@ static Eina_Bool _key_action_escape(Evas_Object *obj, const char *params);
 static void _item_position_update(Eina_Inlist *list, int idx);
 static void _item_mouse_callbacks_add(Elm_Gen_Item *it, Evas_Object *view);
 static void _item_mouse_callbacks_del(Elm_Gen_Item *it, Evas_Object *view);
+static int _is_item_in_viewport(int viewport_x, int viewport_y, int viewport_w, int viewport_h,
+                                int obj_x, int obj_y, int obj_w, int obj_h);
 
 
 static const Elm_Action key_actions[] = {
@@ -4447,7 +4449,7 @@ _elm_gengrid_eo_base_constructor(Eo *obj, Elm_Gengrid_Data *sd)
 }
 
 EOLIAN static void
-_elm_gengrid_item_size_set(Eo *obj, Elm_Gengrid_Data *sd, Evas_Coord w, Evas_Coord h)
+_elm_gengrid_item_size_set(Eo *obj EINA_UNUSED, Elm_Gengrid_Data *sd, Evas_Coord w, Evas_Coord h)
 {
    if ((sd->item_width == w) && (sd->item_height == h)) return;
    sd->item_width = w;
@@ -5682,9 +5684,48 @@ _elm_gengrid_item_elm_interface_atspi_accessible_children_get(Eo *eo_it EINA_UNU
 EOLIAN static Eina_Bool
 _elm_gengrid_item_elm_interface_atspi_component_highlight_grab(Eo *eo_it, Elm_Gen_Item *it)
 {
-   elm_gengrid_item_show(eo_it, ELM_GENGRID_ITEM_SCROLLTO_IN);
+   ELM_GENGRID_DATA_GET_OR_RETURN_VAL(WIDGET(it), sd, EINA_FALSE);
 
-   ELM_GENGRID_DATA_GET(WIDGET(it), sd);
+   // if item is realized check if in viewport
+   if (VIEW(it))
+     {
+        Evas_Coord wx, wy, ww, wh, x, y, w, h;
+        evas_object_geometry_get(WIDGET(it), &wx, &wy, &ww, &wh);
+        evas_object_geometry_get(VIEW(it), &x, &y, &w, &h);
+        switch (_is_item_in_viewport(wx, wy, ww, wh, x, y, w, h))
+          {
+           case -1:
+           case -2:
+              elm_gengrid_item_show(eo_it, ELM_GENGRID_ITEM_SCROLLTO_TOP);
+              break;
+           case 1:
+           case 2:
+              elm_gengrid_item_show(eo_it, ELM_GENGRID_ITEM_SCROLLTO_BOTTOM);
+              break;
+           default:
+              elm_gengrid_item_show(eo_it, ELM_GENGRID_ITEM_SCROLLTO_IN);
+          }
+     }
+   else // if item is not realized we should search if we are over or below viewport
+     {
+        int idx, top, bottom;
+        Eina_List *realized = elm_gengrid_realized_items_get(WIDGET(it));
+        if (realized)
+          {
+             // index of realized element on top of viewport
+             eo_do(eina_list_nth(realized, 0), top = elm_obj_gengrid_item_index_get());
+             // index of realized element on bottom of viewport
+             eo_do(eina_list_last_data_get(realized), bottom = elm_obj_gengrid_item_index_get());
+             eo_do(eo_it, idx = elm_obj_gengrid_item_index_get());
+             eina_list_free(realized);
+             if (idx < top)
+               elm_gengrid_item_show(eo_it, ELM_GENGRID_ITEM_SCROLLTO_BOTTOM);
+             else if (idx > bottom)
+               elm_gengrid_item_show(eo_it, ELM_GENGRID_ITEM_SCROLLTO_TOP);
+             else
+               elm_gengrid_item_show(eo_it, ELM_GENGRID_ITEM_SCROLLTO_IN);
+          }
+     }
 
    if (VIEW(it))
       elm_object_accessibility_highlight_set(VIEW(it), EINA_TRUE);
@@ -6038,10 +6079,10 @@ _elm_gengrid_elm_interface_scrollable_content_pos_set(Eo *obj, Elm_Gengrid_Data 
         //sometimes highlighted item is brought in and it does not fit viewport
         //however content goes to the viewport position so soon it will
         //meet _is_item_in_viewport condition
-        if (viewport_position_result == -1 && delta_y > 0 ||
-            viewport_position_result == 1 && delta_y < 0 ||
-            viewport_position_result == -2 && delta_x > 0 ||
-            viewport_position_result == 2 && delta_x < 0)
+        if ((viewport_position_result == -1 && delta_y > 0) ||
+            (viewport_position_result == 1 && delta_y < 0) ||
+            (viewport_position_result == -2 && delta_x > 0) ||
+            (viewport_position_result == 2 && delta_x < 0))
           {
              Eina_List *realized_items = elm_gengrid_realized_items_get(obj);
              Eo *item;
