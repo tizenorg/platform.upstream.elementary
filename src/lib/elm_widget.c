@@ -5995,5 +5995,71 @@ _elm_widget_item_elm_interface_atspi_component_alpha_get(Eo *obj EINA_UNUSED, El
    return (double)alpha / 255.0;
 }
 
+EOLIAN static Eo *
+_elm_widget_elm_interface_atspi_component_accessible_at_point_get(Eo *obj, Elm_Widget_Smart_Data *_pd EINA_UNUSED, Eina_Bool screen_coords, int x, int y)
+{
+   Eina_List *l, *l2, *children;
+   Eo *child;
+   Evas_Object *stack_item;
+   Eo *compare_obj;
+   int ee_x, ee_y;
+
+   if (screen_coords)
+     {
+        Ecore_Evas *ee = ecore_evas_ecore_evas_get(evas_object_evas_get(obj));
+        if (!ee) return NULL;
+        ecore_evas_geometry_get(ee, &ee_x, &ee_y, NULL, NULL);
+        x -= ee_x;
+        y -= ee_y;
+     }
+
+   eo_do(obj, children = elm_interface_atspi_accessible_children_get());
+
+   /* Get evas_object stacked at given x,y coordinates starting from top */
+   Eina_List *stack = evas_tree_objects_at_xy_get(evas_object_evas_get(obj), NULL, x, y);
+
+   /* Foreach stacked object starting from top */
+   EINA_LIST_FOREACH(stack, l, stack_item)
+     {
+        /* Foreach at-spi children traverse stack_item evas_objects hierarchy */
+        EINA_LIST_FOREACH(children, l2, child)
+          {
+             /* Compare object used to compare with stacked evas objects */
+             compare_obj = child;
+             /* In case of widget_items compare should be different then elm_widget_ item  object */
+             if (eo_isa(child, ELM_WIDGET_ITEM_CLASS))
+               {
+                  Elm_Widget_Item_Data *id = eo_data_scope_get(child, ELM_WIDGET_ITEM_CLASS);
+                  compare_obj = id->view;
+               }
+             /* In case of access object compare should be 'wrapped' evas_object */
+             if (eo_isa(child, ELM_ACCESS_CLASS))
+               {
+                  Elm_Access_Info *info = _elm_access_info_get(child);
+                  compare_obj = info->part_object;
+               }
+             /* If spacial eo children do not have backing evas_object continue with search */
+             if (!compare_obj)
+               continue;
+
+             Evas_Object *smart_parent = stack_item;
+             while (smart_parent)
+               {
+                   if (smart_parent == compare_obj)
+                     {
+                        eina_list_free(children);
+                        eina_list_free(stack);
+                        return child;
+                     }
+                   smart_parent = evas_object_smart_parent_get(smart_parent);
+               }
+          }
+     }
+
+   eina_list_free(children);
+   eina_list_free(stack);
+   return NULL;
+}
+
 #include "elm_widget_item.eo.c"
 #include "elm_widget.eo.c"
