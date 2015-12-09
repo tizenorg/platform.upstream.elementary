@@ -98,5 +98,15 @@ mixin Elm_Interface_Atspi_Component ()
          }
          return: Eo*;
       }
+      highlight_grab @protected {
+         [[ Highlights accessible widget.
+         returns true if highlight grab has successed, false otherwise. ]]
+         return: bool;
+      }
+      highlight_clear @protected {
+         [[ Clears highlight of accessible widget.
+         returns true if clear has successed, false otherwise. ]]
+         return: bool;
+      }
    }
 }
