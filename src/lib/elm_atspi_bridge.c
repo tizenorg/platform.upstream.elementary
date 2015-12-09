@@ -437,7 +437,12 @@ const struct atspi_state_desc elm_states_to_atspi_state[] = {
    { ELM_ATSPI_STATE_SELECTABLE_TEXT, ATSPI_STATE_SELECTABLE_TEXT, "selectable-text" },
    { ELM_ATSPI_STATE_IS_DEFAULT, ATSPI_STATE_IS_DEFAULT, "is-default" },
    { ELM_ATSPI_STATE_VISITED, ATSPI_STATE_VISITED, "visited" },
-   { ELM_ATSPI_STATE_LAST_DEFINED, ATSPI_STATE_LAST_DEFINED, "last-defined" },
+   { ELM_ATSPI_STATE_CHECKABLE, ATSPI_STATE_CHECKABLE, "checkable" },
+   { ELM_ATSPI_STATE_HAS_POPUP, ATSPI_STATE_HAS_POPUP, "has-popup" },
+   { ELM_ATSPI_STATE_READ_ONLY, ATSPI_STATE_READ_ONLY, "read-only" },
+   { ELM_ATSPI_STATE_HIGHLIGHTED, ATSPI_STATE_HIGHLIGHTED, "highlighted" },
+   { ELM_ATSPI_STATE_HIGHLIGHTABLE, ATSPI_STATE_HIGHLIGHTABLE, "highlightable" },
+   { ELM_ATSPI_STATE_LAST_DEFINED, ATSPI_STATE_LAST_DEFINED, "last-defined" }
 };
 
 const int elm_relation_to_atspi_relation_mapping[] = {
@@ -3474,6 +3479,48 @@ _component_grab_focus(const Eldbus_Service_Interface *iface EINA_UNUSED, const E
 }
 
 static Eldbus_Message *
+_component_grab_highlight(const Eldbus_Service_Interface *iface EINA_UNUSED, const Eldbus_Message *msg)
+{
+   const char *obj_path = eldbus_message_path_get(msg);
+   Eo *bridge = eldbus_service_object_data_get(iface, ELM_ATSPI_BRIDGE_CLASS_NAME);
+   Eo *obj = _bridge_object_from_path(bridge, obj_path);
+   Eldbus_Message *ret;
+   Eina_Bool highlight = EINA_FALSE;
+
+   ELM_ATSPI_OBJ_CHECK_OR_RETURN_DBUS_ERROR(obj, ELM_INTERFACE_ATSPI_COMPONENT_MIXIN, msg);
+
+   eo_do(obj, highlight = elm_interface_atspi_component_highlight_grab());
+
+   ret = eldbus_message_method_return_new(msg);
+   EINA_SAFETY_ON_NULL_RETURN_VAL(ret, NULL);
+
+   eldbus_message_arguments_append(ret, "b", highlight);
+
+   return ret;
+}
+
+static Eldbus_Message *
+_component_clear_highlight(const Eldbus_Service_Interface *iface EINA_UNUSED, const Eldbus_Message *msg)
+{
+   const char *obj_path = eldbus_message_path_get(msg);
+   Eo *bridge = eldbus_service_object_data_get(iface, ELM_ATSPI_BRIDGE_CLASS_NAME);
+   Eo *obj = _bridge_object_from_path(bridge, obj_path);
+   Eldbus_Message *ret;
+   Eina_Bool highlight = EINA_FALSE;
+
+   ELM_ATSPI_OBJ_CHECK_OR_RETURN_DBUS_ERROR(obj, ELM_INTERFACE_ATSPI_COMPONENT_MIXIN, msg);
+
+   eo_do(obj, highlight = elm_interface_atspi_component_highlight_clear());
+
+   ret = eldbus_message_method_return_new(msg);
+   EINA_SAFETY_ON_NULL_RETURN_VAL(ret, NULL);
+
+   eldbus_message_arguments_append(ret, "b", highlight);
+
+   return ret;
+}
+
+static Eldbus_Message *
 _component_get_alpha(const Eldbus_Service_Interface *iface EINA_UNUSED, const Eldbus_Message *msg)
 {
    const char *obj_path = eldbus_message_path_get(msg);
@@ -3587,6 +3634,8 @@ static const Eldbus_Method component_methods[] = {
    { "SetExtents", ELDBUS_ARGS({"i", "x"}, {"i", "y"}, {"i", "width"}, {"i", "height"}, {"u", "coord_type"}), ELDBUS_ARGS({"b", "result"}), _component_set_extends, 0 },
    { "SetPosition", ELDBUS_ARGS({"i", "x"}, {"i", "y"}, {"u", "coord_type"}), ELDBUS_ARGS({"b", "result"}), _component_set_position, 0 },
    { "SetSize", ELDBUS_ARGS({"i", "width"}, {"i", "height"}), ELDBUS_ARGS({"b", "result"}), _component_set_size, 0 },
+   { "GrabHighlight", NULL, ELDBUS_ARGS({"b", "result"}), _component_grab_highlight, 0 },
+   { "ClearHighlight", NULL, ELDBUS_ARGS({"b", "result"}), _component_clear_highlight, 0 },
    { NULL, NULL, NULL, NULL, 0 }
 };
 

@@ -6061,5 +6061,37 @@ _elm_widget_elm_interface_atspi_component_accessible_at_point_get(Eo *obj, Elm_W
    return NULL;
 }
 
+EOLIAN static Eina_Bool
+_elm_widget_item_elm_interface_atspi_component_highlight_grab(Eo *obj, Elm_Widget_Item_Data *sd)
+{
+   elm_object_accessibility_highlight_set(sd->view, EINA_TRUE);
+   elm_interface_atspi_accessible_state_changed_signal_emit(obj, ELM_ATSPI_STATE_HIGHLIGHTED, EINA_TRUE);
+   return EINA_TRUE;
+}
+
+EOLIAN static Eina_Bool
+_elm_widget_item_elm_interface_atspi_component_highlight_clear(Eo *obj, Elm_Widget_Item_Data *sd)
+{
+   elm_object_accessibility_highlight_set(sd->view, EINA_FALSE);
+   elm_interface_atspi_accessible_state_changed_signal_emit(obj, ELM_ATSPI_STATE_HIGHLIGHTED, EINA_FALSE);
+   return EINA_TRUE;
+}
+
+EOLIAN static Eina_Bool
+_elm_widget_elm_interface_atspi_component_highlight_grab(Eo *obj, Elm_Widget_Smart_Data *pd EINA_UNUSED)
+{
+   elm_object_accessibility_highlight_set(obj, EINA_TRUE);
+   elm_interface_atspi_accessible_state_changed_signal_emit(obj, ELM_ATSPI_STATE_HIGHLIGHTED, EINA_TRUE);
+   return EINA_TRUE;
+}
+
+EOLIAN static Eina_Bool
+_elm_widget_elm_interface_atspi_component_highlight_clear(Eo *obj, Elm_Widget_Smart_Data *pd EINA_UNUSED)
+{
+   elm_object_accessibility_highlight_set(obj, EINA_FALSE);
+   elm_interface_atspi_accessible_state_changed_signal_emit(obj, ELM_ATSPI_STATE_HIGHLIGHTED, EINA_FALSE);
+   return EINA_TRUE;
+}
+
 #include "elm_widget_item.eo.c"
 #include "elm_widget.eo.c"
