@@ -536,5 +536,7 @@ class Elm.Widget_Item(Eo.Base, Elm_Interface_Atspi_Accessible,
            Elm_Interface_Atspi_Component.alpha.get;
            Elm_Interface_Atspi_Component.layer.get;
            Elm_Interface_Atspi_Component.focus_grab;
+           Elm_Interface_Atspi_Component.highlight_grab;
+           Elm_Interface_Atspi_Component.highlight_clear;
       }
 }

@@ -149,4 +149,20 @@ _elm_interface_atspi_component_focus_grab(Eo *obj EINA_UNUSED, void *_pd EINA_UN
    return evas_object_focus_get(obj);
 }
 
+EOLIAN static Eina_Bool
+_elm_interface_atspi_component_highlight_grab(Eo *obj EINA_UNUSED, void *_pd EINA_UNUSED)
+{
+   WRN("The %s object does not implement the \"component_highlight_grab\" function.",
+       eo_class_name_get(eo_class_get(obj)));
+   return EINA_FALSE;
+}
+
+EOLIAN static Eina_Bool
+_elm_interface_atspi_component_highlight_clear(Eo *obj EINA_UNUSED, void *_pd EINA_UNUSED)
+{
+   WRN("The %s object does not implement the \"component_highlight_clear\" function.",
+       eo_class_name_get(eo_class_get(obj)));
+   return EINA_FALSE;
+}
+
 #include "elm_interface_atspi_component.eo.c"

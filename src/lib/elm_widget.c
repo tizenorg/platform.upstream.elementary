@@ -4670,8 +4670,15 @@ _elm_widget_item_elm_interface_atspi_accessible_state_set_get(Eo *eo_item,
                                                               Elm_Widget_Item_Data *item EINA_UNUSED)
 {
    Elm_Atspi_State_Set states = 0;
+   Evas_Object *win = elm_widget_top_get(item->widget);
+   if (win && eo_isa(win, ELM_WIN_CLASS))
+     {
+        if (_elm_win_accessibility_highlight_get(win) == item->view)
+          STATE_TYPE_SET(states, ELM_ATSPI_STATE_HIGHLIGHTED);
+     }
 
    STATE_TYPE_SET(states, ELM_ATSPI_STATE_FOCUSABLE);
+   STATE_TYPE_SET(states, ELM_ATSPI_STATE_HIGHLIGHTABLE);
 
    if (elm_object_item_focus_get(eo_item))
      STATE_TYPE_SET(states, ELM_ATSPI_STATE_FOCUSED);
@@ -5903,6 +5910,14 @@ _elm_widget_elm_interface_atspi_accessible_state_set_get(Eo *obj, Elm_Widget_Sma
 
    eo_do_super(obj, ELM_WIDGET_CLASS, states = elm_interface_atspi_accessible_state_set_get());
 
+   Evas_Object *win = elm_widget_top_get(obj);
+   if (win && eo_isa(win, ELM_WIN_CLASS))
+     {
+        if (_elm_win_accessibility_highlight_get(win) == obj)
+          STATE_TYPE_SET(states, ELM_ATSPI_STATE_HIGHLIGHTED);
+     }
+   STATE_TYPE_SET(states, ELM_ATSPI_STATE_HIGHLIGHTABLE);
+
    if (evas_object_visible_get(obj))
      {
         STATE_TYPE_SET(states, ELM_ATSPI_STATE_VISIBLE);
@@ -6059,6 +6074,51 @@ _elm_widget_elm_interface_atspi_component_accessible_at_point_get(Eo *obj, Elm_W
    eina_list_free(children);
    eina_list_free(stack);
    return NULL;
+}
+
+EOLIAN static Eina_Bool
+_elm_widget_item_elm_interface_atspi_component_highlight_grab(Eo *obj, Elm_Widget_Item_Data *sd)
+{
+   Evas_Object *win = elm_widget_top_get(sd->widget);
+   if (win && eo_isa(win, ELM_WIN_CLASS))
+     {
+        _elm_win_accessibility_highlight_set(win, sd->view);
+        elm_interface_atspi_accessible_state_changed_signal_emit(obj, ELM_ATSPI_STATE_HIGHLIGHTED, EINA_TRUE);
+        return EINA_TRUE;
+     }
+   return EINA_FALSE;
+}
+
+EOLIAN static Eina_Bool
+_elm_widget_item_elm_interface_atspi_component_highlight_clear(Eo *obj, Elm_Widget_Item_Data *sd)
+{
+   Evas_Object *win = elm_widget_top_get(sd->widget);
+   if (win && eo_isa(win, ELM_WIN_CLASS))
+     {
+        if (_elm_win_accessibility_highlight_get(win) != sd->view)
+          return EINA_TRUE;
+
+        _elm_win_accessibility_highlight_set(win, NULL);
+        elm_interface_atspi_accessible_state_changed_signal_emit(obj, ELM_ATSPI_STATE_HIGHLIGHTED, EINA_FALSE);
+        return EINA_TRUE;
+     }
+   return EINA_FALSE;
+}
+
+EOLIAN static Eina_Bool
+_elm_widget_elm_interface_atspi_component_highlight_grab(Eo *obj, Elm_Widget_Smart_Data *pd EINA_UNUSED)
+{
+   elm_object_accessibility_highlight_set(obj, EINA_TRUE);
+   elm_interface_atspi_accessible_state_changed_signal_emit(obj, ELM_ATSPI_STATE_HIGHLIGHTED, EINA_TRUE);
+   return EINA_TRUE;
+}
+
+EOLIAN static Eina_Bool
+_elm_widget_elm_interface_atspi_component_highlight_clear(Eo *obj, Elm_Widget_Smart_Data *pd EINA_UNUSED)
+{
+   elm_object_accessibility_highlight_set(obj, EINA_FALSE);
+   elm_interface_atspi_accessible_state_changed_signal_emit(obj, ELM_ATSPI_STATE_HIGHLIGHTED, EINA_FALSE);
+   return EINA_TRUE;
 }
 
 #include "elm_widget_item.eo.c"
