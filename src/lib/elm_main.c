@@ -1775,3 +1775,21 @@ elm_object_focus_region_show_mode_get(const Evas_Object *obj)
    return elm_widget_focus_region_show_mode_get(obj);
 }
 
+EAPI void
+elm_object_accessibility_highlight_set(Evas_Object *obj, Eina_Bool visible)
+{
+   EINA_SAFETY_ON_NULL_RETURN(obj);
+   Evas_Object *win = NULL;
+
+   if (!elm_object_widget_check(obj))
+      return;
+
+   win = elm_object_top_widget_get(obj);
+   if (!win || !eo_isa(win, ELM_WIN_CLASS))
+      return;
+
+   if (!visible && (obj == _elm_win_accessibility_highlight_get(win)))
+      _elm_win_accessibility_highlight_set(win, NULL);
+   else if (visible)
+      _elm_win_accessibility_highlight_set(win, obj);
+}
