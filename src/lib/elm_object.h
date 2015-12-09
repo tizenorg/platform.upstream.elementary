@@ -508,3 +508,21 @@ EAPI void        elm_object_orientation_mode_disabled_set(Evas_Object *obj, Eina
  */
 EAPI Eina_Bool   elm_object_orientation_mode_disabled_get(const Evas_Object *obj);
 
+/**
+ * Set accessibility highlight on object.
+ *
+ * Accessibility higlight helps visually impaired people to localize elements on
+ * application's user interface. It can be used to point to currently focused
+ * objects, interesting elements in given application context or it can just point
+ * to object that mouse is currently hovering above.
+ *
+ * There can be only one highlighted object per window.
+ *
+ * @param obj The Elementary widget to set accessibility highlight.
+ * @param val EINA_TRUE is object should be highlighted, EINA_FALSE otherwise.
+ *
+ * @tizen_only
+ *
+ * @ingroup General
+ */
+EAPI void elm_object_accessibility_highlight_set(Evas_Object *obj, Eina_Bool val);
