@@ -32,7 +32,9 @@ struct _Elm_Photocam_Grid_Item
 {
    Evas_Object             *obj;
    Elm_Photocam_Data       *sd;
+   Elm_Phocam_Grid         *grid;
    Evas_Object             *img;
+   Evas_Map                *map;
 
    struct
    {
@@ -65,6 +67,7 @@ struct _Elm_Photocam_Data
    Evas_Object                          *pan_obj;
 
    Evas_Coord                            pan_x, pan_y, minw, minh;
+   Evas_Coord                            viewport_w, viewport_h;
 
    double                                g_layer_start;
    double                                zoom;
@@ -116,6 +119,7 @@ struct _Elm_Photocam_Data
 
    int          tsize;
    Evas_Object *img;  /* low res version of image (scale down == 8) */
+   Evas_Map    *map;
    int          no_smooth;
    int          preload_num;
 
@@ -131,6 +135,7 @@ struct _Elm_Photocam_Data
    Eina_Bool    on_hold : 1;
    Eina_Bool    paused : 1;
    Eina_Bool    orientation_changed : 1;
+   Eina_Bool    loaded : 1;
 };
 
 struct _Elm_Photocam_Pan_Data

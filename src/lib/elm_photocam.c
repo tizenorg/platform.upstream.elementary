@@ -281,6 +281,7 @@ _image_place(Evas_Object *obj,
              Evas_Coord oh)
 {
    Evas_Coord ax, ay, gw, gh;
+   Evas_Coord offset_x, offset_y;
 
    ELM_PHOTOCAM_DATA_GET(obj, sd);
 
@@ -306,10 +307,34 @@ _image_place(Evas_Object *obj,
         if (ow > gw) ax = (ow - gw) / 2;
         if (oh > gh) ay = (oh - gh) / 2;
      }
-   evas_object_move(sd->img, ox + 0 - px + ax, oy + 0 - py + ay);
 
    if (rw != 0 && rh != 0) // TIZEN_ONLY(20150813): resize image only when viewport has a size
-     evas_object_resize(sd->img, gw, gh);
+     {
+        offset_x = ox - px + ax;
+        offset_y = oy - py + ay;
+
+        double degree = 0;
+        if (sd->orient == EVAS_IMAGE_ORIENT_90) degree = 90;
+        else if (sd->orient == EVAS_IMAGE_ORIENT_180) degree = 180;
+        else if (sd->orient == EVAS_IMAGE_ORIENT_270) degree = 270;
+ 
+        double rate = 1;
+
+        //rotated?
+        if (degree == 90 || degree == 270)
+          {
+             double temp = sd->size.h > oh ? sd->size.h : oh;
+             rate = temp / (double) sd->size.w;
+          }
+
+        evas_object_move(sd->img, offset_x, offset_y);
+        evas_object_resize(sd->img, gw, gh);
+        evas_map_util_points_populate_from_object_full(sd->map, sd->img, 0);
+        evas_map_util_rotate(sd->map, degree, (sd->size.w/2) + ax, (sd->size.h/2) + ay);
+        evas_map_util_zoom(sd->map, rate, rate, (sd->size.w/2) + ax, (sd->size.h/2) + ay);
+        evas_object_map_set(sd->img, sd->map);
+        evas_object_map_enable_set(sd->img, EINA_TRUE);
+     }
 
    if (sd->show.show)
      {
@@ -318,237 +343,6 @@ _image_place(Evas_Object *obj,
               (sd->show.x, sd->show.y, sd->show.w, sd->show.h));
      }
 }
-
-static void
-_grid_load(Evas_Object *obj,
-           Elm_Phocam_Grid *g)
-{
-   int x, y;
-   Evas_Coord ox, oy, ow, oh, cvx, cvy, cvw, cvh, gw, gh, tx, ty;
-
-   ELM_PHOTOCAM_DATA_GET(obj, sd);
-   ELM_WIDGET_DATA_GET_OR_RETURN(obj, wd);
-
-   evas_object_geometry_get(sd->pan_obj, &ox, &oy, &ow, &oh);
-   evas_output_viewport_get(evas_object_evas_get(obj), &cvx, &cvy, &cvw, &cvh);
-
-   gw = sd->size.w;
-   gh = sd->size.h;
-   for (y = 0; y < g->gh; y++)
-     {
-        for (x = 0; x < g->gw; x++)
-          {
-             int tn, xx, yy, ww, hh;
-             Eina_Bool visible = EINA_FALSE;
-
-             tn = (y * g->gw) + x;
-             xx = g->grid[tn].out.x;
-             yy = g->grid[tn].out.y;
-             ww = g->grid[tn].out.w;
-             hh = g->grid[tn].out.h;
-             if ((gw != g->w) && (g->w > 0))
-               {
-                  tx = xx;
-                  xx = (gw * xx) / g->w;
-                  ww = ((gw * (tx + ww)) / g->w) - xx;
-               }
-             if ((gh != g->h) && (g->h > 0))
-               {
-                  ty = yy;
-                  yy = (gh * yy) / g->h;
-                  hh = ((gh * (ty + hh)) / g->h) - yy;
-               }
-             if (ELM_RECTS_INTERSECT(xx - sd->pan_x + ox,
-                                     yy - sd->pan_y + oy,
-                                     ww, hh, cvx, cvy, cvw, cvh))
-               visible = EINA_TRUE;
-             if ((visible) && (!g->grid[tn].have) && (!g->grid[tn].want))
-               {
-                  g->grid[tn].want = 1;
-                  evas_object_hide(g->grid[tn].img);
-                  evas_object_image_file_set(g->grid[tn].img, NULL, NULL);
-                  evas_object_image_load_scale_down_set
-                    (g->grid[tn].img, g->zoom);
-                  evas_object_image_load_region_set
-                    (g->grid[tn].img, g->grid[tn].src.x, g->grid[tn].src.y,
-                    g->grid[tn].src.w, g->grid[tn].src.h);
-                  _photocam_image_file_set(g->grid[tn].img, sd);
-                  evas_object_image_preload(g->grid[tn].img, 0);
-                  sd->preload_num++;
-                  if (sd->preload_num == 1)
-                    {
-                       edje_object_signal_emit
-                         (wd->resize_obj,
-                         "elm,state,busy,start", "elm");
-                       eo_do(obj, eo_event_callback_call
-                        (ELM_PHOTOCAM_EVENT_LOAD_DETAIL, NULL));
-                    }
-               }
-             else if ((g->grid[tn].want) && (!visible))
-               {
-                  sd->preload_num--;
-                  if (!sd->preload_num)
-                    {
-                       edje_object_signal_emit
-                         (wd->resize_obj,
-                         "elm,state,busy,stop", "elm");
-                       eo_do(obj, eo_event_callback_call
-                        (ELM_PHOTOCAM_EVENT_LOADED_DETAIL, NULL));
-                    }
-                  g->grid[tn].want = 0;
-                  evas_object_hide(g->grid[tn].img);
-                  evas_object_image_preload(g->grid[tn].img, 1);
-                  evas_object_image_file_set(g->grid[tn].img, NULL, NULL);
-               }
-             else if ((g->grid[tn].have) && (!visible))
-               {
-                  g->grid[tn].have = 0;
-                  evas_object_hide(g->grid[tn].img);
-                  evas_object_image_preload(g->grid[tn].img, 1);
-                  evas_object_image_file_set(g->grid[tn].img, NULL, NULL);
-               }
-          }
-     }
-}
-
-static void
-_grid_place(Evas_Object *obj,
-            Elm_Phocam_Grid *g,
-            Evas_Coord px,
-            Evas_Coord py,
-            Evas_Coord ox,
-            Evas_Coord oy,
-            Evas_Coord ow,
-            Evas_Coord oh)
-{
-   Evas_Coord ax, ay, gw, gh, tx, ty;
-   int x, y;
-
-   ELM_PHOTOCAM_DATA_GET(obj, sd);
-
-   ax = 0;
-   ay = 0;
-   gw = sd->size.w;
-   gh = sd->size.h;
-   if (!sd->zoom_g_layer)
-     {
-        if (ow > gw) ax = (ow - gw) / 2;
-        if (oh > gh) ay = (oh - gh) / 2;
-     }
-   for (y = 0; y < g->gh; y++)
-     {
-        for (x = 0; x < g->gw; x++)
-          {
-             int tn, xx, yy, ww, hh;
-
-             tn = (y * g->gw) + x;
-             xx = g->grid[tn].out.x;
-             yy = g->grid[tn].out.y;
-             ww = g->grid[tn].out.w;
-             hh = g->grid[tn].out.h;
-             if ((gw != g->w) && (g->w > 0))
-               {
-                  tx = xx;
-                  xx = (gw * xx) / g->w;
-                  ww = ((gw * (tx + ww)) / g->w) - xx;
-               }
-             if ((gh != g->h) && (g->h > 0))
-               {
-                  ty = yy;
-                  yy = (gh * yy) / g->h;
-                  hh = ((gh * (ty + hh)) / g->h) - yy;
-               }
-             evas_object_move(g->grid[tn].img,
-                              ox + xx - px + ax,
-                              oy + yy - py + ay);
-             evas_object_resize(g->grid[tn].img, ww, hh);
-          }
-     }
-}
-
-EOLIAN static void
-_elm_photocam_pan_evas_object_smart_calculate(Eo *obj, Elm_Photocam_Pan_Data *psd)
-{
-   Elm_Phocam_Grid *g;
-   Eina_List *l;
-   Evas_Coord ox, oy, ow, oh;
-
-   ELM_WIDGET_DATA_GET_OR_RETURN(psd->wobj, wd);
-
-   evas_object_geometry_get(obj, &ox, &oy, &ow, &oh);
-   _image_place(
-       wd->obj, psd->wsd->pan_x, psd->wsd->pan_y,
-       ox - psd->wsd->g_layer_zoom.imx, oy - psd->wsd->g_layer_zoom.imy, ow,
-       oh);
-
-   EINA_LIST_FOREACH(psd->wsd->grids, l, g)
-     {
-        _grid_load(wd->obj, g);
-        _grid_place(
-              wd->obj, g, psd->wsd->pan_x,
-             psd->wsd->pan_y, ox - psd->wsd->g_layer_zoom.imx,
-             oy - psd->wsd->g_layer_zoom.imy, ow, oh);
-     }
-}
-
-EOLIAN static void
-_elm_photocam_pan_elm_pan_pos_set(Eo *obj, Elm_Photocam_Pan_Data *psd, Evas_Coord x, Evas_Coord y)
-{
-   if ((x == psd->wsd->pan_x) && (y == psd->wsd->pan_y)) return;
-   psd->wsd->pan_x = x;
-   psd->wsd->pan_y = y;
-   evas_object_smart_changed(obj);
-}
-
-EOLIAN static void
-_elm_photocam_pan_elm_pan_pos_get(Eo *obj EINA_UNUSED, Elm_Photocam_Pan_Data *psd, Evas_Coord *x, Evas_Coord *y)
-{
-   if (x) *x = psd->wsd->pan_x;
-   if (y) *y = psd->wsd->pan_y;
-}
-
-EOLIAN static void
-_elm_photocam_pan_elm_pan_pos_max_get(Eo *obj, Elm_Photocam_Pan_Data *psd, Evas_Coord *x, Evas_Coord *y)
-{
-   Evas_Coord ow, oh;
-
-   evas_object_geometry_get(obj, NULL, NULL, &ow, &oh);
-   ow = psd->wsd->minw - ow;
-   if (ow < 0) ow = 0;
-   oh = psd->wsd->minh - oh;
-   if (oh < 0) oh = 0;
-   if (x) *x = ow;
-   if (y) *y = oh;
-}
-
-EOLIAN static void
-_elm_photocam_pan_elm_pan_pos_min_get(Eo *obj EINA_UNUSED, Elm_Photocam_Pan_Data *_pd EINA_UNUSED, Evas_Coord *x, Evas_Coord *y)
-{
-   if (x) *x = 0;
-   if (y) *y = 0;
-}
-
-EOLIAN static void
-_elm_photocam_pan_elm_pan_content_size_get(Eo *obj EINA_UNUSED, Elm_Photocam_Pan_Data *psd, Evas_Coord *w, Evas_Coord *h)
-{
-   if (w) *w = psd->wsd->minw;
-   if (h) *h = psd->wsd->minh;
-}
-
-EOLIAN static void
-_elm_photocam_pan_eo_base_destructor(Eo *obj, Elm_Photocam_Pan_Data *psd)
-{
-   eo_data_unref(psd->wobj, psd->wsd);
-   eo_do_super(obj, MY_PAN_CLASS, eo_destructor());
-}
-
-static void
-_elm_photocam_pan_class_constructor(Eo_Class *klass)
-{
-   evas_smart_legacy_type_register(MY_PAN_CLASS_NAME_LEGACY, klass);
-}
-
-#include "elm_photocam_pan.eo.c"
 
 static int
 _nearest_pow2_get(int num)
@@ -564,16 +358,21 @@ _nearest_pow2_get(int num)
    return n + 1;
 }
 
+static int
+_grid_zoom_calc(double zoom)
+{
+   int z = zoom;
+
+   if (z < 1) z = 1;
+   if (z > 8) z = 8; // TIZEN_ONLY(20150813): need to create 1x1 grid when zoom >= 8 to load high res img
+   return _nearest_pow2_get(z);
+}
+
 static void
-_grid_clear(Evas_Object *obj,
-            Elm_Phocam_Grid *g)
+_grid_raise(Elm_Phocam_Grid *g)
 {
    int x, y;
 
-   ELM_PHOTOCAM_DATA_GET(obj, sd);
-   ELM_WIDGET_DATA_GET_OR_RETURN(obj, wd);
-
-   if (!g->grid) return;
    for (y = 0; y < g->gh; y++)
      {
         for (x = 0; x < g->gw; x++)
@@ -581,25 +380,9 @@ _grid_clear(Evas_Object *obj,
              int tn;
 
              tn = (y * g->gw) + x;
-             evas_object_del(g->grid[tn].img);
-             if (g->grid[tn].want)
-               {
-                  sd->preload_num--;
-                  if (!sd->preload_num)
-                    {
-                       edje_object_signal_emit
-                         (wd->resize_obj,
-                         "elm,state,busy,stop", "elm");
-                       eo_do(obj, eo_event_callback_call
-                         (ELM_PHOTOCAM_EVENT_LOAD_DETAIL, NULL));
-                    }
-               }
+             evas_object_raise(g->grid[tn].img);
           }
      }
-
-   ELM_SAFE_FREE(g->grid, free);
-   g->gw = 0;
-   g->gh = 0;
 }
 
 static void
@@ -609,34 +392,91 @@ _tile_preloaded_cb(void *data,
                    void *event_info EINA_UNUSED)
 {
    Elm_Photocam_Grid_Item *git = data;
+   Elm_Phocam_Grid *g = git->grid;
    ELM_PHOTOCAM_DATA_GET(git->obj, sd);
    ELM_WIDGET_DATA_GET_OR_RETURN(git->obj, wd);
+   Evas_Coord ax, ay, px, py, ox, oy, ow, oh, gw, gh, tx, ty;
+   gw = sd->size.w;
+   gh = sd->size.h;
+
+   ax = 0;
+   ay = 0;
+   evas_object_geometry_get(sd->pan_obj, &ox, &oy, &ow, &oh);
+   px = sd->pan_x;
+   py = sd->pan_y;
+   ox = ox - sd->g_layer_zoom.imx;
+   oy = oy - sd->g_layer_zoom.imy;
+
+   if (!sd->zoom_g_layer)
+     {
+        if (ow > gw) ax = (ow - gw) / 2;
+        if (oh > gh) ay = (oh - gh) / 2;
+     }
 
    if (git->want)
      {
         git->want = 0;
+        git->map = evas_map_new(4);
+
+        int tn = (int) evas_object_data_get(git->img, "idx");
+        int xx = git->out.x;
+        int yy = git->out.y;
+        int ww = git->out.w;
+        int hh = git->out.h;
+
+        if ((gw != g->w) && (g->w > 0))
+          {
+             tx = xx;
+             xx = (gw * xx) / g->w;
+             ww = ((gw * (tx + ww)) / g->w) - xx;
+          }
+        if ((gh != g->h) && (g->h > 0))
+          {
+             ty = yy;
+             yy = (gh * yy) / g->h;
+             hh = ((gh * (ty + hh)) / g->h) - yy;
+          }
+
+        evas_object_resize(git->img, ww, hh);
+        evas_object_move(git->img, ox + xx - px + ax, oy + yy - py + ay);
         evas_object_show(git->img);
+
+        double degree = 0;
+        if (sd->orient == EVAS_IMAGE_ORIENT_90) degree = 90;
+        else if (sd->orient == EVAS_IMAGE_ORIENT_180) degree = 180;
+        else if (sd->orient == EVAS_IMAGE_ORIENT_270) degree = 270;
+
+        double rate = 1;
+
+        //rotated?
+        if (degree == 90 || degree == 270)
+          {
+             double temp = sd->size.h > oh ? sd->size.h : oh;
+             rate = temp / (double) sd->size.w;
+          }
+
+        evas_map_util_points_populate_from_object_full(git->map, git->img, 0);
+        evas_map_point_image_uv_set(git->map, 0, 0, 0);
+        evas_map_point_image_uv_set(git->map, 1, g->grid[tn].src.w, 0);
+        evas_map_point_image_uv_set(git->map, 2, g->grid[tn].src.w, g->grid[tn].src.h);
+        evas_map_point_image_uv_set(git->map, 3, 0, g->grid[tn].src.h);
+        evas_map_util_rotate(git->map, degree, (sd->size.w/2) + ax, (sd->size.h/2) + ay);
+        evas_map_util_zoom(git->map, rate, rate, (sd->size.w/2) + ax, (sd->size.h/2) + ay);
+        evas_object_map_set(git->img, git->map);
+        evas_object_map_enable_set(git->img, EINA_TRUE);
+
+        _grid_raise(g);
+
         git->have = 1;
         sd->preload_num--;
         if (!sd->preload_num)
           {
              edje_object_signal_emit
-               (wd->resize_obj, "elm,state,busy,stop",
-               "elm");
+               (wd->resize_obj, "elm,state,busy,stop", "elm");
              eo_do(wd->obj, eo_event_callback_call
                (ELM_PHOTOCAM_EVENT_LOADED_DETAIL, NULL));
           }
      }
-}
-
-static int
-_grid_zoom_calc(double zoom)
-{
-   int z = zoom;
-
-   if (z < 1) z = 1;
-   if (z > 8) z = 8; // TIZEN_ONLY(20150813): need to create 1x1 grid when zoom >= 8 to load high res img
-   return _nearest_pow2_get(z);
 }
 
 static Elm_Phocam_Grid *
@@ -703,10 +543,9 @@ _grid_create(Evas_Object *obj)
              g->grid[tn].out.h = g->grid[tn].src.h;
 
              g->grid[tn].obj = obj;
-             g->grid[tn].img =
-               evas_object_image_add(evas_object_evas_get(obj));
+             g->grid[tn].grid = g;
+             g->grid[tn].img = evas_object_image_add(evas_object_evas_get(obj));
              evas_object_image_load_orientation_set(g->grid[tn].img, EINA_TRUE);
-             evas_object_image_orient_set(g->grid[tn].img, sd->orient);
              evas_object_image_scale_hint_set
                (g->grid[tn].img, EVAS_IMAGE_SCALE_HINT_DYNAMIC);
              evas_object_pass_events_set(g->grid[tn].img, EINA_TRUE);
@@ -715,6 +554,7 @@ _grid_create(Evas_Object *obj)
              evas_object_smart_member_add(g->grid[tn].img, sd->pan_obj);
              elm_widget_sub_object_add(obj, g->grid[tn].img);
              evas_object_image_filled_set(g->grid[tn].img, 1);
+             evas_object_data_set(g->grid[tn].img, "idx", (void*) (y * g->gw + x));
              evas_object_event_callback_add
                (g->grid[tn].img, EVAS_CALLBACK_IMAGE_PRELOADED,
                _tile_preloaded_cb, &(g->grid[tn]));
@@ -722,6 +562,233 @@ _grid_create(Evas_Object *obj)
      }
 
    return g;
+}
+
+static void
+_grid_load(Evas_Object *obj,
+           Elm_Phocam_Grid *g)
+{
+   int x, y;
+   Evas_Coord ox, oy, ow, oh, cvx, cvy, cvw, cvh, gw, gh, tx, ty;
+
+   ELM_PHOTOCAM_DATA_GET(obj, sd);
+   ELM_WIDGET_DATA_GET_OR_RETURN(obj, wd);
+
+   evas_object_geometry_get(sd->pan_obj, &ox, &oy, &ow, &oh);
+   evas_output_viewport_get(evas_object_evas_get(obj), &cvx, &cvy, &cvw, &cvh);
+
+   gw = sd->size.w;
+   gh = sd->size.h;
+   if ((gw == 0) || (gh == 0)) return;
+
+   for (y = 0; y < g->gh; y++)
+     {
+        for (x = 0; x < g->gw; x++)
+          {
+             int tn, xx, yy, ww, hh;
+             Eina_Bool visible = EINA_FALSE;
+
+             tn = (y * g->gw) + x;
+             xx = g->grid[tn].out.x;
+             yy = g->grid[tn].out.y;
+             ww = g->grid[tn].out.w;
+             hh = g->grid[tn].out.h;
+             if ((gw != g->w) && (g->w > 0))
+               {
+                  tx = xx;
+                  xx = (gw * xx) / g->w;
+                  ww = ((gw * (tx + ww)) / g->w) - xx;
+               }
+             if ((gh != g->h) && (g->h > 0))
+               {
+                  ty = yy;
+                  yy = (gh * yy) / g->h;
+                  hh = ((gh * (ty + hh)) / g->h) - yy;
+               }
+             if (ELM_RECTS_INTERSECT(xx - sd->pan_x + ox,
+                                     yy - sd->pan_y + oy,
+                                     ww, hh, cvx, cvy, cvw, cvh))
+               visible = EINA_TRUE;
+
+             if ((visible) && (!g->grid[tn].have) && (!g->grid[tn].want))
+               {
+                  int sx, sy, sw, sh;
+
+                  g->grid[tn].want = 1;
+                  evas_object_hide(g->grid[tn].img);
+                  evas_object_image_file_set(g->grid[tn].img, NULL, NULL);
+                  evas_object_image_load_scale_down_set
+                    (g->grid[tn].img, g->zoom);
+
+                  sx = g->grid[tn].src.x;
+                  sy = g->grid[tn].src.y;
+                  sw = g->grid[tn].src.w;
+                  sh = g->grid[tn].src.h;
+
+                  evas_object_image_load_region_set
+                    (g->grid[tn].img, sx, sy, sw, sh);
+
+                  _photocam_image_file_set(g->grid[tn].img, sd);
+                  evas_object_image_preload(g->grid[tn].img, 0);
+
+                  sd->preload_num++;
+                  if (sd->preload_num == 1)
+                    {
+                       edje_object_signal_emit
+                         (wd->resize_obj,
+                         "elm,state,busy,start", "elm");
+                       eo_do(obj, eo_event_callback_call
+                        (ELM_PHOTOCAM_EVENT_LOAD_DETAIL, NULL));
+                    }
+               }
+             else if ((g->grid[tn].want) && (!visible))
+               {
+                  sd->preload_num--;
+                  if (!sd->preload_num)
+                    {
+                       edje_object_signal_emit
+                         (wd->resize_obj,
+                         "elm,state,busy,stop", "elm");
+                       eo_do(obj, eo_event_callback_call
+                        (ELM_PHOTOCAM_EVENT_LOADED_DETAIL, NULL));
+                    }
+                  g->grid[tn].want = 0;
+                  evas_object_hide(g->grid[tn].img);
+                  evas_object_image_preload(g->grid[tn].img, 1);
+                  evas_object_image_file_set(g->grid[tn].img, NULL, NULL);
+               }
+             else if ((g->grid[tn].have) && (!visible))
+               {
+                  g->grid[tn].have = 0;
+                  evas_object_hide(g->grid[tn].img);
+                  evas_object_image_preload(g->grid[tn].img, 1);
+                  evas_object_image_file_set(g->grid[tn].img, NULL, NULL);
+               }
+          }
+     }
+}
+
+static void
+_grid_place(Evas_Object *obj,
+            Elm_Phocam_Grid *g,
+            Evas_Coord px,
+            Evas_Coord py,
+            Evas_Coord ox,
+            Evas_Coord oy,
+            Evas_Coord ow,
+            Evas_Coord oh)
+{
+   Evas_Coord ax, ay, gw, gh, tx, ty;
+   int x, y;
+
+   ELM_PHOTOCAM_DATA_GET(obj, sd);
+
+   ax = 0;
+   ay = 0;
+   gw = sd->size.w;
+   gh = sd->size.h;
+
+   if (!sd->zoom_g_layer)
+     {
+        if (ow > gw) ax = (ow - gw) / 2;
+        if (oh > gh) ay = (oh - gh) / 2;
+     }
+
+   for (y = 0; y < g->gh; y++)
+     {
+        for (x = 0; x < g->gw; x++)
+          {
+             int tn, xx, yy, ww, hh;
+
+             tn = (y * g->gw) + x;
+             if (!g->grid[tn].map) break;
+
+             xx = g->grid[tn].out.x;
+             yy = g->grid[tn].out.y;
+             ww = g->grid[tn].out.w;
+             hh = g->grid[tn].out.h;
+
+             if ((gw != g->w) && (g->w > 0))
+               {
+                  tx = xx;
+                  xx = (gw * xx) / g->w;
+                  ww = ((gw * (tx + ww)) / g->w) - xx;
+               }
+
+             if ((gh != g->h) && (g->h > 0))
+               {
+                  ty = yy;
+                  yy = (gh * yy) / g->h;
+                  hh = ((gh * (ty + hh)) / g->h) - yy;
+               }
+
+             evas_object_resize(g->grid[tn].img, ww, hh);
+             evas_object_move(g->grid[tn].img, ox + xx - px + ax, oy + yy - py + ay);
+
+             double degree = 0;
+             if (sd->orient == EVAS_IMAGE_ORIENT_90) degree = 90;
+             else if (sd->orient == EVAS_IMAGE_ORIENT_180) degree = 180;
+             else if (sd->orient == EVAS_IMAGE_ORIENT_270) degree = 270;
+
+             double rate = 1;
+
+             //rotated?
+             if (degree == 90 || degree == 270)
+               {
+                  double temp = sd->size.h > oh ? sd->size.h : oh;
+                  rate = temp / (double) sd->size.w;
+               }
+
+             evas_map_util_points_populate_from_object_full(g->grid[tn].map, g->grid[tn].img, 0);
+             evas_map_point_image_uv_set(g->grid[tn].map, 0, 0, 0);
+             evas_map_point_image_uv_set(g->grid[tn].map, 1, g->grid[tn].src.w, 0);
+             evas_map_point_image_uv_set(g->grid[tn].map, 2, g->grid[tn].src.w, g->grid[tn].src.h);
+             evas_map_point_image_uv_set(g->grid[tn].map, 3, 0, g->grid[tn].src.h);
+             evas_map_util_rotate(g->grid[tn].map, degree, (sd->size.w/2) + ax, (sd->size.h/2) + ay);
+             evas_map_util_zoom(g->grid[tn].map, rate, rate, (sd->size.w/2) + ax, (sd->size.h/2) + ay);
+             evas_object_map_set(g->grid[tn].img, g->grid[tn].map);
+             evas_object_map_enable_set(g->grid[tn].img, EINA_TRUE);
+             _grid_raise(g);
+          }
+     }
+}
+
+static void
+_grid_clear(Evas_Object *obj,
+            Elm_Phocam_Grid *g)
+{
+   int x, y;
+
+   ELM_PHOTOCAM_DATA_GET(obj, sd);
+   ELM_WIDGET_DATA_GET_OR_RETURN(obj, wd);
+
+   if (!g->grid) return;
+   for (y = 0; y < g->gh; y++)
+     {
+        for (x = 0; x < g->gw; x++)
+          {
+             int tn;
+
+             tn = (y * g->gw) + x;
+             evas_object_del(g->grid[tn].img);
+             if (g->grid[tn].want)
+               {
+                  sd->preload_num--;
+                  if (!sd->preload_num)
+                    {
+                       edje_object_signal_emit
+                         (wd->resize_obj,
+                         "elm,state,busy,stop", "elm");
+                       eo_do(obj, eo_event_callback_call
+                         (ELM_PHOTOCAM_EVENT_LOAD_DETAIL, NULL));
+                    }
+               }
+          }
+     }
+
+   ELM_SAFE_FREE(g->grid, free);
+   g->gw = 0;
+   g->gh = 0;
 }
 
 static void
@@ -737,6 +804,109 @@ _grid_clear_all(Evas_Object *obj)
         free(g);
      }
 }
+
+EOLIAN static void
+_elm_photocam_pan_evas_object_smart_calculate(Eo *obj, Elm_Photocam_Pan_Data *psd)
+{
+   Evas_Coord rx, ry, rw, rh;
+   eo_do(psd->wobj, elm_interface_scrollable_content_pos_get(&rx, &ry));
+   eo_do(psd->wobj, elm_interface_scrollable_content_viewport_geometry_get
+         (NULL, NULL, &rw, &rh));
+
+   Elm_Phocam_Grid *g;
+   Eina_List *l;
+   Evas_Coord ox, oy, ow, oh;
+
+   ELM_WIDGET_DATA_GET_OR_RETURN(psd->wobj, wd);
+
+   evas_object_geometry_get(obj, &ox, &oy, &ow, &oh);
+   _image_place(
+       wd->obj, psd->wsd->pan_x, psd->wsd->pan_y,
+       ox - psd->wsd->g_layer_zoom.imx, oy - psd->wsd->g_layer_zoom.imy, ow,
+       oh);
+
+   if ((psd->wsd->viewport_w != rw) || (psd->wsd->viewport_h != rh))
+     {
+        if (psd->wsd->mode != ELM_PHOTOCAM_ZOOM_MODE_MANUAL)
+          {
+             psd->wsd->viewport_w = rw;
+             psd->wsd->viewport_h = rh;
+             g = _grid_create(psd->wobj);
+             if (g)
+               {
+                  _grid_clear_all(psd->wobj);
+                  psd->wsd->grids = eina_list_prepend(psd->wsd->grids, g);
+               }
+          }
+     }
+   EINA_LIST_FOREACH(psd->wsd->grids, l, g)
+     {
+        _grid_load(wd->obj, g);
+        _grid_place(
+           wd->obj, g, psd->wsd->pan_x,
+           psd->wsd->pan_y, ox - psd->wsd->g_layer_zoom.imx,
+           oy - psd->wsd->g_layer_zoom.imy, ow, oh);
+     }
+}
+
+EOLIAN static void
+_elm_photocam_pan_elm_pan_pos_set(Eo *obj, Elm_Photocam_Pan_Data *psd, Evas_Coord x, Evas_Coord y)
+{
+   if ((x == psd->wsd->pan_x) && (y == psd->wsd->pan_y)) return;
+   psd->wsd->pan_x = x;
+   psd->wsd->pan_y = y;
+   evas_object_smart_changed(obj);
+}
+
+EOLIAN static void
+_elm_photocam_pan_elm_pan_pos_get(Eo *obj EINA_UNUSED, Elm_Photocam_Pan_Data *psd, Evas_Coord *x, Evas_Coord *y)
+{
+   if (x) *x = psd->wsd->pan_x;
+   if (y) *y = psd->wsd->pan_y;
+}
+
+EOLIAN static void
+_elm_photocam_pan_elm_pan_pos_max_get(Eo *obj, Elm_Photocam_Pan_Data *psd, Evas_Coord *x, Evas_Coord *y)
+{
+   Evas_Coord ow, oh;
+
+   evas_object_geometry_get(obj, NULL, NULL, &ow, &oh);
+   ow = psd->wsd->minw - ow;
+   if (ow < 0) ow = 0;
+   oh = psd->wsd->minh - oh;
+   if (oh < 0) oh = 0;
+   if (x) *x = ow;
+   if (y) *y = oh;
+}
+
+EOLIAN static void
+_elm_photocam_pan_elm_pan_pos_min_get(Eo *obj EINA_UNUSED, Elm_Photocam_Pan_Data *_pd EINA_UNUSED, Evas_Coord *x, Evas_Coord *y)
+{
+   if (x) *x = 0;
+   if (y) *y = 0;
+}
+
+EOLIAN static void
+_elm_photocam_pan_elm_pan_content_size_get(Eo *obj EINA_UNUSED, Elm_Photocam_Pan_Data *psd, Evas_Coord *w, Evas_Coord *h)
+{
+   if (w) *w = psd->wsd->minw;
+   if (h) *h = psd->wsd->minh;
+}
+
+EOLIAN static void
+_elm_photocam_pan_eo_base_destructor(Eo *obj, Elm_Photocam_Pan_Data *psd)
+{
+   eo_data_unref(psd->wobj, psd->wsd);
+   eo_do_super(obj, MY_PAN_CLASS, eo_destructor());
+}
+
+static void
+_elm_photocam_pan_class_constructor(Eo_Class *klass)
+{
+   evas_smart_legacy_type_register(MY_PAN_CLASS_NAME_LEGACY, klass);
+}
+
+#include "elm_photocam_pan.eo.c"
 
 static void
 _smooth_update(Evas_Object *obj)
@@ -765,23 +935,6 @@ _smooth_update(Evas_Object *obj)
    evas_object_image_smooth_scale_set(sd->img, (!sd->no_smooth));
 }
 
-static void
-_grid_raise(Elm_Phocam_Grid *g)
-{
-   int x, y;
-
-   for (y = 0; y < g->gh; y++)
-     {
-        for (x = 0; x < g->gw; x++)
-          {
-             int tn;
-
-             tn = (y * g->gw) + x;
-             evas_object_raise(g->grid[tn].img);
-          }
-     }
-}
-
 static Eina_Bool
 _scroll_timeout_cb(void *data)
 {
@@ -807,11 +960,16 @@ _main_img_preloaded_cb(void *data,
    ELM_PHOTOCAM_DATA_GET(data, sd);
    ELM_WIDGET_DATA_GET_OR_RETURN(data, wd);
 
+   sd->loaded = EINA_TRUE;
    evas_object_show(sd->img);
+
+   sd->map = evas_map_new(4);
+
    sd->main_load_pending = 0;
    g = _grid_create(obj);
    if (g)
      {
+        _grid_clear_all(obj);
         sd->grids = eina_list_prepend(sd->grids, g);
         _grid_load(obj, g);
      }
@@ -1420,60 +1578,36 @@ _g_layer_zoom_end_cb(void *data,
    return EVAS_EVENT_FLAG_NONE;
 }
 
-static void
-_orient_do(Evas_Object *obj, Elm_Photocam_Data *sd)
-{
-   evas_object_smart_member_del(sd->img);
-   elm_widget_sub_object_del(obj, sd->img);
-   evas_object_smart_member_add(sd->img, sd->pan_obj);
-   elm_widget_sub_object_add(obj, sd->img);
-   ecore_job_del(sd->calc_job);
-   sd->calc_job = ecore_job_add(_calc_job_cb, obj);
-}
-
 EOLIAN static void
 _elm_photocam_image_orient_set(Eo *obj, Elm_Photocam_Data *sd, Evas_Image_Orient orient)
 {
-   int iw, ih;
-   Eina_List *l;
-   Elm_Phocam_Grid *g, *g_orient = NULL;
-
    if (sd->orient == orient) return;
 
    sd->orientation_changed = EINA_TRUE;
    sd->orient = orient;
-   g = _grid_create(obj);
-   if (g)
-     {
-        if (eina_list_count(sd->grids) > 1)
-          {
-             g_orient = eina_list_last(sd->grids)->data;
-             sd->grids = eina_list_remove(sd->grids, g_orient);
-             _grid_clear(obj, g_orient);
-             free(g_orient);
-             EINA_LIST_FOREACH(sd->grids, l, g_orient)
-               {
-                  g_orient->dead = 1;
-               }
-          }
-        sd->grids = eina_list_prepend(sd->grids, g);
-     }
-   else
-     {
-        EINA_LIST_FREE(sd->grids, g)
-          {
-             _grid_clear(obj, g);
-             free(g);
-          }
-     }
 
-   evas_object_image_orient_set(sd->img, orient);
-   evas_object_image_size_get(sd->img, &iw, &ih);
-   sd->size.imw = iw;
-   sd->size.imh = ih;
-   sd->size.w = iw / sd->zoom;
-   sd->size.h = ih / sd->zoom;
-   _orient_do(obj, sd);
+   if (sd->loaded)
+     {
+        _grid_clear_all(obj);
+        Evas_Coord ox, oy, ow, oh;
+
+        ELM_WIDGET_DATA_GET_OR_RETURN(obj, wd);
+
+        evas_object_geometry_get(obj, &ox, &oy, &ow, &oh);
+        _image_place(
+           obj, sd->pan_x, sd->pan_y,
+           ox - sd->g_layer_zoom.imx, oy - sd->g_layer_zoom.imy, ow, oh);
+
+        Elm_Phocam_Grid *g = _grid_create(obj);
+        if (g)
+          {
+             _grid_clear_all(obj);
+             sd->grids = eina_list_prepend(sd->grids, g);
+             _grid_load(obj, g);
+          }
+        ecore_job_del(sd->calc_job);
+        sd->calc_job = ecore_job_add(_calc_job_cb, obj);
+     }
 }
 
 EOLIAN static Evas_Image_Orient
@@ -1547,6 +1681,7 @@ _elm_photocam_evas_object_smart_add(Eo *obj, Elm_Photocam_Data *priv)
    /* XXX: mmm... */
    evas_object_smart_member_add(priv->img, priv->pan_obj);
 
+   priv->loaded = EINA_FALSE;
    elm_widget_sub_object_add(obj, priv->img);
    evas_object_image_filled_set(priv->img, EINA_TRUE);
    evas_object_event_callback_add
@@ -1869,10 +2004,9 @@ elm_photocam_file_get(const Elm_Photocam *obj)
 EOLIAN static void
 _elm_photocam_zoom_set(Eo *obj, Elm_Photocam_Data *sd, double zoom)
 {
-   double z;
    Eina_List *l;
    Ecore_Animator *an;
-   Elm_Phocam_Grid *g, *g_zoom = NULL;
+   Elm_Phocam_Grid *g;
    Evas_Coord rx, ry, rw, rh; // TIZEN_ONLY(20150813): make as a function for reusability
    int zoom_changed = 0, started = 0;
 
@@ -1888,7 +2022,6 @@ _elm_photocam_zoom_set(Eo *obj, Elm_Photocam_Data *sd, double zoom)
    if ((rw <= 0) || (rh <= 0)) return;
 
    // TIZEN_ONLY(20150813): make as a function for reusability
-   z = sd->zoom;
    _image_size_calc(obj, sd);
 
    sd->size.w = sd->size.nw;
@@ -1911,17 +2044,7 @@ _elm_photocam_zoom_set(Eo *obj, Elm_Photocam_Data *sd, double zoom)
    g = _grid_create(obj);
    if (g)
      {
-        if (eina_list_count(sd->grids) > 1)
-          {
-             g_zoom = eina_list_last(sd->grids)->data;
-             sd->grids = eina_list_remove(sd->grids, g_zoom);
-             _grid_clear(obj, g_zoom);
-             free(g_zoom);
-             EINA_LIST_FOREACH(sd->grids, l, g_zoom)
-               {
-                  g_zoom->dead = 1;
-               }
-          }
+        _grid_clear_all(obj);
         sd->grids = eina_list_prepend(sd->grids, g);
      }
    else
