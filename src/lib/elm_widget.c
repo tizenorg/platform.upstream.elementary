@@ -5875,6 +5875,55 @@ _elm_widget_elm_interface_atspi_accessible_name_get(Eo *obj EINA_UNUSED, Elm_Wid
    return _elm_util_mkup_to_text(ret);
 }
 
+static int _sort_vertically(const void *data1, const void *data2)
+{
+   Evas_Coord y1, y2;
+   evas_object_geometry_get(data1, NULL, &y1, NULL, NULL);
+   evas_object_geometry_get(data2, NULL, &y2, NULL, NULL);
+
+   return y1 < y2 ? -1 : 1;
+}
+
+static int _sort_horizontally(const void *data1, const void *data2)
+{
+   Evas_Coord x1, x2;
+   evas_object_geometry_get(data1, &x1, NULL, NULL, NULL);
+   evas_object_geometry_get(data2, &x2, NULL, NULL, NULL);
+
+   return x1 < x2 ? -1 : 1;
+}
+
+static Eina_List *_lines_split(Eina_List *children)
+{
+   Eo *c;
+   Eina_List *lines, *line;
+   Evas_Coord yl, y, hl, h;
+   lines = line = NULL;
+
+   if (!children) return NULL;
+
+   evas_object_geometry_get(eina_list_data_get(children), NULL, &yl, NULL, &hl);
+
+   EINA_LIST_FREE(children, c)
+     {
+        evas_object_geometry_get(c, NULL, &y, NULL, &h);
+        if ((yl + (int)(0.25 * hl)) >= y)
+          {
+             //same line
+             line = eina_list_append(line,c);
+          }
+        else
+          {
+             // finish current line & start new
+             lines = eina_list_append(lines, line);
+             yl = y, hl = h;
+             line = eina_list_append(NULL, c);
+          }
+     }
+
+   return eina_list_append(lines, line);
+}
+
 EOLIAN static Eina_List*
 _elm_widget_elm_interface_atspi_accessible_children_get(Eo *obj EINA_UNUSED, Elm_Widget_Smart_Data *pd EINA_UNUSED)
 {
@@ -5891,6 +5940,14 @@ _elm_widget_elm_interface_atspi_accessible_children_get(Eo *obj EINA_UNUSED, Elm
         if (eo_isa(widget, ELM_INTERFACE_ATSPI_ACCESSIBLE_MIXIN))
           accs = eina_list_append(accs, widget);
      }
+   //TIZEN_ONLY(20150709) : spatially sort atspi children
+   // sort children using its top-left coordinate
+   accs = eina_list_sort(accs, -1, _sort_vertically);
+   Eina_List *line, *lines = _lines_split(accs);
+   accs = NULL;
+   EINA_LIST_FREE(lines, line)
+     accs = eina_list_merge(accs, eina_list_sort(line, -1, _sort_horizontally));
+   //////////////////////////////
    return accs;
 }
 
