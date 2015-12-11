@@ -5,6 +5,7 @@
 #define ELM_INTERFACE_ATSPI_ACCESSIBLE_PROTECTED
 #define ELM_INTERFACE_ATSPI_WIDGET_ACTION_PROTECTED
 #define ELM_INTERFACE_ATSPI_SELECTION_PROTECTED
+#define ELM_INTERFACE_ATSPI_COMPONENT_PROTECTED
 #define ELM_WIDGET_ITEM_PROTECTED
 
 #include <Elementary.h>
@@ -3300,6 +3301,132 @@ _elm_list_elm_interface_atspi_selection_child_deselect(Eo *obj EINA_UNUSED, Elm_
         return EINA_TRUE;
      }
    return EINA_FALSE;
+}
+
+static int _is_item_in_viewport(int viewport_y, int viewport_h, int obj_y, int obj_h)
+{
+    if ((obj_y + obj_h/2) < viewport_y)
+      return 1;
+    else if ((obj_y + obj_h/2) > viewport_y + viewport_h)
+      return -1;
+    return 0;
+}
+
+static Eina_Bool _atspi_enabled()
+{
+    Eo *bridge = NULL;
+    Eina_Bool ret = EINA_FALSE;
+    if (_elm_config->atspi_mode && (bridge = _elm_atspi_bridge_get()))
+      eo_do(bridge, ret = elm_obj_atspi_bridge_connected_get());
+    return ret;
+}
+
+EOLIAN static void
+_elm_list_elm_interface_scrollable_content_pos_set(Eo *obj EINA_UNUSED, Elm_List_Data *pd, Evas_Coord x, Evas_Coord y, Eina_Bool sig)
+{
+   if (!_atspi_enabled())
+     {
+        eo_do_super(obj, MY_CLASS, elm_interface_scrollable_content_pos_set(x,y,sig));
+        return;
+     }
+
+   int old_x, old_y, delta_y;
+   eo_do_super(obj, MY_CLASS, elm_interface_scrollable_content_pos_get(&old_x,&old_y));
+   eo_do_super(obj, MY_CLASS, elm_interface_scrollable_content_pos_set(x,y,sig));
+   delta_y = old_y - y;
+
+   //check if highlighted item is list descendant
+   Evas_Object *win = elm_widget_top_get(obj);
+   Evas_Object * highlighted_obj = _elm_win_accessibility_highlight_get(win);
+   Evas_Object * parent = highlighted_obj;
+   if (eo_isa(highlighted_obj, ELM_WIDGET_CLASS))
+     {
+        while ((parent = elm_widget_parent_get(parent)))
+          if (parent == obj)
+            break;
+     }
+   else if (eo_isa(highlighted_obj, EDJE_OBJECT_CLASS))
+     {
+        while ((parent = evas_object_smart_parent_get(parent)))
+          if (parent == obj)
+            break;
+     }
+
+   if (parent)
+     {
+        int obj_x, obj_y, w, h, hx, hy, hw, hh;
+        evas_object_geometry_get(obj, &obj_x, &obj_y, &w, &h);
+
+        evas_object_geometry_get(highlighted_obj, &hx, &hy, &hw, &hh);
+
+        Elm_List_Item_Data *next_previous_item = NULL;
+        int viewport_position_result = _is_item_in_viewport(obj_y, h, hy, hh);
+        //only highlight if move direction is correct
+        //sometimes highlighted item is brought in and it does not fit viewport
+        //however content goes to the viewport position so soon it will
+        //meet _is_item_in_viewport condition
+
+        if ((viewport_position_result < 0 && delta_y > 0) ||
+           (viewport_position_result > 0 && delta_y < 0))
+          {
+             Eo *item;
+             Eina_List *l;
+             Eina_Bool traverse_direction = viewport_position_result > 0;
+             l = traverse_direction ? pd->items: eina_list_last(pd->items);
+
+             while(l)
+              {
+                 item = eina_list_data_get(l);
+                 ELM_LIST_ITEM_DATA_GET(item, it_data);
+                 next_previous_item = it_data;
+                 evas_object_geometry_get(VIEW(next_previous_item), &hx, &hy, &hw, &hh);
+
+                 if (_is_item_in_viewport(obj_y, h, hy, hh) == 0)
+                    break;
+
+                 next_previous_item = NULL;
+
+                 l = traverse_direction ? eina_list_next(l): eina_list_prev(l);
+              }
+          }
+        if (next_previous_item)
+          eo_do(EO_OBJ(next_previous_item), elm_interface_atspi_component_highlight_grab());
+     }
+}
+
+EOLIAN static Eina_Bool
+_elm_list_item_elm_interface_atspi_component_highlight_grab(Eo *eo_it, Elm_List_Item_Data *it)
+{
+   Evas_Coord wy, wh, x, y, w, h, bx, by, bw, bh;
+   ELM_LIST_DATA_GET_OR_RETURN_VAL(WIDGET(it), sd, EINA_FALSE);
+   Eina_Bool ret;
+
+   evas_object_geometry_get(WIDGET(it), NULL, &wy, NULL, &wh);
+   evas_object_geometry_get(VIEW(it), &x, &y, &w, &h);
+   int res = _is_item_in_viewport(wy, wh, y, h);
+
+   if (res != 0)
+     {
+        evas_object_geometry_get(sd->box, &bx, &by, &bw, &bh);
+        evas_smart_objects_calculate(evas_object_evas_get(sd->box));
+        x -= bx;
+        y -= by;
+        if (res > 0)
+          {
+             y -= wh - h;
+             eo_do(WIDGET(it), elm_interface_scrollable_content_region_show(x, y, w, h));
+          }
+        else if (res < 0)
+          {
+             y += wh - h;
+             eo_do(WIDGET(it), elm_interface_scrollable_content_region_show(x, y, w, h));
+          }
+     }
+   else
+     elm_list_item_show(eo_it);
+
+   eo_do_super(eo_it, ELM_LIST_ITEM_CLASS, ret = elm_interface_atspi_component_highlight_grab());
+   return ret;
 }
 
 #include "elm_list.eo.c"
