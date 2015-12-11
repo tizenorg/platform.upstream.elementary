@@ -5,6 +5,7 @@
 #include <fnmatch.h>
 
 #define ELM_INTERFACE_ATSPI_ACCESSIBLE_PROTECTED
+#define ELM_INTERFACE_ATSPI_COMPONENT_PROTECTED
 #define ELM_INTERFACE_ATSPI_SELECTION_PROTECTED
 #define ELM_INTERFACE_ATSPI_WIDGET_ACTION_PROTECTED
 #define ELM_WIDGET_ITEM_PROTECTED
@@ -1975,6 +1976,11 @@ _item_realize(Elm_Gen_Item *it,
    if (it->decorate_it_set) _decorate_item_set(it);
 
    edje_object_message_signal_process(VIEW(it));
+   if (sd->atspi_item_to_highlight == it)
+     {
+        sd->atspi_item_to_highlight = NULL;
+        eo_do_super(EO_OBJ(it), ELM_GENLIST_ITEM_CLASS, elm_interface_atspi_component_highlight_grab());
+     }
 }
 
 static Eina_Bool
@@ -8367,5 +8373,166 @@ _elm_genlist_elm_interface_atspi_selection_child_deselect(Eo *obj EINA_UNUSED, E
    return EINA_FALSE;
 }
 
+static int _is_item_in_viewport(int viewport_y, int viewport_h, int obj_y, int obj_h)
+{
+    if ((obj_y + obj_h/2) < viewport_y)
+      return 1;
+    else if ((obj_y + obj_h/2) > viewport_y + viewport_h)
+      return -1;
+    return 0;
+}
+
+static Eina_Bool _atspi_enabled()
+{
+    Eo *bridge = NULL;
+    Eina_Bool ret = EINA_FALSE;
+    if (_elm_config->atspi_mode && (bridge = _elm_atspi_bridge_get()))
+      eo_do(bridge, ret = elm_obj_atspi_bridge_connected_get());
+    return ret;
+}
+
+EOLIAN static void
+_elm_genlist_elm_interface_scrollable_content_pos_set(Eo *obj, Elm_Genlist_Data *sid EINA_UNUSED, Evas_Coord x, Evas_Coord y, Eina_Bool sig)
+{
+    if (!_atspi_enabled())
+      {
+        eo_do_super(obj, MY_CLASS, elm_interface_scrollable_content_pos_set(x,y,sig));
+        return;
+      }
+
+    int old_x, old_y, delta_y;
+    eo_do_super(obj, MY_CLASS, elm_interface_scrollable_content_pos_get(&old_x,&old_y));
+    eo_do_super(obj, MY_CLASS, elm_interface_scrollable_content_pos_set(x,y,sig));
+    delta_y = old_y - y;
+
+    //check if highlighted item is genlist descendant
+    Evas_Object *win = elm_object_top_widget_get(obj);
+    Evas_Object *highlighted_obj = _elm_win_accessibility_highlight_get(win);
+    Evas_Object *parent = highlighted_obj;
+    if (eo_isa(highlighted_obj, ELM_WIDGET_CLASS))
+      {
+         while ((parent = elm_widget_parent_get(parent)))
+           if (parent == obj)
+             break;
+      }
+    else if (eo_isa(highlighted_obj, EDJE_OBJECT_CLASS))
+      {
+         while ((parent = evas_object_smart_parent_get(parent)))
+           if (parent == obj)
+             break;
+      }
+    if (parent)
+      {
+         int obj_x, obj_y, w, h, hx, hy, hw, hh;
+         evas_object_geometry_get(obj, &obj_x, &obj_y, &w, &h);
+
+         evas_object_geometry_get(highlighted_obj, &hx, &hy, &hw, &hh);
+
+         Elm_Gen_Item * next_previous_item = NULL;
+         int viewport_position_result = _is_item_in_viewport(obj_y, h, hy, hh);
+         //only highlight if move direction is correct
+         //sometimes highlighted item is brought in and it does not fit viewport
+         //however content goes to the viewport position so soon it will
+         //meet _is_item_in_viewport condition
+         if ((viewport_position_result < 0 && delta_y > 0) ||
+            (viewport_position_result > 0 && delta_y < 0))
+           {
+
+              Eina_List *realized_items = elm_genlist_realized_items_get(obj);
+              Eo *item;
+              Eina_List *l;
+              Eina_Bool traverse_direction = viewport_position_result > 0;
+              l = traverse_direction ? realized_items: eina_list_last(realized_items);
+
+              while(l)
+                {
+                   item = eina_list_data_get(l);
+                   ELM_GENLIST_ITEM_DATA_GET(item, it_data);
+                   next_previous_item = ELM_GEN_ITEM_FROM_INLIST(EINA_INLIST_GET(it_data));
+                   evas_object_geometry_get(VIEW(next_previous_item), &hx, &hy, &hw, &hh);
+                   if (_is_item_in_viewport(obj_y, h, hy, hh) == 0)
+                     break;
+
+                   next_previous_item = NULL;
+
+                   l = traverse_direction ? eina_list_next(l): eina_list_prev(l);
+               }
+           }
+         if (next_previous_item)
+           eo_do(EO_OBJ(next_previous_item), elm_interface_atspi_component_highlight_grab());
+      }
+}
+
+EOLIAN static Eina_Bool
+_elm_genlist_item_elm_interface_atspi_component_highlight_grab(Eo *eo_it, Elm_Gen_Item *it)
+{
+   ELM_GENLIST_DATA_GET(WIDGET(it), sd);
+   Eina_Bool ret = EINA_TRUE;
+
+   // if item is realized check if in viewport
+   if (VIEW(it))
+     {
+        Evas_Coord wy, wh, y, h;
+        evas_object_geometry_get(WIDGET(it), NULL, &wy, NULL, &wh);
+        evas_object_geometry_get(VIEW(it), NULL, &y, NULL, &h);
+        int res = _is_item_in_viewport(wy, wh, y, h);
+        if (res > 0)
+          {
+             // new item is above current
+             elm_genlist_item_show(eo_it, ELM_GENLIST_ITEM_SCROLLTO_BOTTOM);
+          }
+        else if (res < 0)
+          {
+             // new item is below current
+             elm_genlist_item_show(eo_it, ELM_GENLIST_ITEM_SCROLLTO_TOP);
+          }
+        else
+          elm_genlist_item_show(eo_it, ELM_GENLIST_ITEM_SCROLLTO_IN);
+      }
+   else // if item is not realized we should search if we are over or below viewport
+     {
+        Eina_List *realized;
+        int idx, top, bottom;
+        realized = elm_genlist_realized_items_get(WIDGET(it));
+        if (realized)
+          {
+             // index of realized element on top of viewport
+             eo_do(eina_list_nth(realized, 0), top = elm_obj_genlist_item_index_get());
+             // index of realized element on bottom of viewport
+             eo_do(eina_list_last_data_get(realized), bottom = elm_obj_genlist_item_index_get());
+             eo_do(eo_it, idx = elm_obj_genlist_item_index_get());
+             eina_list_free(realized);
+             if (idx < top)
+               elm_genlist_item_show(eo_it, ELM_GENLIST_ITEM_SCROLLTO_BOTTOM);
+             else if (idx > bottom)
+               elm_genlist_item_show(eo_it, ELM_GENLIST_ITEM_SCROLLTO_TOP);
+            else
+              elm_genlist_item_show(eo_it, ELM_GENLIST_ITEM_SCROLLTO_IN);
+          }
+     }
+
+   if (VIEW(it))
+      eo_do_super(eo_it, ELM_GENLIST_ITEM_CLASS, ret = elm_interface_atspi_component_highlight_grab());
+   else
+     sd->atspi_item_to_highlight = it;//it will be highlighted when realized
+
+   eo_do(WIDGET(it), eo_event_callback_call(ELM_INTERFACE_ATSPI_ACCESSIBLE_EVENT_ACTIVE_DESCENDANT_CHANGED, eo_it));
+
+   return ret;
+}
+
+EOLIAN static Eina_Bool
+_elm_genlist_item_elm_interface_atspi_component_highlight_clear(Eo *eo_it, Elm_Gen_Item *it)
+{
+   Eina_Bool ret;
+   ELM_GENLIST_DATA_GET(WIDGET(it), sd);
+   if (sd->atspi_item_to_highlight == it)
+       sd->atspi_item_to_highlight = NULL;
+
+   eo_do(WIDGET(it), eo_event_callback_call(ELM_INTERFACE_ATSPI_ACCESSIBLE_EVENT_ACTIVE_DESCENDANT_CHANGED, eo_it));
+
+   eo_do_super(eo_it, ELM_GENLIST_ITEM_CLASS, ret = elm_interface_atspi_component_highlight_clear());
+   return ret;
+}
 #include "elm_genlist.eo.c"
 #include "elm_genlist_item.eo.c"

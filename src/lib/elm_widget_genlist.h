@@ -150,6 +150,8 @@ struct _Elm_Genlist_Data
    Eina_Hash                             *size_caches;
 
    Eina_Bool                             filter;
+   Elm_Gen_Item                         *atspi_item_to_highlight;
+
    Eina_Bool                             focus_on_selection_enabled : 1;
    Eina_Bool                             tree_effect_enabled : 1;
    Eina_Bool                             auto_scroll_enabled : 1;
