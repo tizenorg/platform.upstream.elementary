@@ -2684,13 +2684,17 @@ _long_press_cb(void *data)
                   _select_word(data, NULL, NULL);
                   elm_widget_scroll_freeze_push(data);
                }
-             if (!_elm_config->desktop_entry)
+             if (!_elm_config->context_menu_disabled &&
+                 !_elm_config->desktop_entry)
                {
                   _menu_call(data);
                }
           }
         //
-        else if (!_elm_config->desktop_entry)
+        /* Context menu will not appear if context menu disabled is set
+         * as false on a long press callback */
+        else if (!_elm_config->context_menu_disabled &&
+                 !_elm_config->desktop_entry)
           _menu_call(data);
      }
 
@@ -2716,7 +2720,9 @@ _key_down_cb(void *data,
    if ((sd->api) && (sd->api->obj_hidemenu) && (!sd->sel_mode))
      sd->api->obj_hidemenu(data);
    //
-   if (!strcmp(ev->key, "Menu"))
+   /* First check if context menu disabled is false or not, and
+    * then check for key id */
+   if ((!_elm_config->context_menu_disabled) && !strcmp(ev->key, "Menu"))
      _menu_call(data);
 }
 
@@ -2742,7 +2748,9 @@ _mouse_down_cb(void *data,
          sd->longpress_timer = ecore_timer_add
            (_elm_config->longpress_timeout, _long_press_cb, data);
       }
-   else if (ev->button == 3)
+    /* If right button is pressed and context menu disabled is true,
+     * then only context menu will appear */
+   else if (ev->button == 3 && (!_elm_config->context_menu_disabled))
      {
         if (_elm_config->desktop_entry)
           {
@@ -2776,11 +2784,16 @@ _mouse_up_cb(void *data,
         if (!_elm_config->desktop_entry && sd->have_selection && !sd->long_pressed)
           elm_entry_select_none(data);
         //
-        //TIZEN_ONLY (20150806): Enable word selection when magnifier is disabled
-        //if ((sd->long_pressed) && (_elm_config->magnifier_enable))
-        //  {
-        //     _magnifier_hide(data);
-        if (sd->long_pressed)
+        /* Since context menu disabled flag was checked at long press start while mouse
+         * down, hence the same should be checked at mouse up from a long press
+         * as well */
+        /* TIZEN_ONLY (20150806): Enable word selection when magnifier is disabled
+        if ((sd->long_pressed) && (!_elm_config->context_menu_disabled) &&
+            (_elm_config->magnifier_enable))
+          {
+             _magnifier_hide(data);
+         */
+        if ((sd->long_pressed) && (!_elm_config->context_menu_disabled))
           {
              if (_elm_config->magnifier_enable)
                _magnifier_hide(data);
@@ -2851,10 +2864,13 @@ _mouse_up_cb(void *data,
           }
         //
      }
-   else if ((ev->button == 3) && (!_elm_config->desktop_entry))
+  /* Since context menu disabled flag was checked at mouse right key down,
+   * hence the same should be stopped at mouse up of right key as well */
+   else if ((ev->button == 3) && (!_elm_config->context_menu_disabled) &&
+            (!_elm_config->desktop_entry))
      {
-        sd->use_down = 1;
-        _menu_call(data);
+         sd->use_down = 1;
+         _menu_call(data);
      }
 }
 
@@ -4426,10 +4442,14 @@ _start_handler_mouse_up_cb(void *data,
    //
    if (_elm_config->magnifier_enable)
      _magnifier_hide(data);
-   // TIZEN ONLY (20150205): Support CopyPaste UI
-   /*if ((!_elm_config->desktop_entry) && (sd->long_pressed))
-     _menu_call(data);*/
-   if (!_elm_config->desktop_entry)
+   /* Context menu should not appear, even in case of selector mode, if the
+    * flag is false (disabled) */
+   /* TIZEN ONLY (20150205): Support CopyPaste UI
+   if ((!_elm_config->context_menu_disabled) &&
+       (!_elm_config->desktop_entry) && (sd->long_pressed))
+     */
+   if ((!_elm_config->context_menu_disabled) &&
+       (!_elm_config->desktop_entry))
      _menu_call(data);
    if (!_elm_config->desktop_entry)
         edje_object_part_text_select_allow_set(sd->entry_edje, "elm.text",
@@ -4623,10 +4643,15 @@ _end_handler_mouse_up_cb(void *data,
    //
    if (_elm_config->magnifier_enable)
      _magnifier_hide(data);
-   // TIZEN ONLY (20150205): Support CopyPaste UI
-   /*if ((!_elm_config->desktop_entry) && (sd->long_pressed))
-     _menu_call(data);*/
-   if (!_elm_config->desktop_entry)
+   /* Context menu appear was checked in case of selector start, and hence
+    * the same should be checked at selector end as well */
+   /* TIZEN ONLY (20150205): Support CopyPaste UI
+   if ((!_elm_config->context_menu_disabled) &&
+       (!_elm_config->desktop_entry) && (sd->long_pressed))
+     _menu_call(data);
+    */
+   if ((!_elm_config->context_menu_disabled) &&
+       (!_elm_config->desktop_entry))
      _menu_call(data);
    if (!_elm_config->desktop_entry)
         edje_object_part_text_select_allow_set(sd->entry_edje, "elm.text",
