@@ -249,6 +249,9 @@ _parse_format(Evas_Object *obj,
 {
    Eina_Bool fmt_parsing = EINA_FALSE, sep_parsing = EINA_FALSE,
              sep_lookup = EINA_FALSE;
+   //TIZEN_ONLY(20151216) - swap format locations to support some locale.
+   Eina_Bool location_swap = EINA_FALSE;
+   //
    unsigned int len = 0, idx = 0, location = 0;
    char separator[MAX_SEPARATOR_LEN];
    Datetime_Field *field = NULL;
@@ -266,6 +269,14 @@ _parse_format(Evas_Object *obj,
                   continue;
                }
              fmt_parsing = EINA_FALSE;
+
+             //TIZEN_ONLY(20151216) - swap format locations to support some locale.
+             if (location == 0 &&
+                 (strchr(mapping[ELM_DATETIME_HOUR].fmt_char, cur) ||
+                  strchr(mapping[ELM_DATETIME_MINUTE].fmt_char, cur) ||
+                  strchr(mapping[ELM_DATETIME_AMPM].fmt_char, cur)))
+               location_swap = EINA_TRUE;
+             //
              for (idx = 0; idx < ELM_DATETIME_TYPE_COUNT; idx++)
                {
                   if (strchr(mapping[idx].fmt_char, cur))
@@ -303,6 +314,27 @@ _parse_format(Evas_Object *obj,
         sep_lookup = EINA_FALSE;
         fmt_ptr++;
      }
+
+   //TIZEN_ONLY(20151216) - swap format locations to support some locale.
+   if (location_swap)
+     {
+        int time_fmt_count;
+
+        time_fmt_count = location - ELM_DATETIME_HOUR;
+        for (idx = 0; idx < ELM_DATETIME_TYPE_COUNT; idx++)
+          {
+             field = sd->field_list + idx;
+             /* ignore the fields already disabled
+              * valid formats, means already ignore. */
+             if (field->location == -1) continue;
+             if (idx < ELM_DATETIME_HOUR)
+               field->location -= time_fmt_count;
+             else
+               field->location += ELM_DATETIME_HOUR;
+          }
+     }
+   //
+
    // return the number of valid fields parsed.
    return location;
 }
