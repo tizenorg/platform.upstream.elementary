@@ -467,6 +467,9 @@ _toggle_entry(Evas_Object *obj)
              eina_strbuf_append_printf(buf, "spinner/%s", elm_widget_style_get(obj));
              elm_widget_style_set(sd->ent, eina_strbuf_string_get(buf));
              eina_strbuf_free(buf);
+             //TIZEN_ONLY(20151214): Number only keypad activate.
+             elm_entry_input_panel_layout_set(sd->ent, ELM_INPUT_PANEL_LAYOUT_NUMBERONLY);
+             //
              if (sd->button_layout)
                {
                   evas_object_event_callback_add
