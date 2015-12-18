@@ -42,6 +42,12 @@ struct _Elm_Datetime_Module_Data
                                    int *range_max);
    const char  *(*field_format_get)(Evas_Object * obj,
                                     Elm_Datetime_Field_Type field_type);
+   //TIZEN_ONLY(20151218): Support Mobile UX
+   Eina_Bool    (*field_location_get)(Evas_Object *obj,
+                                      Elm_Datetime_Field_Type field_type,
+                                      int *loc);
+   Eina_List   *(*fields_sorted_get)(Evas_Object *obj);
+   //
 };
 
 struct _Datetime_Field
@@ -69,6 +75,11 @@ struct _Datetime_Mod_Api
    void                      (*field_value_display)(Elm_Datetime_Module_Data
                                                     *mdata,
                                                     Evas_Object *obj);
+   //TIZEN_ONLY(20151218): Support Mobile UX
+   void                      (*field_format_changed)(Elm_Datetime_Module_Data
+                                                     *mdata,
+                                                     Evas_Object *obj);
+   //
 };
 
 struct _Elm_Datetime_Data
