@@ -93,6 +93,10 @@ _dt_mod_init()
      _elm_module_symbol_get(mod, "field_create");
    ((Datetime_Mod_Api *)(mod->api))->field_value_display =
      _elm_module_symbol_get(mod, "field_value_display");
+   //TIZEN_ONLY(20151218): Support Mobile UX
+   ((Datetime_Mod_Api *)(mod->api))->field_format_changed =
+     _elm_module_symbol_get(mod, "field_format_changed");
+   //
 
    return mod->api;
 }
@@ -249,6 +253,9 @@ _parse_format(Evas_Object *obj,
 {
    Eina_Bool fmt_parsing = EINA_FALSE, sep_parsing = EINA_FALSE,
              sep_lookup = EINA_FALSE;
+   //TIZEN_ONLY(20151216) - swap format locations to support some locale.
+   Eina_Bool location_swap = EINA_FALSE;
+   //
    unsigned int len = 0, idx = 0, location = 0;
    char separator[MAX_SEPARATOR_LEN];
    Datetime_Field *field = NULL;
@@ -266,6 +273,14 @@ _parse_format(Evas_Object *obj,
                   continue;
                }
              fmt_parsing = EINA_FALSE;
+
+             //TIZEN_ONLY(20151216) - swap format locations to support some locale.
+             if (location == 0 &&
+                 (strchr(mapping[ELM_DATETIME_HOUR].fmt_char, cur) ||
+                  strchr(mapping[ELM_DATETIME_MINUTE].fmt_char, cur) ||
+                  strchr(mapping[ELM_DATETIME_AMPM].fmt_char, cur)))
+               location_swap = EINA_TRUE;
+             //
              for (idx = 0; idx < ELM_DATETIME_TYPE_COUNT; idx++)
                {
                   if (strchr(mapping[idx].fmt_char, cur))
@@ -303,9 +318,50 @@ _parse_format(Evas_Object *obj,
         sep_lookup = EINA_FALSE;
         fmt_ptr++;
      }
+
+   //TIZEN_ONLY(20151216) - swap format locations to support some locale.
+   if (location_swap)
+     {
+        int time_fmt_count;
+
+        time_fmt_count = location - ELM_DATETIME_HOUR;
+        for (idx = 0; idx < ELM_DATETIME_TYPE_COUNT; idx++)
+          {
+             field = sd->field_list + idx;
+             /* ignore the fields already disabled
+              * valid formats, means already ignore. */
+             if (field->location == -1) continue;
+             if (idx < ELM_DATETIME_HOUR)
+               field->location -= time_fmt_count;
+             else
+               field->location += ELM_DATETIME_HOUR;
+          }
+     }
+   //
+
    // return the number of valid fields parsed.
    return location;
 }
+
+// TIZEN_ONLY(20151218): Support Mobile UX
+static void
+_notify_format_change(Evas_Object *obj)
+{
+   Datetime_Field *field;
+   unsigned int idx = 0;
+
+   ELM_DATETIME_DATA_GET(obj, sd);
+
+   if (!dt_mod || !dt_mod->field_format_changed) return;
+
+   for (idx = 0; idx < ELM_DATETIME_TYPE_COUNT; idx++)
+     {
+        field = sd->field_list + idx;
+        if (field->item_obj)
+          dt_mod->field_format_changed(sd->mod_data, field->item_obj);
+     }
+}
+//
 
 static void
 _reload_format(Evas_Object *obj)
@@ -379,6 +435,10 @@ _reload_format(Evas_Object *obj)
 
    edje_object_message_signal_process(wd->resize_obj);
    _field_list_arrange(obj);
+
+   //TIZEN_ONLY(20151218): Support Mobile UX
+   _notify_format_change(obj);
+   //
 }
 
 EOLIAN static Eina_Bool
@@ -743,6 +803,50 @@ _field_limit_get(Evas_Object *obj,
    *range_max = max;
 }
 
+//TIZEN_ONLY(20151218): Support Mobile UX
+static Eina_Bool
+_field_location_get(Evas_Object *obj, Elm_Datetime_Field_Type field_type,
+                    int *loc)
+{
+   Datetime_Field *field;
+
+   ELM_DATETIME_DATA_GET(obj, sd);
+
+   field = sd->field_list + field_type;
+   if (!field) return EINA_FALSE;
+
+   if (loc) *loc = field->location;
+
+   return (field->fmt_exist && field->visible);
+}
+
+static Eina_List *
+_fields_sorted_get(Evas_Object *obj)
+{
+   Eina_List *items = NULL;
+   Datetime_Field *field;
+   unsigned int idx;
+   Datetime_Field *sorted_fields[ELM_DATETIME_TYPE_COUNT];
+
+   ELM_DATETIME_DATA_GET(obj, sd);
+
+   for (idx = 0; idx < ELM_DATETIME_TYPE_COUNT; idx++)
+     {
+        field = sd->field_list + idx;
+        sorted_fields[field->location] = field;
+     }
+
+   for (idx = 0; idx < ELM_DATETIME_TYPE_COUNT; idx++)
+     {
+        field = sorted_fields[idx];
+        if (field->fmt_exist && field->visible)
+          items = eina_list_append(items, field->item_obj);
+     }
+
+   return items;
+}
+//
+
 static void
 _field_list_init(Evas_Object *obj)
 {
@@ -818,6 +922,10 @@ _elm_datetime_evas_object_smart_add(Eo *obj, Elm_Datetime_Data *priv)
                   priv->mod_data->base = obj;
                   priv->mod_data->field_limit_get = _field_limit_get;
                   priv->mod_data->field_format_get = _field_format_get;
+                  //TIZEN_ONLY(20151218): Support Mobile UX
+                  priv->mod_data->field_location_get = _field_location_get;
+                  priv->mod_data->fields_sorted_get = _fields_sorted_get;
+                  //
                }
           }
 
