@@ -594,6 +594,19 @@ void tizen_vg_slider_set(Elm_Slider *obj, Evas_Object *popup);
 void tizen_vg_check_state_set(Elm_Check *obj);
 #endif
 
-
+//TIZEN_ONLY(20160330): add processing properties of window
+#ifdef HAVE_ELEMENTARY_WAYLAND
+typedef enum _Conformant_Property
+{
+	CONFORMANT_DEFAULT = 0,
+	CONFORMANT_INDICATOR_STATE = 1 << 0,
+	CONFORMANT_INDICATOR_GEOMETRY = 1 << 1,
+	CONFORMANT_KEYBOARD_STATE = 1 << 2,
+	CONFORMANT_KEYBOARD_GEOMETRY = 1 << 3,
+	CONFORMANT_CLIPBOARD_STATE = 1 << 4,
+	CONFORMANT_CLIPBOARD_GEOMETRY = 1 << 5
+} Conformant_Property;
+#endif
+//
 
 #endif
