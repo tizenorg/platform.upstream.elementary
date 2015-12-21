@@ -2410,7 +2410,9 @@ _wl_elm_cnp_selection_set(Evas_Object *obj, Elm_Sel_Type selection, Elm_Sel_Form
 
    win = elm_win_wl_window_get(obj);
 
-   if ((sel->widget != obj) && sel->loss_cb)
+   // TIZEN ONLY (20151222): add NULL check since sel->widget can be NULL
+   //if ((sel->widget != obj) && sel->loss_cb)
+   if (sel->widget && (sel->widget != obj) && sel->loss_cb) // TIZEN ONLY: END
      sel->loss_cb(sel->loss_data, selection);
 
    if (sel->widget)
