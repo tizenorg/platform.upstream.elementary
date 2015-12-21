@@ -154,6 +154,20 @@ enum Elm.Illume_Command
    close [[Closes the currently active window]]
 }
 
+enum Elm.Win.Conformant_Property
+{
+   [[Define the change of conformant properties.]]
+   legacy: elm_win_conformant;
+
+   default = 0, [[No changes]]
+   indicator_state = 1 << 0, [[Change of the indicator state]]
+   indicator_geometry = 1 << 1, [[Change of the indicator geometry]]
+   keyboard_state = 1 << 2, [[Change of the keyboard state]]
+   keyboard_geometry = 1 << 3, [[Change of the keyboard geometry]]
+   clipboard_state = 1 << 4, [[Change of the clipboard state]]
+   clipboard_geometry = 1 << 5 [[Change of the clipboard geometry]]
+}
+
 class Elm.Win (Elm.Widget, Elm_Interface_Atspi_Window,
                Elm_Interface_Atspi_Widget_Action)
 {
