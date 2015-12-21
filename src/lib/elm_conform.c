@@ -14,6 +14,8 @@
 #define MY_CLASS_NAME "Elm_Conformant"
 #define MY_CLASS_NAME_LEGACY "elm_conformant"
 
+#define SWAP(x, y, t) ((t) = (x), (x) = (y), (y) = (t))
+
 static char CONFORMANT_KEY[] = "_elm_conform_key";
 
 #define ELM_CONFORM_INDICATOR_TIME 1.0
@@ -133,6 +135,8 @@ _conformant_part_sizing_eval(Evas_Object *obj,
 //
    Evas_Object *top;
    int sx = -1, sy = -1, sw = -1, sh = -1;
+   Evas_Coord tmp = 0;
+   Evas_Coord ww = 0, wh = 0;
 
    ELM_CONFORMANT_DATA_GET(obj, sd);
    top = elm_widget_top_get(obj);
@@ -197,6 +201,21 @@ _conformant_part_sizing_eval(Evas_Object *obj,
         wlwin = elm_win_wl_window_get(top);
         if (wlwin)
           ecore_wl_window_keyboard_geometry_get(wlwin, &sx, &sy, &sw, &sh);
+        elm_win_screen_size_get(top, NULL, NULL, &ww, &wh);
+        if (sd->rot == 90)
+          {
+             SWAP(sx, sy, tmp);
+             SWAP(sw, sh, tmp);
+          }
+        if (sd->rot == 180)
+          {
+             sy = wh - sh;
+          }
+        if (sd->rot == 270)
+          {
+             sy = ww - sw;
+             SWAP(sw, sh, tmp);
+          }
 #endif
 //
         DBG("[KEYPAD]: size(%d,%d, %dx%d).", sx, sy, sw, sh);
@@ -711,7 +730,6 @@ _show_region_job(void *data)
 }
 
 // showing the focused/important region.
-#ifdef HAVE_ELEMENTARY_X
 static void
 _on_content_resize(void *data,
                    Evas *e EINA_UNUSED,
@@ -720,17 +738,16 @@ _on_content_resize(void *data,
 {
    ELM_CONFORMANT_DATA_GET(data, sd);
 
+#ifdef HAVE_ELEMENTARY_X
    if ((sd->vkb_state == ECORE_X_VIRTUAL_KEYBOARD_STATE_OFF) &&
        (sd->clipboard_state == ECORE_X_ILLUME_CLIPBOARD_STATE_OFF))
      return;
+#endif
 
    ecore_job_del(sd->show_region_job);
    sd->show_region_job = ecore_job_add(_show_region_job, data);
 }
 
-#endif
-
-#ifdef HAVE_ELEMENTARY_X
 static void
 _autoscroll_objects_update(void *data)
 {
@@ -766,6 +783,7 @@ _autoscroll_objects_update(void *data)
      }
 }
 
+#ifdef HAVE_ELEMENTARY_X
 static void
 _virtualkeypad_state_change(Evas_Object *obj, Ecore_X_Event_Window_Property *ev)
 {
@@ -910,9 +928,11 @@ _on_prop_change(void *data,
 static void
 _on_conformant_changed(void *data,
                      Evas_Object *obj,
-                     void *event_info EINA_UNUSED)
+                     void *event_info)
 {
    Conformant_Part_Type part_type;
+   Elm_Win_Conformant_Property property = (Elm_Win_Conformant_Property) event_info;
+   Elm_Win_Keyboard_Mode mode;
 
    part_type = (ELM_CONFORMANT_INDICATOR_PART |
                 ELM_CONFORMANT_VIRTUAL_KEYPAD_PART);
@@ -922,7 +942,32 @@ _on_conformant_changed(void *data,
    /* object is already freed */
    if (!sd) return;
 
-   _conformant_part_sizing_eval(data, part_type);
+   if (property & ELM_WIN_CONFORMANT_KEYBOARD_STATE)
+     {
+        mode = elm_win_keyboard_mode_get(obj);
+
+        if (mode == ELM_WIN_KEYBOARD_ON)
+          {
+             _conformant_part_sizing_eval(data, ELM_CONFORMANT_VIRTUAL_KEYPAD_PART);
+             elm_widget_display_mode_set(data, EVAS_DISPLAY_MODE_COMPRESS);
+             _autoscroll_objects_update(data);
+             eo_do(data, eo_event_callback_call(
+                   ELM_CONFORMANT_EVENT_VIRTUALKEYPAD_STATE_ON, NULL));
+          }
+        else if (mode == ELM_WIN_KEYBOARD_OFF)
+          {
+             evas_object_size_hint_min_set(sd->virtualkeypad, -1, 0);
+             evas_object_size_hint_max_set(sd->virtualkeypad, -1, 0);
+             _conformant_part_sizing_eval(data, ELM_CONFORMANT_VIRTUAL_KEYPAD_PART);
+             elm_widget_display_mode_set(data, EVAS_DISPLAY_MODE_NONE);
+             eo_do(data, eo_event_callback_call(
+                   ELM_CONFORMANT_EVENT_VIRTUALKEYPAD_STATE_OFF, NULL));
+          }
+     }
+   if (property & ELM_WIN_CONFORMANT_KEYBOARD_GEOMETRY)
+     {
+        _conformant_part_sizing_eval(data, ELM_CONFORMANT_VIRTUAL_KEYPAD_PART);
+     }
 }
 //
 
