@@ -707,7 +707,6 @@ _show_region_job(void *data)
 }
 
 // showing the focused/important region.
-#ifdef HAVE_ELEMENTARY_X
 static void
 _on_content_resize(void *data,
                    Evas *e EINA_UNUSED,
@@ -716,17 +715,16 @@ _on_content_resize(void *data,
 {
    ELM_CONFORMANT_DATA_GET(data, sd);
 
+#ifdef HAVE_ELEMENTARY_X
    if ((sd->vkb_state == ECORE_X_VIRTUAL_KEYBOARD_STATE_OFF) &&
        (sd->clipboard_state == ECORE_X_ILLUME_CLIPBOARD_STATE_OFF))
      return;
+#endif
 
    ecore_job_del(sd->show_region_job);
    sd->show_region_job = ecore_job_add(_show_region_job, data);
 }
 
-#endif
-
-#ifdef HAVE_ELEMENTARY_X
 static void
 _autoscroll_objects_update(void *data)
 {
@@ -762,6 +760,7 @@ _autoscroll_objects_update(void *data)
      }
 }
 
+#ifdef HAVE_ELEMENTARY_X
 static void
 _virtualkeypad_state_change(Evas_Object *obj, Ecore_X_Event_Window_Property *ev)
 {
@@ -906,9 +905,11 @@ _on_prop_change(void *data,
 static void
 _on_conformant_changed(void *data,
                      Evas_Object *obj,
-                     void *event_info EINA_UNUSED)
+                     void *event_info)
 {
    Conformant_Part_Type part_type;
+   Elm_Win_Conformant_Property property = (Elm_Win_Conformant_Property) event_info;
+   Elm_Win_Keyboard_Mode mode;
 
    part_type = (ELM_CONFORMANT_INDICATOR_PART |
                 ELM_CONFORMANT_VIRTUAL_KEYPAD_PART);
@@ -918,7 +919,32 @@ _on_conformant_changed(void *data,
    /* object is already freed */
    if (!sd) return;
 
-   _conformant_part_sizing_eval(data, part_type);
+   if (property & ELM_WIN_CONFORMANT_KEYBOARD_STATE)
+     {
+        mode = elm_win_keyboard_mode_get(obj);
+
+        if (mode == ELM_WIN_KEYBOARD_ON)
+          {
+             _conformant_part_sizing_eval(data, ELM_CONFORMANT_VIRTUAL_KEYPAD_PART);
+             elm_widget_display_mode_set(data, EVAS_DISPLAY_MODE_COMPRESS);
+             _autoscroll_objects_update(data);
+             eo_do(data, eo_event_callback_call(
+                   ELM_CONFORMANT_EVENT_VIRTUALKEYPAD_STATE_ON, NULL));
+          }
+        else if (mode == ELM_WIN_KEYBOARD_OFF)
+          {
+             evas_object_size_hint_min_set(sd->virtualkeypad, -1, 0);
+             evas_object_size_hint_max_set(sd->virtualkeypad, -1, 0);
+             _conformant_part_sizing_eval(data, ELM_CONFORMANT_VIRTUAL_KEYPAD_PART);
+             elm_widget_display_mode_set(data, EVAS_DISPLAY_MODE_NONE);
+             eo_do(data, eo_event_callback_call(
+                   ELM_CONFORMANT_EVENT_VIRTUALKEYPAD_STATE_OFF, NULL));
+          }
+     }
+   if (property & ELM_WIN_CONFORMANT_KEYBOARD_GEOMETRY)
+     {
+        _conformant_part_sizing_eval(data, ELM_CONFORMANT_VIRTUAL_KEYPAD_PART);
+     }
 }
 //
 
