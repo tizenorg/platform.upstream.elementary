@@ -1317,6 +1317,7 @@ _elm_win_state_change(Ecore_Evas *ee)
    Eina_Bool ch_aux_hint = EINA_FALSE;
    Eina_List *aux_hints = NULL;
    const char *profile;
+   Elm_Win_Conformant_Property property = ELM_WIN_CONFORMANT_DEFAULT;
 
    if (!sd) return;
 
@@ -1374,11 +1375,13 @@ _elm_win_state_change(Ecore_Evas *ee)
      {
         sd->indmode = (Elm_Win_Indicator_Mode)ecore_wl_window_indicator_state_get(sd->wl.win);
         ch_conformant = EINA_TRUE;
+        property |= ELM_WIN_CONFORMANT_INDICATOR_STATE;
      }
    if (sd->kbdmode != (Elm_Win_Keyboard_Mode)ecore_wl_window_keyboard_state_get(sd->wl.win))
      {
         sd->kbdmode = (Elm_Win_Keyboard_Mode)ecore_wl_window_keyboard_state_get(sd->wl.win);
         ch_conformant = EINA_TRUE;
+        property |= ELM_WIN_CONFORMANT_KEYBOARD_STATE;
      }
    if (ecore_wl_window_indicator_geometry_get(sd->wl.win, &x, &y, &w, &h))
      {
@@ -1389,6 +1392,7 @@ _elm_win_state_change(Ecore_Evas *ee)
              sd->ind.w = w;
              sd->ind.h = h;
              ch_conformant  = EINA_TRUE;
+             property |= ELM_WIN_CONFORMANT_INDICATOR_GEOMETRY;
           }
      }
    if (ecore_wl_window_keyboard_geometry_get(sd->wl.win, &x, &y, &w, &h))
@@ -1400,6 +1404,7 @@ _elm_win_state_change(Ecore_Evas *ee)
              sd->kbd.w = w;
              sd->kbd.h = h;
              ch_conformant  = EINA_TRUE;
+             property |= ELM_WIN_CONFORMANT_KEYBOARD_GEOMETRY;
           }
      }
 #endif
@@ -1486,7 +1491,7 @@ _elm_win_state_change(Ecore_Evas *ee)
      }
    if (ch_conformant)
      {
-        evas_object_smart_callback_call(obj, SIG_CONFORMANT_CHANGED, NULL);
+        evas_object_smart_callback_call(obj, SIG_CONFORMANT_CHANGED, (void *)property);
      }
    if (ch_aux_hint)
      {
