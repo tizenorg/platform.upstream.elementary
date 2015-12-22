@@ -236,6 +236,12 @@ static Tests_Array_Funcs _glayer_tests_array[] = {
    /* ELM_GESTURE_ZOOM */
    { _rotate_test, _rotate_test_reset, _rotate_test_reset },
    /* ELM_GESTURE_ROTATE */
+   { _tap_gesture_test, _tap_gestures_test_reset, NULL },
+   /* ELM_GESTURE_N_TAPS_AND_HOLD */
+   { _tap_gesture_test, _tap_gestures_test_reset, NULL },
+   /* ELM_GESTURE_N_DOUBLE_TAPS_AND_HOLD */
+   { _tap_gesture_test, _tap_gestures_test_reset, NULL },
+   /* ELM_GESTURE_N_TRIPLE_TAPS_AND_HOLD */
    { NULL, NULL, NULL }
 };
 
@@ -276,6 +282,7 @@ struct _Taps_Type
    unsigned int          sum_y;
    unsigned int          n_taps_needed;
    unsigned int          n_taps;
+   Ecore_Timer          *timeout; /* When this expires, hold tap STARTed */
    Eina_List            *l;
 };
 typedef struct _Taps_Type Taps_Type;
@@ -372,6 +379,7 @@ struct _Elm_Gesture_Layer_Data
    double                rotate_angular_tolerance;
    unsigned int          flick_time_limit_ms;
    double                long_tap_start_timeout;
+   double                tap_and_hold_start_timeout;
    Eina_Bool             glayer_continues_enable;
    double                double_tap_timeout;
 
@@ -701,7 +709,7 @@ _states_reset(Elm_Gesture_Layer_Data *sd)
  * @internal
  *
  * This function is used to save input events in an abstract struct
- * to be used later by getsure-testing functions.
+ * to be used later by gesture-testing functions.
  *
  * @param data The gesture-layer object.
  * @param event_info Pointer to recent input event.
@@ -1794,6 +1802,30 @@ _long_tap_timeout(void *data)
 /**
  * @internal
  *
+ * when this timer expires we START tap and hold gesture
+ *
+ * @param data The gesture-layer object.
+ * @return cancels callback for this timer.
+ *
+ * @ingroup Elm_Gesture_Layer
+ */
+static Eina_Bool
+_taps_and_hold_timeout(void *data)
+{
+   Gesture_Info *gesture = data;
+   Taps_Type *st = gesture->data;
+
+   st->info.timestamp = ecore_time_get() * 1000;
+
+   _state_set(gesture, ELM_GESTURE_STATE_START,
+              gesture->data, EINA_TRUE);
+
+   return ECORE_CALLBACK_RENEW;
+}
+
+/**
+ * @internal
+ *
  * This function checks the state of a tap gesture.
  *
  * @param sd Gesture Layer Widget Data.
@@ -1831,14 +1863,17 @@ _tap_gesture_test(Evas_Object *obj,
    switch (g_type)
      {
       case ELM_GESTURE_N_TAPS:
+      case ELM_GESTURE_N_TAPS_AND_HOLD:
          taps = 1;
          break;
 
       case ELM_GESTURE_N_DOUBLE_TAPS:
+      case ELM_GESTURE_N_DOUBLE_TAPS_AND_HOLD:
          taps = 2;
          break;
 
       case ELM_GESTURE_N_TRIPLE_TAPS:
+      case ELM_GESTURE_N_TRIPLE_TAPS_AND_HOLD:
          taps = 3;
          break;
 
@@ -1897,8 +1932,15 @@ _tap_gesture_test(Evas_Object *obj,
                     &st->info, EINA_FALSE);
               _event_consume(sd, event_info, event_type, ev_flag);
 
-              st->n_taps_needed = taps * 2;  /* count DOWN and UP */
+              if (g_type != ELM_GESTURE_N_TAPS_AND_HOLD &&
+                      g_type != ELM_GESTURE_N_DOUBLE_TAPS_AND_HOLD &&
+                      g_type != ELM_GESTURE_N_TRIPLE_TAPS_AND_HOLD)
+                 st->n_taps_needed = taps * 2;  /* count DOWN and UP */
+              else
 
+                 st->n_taps_needed = taps * 2 - 1;  // TODO: check ifi it is OK - count DOWN and UP without last up*/
+              if (g_type == ELM_GESTURE_N_TAPS_AND_HOLD)//we already set timeout for single tap and hold gesture
+                  st->timeout = ecore_timer_add(sd->tap_and_hold_start_timeout, _taps_and_hold_timeout, gesture->obj);
               return;
            }
          else if (eina_list_count(pe_list) > st->n_taps_needed)
@@ -1906,7 +1948,15 @@ _tap_gesture_test(Evas_Object *obj,
               _state_set(gesture, ELM_GESTURE_STATE_ABORT,
                     &st->info, EINA_FALSE);
            }
-
+         //if we check tap and hold gestures have the number of taps we need and timer is not set then let's set timer and check if gesture rich hold timeout
+         if ((g_type == ELM_GESTURE_N_TAPS_AND_HOLD ||
+              g_type == ELM_GESTURE_N_DOUBLE_TAPS_AND_HOLD ||
+              g_type == ELM_GESTURE_N_TRIPLE_TAPS_AND_HOLD) &&
+              eina_list_count(pe_list) == st->n_taps_needed && !st->timeout)
+           {
+             //check if it is tap and hold or double tap and hold and triple tap and hold
+             st->timeout = ecore_timer_add(sd->tap_and_hold_start_timeout, _taps_and_hold_timeout, gesture->obj);
+           }
          if (gesture->state == ELM_GESTURE_STATE_MOVE)
            {  /* Report MOVE if all devices have same DOWN/UP count */
               /* Should be in MOVE state from last UP event */
@@ -1939,6 +1989,9 @@ _tap_gesture_test(Evas_Object *obj,
       case EVAS_CALLBACK_MOUSE_UP:
          pe_list = eina_list_search_unsorted(st->l, _pe_device_compare, pe);
          if (!pe_list) return;
+
+         // TODO: if we check tap and hold gesture then if it has START/MOVE state then we
+         // set state to END gracefully.
 
          _pointer_event_record(st, pe_list, pe, sd, event_info, event_type);
 
@@ -2010,6 +2063,8 @@ _tap_gesture_test(Evas_Object *obj,
                      }
                 }
            }
+         //TODO: we need to add code for tap and hold gestures and move state -
+         //only if gesture state == START or MOVE
          break;
 
       default:

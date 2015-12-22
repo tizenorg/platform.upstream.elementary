@@ -23,7 +23,9 @@ typedef enum
 
    ELM_GESTURE_ZOOM, /**< Zoom */
    ELM_GESTURE_ROTATE, /**< Rotate */
-
+   ELM_GESTURE_N_TAPS_AND_HOLD,/**< tap and hold */
+   ELM_GESTURE_N_DOUBLE_TAPS_AND_HOLD,/**< double tap and hold */
+   ELM_GESTURE_N_TRIPLE_TAPS_AND_HOLD,/**< triple ap and hold */
    ELM_GESTURE_LAST
 } Elm_Gesture_Type;
 
