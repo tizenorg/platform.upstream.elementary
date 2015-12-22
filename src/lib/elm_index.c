@@ -17,7 +17,11 @@
 #define MY_CLASS_NAME "Elm_Index"
 #define MY_CLASS_NAME_LEGACY "elm_index"
 
-#define INDEX_DELAY_CHANGE_TIME 0.2
+//TIZEN_ONLY(20150819): delay change value has been changed to 0.0
+//                      in current Tizen UX.
+#define INDEX_DELAY_CHANGE_TIME 0.0
+//#define INDEX_DELAY_CHANGE_TIME 0.2
+//
 
 static const char SIG_CHANGED[] = "changed";
 static const char SIG_DELAY_CHANGED[] = "delay,changed";
@@ -214,6 +218,10 @@ _index_box_auto_fill(Evas_Object *obj,
    Evas_Object *o;
    Elm_Index_Omit *om;
    const char *style = elm_widget_style_get(obj);
+   // TIZEN_ONLY(20150122): Index implementation merge into 2.4
+   char buf[128];
+   int ret;
+   ////////////////////////////////////////////////////////////
 
    ELM_INDEX_DATA_GET(obj, sd);
 
@@ -238,9 +246,13 @@ _index_box_auto_fill(Evas_Object *obj,
    if (sd->omit_enabled)
      {
         o = edje_object_add(evas_object_evas_get(obj));
+        // TIZEN_ONLY(20150122): Index implementation merge into 2.4
+        //elm_widget_theme_object_set
+        //   (obj, o, "index", "item/vertical", style);
+        snprintf(buf, sizeof(buf), "item%d/vertical", level + 1);
         elm_widget_theme_object_set
-           (obj, o, "index", "item/vertical", style);
-
+           (obj, o, "index", buf, style);
+        ////////////////////////////////////////////////////////////
         edje_object_size_min_restricted_calc(o, NULL, &mh, 0, 0);
 
         evas_object_del(o);
@@ -320,25 +332,68 @@ _index_box_auto_fill(Evas_Object *obj,
 
         if (sd->horizontal)
           {
+             // TIZEN_ONLY(20150122): Index implementation merge into 2.4
+             //if (i & 0x1)
+             //  elm_widget_theme_object_set
+             //    (obj, o, "index", "item_odd/horizontal", style);
+             //else
+             //  elm_widget_theme_object_set
+             //    (obj, o, "index", "item/horizontal", style);
              if (i & 0x1)
-               elm_widget_theme_object_set
-                 (obj, o, "index", "item_odd/horizontal", style);
+               snprintf(buf, sizeof(buf), "item%d_odd/horizontal", level + 1);
              else
-               elm_widget_theme_object_set
-                 (obj, o, "index", "item/horizontal", style);
+               snprintf(buf, sizeof(buf), "item%d/horizontal", level + 1);
+             ret = elm_widget_theme_object_set
+                     (obj, o, "index", buf, style);
+
+             //FIXME: this if statement must be deleted. it's been implemented
+             //       for supporting 2.3 UX temporary.
+             if (!ret)
+               {
+                  if (i & 0x1)
+                    elm_widget_theme_object_set
+                      (obj, o, "index", "item_odd/horizontal", style);
+                  else
+                    elm_widget_theme_object_set
+                      (obj, o, "index", "item/horizontal", style);
+               }
+             ////////////////////////////////////////////////////////////
           }
         else
           {
+             // TIZEN_ONLY(20150122): Index implementation merge into 2.4
+             //if (i & 0x1)
+             //  elm_widget_theme_object_set
+             //    (obj, o, "index", "item_odd/vertical", style);
+             //else
+             //  elm_widget_theme_object_set
+             //    (obj, o, "index", "item/vertical", style);
              if (i & 0x1)
-               elm_widget_theme_object_set
-                 (obj, o, "index", "item_odd/vertical", style);
+               snprintf(buf, sizeof(buf), "item%d_odd/vertical", level + 1);
              else
-               elm_widget_theme_object_set
-                 (obj, o, "index", "item/vertical", style);
+               snprintf(buf, sizeof(buf), "item%d/vertical", level + 1);
+             ret = elm_widget_theme_object_set
+                     (obj, o, "index", buf, style);
+
+             //FIXME: this if statement must be deleted. it's been implemented
+             //       for supporting 2.3 UX temporary.
+             if (!ret)
+               {
+                  if (i & 0x1)
+                    elm_widget_theme_object_set
+                      (obj, o, "index", "item_odd/horizontal", style);
+                  else
+                    elm_widget_theme_object_set
+                      (obj, o, "index", "item/horizontal", style);
+               }
+             ////////////////////////////////////////////////////////////
           }
 
         if (skip > 0)
-          edje_object_part_text_escaped_set(o, "elm.text", "*");
+          //TIZEN_ONLY(20150922): Using unicode for * character in tizen.
+          //edje_object_part_text_escaped_set(o, "elm.text", "*");
+          edje_object_part_text_escaped_set(o, "elm.text", "\u2217");
+          //
         else
           edje_object_part_text_escaped_set(o, "elm.text", it->letter);
         edje_object_size_min_restricted_calc(o, &mw, &mh, 0, 0);
@@ -790,10 +845,19 @@ _sel_eval(Evas_Object *obj,
           }
      }
    if (!label) label = strdup("");
+   // TIZEN_ONLY(20150122): Index implementation merge into 2.4
+   else
+      edje_object_signal_emit(wd->resize_obj,"index1.text.enable", "");
+   ////////////////////////////////////////////////////////////
+
    if (!last) last = strdup("");
 
-   elm_layout_text_set(obj, "elm.text.body", label);
-   elm_layout_text_set(obj, "elm.text", last);
+   // TIZEN_ONLY(20150122): Index implementation merge into 2.4
+   //elm_layout_text_set(obj, "elm.text.body", label);
+   elm_layout_text_set(obj, "elm.text", label);
+   //elm_layout_text_set(obj, "elm.text", last);
+   elm_layout_text_set(obj, "elm.text.1", last);
+   ////////////////////////////////////////////////////////////
 
    free(label);
    free(last);
@@ -868,13 +932,23 @@ _on_mouse_move(void *data,
                void *event_info)
 {
    Evas_Event_Mouse_Move *ev = event_info;
-   Evas_Coord minw = 0, minh = 0, x, y, dx, adx, w;
+   // TIZEN ONLY(20150526) : For supporting second-depth index
+   // Evas_Coord minw = 0, minh = 0, x, y, dx, adx, w;
+   Evas_Coord minw = 0, minh = 0, x, y, dx, adx, w, ox, oy, ow, oh;
+   //
    char buf[1024];
 
    ELM_INDEX_DATA_GET(data, sd);
    ELM_WIDGET_DATA_GET_OR_RETURN(data, wd);
 
    if (!sd->mouse_down) return;
+
+   // TIZEN ONLY(20150526) : For supporting second-depth index
+   evas_object_geometry_get(o, &ox, &oy, &ow, &oh);
+   if ((!sd->index_level) && (!ELM_RECTS_INTERSECT
+     (ev->cur.canvas.x, ev->cur.canvas.y, 1, 1, ox, oy, ow, oh))) return;
+   //
+
    elm_coords_finger_size_adjust(1, &minw, 1, &minh);
    evas_object_geometry_get(wd->resize_obj, &x, &y, &w, NULL);
    x = ev->cur.canvas.x - x;
@@ -886,7 +960,10 @@ _on_mouse_move(void *data,
      (wd->resize_obj, "elm.dragable.pointer",
      (!edje_object_mirrored_get(wd->resize_obj)) ?
      x : (x - w), y);
-   if (!sd->horizontal)
+   // TIZEN ONLY(20150526) : For supporting second-depth index
+   // if (!sd->horizontal)
+   if (!sd->horizontal && sd->index_level)
+   //
      {
         if (adx > minw)
           {
@@ -903,6 +980,9 @@ _on_mouse_move(void *data,
           {
              if (sd->level == 1)
                {
+                  // TIZEN_ONLY(20150122): Index implementation merge into 2.4
+                  elm_index_item_clear(data);
+                  ////////////////////////////////////////////////////////////
                   sd->level = 0;
                   snprintf(buf, sizeof(buf), "elm,state,level,%i", sd->level);
                   elm_layout_signal_emit(data, buf, "elm");
@@ -1078,6 +1158,12 @@ _elm_index_evas_object_smart_add(Eo *obj, Elm_Index_Data *priv)
    evas_object_show(priv->bx[0]);
 
    priv->delay_change_time = INDEX_DELAY_CHANGE_TIME;
+   // TIZEN ONLY(20150526) : For supporting second-depth index
+   priv->index_level = 0;
+   //
+   // TIZEN ONLY(20150527) : Enable omit as default
+   priv->omit_enabled = EINA_TRUE;
+   //
 
    if (edje_object_part_exists
          (wd->resize_obj, "elm.swallow.index.1"))
@@ -1262,7 +1348,11 @@ EOLIAN static void
 _elm_index_item_level_set(Eo *obj EINA_UNUSED, Elm_Index_Data *sd, int level)
 {
    if (sd->level == level) return;
-   sd->level = level;
+   // TIZEN ONLY(20150526) : For supporting second-depth index
+   // maximum level, and "level" stores current state.
+   // sd->level = level;
+   sd->index_level = level;
+   //
 }
 
 EOLIAN static int
