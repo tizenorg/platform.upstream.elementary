@@ -2788,12 +2788,15 @@ _mouse_up_cb(void *data,
          * down, hence the same should be checked at mouse up from a long press
          * as well */
         /* TIZEN_ONLY (20150806): Enable word selection when magnifier is disabled
-        if ((sd->long_pressed) && (!_elm_config->context_menu_disabled) &&
-            (_elm_config->magnifier_enable))
+        if ((sd->long_pressed) && (_elm_config->magnifier_enable))
           {
              _magnifier_hide(data);
+             if (!_elm_config->context_menu_disabled)
+               {
+                  _menu_call(data);
+               }
          */
-        if ((sd->long_pressed) && (!_elm_config->context_menu_disabled))
+        if (sd->long_pressed)
           {
              if (_elm_config->magnifier_enable)
                _magnifier_hide(data);
@@ -2811,7 +2814,8 @@ _mouse_up_cb(void *data,
                }
              if ((sd->api) && (sd->api->obj_popup_showing_get))
                popup_showing = sd->api->obj_popup_showing_get(data);
-             if (!popup_showing)
+             if ((!_elm_config->context_menu_disabled) &&
+                 (!popup_showing))
                {
                   _menu_call(data);
                }
