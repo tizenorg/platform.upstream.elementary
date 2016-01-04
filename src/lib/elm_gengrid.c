@@ -4256,8 +4256,9 @@ _elm_gengrid_evas_object_smart_add(Eo *obj, Elm_Gengrid_Data *priv)
          elm_interface_scrollable_scroll_cb_set(_scroll_cb),
          elm_interface_scrollable_page_change_cb_set(_scroll_page_change_cb));
 
-   priv->align_x = 0.5;
-   priv->align_y = 0.5;
+   //Tizen Only: Item should be shown as top position.
+   priv->align_x = 0.0;
+   priv->align_y = 0.0;
    priv->highlight = EINA_TRUE;
    priv->item_cache_max = CACHE_MAX;
 
