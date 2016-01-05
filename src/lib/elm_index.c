@@ -17,7 +17,11 @@
 #define MY_CLASS_NAME "Elm_Index"
 #define MY_CLASS_NAME_LEGACY "elm_index"
 
-#define INDEX_DELAY_CHANGE_TIME 0.2
+//TIZEN_ONLY(20150819): delay change value has been changed to 0.0
+//                      in current Tizen UX.
+#define INDEX_DELAY_CHANGE_TIME 0.0
+//#define INDEX_DELAY_CHANGE_TIME 0.2
+//
 
 static const char SIG_CHANGED[] = "changed";
 static const char SIG_DELAY_CHANGED[] = "delay,changed";
@@ -868,13 +872,23 @@ _on_mouse_move(void *data,
                void *event_info)
 {
    Evas_Event_Mouse_Move *ev = event_info;
-   Evas_Coord minw = 0, minh = 0, x, y, dx, adx, w;
+   // TIZEN ONLY(20150526) : For supporting second-depth index
+   // Evas_Coord minw = 0, minh = 0, x, y, dx, adx, w;
+   Evas_Coord minw = 0, minh = 0, x, y, dx, adx, w, ox, oy, ow, oh;
+   //
    char buf[1024];
 
    ELM_INDEX_DATA_GET(data, sd);
    ELM_WIDGET_DATA_GET_OR_RETURN(data, wd);
 
    if (!sd->mouse_down) return;
+
+   // TIZEN ONLY(20150526) : For supporting second-depth index
+   evas_object_geometry_get(o, &ox, &oy, &ow, &oh);
+   if ((!sd->index_level) && (!ELM_RECTS_INTERSECT
+     (ev->cur.canvas.x, ev->cur.canvas.y, 1, 1, ox, oy, ow, oh))) return;
+   //
+
    elm_coords_finger_size_adjust(1, &minw, 1, &minh);
    evas_object_geometry_get(wd->resize_obj, &x, &y, &w, NULL);
    x = ev->cur.canvas.x - x;
@@ -886,7 +900,10 @@ _on_mouse_move(void *data,
      (wd->resize_obj, "elm.dragable.pointer",
      (!edje_object_mirrored_get(wd->resize_obj)) ?
      x : (x - w), y);
-   if (!sd->horizontal)
+   // TIZEN ONLY(20150526) : For supporting second-depth index
+   // if (!sd->horizontal)
+   if (!sd->horizontal && sd->index_level)
+   //
      {
         if (adx > minw)
           {
@@ -1078,6 +1095,12 @@ _elm_index_evas_object_smart_add(Eo *obj, Elm_Index_Data *priv)
    evas_object_show(priv->bx[0]);
 
    priv->delay_change_time = INDEX_DELAY_CHANGE_TIME;
+   // TIZEN ONLY(20150526) : For supporting second-depth index
+   priv->index_level = 0;
+   //
+   // TIZEN ONLY(20150527) : Enable omit as default
+   priv->omit_enabled = EINA_TRUE;
+   //
 
    if (edje_object_part_exists
          (wd->resize_obj, "elm.swallow.index.1"))
@@ -1262,7 +1285,11 @@ EOLIAN static void
 _elm_index_item_level_set(Eo *obj EINA_UNUSED, Elm_Index_Data *sd, int level)
 {
    if (sd->level == level) return;
-   sd->level = level;
+   // TIZEN ONLY(20150526) : For supporting second-depth index
+   // maximum level, and "level" stores current state.
+   // sd->level = level;
+   sd->index_level = level;
+   //
 }
 
 EOLIAN static int

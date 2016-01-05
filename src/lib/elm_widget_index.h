@@ -34,6 +34,9 @@ struct _Elm_Index_Data
    Eina_List            *omit;
 
    int                   level;
+   // TIZEN ONLY(20150526) : For supporting second-depth index
+   int                   index_level;
+   //
    Evas_Coord            dx, dy;
    Ecore_Timer          *delay;
    double                delay_change_time;
