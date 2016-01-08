@@ -374,6 +374,7 @@ _activate(Evas_Object *obj)
    sd->expanded = EINA_TRUE;
 
    if (elm_widget_disabled_get(obj)) return;
+   if (!sd->items) return;
 
    sd->hover = elm_hover_add(sd->hover_parent);
    elm_widget_sub_object_add(obj, sd->hover);
