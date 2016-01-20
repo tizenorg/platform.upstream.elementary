@@ -1658,7 +1658,13 @@ _elm_entry_elm_widget_theme_apply(Eo *obj, Elm_Entry_Data *sd)
    evas_object_ref(obj);
 
    if (elm_widget_focus_get(obj))
-     edje_object_signal_emit(sd->entry_edje, "elm,action,focus", "elm");
+     {
+        edje_object_signal_emit(sd->entry_edje, "elm,action,focus", "elm");
+        // TIZEN_ONLY(20151222): add focus/unfocus signals for scroller interface edje
+        if (sd->scroll)
+          edje_object_signal_emit(sd->scr_edje, "elm,action,focus", "elm");
+        // END-ONLY
+     }
 
    edje_object_message_signal_process(sd->entry_edje);
 
@@ -1985,6 +1991,10 @@ _elm_entry_elm_widget_on_focus(Eo *obj, Elm_Entry_Data *sd, Elm_Object_Item *ite
      {
         evas_object_focus_set(sd->entry_edje, EINA_TRUE);
         edje_object_signal_emit(sd->entry_edje, "elm,action,focus", "elm");
+        // TIZEN_ONLY(20151222): add focus/unfocus signals for scroller interface edje
+        if (sd->scroll)
+          edje_object_signal_emit(sd->scr_edje, "elm,action,focus", "elm");
+        // END-ONLY
         if (top && top_is_win && sd->input_panel_enable && !sd->input_panel_show_on_demand &&
             !edje_object_part_text_imf_context_get(sd->entry_edje, "elm.text"))
           elm_win_keyboard_mode_set(top, ELM_WIN_KEYBOARD_ON);
@@ -1997,6 +2007,10 @@ _elm_entry_elm_widget_on_focus(Eo *obj, Elm_Entry_Data *sd, Elm_Object_Item *ite
    else
      {
         edje_object_signal_emit(sd->entry_edje, "elm,action,unfocus", "elm");
+        // TIZEN_ONLY(20151222): add focus/unfocus signals for scroller interface edje
+        if (sd->scroll)
+          edje_object_signal_emit(sd->scr_edje, "elm,action,unfocus", "elm");
+        // END-ONLY
         evas_object_focus_set(sd->entry_edje, EINA_FALSE);
         if (top && top_is_win && sd->input_panel_enable &&
             !edje_object_part_text_imf_context_get(sd->entry_edje, "elm.text"))
