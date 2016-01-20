@@ -228,6 +228,7 @@ struct _Elm_Win_Data
    Eina_Bool    noblank : 1;
    Eina_Bool    theme_alpha : 1; /**< alpha value fetched by a theme. this has higher priority than application_alpha */
    Eina_Bool    application_alpha : 1; /**< alpha value set by an elm_win_alpha_set() api. this has lower priority than theme_alpha */
+   Eina_Bool    obscured :1;
 };
 
 static const char SIG_DELETE_REQUEST[] = "delete,request";
@@ -250,6 +251,7 @@ static const char SIG_PROFILE_CHANGED[] = "profile,changed";
 static const char SIG_WM_ROTATION_CHANGED[] = "wm,rotation,changed";
 static const char SIG_CONFORMANT_CHANGED[] = "conformant,changed";
 static const char SIG_AUX_HINT_ALLOWED[] = "aux,hint,allowed";
+static const char SIG_VISIBILITY_CHANGED[] = "visibility,changed";
 
 static const Evas_Smart_Cb_Description _smart_callbacks[] = {
    {SIG_DELETE_REQUEST, ""},
@@ -274,6 +276,7 @@ static const Evas_Smart_Cb_Description _smart_callbacks[] = {
    {SIG_WIDGET_UNFOCUSED, ""}, /**< handled by elm_widget */
    {SIG_CONFORMANT_CHANGED, ""},
    {SIG_AUX_HINT_ALLOWED, ""},
+   {SIG_VISIBILITY_CHANGED, ""},
    {NULL, NULL}
 };
 
@@ -1314,6 +1317,7 @@ _elm_win_state_change(Ecore_Evas *ee)
    Eina_Bool ch_profile = EINA_FALSE;
    Eina_Bool ch_wm_rotation = EINA_FALSE;
    Eina_Bool ch_conformant  = EINA_FALSE;
+   Eina_Bool ch_visibility = EINA_FALSE;
    Eina_Bool ch_aux_hint = EINA_FALSE;
    Eina_List *aux_hints = NULL;
    const char *profile;
@@ -1362,6 +1366,13 @@ _elm_win_state_change(Ecore_Evas *ee)
              ch_wm_rotation = EINA_TRUE;
           }
      }
+
+   if (sd->obscured != ecore_evas_obscured_get(sd->ee))
+     {
+        sd->obscured = ecore_evas_obscured_get(sd->ee);
+        ch_visibility = EINA_TRUE;
+     }
+
    aux_hints = ecore_evas_aux_hints_allowed_get(sd->ee);
    if (aux_hints)
      {
@@ -1497,6 +1508,10 @@ _elm_win_state_change(Ecore_Evas *ee)
              evas_object_smart_callback_call(obj, SIG_AUX_HINT_ALLOWED, id);
           }
         eina_list_free(aux_hints);
+     }
+   if (ch_visibility)
+     {
+        evas_object_smart_callback_call(obj, SIG_VISIBILITY_CHANGED, (void*)!sd->obscured);
      }
 }
 
@@ -3856,6 +3871,7 @@ _elm_win_finalize_internal(Eo *obj, Elm_Win_Data *sd, const char *name, Elm_Win_
    sd->parent = parent;
    sd->modal_count = 0;
    sd->withdrawn = ecore_evas_withdrawn_get(sd->ee);
+   sd->obscured = ecore_evas_obscured_get(sd->ee);
 
    if (sd->parent)
      evas_object_event_callback_add

@@ -230,6 +230,17 @@ _win_state_focus_cb(void *data, Evas_Object *obj EINA_UNUSED, void *event_info E
 }
 
 static void
+_win_state_visibility_cb(void *data, Evas_Object *obj EINA_UNUSED, void *event_info)
+{
+   /* event_info for "visibility,changed" callback
+    * 0: the window is fully obscured
+    * 1: the window is unobscured
+    */
+   int visibility = (int)(void *)event_info;
+   printf("WIN: %s %d\n", (char *)data, visibility);
+}
+
+static void
 _win_show(void *data EINA_UNUSED, Evas *e EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    printf("win: show\n");
@@ -273,6 +284,7 @@ test_win_state(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event
    evas_object_smart_callback_add(win, "focus,in", _win_state_focus_cb, "focus,in");
    evas_object_smart_callback_add(win, "delete,request", _win_state_print_cb, "delete,request");
    evas_object_smart_callback_add(win, "wm,rotation,changed", _win_state_print_cb, "wm,rotation,changed");
+   evas_object_smart_callback_add(win, "visibility,changed", _win_state_visibility_cb, "visibility,changed");
    elm_win_autodel_set(win, EINA_TRUE);
 
    bg = elm_bg_add(win);
