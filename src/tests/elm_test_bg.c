@@ -17,7 +17,9 @@ START_TEST (elm_atspi_role_get)
    bg = elm_bg_add(win);
    eo_do(bg, role = elm_interface_atspi_accessible_role_get());
 
-   ck_assert(role == ELM_ATSPI_ROLE_IMAGE);
+   //TIZEN_ONLY (20160121)
+   ck_assert(role == ELM_ATSPI_ROLE_REDUNDANT_OBJECT);
+   ///
 
    elm_shutdown();
 }

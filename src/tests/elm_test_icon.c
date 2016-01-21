@@ -18,7 +18,7 @@ START_TEST (elm_atspi_role_get)
    icon = elm_icon_add(win);
    eo_do(icon, role = elm_interface_atspi_accessible_role_get());
 
-   ck_assert(role == ELM_ATSPI_ROLE_IMAGE);
+   ck_assert(role == ELM_ATSPI_ROLE_ICON);
 
    elm_shutdown();
 }

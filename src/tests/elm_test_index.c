@@ -18,7 +18,9 @@ START_TEST (elm_atspi_role_get)
    idx = elm_index_add(win);
    eo_do(idx, role = elm_interface_atspi_accessible_role_get());
 
-   ck_assert(role == ELM_ATSPI_ROLE_LIST);
+   //TIZEN_ONLY(20160121)
+   ck_assert(role == ELM_ATSPI_ROLE_SCROLL_BAR);
+   ///
 
    elm_shutdown();
 }
