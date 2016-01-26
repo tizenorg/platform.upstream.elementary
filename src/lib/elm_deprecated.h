@@ -1,3 +1,19 @@
+/**
+ * @brief Sets the profile list of a window.
+ *
+ * @if MOBILE @since_tizen 2.3
+ * @elseif WEARABLE @since_tizen 2.3.1
+ * @endif
+ *
+ * @param[in] obj The window object
+ * @param[in] profiles The list of profile names
+ * @param[in] num_profiles The number of profile names
+ *
+ * @ingroup Win
+ *
+ * @deprecated Deprecated since Tizen 2.4
+ */
+EAPI void         elm_win_profiles_set(Evas_Object *obj, const char **profiles, unsigned int num_profiles);
 
 EINA_DEPRECATED EAPI Evas_Object *elm_scrolled_entry_add(Evas_Object *parent);
 EINA_DEPRECATED EAPI void         elm_scrolled_entry_single_line_set(Evas_Object *obj, Eina_Bool single_line);

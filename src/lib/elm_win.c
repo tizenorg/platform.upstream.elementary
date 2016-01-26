@@ -5958,4 +5958,13 @@ elm_win_aux_hint_id_get(Evas_Object *obj, const char *hint)
    ELM_WIN_DATA_GET_OR_RETURN_VAL(obj, sd, EINA_FALSE);
    return ecore_evas_aux_hint_id_get(sd->ee, hint);
 }
+
+EAPI void
+elm_win_profiles_set(Evas_Object *obj, const char **profiles, unsigned int num_profiles)
+{
+   ELM_WIN_CHECK(obj);
+   ELM_WIN_DATA_GET_OR_RETURN(obj, sd);
+
+   _elm_win_available_profiles_set(obj, sd, profiles, num_profiles);
+}
 //////////////////////////////////////////////////////////////////
