@@ -448,6 +448,10 @@ typedef struct _Elm_Widget_Smart_Data
    Eina_Bool                     on_translate : 1; /**< This is true when any types of elm translate function is being called. */
    Eina_Bool                     on_create : 1; /**< This is true when the widget is on creation(general widget constructor). */
    Eina_Bool                     on_destroy: 1; /**< This is true when the widget is on destruction(general widget destructor). */
+// TIZEN_ONLY(20150705): Genlist item align feature
+   Eina_Bool                     scroll_item_align_enable;
+   char                          *scroll_item_valign;
+//
 } Elm_Widget_Smart_Data;
 
 /**
@@ -735,6 +739,12 @@ EAPI int              elm_widget_scroll_hold_get(const Evas_Object *obj);
 EAPI void             elm_widget_scroll_freeze_push(Evas_Object *obj);
 EAPI void             elm_widget_scroll_freeze_pop(Evas_Object *obj);
 EAPI int              elm_widget_scroll_freeze_get(const Evas_Object *obj);
+// TIZEN_ONLY(20150705): Genlist item align feature
+EAPI void             elm_widget_scroll_item_align_enabled_set(Evas_Object *obj, Eina_Bool scroll_item_align_enable);
+EAPI Eina_Bool        elm_widget_scroll_item_align_enabled_get(const Evas_Object *obj);
+EAPI void             elm_widget_scroll_item_valign_set(Evas_Object *obj, char *scroll_item_valign);
+EAPI const char*      elm_widget_scroll_item_valign_get(const Evas_Object *obj);
+//
 EAPI void             elm_widget_scale_set(Evas_Object *obj, double scale);
 EAPI double           elm_widget_scale_get(const Evas_Object *obj);
 EAPI Eina_Bool        elm_widget_mirrored_get(const Evas_Object *obj);
