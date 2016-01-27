@@ -226,6 +226,80 @@ _elm_genlist_pan_elm_pan_pos_get(Eo *obj EINA_UNUSED, Elm_Genlist_Pan_Data *psd,
    if (y) *y = psd->wsd->pan_y;
 }
 
+// TIZEN_ONLY(20150705): genlist item align feature
+static Elm_Object_Item *
+_elm_genlist_pos_adjust_xy_item_get(const Evas_Object *obj,
+                                    Evas_Coord x,
+                                    Evas_Coord y)
+{
+   Item_Block *itb;
+
+   ELM_GENLIST_CHECK(obj) NULL;
+   ELM_GENLIST_DATA_GET(obj, sd);
+
+   EINA_INLIST_FOREACH(sd->blocks, itb)
+     {
+        Eina_List *l;
+        Elm_Gen_Item *it;
+        if (!ELM_RECTS_INTERSECT(itb->x - sd->pan_x,
+                                 itb->y - sd->pan_y,
+                                 sd->minw, itb->minh, x, y, 1, 1))
+          continue;
+        EINA_LIST_FOREACH(itb->items, l, it)
+          {
+             Evas_Coord itx, ity, itw, ith;
+
+             itx = itb->x + it->x - sd->pan_x;
+             ity = itb->y + it->y - sd->pan_y;
+
+             itw = (GL_IT(it)->w ? GL_IT(it)->w : sd->minw);
+             ith = GL_IT(it)->minh;
+
+             if (ELM_RECTS_INTERSECT(itx, ity, itw, ith, x, y, 1, 1))
+               return (Elm_Object_Item *)it;
+          }
+     }
+
+   return NULL;
+}
+
+EOLIAN static void
+_elm_genlist_pan_elm_pan_pos_adjust(Eo *obj EINA_UNUSED, Elm_Genlist_Pan_Data *psd, Evas_Coord *x EINA_UNUSED, Evas_Coord *y)
+{
+   ELM_WIDGET_DATA_GET_OR_RETURN(psd->wobj, wd);
+   Elm_Genlist_Data *sd = psd->wsd;
+
+   if (!(wd->scroll_item_align_enable)) return;
+
+   if (!y) return;
+
+   Elm_Gen_Item *it;
+   Evas_Coord vw, vh;
+   Evas_Coord it_y, it_h;
+   Evas_Coord yy = *y;
+
+   eo_do(sd->obj, elm_interface_scrollable_content_viewport_geometry_get
+         (NULL, NULL, &vw, &vh));
+   if (!strcmp(wd->scroll_item_valign, "center"))
+     {
+        vw = (vw / 2);
+        vh = (vh / 2) - yy;
+     }
+
+   it = (Elm_Gen_Item*)_elm_genlist_pos_adjust_xy_item_get(
+                            sd->obj, vw, vh);
+
+   vh += psd->wsd->pan_y;
+
+   if (!it) return;
+
+   it_y = it->y + GL_IT(it)->block->y;
+   it_h = GL_IT(it)->h;
+   it_h = it_y + (it_h / 2);
+   *y += (vh - it_h);
+}
+//
+
 EOLIAN static void
 _elm_genlist_pan_elm_pan_pos_max_get(Eo *obj, Elm_Genlist_Pan_Data *psd, Evas_Coord *x, Evas_Coord *y)
 {
@@ -5543,6 +5617,10 @@ _elm_genlist_evas_object_smart_add(Eo *obj, Elm_Genlist_Data *priv)
    _mirrored_set(obj, elm_widget_mirrored_get(obj));
 
    elm_layout_sizing_eval(obj);
+// TIZEN_ONLY(20150705): Genlist item align feature
+   wd->scroll_item_align_enable = _elm_config->scroll_item_align_enable;
+   wd->scroll_item_valign = _elm_config->scroll_item_valign;
+//
 
    edje_object_signal_callback_add(wd->resize_obj, "elm,looping,up,done", "elm", _elm_genlist_looping_up_cb, obj);
    edje_object_signal_callback_add(wd->resize_obj, "elm,looping,down,done", "elm", _elm_genlist_looping_down_cb, obj);
