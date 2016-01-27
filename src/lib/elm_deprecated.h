@@ -1,3 +1,5 @@
+////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////// TIZEN ONLY APIS //////////////////////////////////////////
 /**
  * @brief Sets the profile list of a window.
  *
@@ -13,7 +15,9 @@
  *
  * @deprecated Deprecated since Tizen 2.4
  */
-EAPI void         elm_win_profiles_set(Evas_Object *obj, const char **profiles, unsigned int num_profiles);
+EINA_DEPRECATED EAPI void         elm_win_profiles_set(Evas_Object *obj, const char **profiles, unsigned int num_profiles);
+////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
 EINA_DEPRECATED EAPI Evas_Object *elm_scrolled_entry_add(Evas_Object *parent);
 EINA_DEPRECATED EAPI void         elm_scrolled_entry_single_line_set(Evas_Object *obj, Eina_Bool single_line);
