@@ -1318,7 +1318,7 @@ _elm_ctxpopup_direction_get(Eo *obj EINA_UNUSED, Elm_Ctxpopup_Data *sd)
 }
 
 // TIZEN_ONLY(20160126): add direction available get function, it will be deprecated soon
-EAPI Eina_Bool
+EINA_DEPRECATED EAPI Eina_Bool
 elm_ctxpopup_direction_available_get(Evas_Object *obj, Elm_Ctxpopup_Direction direction)
 {
    ELM_CTXPOPUP_CHECK(obj) EINA_FALSE;
