@@ -16,6 +16,15 @@
  * @deprecated Deprecated since Tizen 2.4
  */
 EINA_DEPRECATED EAPI void         elm_win_profiles_set(Evas_Object *obj, const char **profiles, unsigned int num_profiles);
+
+typedef enum
+{
+   ELM_ACCESS_SOUND_FIRST = -1,
+   ELM_ACCESS_SOUND_HIGHLIGHT,
+   ELM_ACCESS_SOUND_SCROLL,
+   ELM_ACCESS_SOUND_END,
+   ELM_ACCESS_SOUND_LAST
+} Elm_Access_Sound_Type;
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
