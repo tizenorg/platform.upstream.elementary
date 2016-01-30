@@ -1,9 +1,6 @@
 #ifndef ELM_INTERFACE_ATSPI_ACCESSIBLE_H
 #define ELM_INTERFACE_ATSPI_ACCESSIBLE_H
 
-#ifdef EFL_BETA_API_SUPPORT
-
-
 /**
  * ATSPI event listener
  */
@@ -395,5 +392,4 @@ EAPI Elm_Atspi_Relation_Set elm_atspi_relation_set_clone(const Elm_Atspi_Relatio
 #include "elm_interface_atspi_accessible.eo.legacy.h"
 #endif
 
-#endif
 #endif

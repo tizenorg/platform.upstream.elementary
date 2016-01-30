@@ -1,7 +1,6 @@
 #ifndef ELM_INTERFACE_ATSPI_WINDOW_H
 #define ELM_INTERFACE_ATSPI_WINDOW_H
 
-#ifdef EFL_BETA_API_SUPPORT
 #ifdef EFL_EO_API_SUPPORT
 
 /**
@@ -52,5 +51,4 @@
 #include "elm_interface_atspi_window.eo.legacy.h"
 #endif
 
-#endif
 #endif

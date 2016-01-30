@@ -1,8 +1,6 @@
 #ifndef ELM_INTERFACE_ATSPI_WIDGET_ACTION_H
 #define ELM_INTERFACE_ATSPI_WIDGET_ACTION_H
 
-#ifdef EFL_BETA_API_SUPPORT
-
 struct _Elm_Atspi_Action
 {
    const char *name;
@@ -20,5 +18,4 @@ typedef struct _Elm_Atspi_Action Elm_Atspi_Action;
 #include "elm_interface_atspi_widget_action.eo.legacy.h"
 #endif
 
-#endif
 #endif

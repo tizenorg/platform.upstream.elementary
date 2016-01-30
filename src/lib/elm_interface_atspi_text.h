@@ -1,8 +1,6 @@
 #ifndef ELM_INTERFACE_ATSPI_TEXT_H
 #define ELM_INTERFACE_ATSPI_TEXT_H
 
-#ifdef EFL_BETA_API_SUPPORT
-
 enum _Elm_Atspi_Text_Granulatity
 {
    ELM_ATSPI_TEXT_GRANULARITY_CHAR,
@@ -63,5 +61,4 @@ struct _Elm_Atspi_Text_Change_Info
 #include "elm_interface_atspi_text.eo.legacy.h"
 #endif
 
-#endif
 #endif
