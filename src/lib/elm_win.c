@@ -5967,4 +5967,29 @@ elm_win_profiles_set(Evas_Object *obj, const char **profiles, unsigned int num_p
 
    _elm_win_available_profiles_set(obj, sd, profiles, num_profiles);
 }
+
+EAPI void
+elm_win_input_rect_set(Evas_Object *obj, Eina_Rectangle *input_rect)
+{
+   ELM_WIN_CHECK(obj) EINA_FALSE;
+   ELM_WIN_DATA_GET_OR_RETURN(obj, sd);
+   ecore_evas_input_rect_set(sd->ee, input_rect);
+}
+
+EAPI void
+elm_win_input_rect_add(Evas_Object *obj, Eina_Rectangle *input_rect)
+{
+   ELM_WIN_CHECK(obj) EINA_FALSE;
+   ELM_WIN_DATA_GET_OR_RETURN(obj, sd);
+   ecore_evas_input_rect_add(sd->ee, input_rect);
+}
+
+EAPI void
+elm_win_input_rect_subtract(Evas_Object *obj, Eina_Rectangle *input_rect)
+{
+   ELM_WIN_CHECK(obj) EINA_FALSE;
+   ELM_WIN_DATA_GET_OR_RETURN(obj, sd);
+   ecore_evas_input_rect_subtract(sd->ee, input_rect);
+}
+
 //////////////////////////////////////////////////////////////////

@@ -219,5 +219,38 @@ EAPI const char           *elm_win_aux_hint_val_get(Evas_Object *obj, int id);
 EAPI int                   elm_win_aux_hint_id_get(Evas_Object *obj, const char *hint);
 
 /**
+ * @internal
+ * @remarks Tizen only feature
+ *
+ * @brief Sets an input rect of surface.
+ * @remarks Support for this depends on the underlying windowing system.
+ * @param obj The window object
+ * @param input_rect The rectangle of input to be set
+ */
+EAPI void                  elm_win_input_rect_set(Evas_Object *obj, Eina_Rectangle *input_rect);
+
+/**
+ * @internal
+ * @remarks Tizen only feature
+ *
+ * @brief Adds an input rect of surface.
+ * @remarks Support for this depends on the underlying windowing system.
+ * @param obj The window object
+ * @param input_rect The rectangle of input to be added
+ */
+EAPI void                  elm_win_input_rect_add(Evas_Object *obj, Eina_Rectangle *input_rect);
+
+/**
+ * @internal
+ * @remarks Tizen only feature
+ *
+ * @brief Subtracts an input rect of surface.
+ * @remarks Support for this depends on the underlying windowing system.
+ * @param obj The window object
+ * @param input_rect The rectangle of input to be subtracted
+ */
+EAPI void                  elm_win_input_rect_subtract(Evas_Object *obj, Eina_Rectangle *input_rect);
+
+/**
  * @}
  */
