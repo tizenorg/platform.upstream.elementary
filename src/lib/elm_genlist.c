@@ -2201,7 +2201,6 @@ _reorder_move_animator_cb(void *data)
        (it, it->deco_all_view, it->item->scrl_x, it->item->old_scrl_y);
    else
      _item_position(it, VIEW(it), it->item->scrl_x, it->item->old_scrl_y);
-   _group_items_recalc(sd);
 
    if ((sd->reorder_pan_move) ||
        (down && it->item->old_scrl_y >= it->item->scrl_y) ||
@@ -2310,18 +2309,6 @@ _item_block_position(Item_Block *itb,
                     {
                        if (sd->reorder_mode)
                          y += _reorder_item_space_get(it);
-                       git = it->item->group_item;
-                       if (git)
-                         {
-                            if (git->item->scrl_y < oy)
-                              git->item->scrl_y = oy;
-                            if ((git->item->scrl_y + git->item->h) >
-                                (it->item->scrl_y + it->item->h))
-                              git->item->scrl_y = (it->item->scrl_y +
-                                                   it->item->h) - git->item->h;
-                            git->item->scrl_x = it->item->scrl_x;
-                            git->item->want_realize = EINA_TRUE;
-                         }
                        if ((sd->reorder_it) &&
                            (it->item->old_scrl_y != it->item->scrl_y))
                          {
