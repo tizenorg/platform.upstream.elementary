@@ -35,6 +35,9 @@ my_entry_bt_3(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UN
 {
    Evas_Object *en = data;
    const char *s = elm_entry_selection_get(en);
+   int start = 0, end = 0;
+   elm_entry_select_region_get(en, &start, &end);
+   printf("SELECTION REGION: %d - %d\n", start, end);
    printf("SELECTION:\n");
    if (s) printf("%s\n", s);
    printf("SELECTION PLAIN UTF8:\n");
@@ -241,6 +244,9 @@ my_scrolled_entry_bt_3(void *data, Evas_Object *obj EINA_UNUSED, void *event_inf
 {
    Evas_Object *en = data;
    const char *s = elm_entry_selection_get(en);
+   int start = 0, end = 0;
+   elm_entry_select_region_get(en, &start, &end);
+   printf("SELECTION REGION: %d - %d\n", start, end);
    printf("SELECTION:\n");
    if (s) printf("%s\n", s);
    printf("SELECTION PLAIN UTF8:\n");
@@ -670,6 +676,9 @@ my_ent_bt_sel(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UN
 {
    Evas_Object *en = data;
    const char *s = elm_entry_selection_get(en);
+   int start = 0, end = 0;
+   elm_entry_select_region_get(en, &start, &end);
+   printf("SELECTION REGION: %d - %d\n", start, end);
    printf("SELECTION:\n");
    if (s) printf("%s\n", s);
    printf("SELECTION PLAIN UTF8:\n");
