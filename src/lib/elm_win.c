@@ -2454,6 +2454,15 @@ _elm_win_resize_objects_eval(Evas_Object *obj)
 
    evas_object_size_hint_min_set(obj, minw, minh);
    evas_object_size_hint_max_set(obj, maxw, maxh);
+
+   /* if there are deferred resize job, do the job immediately */
+   if (sd->deferred_resize_job)
+     {
+        ecore_job_del(sd->deferred_resize_job);
+        sd->deferred_resize_job = NULL;
+        _elm_win_resize_job(obj);
+     }
+
    evas_object_geometry_get(obj, NULL, NULL, &w, &h);
    if (w < minw) w = minw;
    if (h < minh) h = minh;
