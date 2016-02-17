@@ -91,4 +91,28 @@ EAPI Eina_Bool elm_bg_file_set(Eo *obj, const char *file, const char *group);
  */
 EAPI void elm_bg_file_get(const Eo *obj, const char **file, const char **group);
 
+/**
+ * @internal
+ *
+ * Set the precreated object.
+ *
+ * @param obj The background object
+ *
+ * @ingroup Bg
+ * @see elm_bg_precreated_object_get()
+ */
+EAPI void elm_bg_precreated_object_set(Evas_Object *obj);
+
+/**
+ * @internal
+ *
+ * Get the precreated object.
+ *
+ * @return The precreated background object
+ *
+ * @ingroup Bg
+ * @see elm_bg_precreated_object_set()
+ */
+EAPI Evas_Object *elm_bg_precreated_object_get(void);
+
 #include "elm_bg.eo.legacy.h"
