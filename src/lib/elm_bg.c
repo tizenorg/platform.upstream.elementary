@@ -20,6 +20,10 @@ static const Elm_Layout_Part_Alias_Description _content_aliases[] =
    {NULL, NULL}
 };
 
+// TIZEN_ONLY(20160218): Improve launching performance.
+static Evas_Object *_precreated_bg_obj = NULL;
+//
+
 EOLIAN static void
 _elm_bg_elm_layout_sizing_eval(Eo *obj, Elm_Bg_Data *sd)
 {
@@ -109,10 +113,45 @@ _elm_bg_elm_layout_content_aliases_get(Eo *obj EINA_UNUSED, Elm_Bg_Data *_pd EIN
    return _content_aliases;
 }
 
+// TIZEN_ONLY(20160218): Improve launching performance.
+EAPI void
+elm_bg_precreated_object_set(Evas_Object *obj)
+{
+   INF("Set precreated obj(%p).", obj);
+   _precreated_bg_obj = obj;
+}
+
+EAPI Evas_Object *
+elm_bg_precreated_object_get(void)
+{
+   INF("Get precreated obj(%p).", _precreated_bg_obj);
+   return _precreated_bg_obj;
+}
+//
+
 EAPI Evas_Object *
 elm_bg_add(Evas_Object *parent)
 {
    EINA_SAFETY_ON_NULL_RETURN_VAL(parent, NULL);
+// TIZEN_ONLY(20160218): Improve launching performance.
+   if (_precreated_bg_obj)
+     {
+        Evas_Object *par_obj = elm_widget_parent_get(_precreated_bg_obj);
+
+        if (par_obj == parent)
+          {
+             Evas_Object *above_obj = evas_object_above_get(_precreated_bg_obj);
+             if (above_obj)
+               evas_object_raise(_precreated_bg_obj);
+
+             Evas_Object *tmp = _precreated_bg_obj;
+             _precreated_bg_obj = NULL;
+             INF("Return precreated obj(%p).", tmp);
+             return tmp;
+          }
+     }
+//
+
    Evas_Object *obj = eo_add(MY_CLASS, parent);
    return obj;
 }
