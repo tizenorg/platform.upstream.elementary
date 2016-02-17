@@ -227,3 +227,31 @@ EAPI void                  elm_win_wm_rotation_preferred_rotation_set(const Evas
  * this is definitely not the function you are looking for.
  */
 EAPI Ecore_Window          elm_win_window_id_get(const Evas_Object *obj);
+
+// TIZEN_ONLY(20160218): Improve launching performance.
+/**
+ * @internal
+ *
+ * Set the precreated object.
+ *
+ * @param obj The window object
+ *
+ * @ingroup Win
+ * @see elm_win_precreated_object_get()
+ * @since Tizen 2.4
+ */
+EAPI void                  elm_win_precreated_object_set(Evas_Object *obj);
+
+/**
+ * @internal
+ *
+ * Get the precreated object.
+ *
+ * @return The precreated window object
+ *
+ * @ingroup Win
+ * @see elm_win_precreated_object_set()
+ * @since Tizen 2.4
+ */
+EAPI Evas_Object          *elm_win_precreated_object_get(void);
+//
