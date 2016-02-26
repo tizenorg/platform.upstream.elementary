@@ -294,6 +294,10 @@ int _elm_win_deferred_free = 0;
 
 static int _elm_win_count = 0;
 
+// TIZEN_ONLY(20160218): Improve launching performance.
+static Evas_Object *_precreated_win_obj = NULL;
+//
+
 static Eina_Bool _elm_win_auto_throttled = EINA_FALSE;
 
 static Ecore_Timer *_elm_win_state_eval_timer = NULL;
@@ -3269,11 +3273,47 @@ _elm_x_io_err(void *data EINA_UNUSED)
 }
 #endif
 
+// TIZEN_ONLY(20160218): Improve launching performance.
+EAPI void
+elm_win_precreated_object_set(Evas_Object *obj)
+{
+   INF("Set precreated obj(%p).", obj);
+   _precreated_win_obj = obj;
+}
+
+EAPI Evas_Object *
+elm_win_precreated_object_get(void)
+{
+   INF("Get precreated obj(%p).", _precreated_win_obj);
+   return _precreated_win_obj;
+}
+//
+
 EAPI Evas_Object *
 elm_win_add(Evas_Object *parent,
             const char *name,
             Elm_Win_Type type)
 {
+// TIZEN_ONLY(20160218): Improve launching performance.
+   if (_precreated_win_obj)
+     {
+        ELM_WIN_DATA_GET(_precreated_win_obj, sd);
+
+        if (sd)
+          {
+             if ((sd->type == type) && (sd->parent == parent))
+               {
+                  Evas_Object *tmp = _precreated_win_obj;
+                  TRAP(sd, name_class_set, name, _elm_appname);
+                  _precreated_win_obj = NULL;
+                  INF("Return precreated obj(%p).", tmp);
+
+                  return tmp;
+               }
+          }
+     }
+//
+
    Evas_Object *obj = eo_add(MY_CLASS, parent,
                              elm_obj_win_name_set(name),
                              elm_obj_win_type_set(type));
