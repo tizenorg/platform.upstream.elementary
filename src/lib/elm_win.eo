@@ -140,6 +140,22 @@ enum Elm.Win.Keygrab_Mode
                                     window]]
 }
 
+enum Elm.Win.Effect.Type
+{
+   [[List of window effect.
+
+     These list indicates types of window effect. When the effect started or
+     done, the Elm_Win is notified with type information of window effect.
+   ]]
+
+   legacy: elm_win_effect_type;
+
+   unknown = 0,
+   show,
+   hide,
+   restack
+}
+
 enum Elm.Illume_Command
 {
    [[Available commands that can be sent to the Illume manager.

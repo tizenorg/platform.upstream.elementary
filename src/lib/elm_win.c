@@ -116,6 +116,8 @@ struct _Elm_Win_Data
    {
       Ecore_Wl_Window *win;
       Eina_Bool opaque_dirty : 1;
+      Ecore_Event_Handler *effect_start_handler;
+      Ecore_Event_Handler *effect_end_handler;
    } wl;
 #endif
 
@@ -252,6 +254,8 @@ static const char SIG_WM_ROTATION_CHANGED[] = "wm,rotation,changed";
 static const char SIG_CONFORMANT_CHANGED[] = "conformant,changed";
 static const char SIG_AUX_HINT_ALLOWED[] = "aux,hint,allowed";
 static const char SIG_VISIBILITY_CHANGED[] = "visibility,changed";
+static const char SIG_EFFECT_STARTED[] = "effect,started";
+static const char SIG_EFFECT_DONE[] = "effect,done";
 
 static const Evas_Smart_Cb_Description _smart_callbacks[] = {
    {SIG_DELETE_REQUEST, ""},
@@ -277,6 +281,8 @@ static const Evas_Smart_Cb_Description _smart_callbacks[] = {
    {SIG_CONFORMANT_CHANGED, ""},
    {SIG_AUX_HINT_ALLOWED, ""},
    {SIG_VISIBILITY_CHANGED, ""},
+   {SIG_EFFECT_STARTED, ""},
+   {SIG_EFFECT_DONE, ""},
    {NULL, NULL}
 };
 
@@ -2259,6 +2265,39 @@ _elm_win_wlwindow_get(Elm_Win_Data *sd)
 {
    sd->wl.win = _elm_ee_wlwin_get(sd->ee);
 }
+
+static Eina_Bool
+_elm_win_wl_effect_start(void *data, int type EINA_UNUSED, void *event)
+{
+   ELM_WIN_DATA_GET(data, sd);
+   Ecore_Wl_Event_Effect_Start *e = event;
+
+   if (!sd->wl.win) return ECORE_CALLBACK_PASS_ON;
+
+   if ((ecore_wl_window_id_get(sd->wl.win) != e->win))
+     return ECORE_CALLBACK_PASS_ON;
+
+   evas_object_smart_callback_call(data, SIG_EFFECT_STARTED, (void*)e->type);
+
+   return ECORE_CALLBACK_PASS_ON;
+}
+
+static Eina_Bool
+_elm_win_wl_effect_end(void *data, int type EINA_UNUSED, void *event)
+{
+   ELM_WIN_DATA_GET(data, sd);
+   Ecore_Wl_Event_Effect_End *e = event;
+
+   if (!sd->wl.win) return ECORE_CALLBACK_PASS_ON;
+
+   if ((ecore_wl_window_id_get(sd->wl.win) != e->win))
+     return ECORE_CALLBACK_PASS_ON;
+
+   evas_object_smart_callback_call(data, SIG_EFFECT_DONE, (void*)e->type);
+
+   return ECORE_CALLBACK_PASS_ON;
+}
+
 #endif
 
 #ifdef HAVE_ELEMENTARY_X
@@ -3894,6 +3933,17 @@ _elm_win_finalize_internal(Eo *obj, Elm_Win_Data *sd, const char *name, Elm_Win_
             (ECORE_X_EVENT_CLIENT_MESSAGE, _elm_win_client_message, obj);
         sd->x.property_handler = ecore_event_handler_add
             (ECORE_X_EVENT_WINDOW_PROPERTY, _elm_win_property_change, obj);
+     }
+#endif
+#ifdef HAVE_ELEMENTARY_WAYLAND
+   else if ((engine) &&
+            ((!strcmp(engine, ELM_WAYLAND_SHM)) ||
+             (!strcmp(engine, ELM_WAYLAND_EGL))))
+     {
+        sd->wl.effect_start_handler = ecore_event_handler_add
+           (ECORE_WL_EVENT_EFFECT_START, _elm_win_wl_effect_start, obj);
+        sd->wl.effect_end_handler = ecore_event_handler_add
+           (ECORE_WL_EVENT_EFFECT_END, _elm_win_wl_effect_end, obj);
      }
 #endif
    else if ((engine) && (!strncmp(engine, "shot:", 5)))

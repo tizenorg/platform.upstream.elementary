@@ -92,6 +92,8 @@
  * @li "unfocused" : When the win has lost focus. (since 1.8)
  * @li "theme,changed" - The theme was changed. (since 1.13)
  * @li "visibility,changed" - visibility of the window has been changed.
+ * @li "effect,started" - window effect has been started.
+ * @li "effect,done" - window effect has been done.
  *
  * Note that calling evas_object_show() after window contents creation is
  * recommended. It will trigger evas_smart_objects_calculate() and some backend
