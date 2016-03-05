@@ -2784,11 +2784,9 @@ _xml_route_dump_cb(void *data,
          snprintf(buf, length, "%s", value);
          if (dump->id == ROUTE_XML_DISTANCE) dump->distance = _elm_atof(buf);
          else if (!(dump->description) && (dump->id == ROUTE_XML_DESCRIPTION))
-           dump->description = strdup(buf);
+           dump->description = buf;
          else if (dump->id == ROUTE_XML_COORDINATES)
-           dump->coordinates = strdup(buf);
-
-         free(buf);
+           dump->coordinates = buf;
       }
       break;
 
@@ -2837,8 +2835,7 @@ _xml_name_dump_cb(void *data,
 
          if (!buf) return EINA_FALSE;
          snprintf(buf, length + 1, "%s", value);
-         if (dump->id == NAME_XML_NAME) dump->address = strdup(buf);
-         free(buf);
+         if (dump->id == NAME_XML_NAME) dump->address = buf;
       }
       break;
 
@@ -2864,7 +2861,7 @@ _xml_name_dump_list_cb(void *data,
      {
         name = calloc(1, sizeof(Elm_Map_Name));
         if (!name) return EINA_FALSE;
-        name->address = strdup(dump.address);
+        name->address = dump.address;
         name->lon = dump.lon;
         name->lat = dump.lat;
         name->wsd = name_list->wsd;
@@ -2934,6 +2931,7 @@ _kml_parse(Elm_Map_Route *r)
                   free(str[0]);
                   free(str);
                }
+             free(dump.description);
           }
         else WRN("description is not found !");
 
@@ -2963,6 +2961,7 @@ _kml_parse(Elm_Map_Route *r)
                   free(str[0]);
                   free(str);
                }
+             free(dump.coordinates);
           }
      }
 }
@@ -3004,7 +3003,7 @@ _name_parse(Elm_Map_Name *n)
         if (dump.address)
           {
              INF("[%lf : %lf] ADDRESS : %s", n->lon, n->lat, dump.address);
-             n->address = strdup(dump.address);
+             n->address = dump.address;
           }
         n->lon = dump.lon;
         n->lat = dump.lat;
