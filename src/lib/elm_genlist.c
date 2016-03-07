@@ -141,6 +141,8 @@ static const char SIGNAL_GROUP_SINGLE[] = "elm,state,group,single";
 static const char SIGNAL_GROUP_FIRST[] = "elm,state,group,first";
 static const char SIGNAL_GROUP_LAST[] = "elm,state,group,last";
 static const char SIGNAL_GROUP_MIDDLE[] = "elm,state,group,middle";
+//Tizen Only(20160307)
+static const char SIGNAL_DEFAULT[] = "elm,state,default";
 
 static void _item_unrealize(Elm_Gen_Item *it);
 static Eina_Bool _item_select(Elm_Gen_Item *it);
@@ -1566,6 +1568,9 @@ _item_cache_add(Elm_Gen_Item *it)
    if (it == (Elm_Gen_Item *)sd->focused_item &&
        (elm_widget_focus_highlight_enabled_get(obj) || _elm_config->win_auto_focus_enable))
      edje_object_signal_emit(itc->base_view, SIGNAL_UNFOCUSED, "elm");
+
+   //Tizen Only(20160307)
+   edje_object_signal_emit(itc->base_view, SIGNAL_DEFAULT, "elm");
 
    ELM_SAFE_FREE(it->long_timer, ecore_timer_del);
    ELM_SAFE_FREE(it->item->swipe_timer, ecore_timer_del);
