@@ -1064,6 +1064,9 @@ _item_mouse_up_cb(void *data,
    ELM_GENGRID_DATA_GET_FROM_ITEM(it, sd);
    Evas_Coord x, y, dx, dy;
 
+   //Tizen Only(20160308): Flag Check to prevent double mouse up issue.
+   if (!it->down) return;
+
    if ((ev->button == 3) && (!it->dragging))
      {
         evas_object_geometry_get(obj, &x, &y, NULL, NULL);
