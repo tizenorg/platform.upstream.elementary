@@ -5,7 +5,7 @@
 Name:           elementary
 Version:        1.16.0
 Release:        0
-License:        LGPL-2.1+
+License:        LGPL-2.1+ and CC-BY-SA-3.0
 Summary:        EFL toolkit for small touchscreens
 Url:            http://trac.enlightenment.org/e/wiki/Elementary
 Group:          Graphics & UI Framework/Development
