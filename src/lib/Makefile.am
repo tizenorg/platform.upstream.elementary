@@ -30,7 +30,8 @@ lib_LTLIBRARIES = libelementary.la
 
 includes_HEADERS = \
 Elementary.h \
-Elementary_Cursor.h
+Elementary_Cursor.h \
+Elementary_GL_Helpers.h
 includesdir = $(includedir)/elementary-@VMAJ@
 
 includesunstable_HEADERS = \
