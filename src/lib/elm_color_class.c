@@ -218,7 +218,7 @@ _colorclass_activate(void *data, Eo *obj EINA_UNUSED,
      }
    else
      {
-        cc->current = malloc(sizeof(Elm_Color_Overlay));
+        cc->current = calloc(1, sizeof(Colorclass)); //actually Elm_Color_Overlay
         memcpy(cc->current, ecc, sizeof(Elm_Color_Overlay));
         cc->current->name = eina_stringshare_ref(ecc->name);
      }
