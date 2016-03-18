@@ -599,8 +599,21 @@ _button_remove(Evas_Object *obj,
      {
         evas_object_event_callback_del
           (sd->buttons[pos]->btn, EVAS_CALLBACK_DEL, _on_button_del);
+        /* TIZEN_ONLY(20160318): Support legacy swallow part name
         snprintf(buf, sizeof(buf), "elm.swallow.content.button%i", pos + 1);
         elm_object_part_content_unset(sd->action_area, buf);
+         */
+        snprintf(buf, sizeof(buf), "actionbtn%i", pos + 1);
+        if (edje_object_part_exists(elm_layout_edje_get(sd->action_area), buf))
+          {
+             elm_object_part_content_unset(sd->action_area, buf);
+          }
+        else
+          {
+             snprintf(buf, sizeof(buf), "elm.swallow.content.button%i", pos + 1);
+             elm_object_part_content_unset(sd->action_area, buf);
+          }
+        /* END */
      }
 
    ELM_SAFE_FREE(sd->buttons[pos], free);
@@ -1202,9 +1215,24 @@ _action_button_set(Evas_Object *obj,
    if (!elm_layout_theme_set(sd->action_area, "popup", buf, style))
      CRI("Failed to set layout!");
 
+   /* TIZEN_ONLY(20160318): Support legacy swallow part name
    snprintf(buf, sizeof(buf), "elm.swallow.content.button%i", idx + 1);
    elm_object_part_content_set
      (sd->action_area, buf, sd->buttons[idx]->btn);
+    */
+   snprintf(buf, sizeof(buf), "actionbtn%i", idx + 1);
+   if (edje_object_part_exists(elm_layout_edje_get(sd->action_area), buf))
+     {
+        elm_object_part_content_set
+           (sd->action_area, buf, sd->buttons[idx]->btn);
+     }
+   else
+     {
+        snprintf(buf, sizeof(buf), "elm.swallow.content.button%i", idx + 1);
+        elm_object_part_content_set
+           (sd->action_area, buf, sd->buttons[idx]->btn);
+     }
+   /* END */
 }
 
 EOLIAN static Eina_Bool
