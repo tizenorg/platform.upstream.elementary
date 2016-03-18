@@ -601,6 +601,13 @@ _button_remove(Evas_Object *obj,
           (sd->buttons[pos]->btn, EVAS_CALLBACK_DEL, _on_button_del);
         snprintf(buf, sizeof(buf), "elm.swallow.content.button%i", pos + 1);
         elm_object_part_content_unset(sd->action_area, buf);
+        // TIZEN_ONLY(20160318): Support legacy swallow part name
+        if (!edje_object_part_exist(elm_layout_edje_get(sd->action_area), buf))
+          {
+             snprintf(buf, sizeof(buf), "actionbtn%i", pos + 1);
+             elm_object_part_content_unset(sd->action_area, buf);
+          }
+        //
      }
 
    ELM_SAFE_FREE(sd->buttons[pos], free);
@@ -1205,6 +1212,14 @@ _action_button_set(Evas_Object *obj,
    snprintf(buf, sizeof(buf), "elm.swallow.content.button%i", idx + 1);
    elm_object_part_content_set
      (sd->action_area, buf, sd->buttons[idx]->btn);
+   // TIZEN_ONLY(20160318): Support legacy swallow part name
+   if (!edje_object_part_exist(elm_layout_edje_get(sd->action_area), buf))
+     {
+        snprintf(buf, sizeof(buf), "actionbtn%i", idx + 1);
+        elm_object_part_content_set
+           (sd->action_area, buf, sd->buttons[idx]->btn);
+     }
+   //
 }
 
 EOLIAN static Eina_Bool
