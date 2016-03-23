@@ -6102,7 +6102,7 @@ elm_win_input_rect_add(Evas_Object *obj, Eina_Rectangle *input_rect)
 EAPI void
 elm_win_input_rect_subtract(Evas_Object *obj, Eina_Rectangle *input_rect)
 {
-   ELM_WIN_CHECK(obj) EINA_FALSE;
+   ELM_WIN_CHECK(obj);
    ELM_WIN_DATA_GET_OR_RETURN(obj, sd);
    TRAP(sd, input_rect_subtract, input_rect);
 }
