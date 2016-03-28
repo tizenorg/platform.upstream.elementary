@@ -369,19 +369,23 @@ _elm_popup_elm_widget_theme_apply(Eo *obj, Elm_Popup_Data *sd)
    if (sd->action_area)
      {
         snprintf(buf, sizeof(buf), "buttons%i", sd->last_button_number);
-        /* TIZEN_ONLY(20160318): Support legacy group and swallow part names
+        /* TIZEN_ONLY(20160328): Support legacy groups
         if (!elm_layout_theme_set(sd->action_area, "popup", buf, style))
           CRI("Failed to set layout!");
          */
-        if (!elm_layout_theme_set(sd->action_area, "popup", buf, elm_widget_style_get(obj)))
-          {
-             if (!elm_layout_theme_set(sd->action_area, "popup", buf, style))
-               CRI("Failed to set layout!");
-          }
+        if (!(elm_layout_theme_set(sd->action_area, "popup", buf, elm_widget_style_get(obj)) ||
+              elm_layout_theme_set(sd->action_area, "popup", buf, style)))
+          CRI("Failed to set layout!");
         /* END */
      }
+   /* TIZEN_ONLY(20160328): Support legacy groups
    if (!elm_layout_theme_set(sd->content_area, "popup", "content", style))
      CRI("Failed to set layout!");
+    */
+   if (!(elm_layout_theme_set(sd->content_area, "popup", "content", elm_widget_style_get(obj)) ||
+         elm_layout_theme_set(sd->content_area, "popup", "content", style)))
+     CRI("Failed to set layout!");
+   /* END */
    if (sd->text_content_obj)
        elm_object_style_set(sd->text_content_obj, style);
    else if (sd->items)
@@ -661,15 +665,13 @@ _button_remove(Evas_Object *obj,
 
         snprintf(style, sizeof(style), "popup/%s", elm_widget_style_get(obj));
         snprintf(buf, sizeof(buf), "buttons%i", sd->last_button_number);
-        /* TIZEN_ONLY(20160318): Support legacy group and swallow part names
+        /* TIZEN_ONLY(20160328): Support legacy groups
         if (!elm_layout_theme_set(sd->action_area, "popup", buf, style))
           CRI("Failed to set layout!");
          */
-        if (!elm_layout_theme_set(sd->action_area, "popup", buf, elm_widget_style_get(obj)))
-          {
-             if (!elm_layout_theme_set(sd->action_area, "popup", buf, style))
-               CRI("Failed to set layout!");
-          }
+        if (!(elm_layout_theme_set(sd->action_area, "popup", buf, elm_widget_style_get(obj)) ||
+              elm_layout_theme_set(sd->action_area, "popup", buf, style)))
+          CRI("Failed to set layout!");
         /* END */
      }
 }
@@ -1256,15 +1258,13 @@ _action_button_set(Evas_Object *obj,
      }
 
    snprintf(style, sizeof(style), "popup/%s", elm_widget_style_get(obj));
-   /* TIZEN_ONLY(20160318): Support legacy group and swallow part names
+   /* TIZEN_ONLY(20160328): Support legacy groups
    if (!elm_layout_theme_set(sd->action_area, "popup", buf, style))
      CRI("Failed to set layout!");
     */
-   if (!elm_layout_theme_set(sd->action_area, "popup", buf, elm_widget_style_get(obj)))
-     {
-        if (!elm_layout_theme_set(sd->action_area, "popup", buf, style))
-          CRI("Failed to set layout!");
-     }
+   if (!(elm_layout_theme_set(sd->action_area, "popup", buf, elm_widget_style_get(obj)) ||
+         elm_layout_theme_set(sd->action_area, "popup", buf, style)))
+     CRI("Failed to set layout!");
    /* END */
 
    /* TIZEN_ONLY(20160318): Support legacy group and swallow part names
@@ -1569,7 +1569,22 @@ _elm_popup_evas_object_smart_add(Eo *obj, Elm_Popup_Data *priv)
    snprintf(style, sizeof(style), "popup/%s", elm_widget_style_get(obj));
 
    priv->notify = elm_notify_add(obj);
+   /* TIZEN_ONLY(20160328): Support legacy groups
    elm_object_style_set(priv->notify, style);
+    */
+     {
+        Eina_Bool ret;
+        const char *obj_style = elm_widget_style_get(obj);
+
+        if (obj_style && !strcmp(obj_style, "default"))
+          ret = elm_widget_style_set(priv->notify, "popup");
+        else
+          ret = elm_widget_style_set(priv->notify, obj_style);
+
+        if (!ret)
+          elm_widget_style_set(priv->notify, style);
+     }
+   /* END */
 
    elm_notify_align_set(priv->notify,
                         _elm_config->popup_horizontal_align,
@@ -1600,12 +1615,22 @@ _elm_popup_evas_object_smart_add(Eo *obj, Elm_Popup_Data *priv)
      (priv->main_layout, "elm,state,action_area,hidden", "elm", _layout_change_cb, NULL);
 
    priv->content_area = elm_layout_add(priv->main_layout);
+   /* TIZEN_ONLY(20160328): Support legacy groups
    if (!elm_layout_theme_set(priv->content_area, "popup", "content", style))
      CRI("Failed to set layout!");
    else
      evas_object_event_callback_add
         (priv->content_area, EVAS_CALLBACK_CHANGED_SIZE_HINTS,
          _size_hints_changed_cb, priv->main_layout);
+    */
+   if (!(elm_layout_theme_set(priv->content_area, "popup", "content", elm_widget_style_get(obj)) ||
+         elm_layout_theme_set(priv->content_area, "popup", "content", style)))
+     CRI("Failed to set layout!");
+   else
+     evas_object_event_callback_add
+        (priv->content_area, EVAS_CALLBACK_CHANGED_SIZE_HINTS,
+         _size_hints_changed_cb, priv->main_layout);
+   /* END */
 
    priv->content_text_wrap_type = ELM_WRAP_MIXED;
    eo_do(priv->notify,
