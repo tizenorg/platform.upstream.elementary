@@ -380,8 +380,16 @@ _elm_popup_elm_widget_theme_apply(Eo *obj, Elm_Popup_Data *sd)
           }
         /* END */
      }
+   /* TIZEN_ONLY(20160328): Support legacy group for content_area object
    if (!elm_layout_theme_set(sd->content_area, "popup", "content", style))
      CRI("Failed to set layout!");
+    */
+   if (!elm_layout_theme_set(sd->content_area, "popup", "content", elm_widget_style_get(obj)))
+     {
+        if (!elm_layout_theme_set(sd->content_area, "popup", "content", style))
+          CRI("Failed to set layout!");
+     }
+   /* END */
    if (sd->text_content_obj)
        elm_object_style_set(sd->text_content_obj, style);
    else if (sd->items)
