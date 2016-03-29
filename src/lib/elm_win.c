@@ -2061,6 +2061,10 @@ _elm_win_evas_object_smart_del(Eo *obj, Elm_Win_Data *sd)
    ecore_event_handler_del(sd->x.client_message_handler);
    ecore_event_handler_del(sd->x.property_handler);
 #endif
+#ifdef HAVE_ELEMENTARY_WAYLAND
+   ecore_event_handler_del(sd->wl.effect_start_handler);
+   ecore_event_handler_del(sd->wl.effect_end_handler);
+#endif
 
    if (sd->img_obj)
      {
