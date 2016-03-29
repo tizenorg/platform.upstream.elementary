@@ -150,7 +150,9 @@ struct _Elm_Genlist_Data
    Eina_Hash                             *size_caches;
 
    Eina_Bool                             filter;
+   //TIZEN_ONLY(20160329): genlist: enhance accessibility scroll & highlight (30d9a6012e629cd9ea60eae8d576f3ebb94ada86)
    Elm_Gen_Item                         *atspi_item_to_highlight;
+   //
 
    Eina_Bool                             focus_on_selection_enabled : 1;
    Eina_Bool                             tree_effect_enabled : 1;

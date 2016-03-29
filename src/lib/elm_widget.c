@@ -4670,6 +4670,7 @@ _elm_widget_item_elm_interface_atspi_accessible_state_set_get(Eo *eo_item,
                                                               Elm_Widget_Item_Data *item EINA_UNUSED)
 {
    Elm_Atspi_State_Set states = 0;
+   //TIZEN_ONLY(20160329): atspi: implement HighlightGrab and HighlightClear methods (29e253e2f7ef3c632ac3a64c489bf569df407f30)
    Evas_Object *win = elm_widget_top_get(item->widget);
    if (win && eo_isa(win, ELM_WIN_CLASS))
      {
@@ -4677,8 +4678,9 @@ _elm_widget_item_elm_interface_atspi_accessible_state_set_get(Eo *eo_item,
           STATE_TYPE_SET(states, ELM_ATSPI_STATE_HIGHLIGHTED);
      }
 
-   STATE_TYPE_SET(states, ELM_ATSPI_STATE_FOCUSABLE);
    STATE_TYPE_SET(states, ELM_ATSPI_STATE_HIGHLIGHTABLE);
+   //
+   STATE_TYPE_SET(states, ELM_ATSPI_STATE_FOCUSABLE);
 
    if (elm_object_item_focus_get(eo_item))
      STATE_TYPE_SET(states, ELM_ATSPI_STATE_FOCUSED);
@@ -5860,6 +5862,7 @@ _elm_widget_elm_interface_atspi_component_focus_grab(Eo *obj, Elm_Widget_Smart_D
    return EINA_FALSE;
 }
 
+//TIZEN_ONLY(20160329): atspi: implement HighlightGrab and HighlightClear methods (29e253e2f7ef3c632ac3a64c489bf569df407f30)
 EOLIAN static Eina_Bool
 _elm_widget_elm_interface_atspi_component_highlight_grab(Eo *obj, Elm_Widget_Smart_Data *pd EINA_UNUSED)
 {
@@ -5875,6 +5878,7 @@ _elm_widget_elm_interface_atspi_component_highlight_clear(Eo *obj, Elm_Widget_Sm
    elm_interface_atspi_accessible_state_changed_signal_emit(obj, ELM_ATSPI_STATE_HIGHLIGHTED, EINA_FALSE);
    return EINA_TRUE;
 }
+//
 
 EOLIAN static char*
 _elm_widget_elm_interface_atspi_accessible_name_get(Eo *obj EINA_UNUSED, Elm_Widget_Smart_Data *_pd EINA_UNUSED)
@@ -5891,6 +5895,7 @@ _elm_widget_elm_interface_atspi_accessible_name_get(Eo *obj EINA_UNUSED, Elm_Wid
    return _elm_util_mkup_to_text(ret);
 }
 
+//TIZEN_ONLY(20160329): widget: sort accessible children spatially (d940068e1f7cc5cfc6208245a1fb0e92f1a813d4)
 static int _sort_vertically(const void *data1, const void *data2)
 {
    Evas_Coord y1, y2;
@@ -5939,6 +5944,7 @@ static Eina_List *_lines_split(Eina_List *children)
 
    return eina_list_append(lines, line);
 }
+//
 
 EOLIAN static Eina_List*
 _elm_widget_elm_interface_atspi_accessible_children_get(Eo *obj EINA_UNUSED, Elm_Widget_Smart_Data *pd EINA_UNUSED)
@@ -5983,6 +5989,7 @@ _elm_widget_elm_interface_atspi_accessible_state_set_get(Eo *obj, Elm_Widget_Sma
 
    eo_do_super(obj, ELM_WIDGET_CLASS, states = elm_interface_atspi_accessible_state_set_get());
 
+   //TIZEN_ONLY(20160329): atspi: implement HighlightGrab and HighlightClear methods (29e253e2f7ef3c632ac3a64c489bf569df407f30)
    Evas_Object *win = elm_widget_top_get(obj);
    if (win && eo_isa(win, ELM_WIN_CLASS))
      {
@@ -5990,6 +5997,7 @@ _elm_widget_elm_interface_atspi_accessible_state_set_get(Eo *obj, Elm_Widget_Sma
           STATE_TYPE_SET(states, ELM_ATSPI_STATE_HIGHLIGHTED);
      }
    STATE_TYPE_SET(states, ELM_ATSPI_STATE_HIGHLIGHTABLE);
+   //
 
    if (evas_object_visible_get(obj))
      {
@@ -6073,6 +6081,7 @@ _elm_widget_item_elm_interface_atspi_component_focus_grab(Eo *obj EINA_UNUSED, E
    return elm_object_item_focus_get(obj);
 }
 
+//TIZEN_ONLY(20160329): atspi: implement HighlightGrab and HighlightClear methods (29e253e2f7ef3c632ac3a64c489bf569df407f30)
 EOLIAN static Eina_Bool
 _elm_widget_item_elm_interface_atspi_component_highlight_grab(Eo *obj, Elm_Widget_Item_Data *sd)
 {
@@ -6101,6 +6110,7 @@ _elm_widget_item_elm_interface_atspi_component_highlight_clear(Eo *obj, Elm_Widg
      }
    return EINA_FALSE;
 }
+//
 
 EOLIAN static double
 _elm_widget_item_elm_interface_atspi_component_alpha_get(Eo *obj EINA_UNUSED, Elm_Widget_Item_Data *sd EINA_UNUSED)
@@ -6112,6 +6122,7 @@ _elm_widget_item_elm_interface_atspi_component_alpha_get(Eo *obj EINA_UNUSED, El
    return (double)alpha / 255.0;
 }
 
+//TIZEN_ONLY(20160329): widget: improve accessibile_at_point getter (a8aff0423202b9a55dbb3843205875226678fbd6)
 EOLIAN static Eo *
 _elm_widget_elm_interface_atspi_component_accessible_at_point_get(Eo *obj, Elm_Widget_Smart_Data *_pd EINA_UNUSED, Eina_Bool screen_coords, int x, int y)
 {
@@ -6177,6 +6188,7 @@ _elm_widget_elm_interface_atspi_component_accessible_at_point_get(Eo *obj, Elm_W
    eina_list_free(stack);
    return NULL;
 }
+//
 
 #include "elm_widget_item.eo.c"
 #include "elm_widget.eo.c"

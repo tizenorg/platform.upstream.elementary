@@ -5,7 +5,9 @@
 #define ELM_INTERFACE_ATSPI_ACCESSIBLE_PROTECTED
 #define ELM_INTERFACE_ATSPI_WIDGET_ACTION_PROTECTED
 #define ELM_INTERFACE_ATSPI_SELECTION_PROTECTED
+//TIZEN_ONLY(20160329): list: enhance accessibility scroll and highlight (02c20ee39a0ebbe67b9e1491ccfc46dd681821c9)
 #define ELM_INTERFACE_ATSPI_COMPONENT_PROTECTED
+//
 #define ELM_WIDGET_ITEM_PROTECTED
 
 #include <Elementary.h>
@@ -3303,6 +3305,7 @@ _elm_list_elm_interface_atspi_selection_child_deselect(Eo *obj EINA_UNUSED, Elm_
    return EINA_FALSE;
 }
 
+//TIZEN_ONLY(20160329): list: enhance accessibility scroll and highlight (02c20ee39a0ebbe67b9e1491ccfc46dd681821c9)
 static int _is_item_in_viewport(int viewport_y, int viewport_h, int obj_y, int obj_h)
 {
     if ((obj_y + obj_h/2) < viewport_y)
@@ -3428,6 +3431,7 @@ _elm_list_item_elm_interface_atspi_component_highlight_grab(Eo *eo_it, Elm_List_
    eo_do_super(eo_it, ELM_LIST_ITEM_CLASS, ret = elm_interface_atspi_component_highlight_grab());
    return ret;
 }
+//
 
 #include "elm_list.eo.c"
 #include "elm_list_item.eo.c"

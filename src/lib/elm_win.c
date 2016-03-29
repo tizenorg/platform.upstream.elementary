@@ -175,12 +175,14 @@ struct _Elm_Win_Data
       Eina_Bool    auto_enabled : 1;
       Eina_Bool    auto_animate : 1;
    } focus_highlight;
+   //TIZEN_ONLY(20160329): win: add accessibility highlight (d4753268ad02d0c25c16f815003c70b158879ca7)
    struct
    {
       Evas_Object *fobj; /*accessibility highlight edje object */
       Evas_Object *target;
       Eina_Bool enabled;
    } accessibility_highlight;
+   //
 
    Evas_Object *icon;
    const char  *title;
@@ -294,8 +296,10 @@ static const Evas_Smart_Cb_Description _smart_callbacks[] = {
 
 static Eina_Bool _key_action_return(Evas_Object *obj, const char *params);
 static Eina_Bool _key_action_move(Evas_Object *obj, const char *params);
+//TIZEN_ONLY(20160329): win: add accessibility highlight (d4753268ad02d0c25c16f815003c70b158879ca7)
 static void _elm_win_accessibility_highlight_shutdown(Elm_Win_Data *sd);
 static void _elm_win_accessibility_highlight_update(Elm_Win_Data *sd);
+//
 
 static const Elm_Action key_actions[] = {
    {"return", _key_action_return},
@@ -2053,7 +2057,9 @@ _elm_win_evas_object_smart_del(Eo *obj, Elm_Win_Data *sd)
      }
 
    _elm_win_focus_highlight_shutdown(sd);
+   //TIZEN_ONLY(20160329): win: add accessibility highlight (d4753268ad02d0c25c16f815003c70b158879ca7)
    _elm_win_accessibility_highlight_shutdown(sd);
+   //
    eina_stringshare_del(sd->focus_highlight.style);
 
    eina_stringshare_del(sd->title);
@@ -6030,6 +6036,7 @@ _elm_win_elm_interface_atspi_accessible_name_get(Eo *obj, Elm_Win_Data *sd EINA_
    return ret ? strdup(ret) : strdup("");
 }
 
+//TIZEN_ONLY(20160329): win: add accessibility highlight (d4753268ad02d0c25c16f815003c70b158879ca7)
 static void
 _elm_win_accessibility_highlight_obj_del(void *data,
                                          Evas *e EINA_UNUSED,
@@ -6191,6 +6198,7 @@ _elm_win_accessibility_highlight_get(Evas_Object *win)
    ELM_WIN_DATA_GET_OR_RETURN_VAL(win, sd, NULL);
    return sd->accessibility_highlight.target;
 }
+//
 
 #include "elm_win.eo.c"
 

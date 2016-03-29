@@ -508,6 +508,7 @@ EAPI void        elm_object_orientation_mode_disabled_set(Evas_Object *obj, Eina
  */
 EAPI Eina_Bool   elm_object_orientation_mode_disabled_get(const Evas_Object *obj);
 
+//TIZEN_ONLY(20160329): win: add accessibility highlight (d4753268ad02d0c25c16f815003c70b158879ca7)
 /**
  * Set accessibility highlight on object.
  *
@@ -526,3 +527,4 @@ EAPI Eina_Bool   elm_object_orientation_mode_disabled_get(const Evas_Object *obj
  * @ingroup General
  */
 EAPI void elm_object_accessibility_highlight_set(Evas_Object *obj, Eina_Bool val);
+//

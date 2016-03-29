@@ -432,7 +432,9 @@ class Elm.Genlist_Item(Elm.Widget_Item)
            Elm_Interface_Atspi_Accessible.name.get;
            Elm_Interface_Atspi_Accessible.state_set.get;
            Elm_Interface_Atspi_Accessible.children.get;
+           //TIZEN_ONLY(20160329): genlist: enhance accessibility scroll & highlight (30d9a6012e629cd9ea60eae8d576f3ebb94ada86)
            Elm_Interface_Atspi_Component.highlight_grab;
            Elm_Interface_Atspi_Component.highlight_clear;
+           //
       }
 }

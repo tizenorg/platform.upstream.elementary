@@ -5,7 +5,9 @@
 #include <fnmatch.h>
 
 #define ELM_INTERFACE_ATSPI_ACCESSIBLE_PROTECTED
+//TIZEN_ONLY(20160329): genlist: enhance accessibility scroll & highlight (30d9a6012e629cd9ea60eae8d576f3ebb94ada86)
 #define ELM_INTERFACE_ATSPI_COMPONENT_PROTECTED
+//
 #define ELM_INTERFACE_ATSPI_SELECTION_PROTECTED
 #define ELM_INTERFACE_ATSPI_WIDGET_ACTION_PROTECTED
 #define ELM_WIDGET_ITEM_PROTECTED
@@ -1976,11 +1978,13 @@ _item_realize(Elm_Gen_Item *it,
    if (it->decorate_it_set) _decorate_item_set(it);
 
    edje_object_message_signal_process(VIEW(it));
+   //TIZEN_ONLY(20160329): genlist: enhance accessibility scroll & highlight (30d9a6012e629cd9ea60eae8d576f3ebb94ada86)
    if (sd->atspi_item_to_highlight == it)
      {
         sd->atspi_item_to_highlight = NULL;
         eo_do_super(EO_OBJ(it), ELM_GENLIST_ITEM_CLASS, elm_interface_atspi_component_highlight_grab());
      }
+   //
 }
 
 static Eina_Bool
@@ -8373,6 +8377,7 @@ _elm_genlist_elm_interface_atspi_selection_child_deselect(Eo *obj EINA_UNUSED, E
    return EINA_FALSE;
 }
 
+//TIZEN_ONLY(20160329): genlist: enhance accessibility scroll & highlight (30d9a6012e629cd9ea60eae8d576f3ebb94ada86)
 static int _is_item_in_viewport(int viewport_y, int viewport_h, int obj_y, int obj_h)
 {
     if ((obj_y + obj_h/2) < viewport_y)
@@ -8534,5 +8539,6 @@ _elm_genlist_item_elm_interface_atspi_component_highlight_clear(Eo *eo_it, Elm_G
    eo_do_super(eo_it, ELM_GENLIST_ITEM_CLASS, ret = elm_interface_atspi_component_highlight_clear());
    return ret;
 }
+//
 #include "elm_genlist.eo.c"
 #include "elm_genlist_item.eo.c"

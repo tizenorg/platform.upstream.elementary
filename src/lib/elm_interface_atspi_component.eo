@@ -98,6 +98,7 @@ mixin Elm_Interface_Atspi_Component ()
          }
          return: Eo*;
       }
+      //TIZEN_ONLY(20160329): atspi: implement HighlightGrab and HighlightClear methods (29e253e2f7ef3c632ac3a64c489bf569df407f30)
       highlight_grab @protected {
          [[ Highlights accessible widget.
          returns true if highlight grab has successed, false otherwise. ]]
@@ -108,5 +109,6 @@ mixin Elm_Interface_Atspi_Component ()
          returns true if clear has successed, false otherwise. ]]
          return: bool;
       }
+      //
    }
 }

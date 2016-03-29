@@ -1774,7 +1774,7 @@ elm_object_focus_region_show_mode_get(const Evas_Object *obj)
 {
    return elm_widget_focus_region_show_mode_get(obj);
 }
-
+//TIZEN_ONLY(20160329): win: add accessibility highlight (d4753268ad02d0c25c16f815003c70b158879ca7)
 EAPI void
 elm_object_accessibility_highlight_set(Evas_Object *obj, Eina_Bool visible)
 {
@@ -1793,3 +1793,4 @@ elm_object_accessibility_highlight_set(Evas_Object *obj, Eina_Bool visible)
    else if (visible)
       _elm_win_accessibility_highlight_set(win, obj);
 }
+//

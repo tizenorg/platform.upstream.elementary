@@ -629,9 +629,11 @@ typedef enum {
     ATSPI_STATE_VISITED,
     ATSPI_STATE_CHECKABLE,
     ATSPI_STATE_HAS_POPUP,
+    //TIZEN_ONLY(20160329): atspi: implement HighlightGrab and HighlightClear methods (29e253e2f7ef3c632ac3a64c489bf569df407f30)
     ATSPI_STATE_READ_ONLY,
     ATSPI_STATE_HIGHLIGHTED,
     ATSPI_STATE_HIGHLIGHTABLE,
+    //
     ATSPI_STATE_LAST_DEFINED,
 } AtspiStateType;
 
@@ -1313,11 +1315,13 @@ typedef enum {
     ATSPI_ROLE_MATH,
     ATSPI_ROLE_RATING,
     ATSPI_ROLE_TIMER,
+    //TIZEN_ONLY(20160329): atspi: implement HighlightGrab and HighlightClear methods (29e253e2f7ef3c632ac3a64c489bf569df407f30)
     ATSPI_ROLE_STATIC,
     ATSPI_ROLE_MATH_FRACTION,
     ATSPI_ROLE_MATH_ROOT,
     ATSPI_ROLE_SUBSCRIPT,
     ATSPI_ROLE_SUPERSCRIPT,
+    //
     ATSPI_ROLE_LAST_DEFINED,
 } AtspiRole;
 

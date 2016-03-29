@@ -1,6 +1,8 @@
 mixin Elm_Interface_Atspi_Accessible ()
 {
+   //TIZEN_ONLY(20160329): atspi: mark atspi API as public (b9a544128dfb4d23e06995a233e166b0a166ae86)
    legacy_prefix: elm_atspi_accessible;
+   //
    eo_prefix: elm_interface_atspi_accessible;
    data: Elm_Interface_Atspi_Accessible_Data;
    methods {

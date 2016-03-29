@@ -540,7 +540,9 @@ class Elm.Genlist (Elm.Layout, Elm_Interface_Scrollable, Evas.Clickable_Interfac
       Elm_Interface_Atspi_Selection.is_child_selected;
       Elm_Interface_Atspi_Selection.all_children_select;
       Elm_Interface_Atspi_Selection.clear;
+      //TIZEN_ONLY(20160329): genlist: enhance accessibility scroll & highlight (30d9a6012e629cd9ea60eae8d576f3ebb94ada86)
       Elm_Interface_Scrollable.content_pos_set;
+      //
    }
    events {
       language,changed;

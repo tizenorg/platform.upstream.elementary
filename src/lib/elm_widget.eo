@@ -772,9 +772,13 @@ abstract Elm.Widget (Evas.Object_Smart, Elm_Interface_Atspi_Accessible, Elm_Inte
       Elm_Interface_Atspi_Accessible.parent.get;
       Elm_Interface_Atspi_Accessible.attributes.get;
       Elm_Interface_Atspi_Component.focus_grab;
+      //TIZEN_ONLY(20160329): atspi: implement HighlightGrab and HighlightClear methods (29e253e2f7ef3c632ac3a64c489bf569df407f30)
       Elm_Interface_Atspi_Component.highlight_grab;
       Elm_Interface_Atspi_Component.highlight_clear;
+      //
+      //TIZEN_ONLY(20160329): widget: improve accessibile_at_point getter (a8aff0423202b9a55dbb3843205875226678fbd6)
       Elm_Interface_Atspi_Component.accessible_at_point_get;
+      //
    }
    events {
       moved;

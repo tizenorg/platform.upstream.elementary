@@ -149,6 +149,7 @@ _elm_interface_atspi_component_focus_grab(Eo *obj EINA_UNUSED, void *_pd EINA_UN
    return evas_object_focus_get(obj);
 }
 
+//TIZEN_ONLY(20160329): atspi: implement HighlightGrab and HighlightClear methods (29e253e2f7ef3c632ac3a64c489bf569df407f30)
 EOLIAN static Eina_Bool
 _elm_interface_atspi_component_highlight_grab(Eo *obj EINA_UNUSED, void *_pd EINA_UNUSED)
 {
@@ -164,5 +165,6 @@ _elm_interface_atspi_component_highlight_clear(Eo *obj EINA_UNUSED, void *_pd EI
        eo_class_name_get(eo_class_get(obj)));
    return EINA_FALSE;
 }
+//
 
 #include "elm_interface_atspi_component.eo.c"

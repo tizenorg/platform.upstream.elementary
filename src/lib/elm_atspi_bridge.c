@@ -437,11 +437,13 @@ const struct atspi_state_desc elm_states_to_atspi_state[] = {
    { ELM_ATSPI_STATE_SELECTABLE_TEXT, ATSPI_STATE_SELECTABLE_TEXT, "selectable-text" },
    { ELM_ATSPI_STATE_IS_DEFAULT, ATSPI_STATE_IS_DEFAULT, "is-default" },
    { ELM_ATSPI_STATE_VISITED, ATSPI_STATE_VISITED, "visited" },
+    //TIZEN_ONLY(20160329): atspi: implement HighlightGrab and HighlightClear methods (29e253e2f7ef3c632ac3a64c489bf569df407f30)
    { ELM_ATSPI_STATE_CHECKABLE, ATSPI_STATE_CHECKABLE, "checkable" },
    { ELM_ATSPI_STATE_HAS_POPUP, ATSPI_STATE_HAS_POPUP, "has-popup" },
    { ELM_ATSPI_STATE_READ_ONLY, ATSPI_STATE_READ_ONLY, "read-only" },
    { ELM_ATSPI_STATE_HIGHLIGHTED, ATSPI_STATE_HIGHLIGHTED, "highlighted" },
    { ELM_ATSPI_STATE_HIGHLIGHTABLE, ATSPI_STATE_HIGHLIGHTABLE, "highlightable" },
+   //
    { ELM_ATSPI_STATE_LAST_DEFINED, ATSPI_STATE_LAST_DEFINED, "last-defined" }
 };
 
@@ -3478,6 +3480,7 @@ _component_grab_focus(const Eldbus_Service_Interface *iface EINA_UNUSED, const E
    return ret;
 }
 
+//TIZEN_ONLY(20160329): atspi: implement HighlightGrab and HighlightClear methods (29e253e2f7ef3c632ac3a64c489bf569df407f30)
 static Eldbus_Message *
 _component_grab_highlight(const Eldbus_Service_Interface *iface EINA_UNUSED, const Eldbus_Message *msg)
 {
@@ -3519,6 +3522,7 @@ _component_clear_highlight(const Eldbus_Service_Interface *iface EINA_UNUSED, co
 
    return ret;
 }
+//
 
 static Eldbus_Message *
 _component_get_alpha(const Eldbus_Service_Interface *iface EINA_UNUSED, const Eldbus_Message *msg)
@@ -3634,8 +3638,11 @@ static const Eldbus_Method component_methods[] = {
    { "SetExtents", ELDBUS_ARGS({"i", "x"}, {"i", "y"}, {"i", "width"}, {"i", "height"}, {"u", "coord_type"}), ELDBUS_ARGS({"b", "result"}), _component_set_extends, 0 },
    { "SetPosition", ELDBUS_ARGS({"i", "x"}, {"i", "y"}, {"u", "coord_type"}), ELDBUS_ARGS({"b", "result"}), _component_set_position, 0 },
    { "SetSize", ELDBUS_ARGS({"i", "width"}, {"i", "height"}), ELDBUS_ARGS({"b", "result"}), _component_set_size, 0 },
+
+   //TIZEN_ONLY(20160329): atspi: implement HighlightGrab and HighlightClear methods (29e253e2f7ef3c632ac3a64c489bf569df407f30)
    { "GrabHighlight", NULL, ELDBUS_ARGS({"b", "result"}), _component_grab_highlight, 0 },
    { "ClearHighlight", NULL, ELDBUS_ARGS({"b", "result"}), _component_clear_highlight, 0 },
+   //
    { NULL, NULL, NULL, NULL, 0 }
 };
 

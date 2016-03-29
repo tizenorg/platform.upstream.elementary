@@ -458,7 +458,9 @@ class Elm.List (Elm.Layout, Elm_Interface_Scrollable,
       Elm_Interface_Atspi_Selection.is_child_selected;
       Elm_Interface_Atspi_Selection.all_children_select;
       Elm_Interface_Atspi_Selection.clear;
+      //TIZEN_ONLY(20160329): list: enhance accessibility scroll and highlight (02c20ee39a0ebbe67b9e1491ccfc46dd681821c9)
       Elm_Interface_Scrollable.content_pos_set;
+      //
    }
    events {
       activated;
