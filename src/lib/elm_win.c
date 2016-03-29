@@ -4001,7 +4001,8 @@ _elm_win_finalize_internal(Eo *obj, Elm_Win_Data *sd, const char *name, Elm_Win_
    if (sd->parent)
      {
 #ifdef HAVE_ELEMENTARY_WAYLAND
-        ecore_wl_window_parent_set(sd->wl.win, elm_win_wl_window_get(sd->parent));
+        if ((sd->type >= ELM_WIN_BASIC) && (sd->type <= ELM_WIN_DND))
+          ecore_wl_window_parent_set(sd->wl.win, elm_win_wl_window_get(sd->parent));
 #endif
         evas_object_event_callback_add
           (sd->parent, EVAS_CALLBACK_DEL, _elm_win_on_parent_del, obj);
