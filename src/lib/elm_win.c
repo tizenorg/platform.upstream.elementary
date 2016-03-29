@@ -3983,7 +3983,7 @@ _elm_win_finalize_internal(Eo *obj, Elm_Win_Data *sd, const char *name, Elm_Win_
    sd->withdrawn = ecore_evas_withdrawn_get(sd->ee);
    sd->obscured = ecore_evas_obscured_get(sd->ee);
 
-   if (sd->parent)
+   if ((sd->parent) && ((sd->type >= ELM_WIN_BASIC) && (sd->type <= ELM_WIN_DND)))
      {
 #ifdef HAVE_ELEMENTARY_WAYLAND
         ecore_wl_window_parent_set(sd->wl.win, elm_win_wl_window_get(sd->parent));
