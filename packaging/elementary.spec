@@ -45,6 +45,8 @@ BuildRequires:  pkgconfig(emotion)
 BuildRequires:  eet-tools
 BuildRequires:  eolian-devel
 BuildRequires:  python-devel
+BuildRequires:  pkgconfig(ttrace)
+
 Recommends:     %{name}-locale = %{version}
 
 %description
