@@ -387,6 +387,14 @@ AM_CONDITIONAL([ELEMENTARY_ENABLE_COVERAGE], [test "${want_coverage}" = "yes"])
 
 ### Checks for header files
 
+# Check for ttrace
+PKG_CHECK_MODULES(TTRACE,
+                  [ttrace],
+                  [have_ttrace="yes"], [have_ttrace="no"])
+if test "x$have_ttrace" = "xyes"; then
+  AC_DEFINE(ENABLE_TTRACE, 1, [ttrace available])
+fi
+
 ELM_ALLOCA_H_DEF="#undef"
 AC_CHECK_HEADER([alloca.h], [ELM_ALLOCA_H_DEF="#define"])
 AC_SUBST([ELM_ALLOCA_H_DEF])
