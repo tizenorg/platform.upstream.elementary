@@ -221,8 +221,11 @@ _conformant_part_sizing_eval(Evas_Object *obj,
 #endif
 //
         DBG("[KEYPAD]: size(%d,%d, %dx%d).", sx, sy, sw, sh);
-        _conformant_part_size_hints_set
-          (obj, sd->virtualkeypad, sx, sy, sw, sh);
+        Elm_Win_Keyboard_Mode mode;
+        mode = elm_win_keyboard_mode_get(top);
+        if (mode == ELM_WIN_KEYBOARD_ON && sd->virtualkeypad)
+          _conformant_part_size_hints_set
+             (obj, sd->virtualkeypad, sx, sy, sw, sh);
      }
 
    if (part_type & ELM_CONFORMANT_SOFTKEY_PART)
@@ -238,7 +241,8 @@ _conformant_part_sizing_eval(Evas_Object *obj,
                sx = sy = sw = sh = 0;
           }
 #endif
-        _conformant_part_size_hints_set(obj, sd->softkey, sx, sy, sw, sh);
+        if (sd->softkey)
+          _conformant_part_size_hints_set(obj, sd->softkey, sx, sy, sw, sh);
      }
    if (part_type & ELM_CONFORMANT_CLIPBOARD_PART)
      {
@@ -253,7 +257,8 @@ _conformant_part_sizing_eval(Evas_Object *obj,
                sx = sy = sw = sh = 0;
           }
 #endif
-        _conformant_part_size_hints_set(obj, sd->clipboard, sx, sy, sw, sh);
+        if (sd->clipboard)
+          _conformant_part_size_hints_set(obj, sd->clipboard, sx, sy, sw, sh);
      }
 }
 
@@ -944,10 +949,10 @@ _on_conformant_changed(void *data,
    /* object is already freed */
    if (!sd) return;
 
+   mode = elm_win_keyboard_mode_get(obj);
+
    if (property & CONFORMANT_KEYBOARD_STATE)
      {
-        mode = elm_win_keyboard_mode_get(obj);
-
         if (mode == ELM_WIN_KEYBOARD_ON)
           {
              _conformant_part_sizing_eval(data, ELM_CONFORMANT_VIRTUAL_KEYPAD_PART);
@@ -960,13 +965,13 @@ _on_conformant_changed(void *data,
           {
              evas_object_size_hint_min_set(sd->virtualkeypad, -1, 0);
              evas_object_size_hint_max_set(sd->virtualkeypad, -1, 0);
-             _conformant_part_sizing_eval(data, ELM_CONFORMANT_VIRTUAL_KEYPAD_PART);
              elm_widget_display_mode_set(data, EVAS_DISPLAY_MODE_NONE);
              eo_do(data, eo_event_callback_call(
                    ELM_CONFORMANT_EVENT_VIRTUALKEYPAD_STATE_OFF, NULL));
           }
      }
-   if (property & CONFORMANT_KEYBOARD_GEOMETRY)
+   if (property & CONFORMANT_KEYBOARD_GEOMETRY &&
+       mode == ELM_WIN_KEYBOARD_ON)
      {
         _conformant_part_sizing_eval(data, ELM_CONFORMANT_VIRTUAL_KEYPAD_PART);
      }
