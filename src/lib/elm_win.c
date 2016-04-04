@@ -2786,6 +2786,13 @@ _elm_win_focus_highlight_anim_end(void *data,
 }
 
 static void
+_elm_win_focus_skip_set(Elm_Win_Data *sd, Eina_Bool skip)
+{
+   sd->skip_focus = skip;
+   TRAP(sd, focus_skip_set, skip);
+}
+
+static void
 _elm_win_focus_highlight_init(Elm_Win_Data *sd)
 {
    evas_event_callback_add(sd->evas, EVAS_CALLBACK_CANVAS_OBJECT_FOCUS_IN,
@@ -5438,8 +5445,9 @@ _elm_win_quickpanel_set(Eo *obj EINA_UNUSED, Elm_Win_Data *sd, Eina_Bool quickpa
              ecore_x_icccm_hints_set(sd->x.xwin, 0, 0, 0, 0, 0, 0, 0);
           }
      }
-#else
-   (void)quickpanel;
+#endif
+#ifdef HAVE_ELEMENTARY_WAYLAND
+   _elm_win_focus_skip_set(sd, EINA_TRUE);
 #endif
 }
 
@@ -5530,8 +5538,7 @@ _elm_win_quickpanel_zone_get(Eo *obj EINA_UNUSED, Elm_Win_Data *sd)
 EOLIAN static void
 _elm_win_prop_focus_skip_set(Eo *obj EINA_UNUSED, Elm_Win_Data *sd, Eina_Bool skip)
 {
-   sd->skip_focus = skip;
-   TRAP(sd, focus_skip_set, skip);
+   _elm_win_focus_skip_set(sd, skip);
 }
 
 EOLIAN static void
