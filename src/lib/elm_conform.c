@@ -944,10 +944,10 @@ _on_conformant_changed(void *data,
    /* object is already freed */
    if (!sd) return;
 
+   mode = elm_win_keyboard_mode_get(obj);
+
    if (property & CONFORMANT_KEYBOARD_STATE)
      {
-        mode = elm_win_keyboard_mode_get(obj);
-
         if (mode == ELM_WIN_KEYBOARD_ON)
           {
              _conformant_part_sizing_eval(data, ELM_CONFORMANT_VIRTUAL_KEYPAD_PART);
@@ -960,13 +960,13 @@ _on_conformant_changed(void *data,
           {
              evas_object_size_hint_min_set(sd->virtualkeypad, -1, 0);
              evas_object_size_hint_max_set(sd->virtualkeypad, -1, 0);
-             _conformant_part_sizing_eval(data, ELM_CONFORMANT_VIRTUAL_KEYPAD_PART);
              elm_widget_display_mode_set(data, EVAS_DISPLAY_MODE_NONE);
              eo_do(data, eo_event_callback_call(
                    ELM_CONFORMANT_EVENT_VIRTUALKEYPAD_STATE_OFF, NULL));
           }
      }
-   if (property & CONFORMANT_KEYBOARD_GEOMETRY)
+   if (property & CONFORMANT_KEYBOARD_GEOMETRY &&
+       mode == ELM_WIN_KEYBOARD_ON)
      {
         _conformant_part_sizing_eval(data, ELM_CONFORMANT_VIRTUAL_KEYPAD_PART);
      }
