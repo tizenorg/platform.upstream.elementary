@@ -483,16 +483,36 @@ _elm_popup_elm_layout_sizing_eval(Eo *obj, Elm_Popup_Data *sd)
      {
         double horizontal, vertical;
         Evas_Coord w, h;
+        //TIZEN_ONLY(20160405): fix popup size problem in landscape mode
+        int rotation = -1;
+        int w_content_area = 9999;
+        const char *str;
+        //
 
         edje_object_message_signal_process(elm_layout_edje_get(sd->content_area));
 
         elm_popup_align_get(obj, &horizontal, &vertical);
         evas_object_geometry_get(elm_widget_parent_get(obj), NULL, NULL, &w, &h);
 
+        //TIZEN_ONLY(20160405): fix popup size problem in landscape mode
+        str = edje_object_data_get(elm_layout_edje_get(sd->content_area), "content_area_width");
+        if (str) w_content_area = (int)(atoi(str)
+                                    * elm_config_scale_get()
+                                    * elm_object_scale_get(obj)
+                                    / edje_object_base_scale_get(elm_layout_edje_get(sd->content_area)));
+        //
+
         if (horizontal == ELM_NOTIFY_ALIGN_FILL)
           minw = w;
         if (vertical == ELM_NOTIFY_ALIGN_FILL)
           minh = h;
+
+        //TIZEN_ONLY(20160405): fix popup size problem in landscape mode
+        rotation = elm_win_rotation_get(elm_widget_top_get(elm_widget_parent_get(sd->notify)));
+		if ((rotation == 90 || rotation == 270) && (horizontal == ELM_NOTIFY_ALIGN_FILL))
+	      minw = w_content_area;
+		//
+
         edje_object_size_min_restricted_calc(elm_layout_edje_get(sd->content_area),
                                              &minw, &minh, minw, minh);
 
