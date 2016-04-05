@@ -342,6 +342,49 @@ _populate_theme_scroll(Elm_Popup_Data *sd)
    sd->theme_scroll = EINA_FALSE;
 }
 
+//TIZEN_ONLY(20160405): fix style apply problem
+static const char*
+_notify_orient_name_get(Evas_Object *obj)
+{
+   const char *position;
+   double ax, ay;
+   ax = _elm_config->popup_horizontal_align;
+   ay = _elm_config->popup_vertical_align;
+
+   if ((elm_widget_mirrored_get(obj)) && (ax != ELM_NOTIFY_ALIGN_FILL)) ax = 1.0 - ax;
+
+   if (ay == 0.0)
+     {
+        if (ax == 0.0)
+          position = "top_left";
+        else if (ax == 1.0)
+          position = "top_right";
+        else
+          position = "top";
+     }
+   else if (ay == 1.0)
+     {
+        if (ax == 0.0)
+          position = "bottom_left";
+        else if (ax == 1.0)
+          position = "bottom_right";
+        else
+          position = "bottom";
+     }
+   else
+     {
+        if (ax == 0.0)
+          position = "left";
+        else if (ax == 1.0)
+          position = "right";
+        else
+          position = "center";
+     }
+
+   return position;
+}
+//
+
 EOLIAN static Eina_Bool
 _elm_popup_elm_widget_theme_apply(Eo *obj, Elm_Popup_Data *sd)
 {
@@ -360,9 +403,9 @@ _elm_popup_elm_widget_theme_apply(Eo *obj, Elm_Popup_Data *sd)
         const char *obj_style = elm_widget_style_get(obj);
 
         if (obj_style && !strcmp(obj_style, "default"))
-          ret = elm_widget_style_set(sd->notify, "popup");
+          ret = elm_layout_theme_set(sd->notify, "notify", _notify_orient_name_get(obj), "popup");
         else
-          ret = elm_widget_style_set(sd->notify, obj_style);
+          ret = elm_layout_theme_set(sd->notify, "notify", _notify_orient_name_get(obj), obj_style);
 
         if (!ret)
           elm_widget_style_set(sd->notify, style);
@@ -1599,9 +1642,9 @@ _elm_popup_evas_object_smart_add(Eo *obj, Elm_Popup_Data *priv)
         const char *obj_style = elm_widget_style_get(obj);
 
         if (obj_style && !strcmp(obj_style, "default"))
-          ret = elm_widget_style_set(priv->notify, "popup");
+          ret = elm_layout_theme_set(priv->notify, "notify", _notify_orient_name_get(obj), "popup");
         else
-          ret = elm_widget_style_set(priv->notify, obj_style);
+          ret = elm_layout_theme_set(priv->notify, "notify", _notify_orient_name_get(obj), obj_style);
 
         if (!ret)
           elm_widget_style_set(priv->notify, style);
