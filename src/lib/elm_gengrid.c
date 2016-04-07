@@ -2168,13 +2168,20 @@ _item_focus_up(Elm_Gengrid_Data *sd)
         if (eo_prev == sd->focused_item) return EINA_FALSE;
      }
 
-   for (i = 1; i < sd->nmax; i++)
+   // TIZEN_ONLY(20151124): fix focus issue when prev/next item is disabled
+   prev = eo_data_scope_get(sd->focused_item, ELM_GENGRID_ITEM_CLASS);
+   while (prev)
      {
-        Elm_Object_Item *eo_tmp =
-          elm_gengrid_item_prev_get(EO_OBJ(prev));
-        if (!eo_tmp) return EINA_FALSE;
-        prev = eo_data_scope_get(eo_tmp, ELM_GENGRID_ITEM_CLASS);
+        for (i = 0; i < sd->nmax; i++)
+          {
+             Elm_Object_Item *eo_tmp =
+               elm_gengrid_item_prev_get(EO_OBJ(prev));
+             if (!eo_tmp) return EINA_FALSE;
+             prev = eo_data_scope_get(eo_tmp, ELM_GENGRID_ITEM_CLASS);
+          }
+        if (!elm_object_item_disabled_get(EO_OBJ(prev))) break;
      }
+   //
 
    elm_object_item_focus_set(EO_OBJ(prev), EINA_TRUE);
 
@@ -2211,12 +2218,18 @@ _item_focus_down(Elm_Gengrid_Data *sd)
         else
           {
              next = eo_data_scope_get(sd->focused_item, ELM_GENGRID_ITEM_CLASS);
-             for (i = 0; i < sd->nmax; i++)
+             // TIZEN_ONLY(20151124): fix focus issue when prev/next item is disabled
+             while (next)
                {
-                  eo_tmp = elm_gengrid_item_next_get(EO_OBJ(next));
-                  if (!eo_tmp) return EINA_FALSE;
-                  next = eo_data_scope_get(eo_tmp, ELM_GENGRID_ITEM_CLASS);
+                  for (i = 0; i < sd->nmax; i++)
+                    {
+                       eo_tmp = elm_gengrid_item_next_get(EO_OBJ(next));
+                       if (!eo_tmp) return EINA_FALSE;
+                       next = eo_data_scope_get(eo_tmp, ELM_GENGRID_ITEM_CLASS);
+                    }
+                  if (!elm_object_item_disabled_get(EO_OBJ(next))) break;
                }
+             //
           }
      }
 
@@ -2244,6 +2257,17 @@ _item_focus_left(Elm_Gengrid_Data *sd)
         if (eo_prev == sd->focused_item) return EINA_FALSE;
      }
 
+   // TIZEN_ONLY(20151124): fix focus issue when prev/next item is disabled
+   while (prev)
+     {
+        if (!elm_object_item_disabled_get(EO_OBJ(prev)))
+          break;
+        Elm_Object_Item *eo_tmp = elm_gengrid_item_prev_get(EO_OBJ(prev));
+        if (!eo_tmp) return EINA_FALSE;
+        prev = eo_data_scope_get(eo_tmp, ELM_GENGRID_ITEM_CLASS);
+     }
+   //
+
    elm_object_item_focus_set(EO_OBJ(prev), EINA_TRUE);
 
    return EINA_TRUE;
@@ -2267,6 +2291,17 @@ _item_focus_right(Elm_Gengrid_Data *sd)
         next = eo_data_scope_get(eo_next, ELM_GENGRID_ITEM_CLASS);
         if (eo_next == sd->focused_item) return EINA_FALSE;
      }
+
+   // TIZEN_ONLY(20151124): fix focus issue when prev/next item is disabled
+   while (next)
+     {
+        if (!elm_object_item_disabled_get(EO_OBJ(next)))
+          break;
+        Elm_Object_Item *eo_tmp = elm_gengrid_item_next_get(EO_OBJ(next));
+        if (!eo_tmp) return EINA_FALSE;
+        next = eo_data_scope_get(eo_tmp, ELM_GENGRID_ITEM_CLASS);
+     }
+   //
 
    elm_object_item_focus_set(EO_OBJ(next), EINA_TRUE);
 
