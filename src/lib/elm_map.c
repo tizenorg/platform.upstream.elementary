@@ -1,4 +1,5 @@
 #ifdef HAVE_CONFIG_H
+//temp
 # include "elementary_config.h"
 #endif
 
