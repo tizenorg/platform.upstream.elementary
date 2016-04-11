@@ -305,6 +305,9 @@ struct _Elm_Config
    int           gl_depth;
    int           gl_stencil;
    int           gl_msaa;
+   // TIZEN_ONLY(20160411): add united widget mode
+   unsigned char spinner_united_mode_enable;
+   // END-ONLY
 
    /* Not part of the EET file */
    Eina_Bool     is_mirrored : 1;
