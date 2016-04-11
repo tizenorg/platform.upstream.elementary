@@ -1016,6 +1016,17 @@ _elm_spinner_elm_widget_on_focus(Eo *obj, Elm_Spinner_Data *sd, Elm_Object_Item 
         _entry_value_apply(obj);
      }
 
+   // TIZEN_ONLY(20160411): add united widget mode
+   if (sd->button_layout && _elm_config->spinner_united_mode_enable)
+     {
+        const char *sig;
+
+        sig = elm_widget_focus_get(obj) ? "elm,action,focus" : "elm,action,unfocus";
+        elm_layout_signal_emit(sd->inc_button, sig, "elm");
+        elm_layout_signal_emit(sd->dec_button, sig, "elm");
+     }
+   // END-ONLY
+
    return EINA_TRUE;
 }
 
@@ -1428,12 +1439,18 @@ _elm_spinner_elm_widget_focus_direction(Eo *obj, Elm_Spinner_Data *_pd, const Ev
      return EINA_FALSE;
 
    list_data_get = eina_list_data_get;
-   items = eina_list_append(items, _pd->inc_button);
+   // TIZEN_ONLY(20160411): add united widget mode
+   if (!_elm_config->spinner_united_mode_enable)
+     items = eina_list_append(items, _pd->inc_button);
+   // END-ONLY
    if (_pd->entry_visible)
      items = eina_list_append(items, _pd->ent);
    else
      items = eina_list_append(items, _pd->text_button);
-   items = eina_list_append(items, _pd->dec_button);
+   // TIZEN_ONLY(20160411): add united widget mode
+   if (!_elm_config->spinner_united_mode_enable)
+     items = eina_list_append(items, _pd->dec_button);
+   // END-ONLY
 
    ret = elm_widget_focus_list_direction_get
         (obj, base, items, list_data_get, degree, direction, direction_item, weight);
@@ -1470,8 +1487,14 @@ _elm_spinner_elm_widget_focus_next(Eo *obj, Elm_Spinner_Data *_pd, Elm_Focus_Dir
      }
    if (!elm_widget_disabled_get(obj))
      {
-       items = eina_list_append(items, _pd->dec_button);
-        items = eina_list_append(items, _pd->inc_button);
+        // TIZEN_ONLY(20160411): add united widget mode
+        if (!_elm_config->spinner_united_mode_enable)
+          {
+             items = eina_list_append(items, _pd->dec_button);
+             items = eina_list_append(items, _pd->inc_button);
+          }
+        // END-ONLY
+
         if (_pd->entry_visible)
           items = eina_list_append(items, _pd->ent);
         else

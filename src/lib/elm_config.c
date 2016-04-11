@@ -441,6 +441,9 @@ _desc_init(void)
    ELM_CONFIG_VAL(D, T, popup_vertical_align, T_DOUBLE);
    ELM_CONFIG_VAL(D, T, popup_scrollable, T_UCHAR);
    ELM_CONFIG_VAL(D, T, spinner_min_max_filter_enable, T_UCHAR);
+   // TIZEN_ONLY(20160411): spinner: add united widget mode
+   ELM_CONFIG_VAL(D, T, spinner_united_mode_enable, T_UCHAR);
+   // END-ONLY
 #undef T
 #undef D
 #undef T_INT
@@ -1477,6 +1480,10 @@ _config_load(void)
    _elm_config->popup_vertical_align = 0.5;
 
    _elm_config->popup_scrollable = EINA_FALSE;
+
+   // TIZEN_ONLY(20160411): spinner: add united widget mode
+   _elm_config->spinner_united_mode_enable = 0;
+   // END-ONLY
 }
 
 static void
