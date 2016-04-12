@@ -9,8 +9,8 @@ msgstr ""
 "Project-Id-Version: elementary 1.8.2\n"
 "Report-Msgid-Bugs-To: enlightenment-devel@lists.sourceforge.net\n"
 "POT-Creation-Date: 2015-11-09 11:01+0100\n"
-"PO-Revision-Date: 2014-01-29 15:27+0100\n"
-"Last-Translator: rezso <rezso@rezso.net>\n"
+"PO-Revision-Date: 2016-04-12 15:27+0100\n"
+"Last-Translator: Thiep Ha <thiep.ha@samsung.com>\n"
 "Language-Team: General\n"
 "Language: hu\n"
 "MIME-Version: 1.0\n"
@@ -322,3 +322,185 @@ msgstr "Nincs kijelölve"
 #: src/lib/elm_toolbar.c:2321
 msgid "Toolbar Item"
 msgstr "Eszköztár elem"
+
+#: src/modules/datetime_input_popup/datetime_input_popup.c:749
+#: src/modules/datetime_input_popup/datetime_input_popup.c:992
+msgid "AM"
+msgstr "de."
+
+#: src/modules/datetime_input_popup/datetime_input_popup.c:754
+#: src/modules/datetime_input_popup/datetime_input_popup.c:993
+msgid "PM"
+msgstr "du."
+
+#: src/modules/datetime_input_popup/datetime_input_popup.c:786
+msgid "Set"
+msgstr "Beállít"
+
+#: src/modules/copypasteUI_ctxpopup/copypaste.c
+msgid "Translate"
+msgstr "Fordítás"
+
+#: src/modules/datetime_input_popup/datetime_input_popup.c
+msgid "flick up and down to adjust %s or double tap to open keyboard"
+msgstr "Pöccintsen fel- vagy lefelé a(z) %s módosításához, vagy érintse meg kétszer a billentyűzet megnyitásához."
+
+#: src/modules/datetime_input_popup/datetime_input_popup.c
+msgid "Double tap to change"
+msgstr "Érintse meg kétszer a módosításhoz."
+
+#: src/modules/datetime_input_popup/datetime_input_popup.c:375
+msgid "Set date"
+msgstr "Dátumbeállítás"
+
+#: src/modules/datetime_input_popup/datetime_input_popup.c:384
+msgid "Set time"
+msgstr "Időbeállítás"
+
+#: src/modules/datetime_input_popup/datetime_input_popup.c
+msgid "IDS_ACCS_BODY_PD_M_DAY"
+msgstr "%d"
+
+#: src/modules/datetime_input_popup/datetime_input_popup.c
+msgid "IDS_ACCS_BODY_PD_M_YEAR"
+msgstr "%Y"
+
+#: src/modules/datetime_input_popup/datetime_input_popup.c
+msgid "IDS_ACCS_BODY_PD_M_24HOUR"
+msgstr "%H"
+
+#: src/modules/datetime_input_popup/datetime_input_popup.c
+msgid "IDS_ACCS_BODY_PD_M_12HOUR"
+msgstr "%I"
+
+#: src/modules/datetime_input_popup/datetime_input_popup.c
+msgid "IDS_ACCS_BODY_PD_M_MINUTES"
+msgstr "%M"
+
+#: src/lib/elm_win.c
+msgid "Portrait Mode"
+msgstr "Álló mód"
+
+#: src/lib/elm_win.c
+msgid "Landscape Mode"
+msgstr "Fekvő mód"
+
+#: src/lib/elm_index.c
+msgid "Double tap to enable fast scrolling"
+msgstr "Kétszeri érintéssel engedélyezheti a gyors görgetést."
+
+#: src/lib/elm_entry.c
+msgid "Editing"
+msgstr "Szerkesztés."
+
+#: src/lib/elm_entry.c
+msgid "Flick up and down to adjust the position"
+msgstr "Fel- vagy lefelé pöccintve módosíthatja az elhelyezést."
+
+#: src/lib/elm_entry.c
+msgid "%d characters"
+msgstr "%d karakter."
+
+#: src/lib/elc_ctxpopup.c
+msgid "Contextual popup"
+msgstr "Környezetérzékeny előugró ablak"
+
+#: src/lib/elc_ctxpopup.c
+msgid "Double tap to close popup"
+msgstr "Érintse meg kétszer az előugró ablak bezárásához."
+
+#: src/lib/elc_popup.c
+msgid "Central popup"
+msgstr "Központi előugró ablak"
+
+#: src/lib/elc_popup.c
+msgid "Double tap to close it"
+msgstr "Zárja be kétszeri érintéssel."
+
+#: src/lib/elm_panel.c
+msgid "A drawer is open"
+msgstr "Nyitva van egy fiók."
+
+#: src/lib/elm_panel.c
+msgid "Double tap to close drawer menu"
+msgstr "Kétszeri érintéssel bezárhatja a tálcamenüt."
+
+#: src/lib/elm_entry.c
+msgid "Cursor at beginning of text"
+msgstr "Kurzor a szöveg elején"
+
+#: src/lib/elm_entry.c
+msgid "Cursor at end of text"
+msgstr "Kurzor a szöveg végén"
+
+msgid "tap to change"
+msgstr "Érintse meg módváltáshoz."
+
+msgid "date"
+msgstr "Dátum"
+
+msgid "hour"
+msgstr "óra"
+
+msgid "minute"
+msgstr "perc"
+
+msgid "month"
+msgstr "hónap"
+
+msgid "year"
+msgstr "év"
+
+msgid "IDS_ST_BODY_P1SD_OF_P2SD_TTS"
+msgstr "%1$d számú, összesen %2$d."
+
+msgid "IDS_COM_BODY_DECREASE_DAY"
+msgstr "Nap csökkentése"
+
+msgid "IDS_COM_BODY_DECREASE_HOUR"
+msgstr "Óra csökkentése"
+
+msgid "IDS_COM_BODY_DECREASE_MINUTE"
+msgstr "Perc csökkentése"
+
+msgid "IDS_COM_BODY_DECREASE_MONTH"
+msgstr "Hónap csökkentése"
+
+msgid "IDS_COM_BODY_DECREASE_YEAR"
+msgstr "Év csökkentése"
+
+msgid "IDS_COM_BODY_INCREASE_DAY"
+msgstr "Nap növelése"
+
+msgid "IDS_COM_BODY_INCREASE_HOUR"
+msgstr "Óra növelése"
+
+msgid "IDS_COM_BODY_INCREASE_MINUTE"
+msgstr "Perc növelése"
+
+msgid "IDS_COM_BODY_INCREASE_MONTH"
+msgstr "Hónap növelése"
+
+msgid "IDS_COM_BODY_INCREASE_YEAR"
+msgstr "Év növelése"
+
+msgid "IDS_IDLE_BODY_TAP_TO_CHANGE"
+msgstr "Érintse meg a módosításhoz."
+
+msgid "IDS_COM_BODY_SELECT_ALL"
+msgstr "Összes kijelölése"
+
+msgid "IDS_COM_BODY_COPY"
+msgstr "Másol"
+
+msgid "IDS_COM_SK_SELECT"
+msgstr "Választ"
+
+msgid "IDS_COM_BODY_CUT"
+msgstr "Kivág"
+
+msgid "IDS_COM_BODY_PASTE"
+msgstr "Beilleszt"
+
+msgid "IDS_COM_BODY_CLIPBOARD"
+msgstr "Vágólap"

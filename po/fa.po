@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: elementary\n"
 "Report-Msgid-Bugs-To: enlightenment-devel@lists.sourceforge.net\n"
 "POT-Creation-Date: 2015-11-09 11:01+0100\n"
-"PO-Revision-Date: 2010-12-26 10:05+0200\n"
-"Last-Translator: Tom Hacohen <tom.hacohen@samsung.com>\n"
+"PO-Revision-Date: 2016-04-12 10:05+0200\n"
+"Last-Translator: Thiep Ha <thiep.ha@samsung.com>\n"
 "Language-Team: General\n"
 "Language: fa\n"
 "MIME-Version: 1.0\n"
@@ -321,3 +321,98 @@ msgstr ""
 #: src/lib/elm_toolbar.c:2321
 msgid "Toolbar Item"
 msgstr ""
+
+#: src/modules/datetime_input_popup/datetime_input_popup.c:749
+#: src/modules/datetime_input_popup/datetime_input_popup.c:992
+msgid "AM"
+msgstr "ق.ظ"
+
+#: src/modules/datetime_input_popup/datetime_input_popup.c:754
+#: src/modules/datetime_input_popup/datetime_input_popup.c:993
+msgid "PM"
+msgstr "ب.ظ"
+
+#: src/modules/datetime_input_popup/datetime_input_popup.c:786
+msgid "Set"
+msgstr "تنظيم"
+
+#: src/modules/datetime_input_popup/datetime_input_popup.c:375
+msgid "Set date"
+msgstr "تنظیم تاریخ"
+
+#: src/modules/datetime_input_popup/datetime_input_popup.c:384
+msgid "Set time"
+msgstr "تنظيم ساعت"
+
+msgid "tap to change"
+msgstr "برای تغییر حالت ضربه بزنید."
+
+msgid "date"
+msgstr "تاريخ"
+
+msgid "hour"
+msgstr "ساعت"
+
+msgid "minute"
+msgstr "دقیقه"
+
+msgid "month"
+msgstr "ماه"
+
+msgid "year"
+msgstr "سال"
+
+msgid "IDS_ST_BODY_P1SD_OF_P2SD_TTS"
+msgstr "‎%1$d از ‎%2$d."
+
+msgid "IDS_COM_BODY_DECREASE_DAY"
+msgstr "کاهش روز"
+
+msgid "IDS_COM_BODY_DECREASE_HOUR"
+msgstr "کاهش ساعت"
+
+msgid "IDS_COM_BODY_DECREASE_MINUTE"
+msgstr "کاهش دقیقه"
+
+msgid "IDS_COM_BODY_DECREASE_MONTH"
+msgstr "کاهش ماه"
+
+msgid "IDS_COM_BODY_DECREASE_YEAR"
+msgstr "کاهش سال"
+
+msgid "IDS_COM_BODY_INCREASE_DAY"
+msgstr "افزایش روز"
+
+msgid "IDS_COM_BODY_INCREASE_HOUR"
+msgstr "افزایش ساعت"
+
+msgid "IDS_COM_BODY_INCREASE_MINUTE"
+msgstr "افزایش دقیقه"
+
+msgid "IDS_COM_BODY_INCREASE_MONTH"
+msgstr "افزایش ماه"
+
+msgid "IDS_COM_BODY_INCREASE_YEAR"
+msgstr "افزایش سال"
+
+msgid "IDS_IDLE_BODY_TAP_TO_CHANGE"
+msgstr "برای تغییر ضربه بزنید."
+
+msgid "IDS_COM_BODY_SELECT_ALL"
+msgstr "انتخاب همه"
+
+msgid "IDS_COM_BODY_COPY"
+msgstr "کپی"
+
+msgid "IDS_COM_SK_SELECT"
+msgstr "انتخاب"
+
+msgid "IDS_COM_BODY_CUT"
+msgstr "برش"
+
+msgid "IDS_COM_BODY_PASTE"
+msgstr "الحاق"
+
+msgid "IDS_COM_BODY_CLIPBOARD"
+msgstr "کلیپ بورد"
+

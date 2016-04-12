@@ -9,8 +9,8 @@ msgstr ""
 "Project-Id-Version: elementary\n"
 "Report-Msgid-Bugs-To: enlightenment-devel@lists.sourceforge.net\n"
 "POT-Creation-Date: 2015-11-09 11:01+0100\n"
-"PO-Revision-Date: 2015-05-27 01:50+0900\n"
-"Last-Translator: Daniel Juyung Seo <seojuyung2@gmail.com>\n"
+"PO-Revision-Date: 2016-04-12 09:09-0800\n"
+"Last-Translator: Thiep Ha <thiep.ha@samsung.com>\n"
 "Language-Team: General\n"
 "Language: ko_KR\n"
 "MIME-Version: 1.0\n"
@@ -324,3 +324,191 @@ msgstr "선택 해제"
 #: src/lib/elm_toolbar.c:2321
 msgid "Toolbar Item"
 msgstr "툴바 항목"
+#: src/modules/datetime_input_popup/datetime_input_popup.c:749
+#: src/modules/datetime_input_popup/datetime_input_popup.c:992
+msgid "AM"
+msgstr "오전"
+
+#: src/modules/datetime_input_popup/datetime_input_popup.c:754
+#: src/modules/datetime_input_popup/datetime_input_popup.c:993
+msgid "PM"
+msgstr "오후"
+
+#: src/modules/datetime_input_popup/datetime_input_popup.c:786
+msgid "Set"
+msgstr "설정"
+
+#: src/modules/copypasteUI_ctxpopup/copypaste.c
+msgid "Translate"
+msgstr "번역"
+
+#: src/modules/datetime_input_popup/datetime_input_popup.c
+msgid "flick up and down to adjust %s or double tap to open keyboard"
+msgstr "위나 아래로 드래그하여 %s을(를) 조절하거나 두 번 눌러 키보드를 여세요."
+
+#: src/modules/datetime_input_popup/datetime_input_popup.c
+msgid "Double tap to change"
+msgstr "변경하려면 두 번 누르세요."
+
+#: src/modules/datetime_input_popup/datetime_input_popup.c:375
+msgid "Set date"
+msgstr "날짜 설정"
+
+#: src/modules/datetime_input_popup/datetime_input_popup.c:384
+msgid "Set time"
+msgstr "시간 설정"
+
+#: src/modules/datetime_input_popup/datetime_input_popup.c
+msgid "IDS_ACCS_BODY_PD_M_DAY"
+msgstr "%d일"
+
+#: src/modules/datetime_input_popup/datetime_input_popup.c
+msgid "IDS_ACCS_BODY_PD_M_YEAR"
+msgstr "%Y년"
+
+#: src/modules/datetime_input_popup/datetime_input_popup.c
+msgid "IDS_ACCS_BODY_PD_M_24HOUR"
+msgstr "%H시"
+
+#: src/modules/datetime_input_popup/datetime_input_popup.c
+msgid "IDS_ACCS_BODY_PD_M_12HOUR"
+msgstr "%I시"
+
+#: src/modules/datetime_input_popup/datetime_input_popup.c
+msgid "IDS_ACCS_BODY_PD_M_MINUTES"
+msgstr "%M분"
+
+#: src/lib/elm_win.c
+msgid "Portrait Mode"
+msgstr "세로 보기"
+
+#: src/lib/elm_win.c
+msgid "Landscape Mode"
+msgstr "가로 보기"
+
+#: src/lib/elm_index.c
+msgid "Double tap to enable fast scrolling"
+msgstr "스크롤 가속도를 실행하려면 두 번 누르세요."
+
+#: src/lib/elm_entry.c
+msgid "Editing"
+msgstr "편집 중입니다."
+
+#: src/lib/elm_entry.c
+msgid "Flick up and down to adjust the position"
+msgstr "위치를 조절하려면 위나 아래로 움직이세요."
+
+#: src/lib/elm_entry.c
+msgid "%d characters"
+msgstr "%d자 입력하였습니다."
+
+#: src/lib/elc_ctxpopup.c
+msgid "Contextual popup"
+msgstr "상황별 팝업"
+
+#: src/lib/elc_ctxpopup.c
+msgid "Double tap to close popup"
+msgstr "팝업을 닫으려면 두 번 누르세요."
+
+#: src/lib/elc_popup.c
+msgid "Central popup"
+msgstr "화면 중앙 팝업"
+
+#: src/lib/elc_popup.c
+msgid "Double tap to close it"
+msgstr "닫으려면 두 번 누르세요."
+
+
+#: src/lib/elm_panel.c
+msgid "A drawer is open"
+msgstr "서랍 메뉴가 열렸습니다."
+
+#: src/lib/elm_panel.c
+msgid "Double tap to close drawer menu"
+msgstr "서랍 메뉴를 닫으려면 두 번 누르세요."
+
+#: src/lib/elm_entry.c
+msgid "Cursor at beginning of text"
+msgstr "텍스트 앞에 커서"
+
+#: src/lib/elm_entry.c
+msgid "Cursor at end of text"
+msgstr "텍스트 뒤에 커서"
+
+#: src/modules/datetime_input_button/datetime_input_button.c
+msgid "tap to change"
+msgstr "모드를 변경하려면 누르세요."
+
+#: src/modules/datetime_input_button/datetime_input_button.c
+msgid "date"
+msgstr "날짜"
+
+#: src/modules/datetime_input_button/datetime_input_button.c
+msgid "hour"
+msgstr "시간"
+
+#: src/modules/datetime_input_button/datetime_input_button.c
+msgid "minute"
+msgstr "분"
+
+#: src/modules/datetime_input_button/datetime_input_button.c
+msgid "month"
+msgstr "월"
+
+#: src/modules/datetime_input_button/datetime_input_button.c
+msgid "year"
+msgstr "년"
+
+msgid "IDS_ST_BODY_P1SD_OF_P2SD_TTS"
+msgstr "%2$d 중에 %1$d"
+
+msgid "IDS_COM_BODY_DECREASE_DAY"
+msgstr "일 낮추기"
+
+msgid "IDS_COM_BODY_DECREASE_HOUR"
+msgstr "시간 낮추기"
+
+msgid "IDS_COM_BODY_DECREASE_MINUTE"
+msgstr "분 낮추기"
+
+msgid "IDS_COM_BODY_DECREASE_MONTH"
+msgstr "월 낮추기"
+
+msgid "IDS_COM_BODY_DECREASE_YEAR"
+msgstr "연도 낮추기"
+
+msgid "IDS_COM_BODY_INCREASE_DAY"
+msgstr "일 높이기"
+
+msgid "IDS_COM_BODY_INCREASE_HOUR"
+msgstr "시간 높이기"
+
+msgid "IDS_COM_BODY_INCREASE_MINUTE"
+msgstr "분 높이기"
+
+msgid "IDS_COM_BODY_INCREASE_MONTH"
+msgstr "월 높이기"
+
+msgid "IDS_COM_BODY_INCREASE_YEAR"
+msgstr "연도 높이기"
+
+msgid "IDS_IDLE_BODY_TAP_TO_CHANGE"
+msgstr "변경하려면 누르세요."
+
+msgid "IDS_COM_BODY_SELECT_ALL"
+msgstr "모두 선택"
+
+msgid "IDS_COM_BODY_COPY"
+msgstr "복사"
+
+msgid "IDS_COM_SK_SELECT"
+msgstr "선택"
+
+msgid "IDS_COM_BODY_CUT"
+msgstr "잘라내기"
+
+msgid "IDS_COM_BODY_PASTE"
+msgstr "붙여넣기"
+
+msgid "IDS_COM_BODY_CLIPBOARD"
+msgstr "클립보드"

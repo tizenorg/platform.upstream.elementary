@@ -9,8 +9,8 @@ msgstr ""
 "Project-Id-Version: enlightenment\n"
 "Report-Msgid-Bugs-To: enlightenment-devel@lists.sourceforge.net\n"
 "POT-Creation-Date: 2015-11-09 11:01+0100\n"
-"PO-Revision-Date: 2014-08-31 15:13+0000\n"
-"Last-Translator: Kai Huuhko <kai.huuhko@gmail.com>\n"
+"PO-Revision-Date: 2016-04-12 15:13+0000\n"
+"Last-Translator: Thiep Ha <thiep.ha@samsung.com>\n"
 "Language-Team: Finnish <fi@li.org>\n"
 "Language: fi\n"
 "MIME-Version: 1.0\n"
@@ -324,3 +324,187 @@ msgstr "Valitsematon"
 #: src/lib/elm_toolbar.c:2321
 msgid "Toolbar Item"
 msgstr "Työkalupalkin kohta"
+
+
+#: src/modules/datetime_input_popup/datetime_input_popup.c:749
+#: src/modules/datetime_input_popup/datetime_input_popup.c:992
+msgid "AM"
+msgstr "ap."
+
+#: src/modules/datetime_input_popup/datetime_input_popup.c:754
+#: src/modules/datetime_input_popup/datetime_input_popup.c:993
+msgid "PM"
+msgstr "ip."
+
+#: src/modules/datetime_input_popup/datetime_input_popup.c:786
+msgid "Set"
+msgstr "Aseta"
+
+#: src/modules/copypasteUI_ctxpopup/copypaste.c
+msgid "Translate"
+msgstr "Käännä"
+
+#: src/modules/datetime_input_popup/datetime_input_popup.c
+msgid "flick up and down to adjust %s or double tap to open keyboard"
+msgstr "Säädä kuukautta %s pyyhkäisemällä ylös- ja alaspäin tai avaa näppäimistö kaksoisnapauttamalla."
+
+#: src/modules/datetime_input_popup/datetime_input_popup.c
+msgid "Double tap to change"
+msgstr "Muuta kaksoisnapauttamalla."
+
+#: src/modules/datetime_input_popup/datetime_input_popup.c:375
+msgid "Set date"
+msgstr "Aseta päivämäärä"
+
+#: src/modules/datetime_input_popup/datetime_input_popup.c:384
+msgid "Set time"
+msgstr "Aseta aika"
+
+#: src/modules/datetime_input_popup/datetime_input_popup.c
+msgid "IDS_ACCS_BODY_PD_M_DAY"
+msgstr "%d"
+
+#: src/modules/datetime_input_popup/datetime_input_popup.c
+msgid "IDS_ACCS_BODY_PD_M_YEAR"
+msgstr "%Y"
+
+#: src/modules/datetime_input_popup/datetime_input_popup.c
+msgid "IDS_ACCS_BODY_PD_M_24HOUR"
+msgstr "%H"
+
+#: src/modules/datetime_input_popup/datetime_input_popup.c
+msgid "IDS_ACCS_BODY_PD_M_12HOUR"
+msgstr "%I"
+
+#: src/modules/datetime_input_popup/datetime_input_popup.c
+msgid "IDS_ACCS_BODY_PD_M_MINUTES"
+msgstr "%M"
+
+#: src/lib/elm_win.c
+msgid "Portrait Mode"
+msgstr "Pystytila"
+
+#: src/lib/elm_win.c
+msgid "Landscape Mode"
+msgstr "Vaakatila"
+
+#: src/lib/elm_index.c
+msgid "Double tap to enable fast scrolling"
+msgstr "Ota nopea vieritys kaksoisnapauttamalla käyttöön."
+
+#: src/lib/elm_entry.c
+msgid "Editing"
+msgstr "Muokataan."
+
+#: src/lib/elm_entry.c
+msgid "Flick up and down to adjust the position"
+msgstr "Säädä paikkaa sipaisemalla ylös- ja alaspäin."
+
+#: src/lib/elm_entry.c
+msgid "%d characters"
+msgstr "%d merkkiä."
+
+#: src/lib/elc_ctxpopup.c
+msgid "Contextual popup"
+msgstr "Tilannekohtainen ponnahdusikkuna"
+
+#: src/lib/elc_ctxpopup.c
+msgid "Double tap to close popup"
+msgstr "Sulje ponnahdusikkuna kaksoisnapauttamalla."
+
+#: src/lib/elc_popup.c
+msgid "Central popup"
+msgstr "Keskimmäinen ponnahdusikkuna"
+
+#: src/lib/elc_popup.c
+msgid "Double tap to close it"
+msgstr "Voit sulkea sen kaksoisnapauttamalla."
+
+#: src/lib/elm_panel.c
+msgid "A drawer is open"
+msgstr "Laatikko on auki."
+
+#: src/lib/elm_panel.c
+msgid "Double tap to close drawer menu"
+msgstr "Sulje vetovalikko kaksoisnapauttamalla tätä."
+
+#: src/lib/elm_entry.c
+msgid "Cursor at beginning of text"
+msgstr "Kohdistin tekstin alkuun"
+
+#: src/lib/elm_entry.c
+msgid "Cursor at end of text"
+msgstr "Kohdistin tekstin loppuun"
+
+msgid "tap to change"
+msgstr "Vaihda tilaa napauttamalla."
+
+msgid "date"
+msgstr "Päivämäärä"
+
+msgid "hour"
+msgstr "tunti"
+
+msgid "minute"
+msgstr "minuutti"
+
+msgid "month"
+msgstr "kuukauden"
+
+msgid "year"
+msgstr "vuosi"
+
+msgid "IDS_ST_BODY_P1SD_OF_P2SD_TTS"
+msgstr "%1$d/%2$d."
+
+msgid "IDS_COM_BODY_DECREASE_DAY"
+msgstr "Vähennä päivää"
+
+msgid "IDS_COM_BODY_DECREASE_HOUR"
+msgstr "Vähennä tuntia"
+
+msgid "IDS_COM_BODY_DECREASE_MINUTE"
+msgstr "Vähennä minuuttia"
+
+msgid "IDS_COM_BODY_DECREASE_MONTH"
+msgstr "Vähennä kuukautta"
+
+msgid "IDS_COM_BODY_DECREASE_YEAR"
+msgstr "Vähennä vuotta"
+
+msgid "IDS_COM_BODY_INCREASE_DAY"
+msgstr "Lisää päivää"
+
+msgid "IDS_COM_BODY_INCREASE_HOUR"
+msgstr "Lisää tuntia"
+
+msgid "IDS_COM_BODY_INCREASE_MINUTE"
+msgstr "Lisää minuuttia"
+
+msgid "IDS_COM_BODY_INCREASE_MONTH"
+msgstr "Lisää kuukautta"
+
+msgid "IDS_COM_BODY_INCREASE_YEAR"
+msgstr "Lisää vuotta"
+
+msgid "IDS_IDLE_BODY_TAP_TO_CHANGE"
+msgstr "Muuta napauttamalla."
+
+msgid "IDS_COM_BODY_SELECT_ALL"
+msgstr "Valitse kaikki"
+
+msgid "IDS_COM_BODY_COPY"
+msgstr "Kopioi"
+
+msgid "IDS_COM_SK_SELECT"
+msgstr "Valitse"
+
+msgid "IDS_COM_BODY_CUT"
+msgstr "Poimi"
+
+msgid "IDS_COM_BODY_PASTE"
+msgstr "Liitä"
+
+msgid "IDS_COM_BODY_CLIPBOARD"
+msgstr "Leikepöytä"
+

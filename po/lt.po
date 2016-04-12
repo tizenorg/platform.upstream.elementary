@@ -9,8 +9,8 @@ msgstr ""
 "Project-Id-Version: enlightenment\n"
 "Report-Msgid-Bugs-To: enlightenment-devel@lists.sourceforge.net\n"
 "POT-Creation-Date: 2015-11-09 11:01+0100\n"
-"PO-Revision-Date: 2014-02-21 22:38+0000\n"
-"Last-Translator: Mantas Kriaučiūnas <mantas@akl.lt>\n"
+"PO-Revision-Date: 2016-04-12 22:38+0000\n"
+"Last-Translator: Thiep Ha <thiep.ha@samsung.com>\n"
 "Language-Team: Lithuanian <lt@li.org>\n"
 "Language: lt\n"
 "MIME-Version: 1.0\n"
@@ -323,3 +323,184 @@ msgstr "Nepasirinkta(s)"
 #: src/lib/elm_toolbar.c:2321
 msgid "Toolbar Item"
 msgstr ""
+#: src/modules/datetime_input_popup/datetime_input_popup.c:749
+#: src/modules/datetime_input_popup/datetime_input_popup.c:992
+msgid "AM"
+msgstr "AM"
+
+#: src/modules/datetime_input_popup/datetime_input_popup.c:754
+#: src/modules/datetime_input_popup/datetime_input_popup.c:993
+msgid "PM"
+msgstr "PM"
+
+#: src/modules/datetime_input_popup/datetime_input_popup.c:786
+msgid "Set"
+msgstr "Nustatyti"
+
+#: src/modules/copypasteUI_ctxpopup/copypaste.c
+msgid "Translate"
+msgstr "Versti"
+
+#: src/modules/datetime_input_popup/datetime_input_popup.c
+msgid "flick up and down to adjust %s or double tap to open keyboard"
+msgstr "Braukite aukštyn ir žemyn, kad sureguliuotumėte %s, arba bakstelėkite du kartus ir atidarykite klaviatūrą."
+
+#: src/modules/datetime_input_popup/datetime_input_popup.c
+msgid "Double tap to change"
+msgstr "Bakstelėkite dukart, kad pakeistumėte."
+
+#: src/modules/datetime_input_popup/datetime_input_popup.c:375
+msgid "Set date"
+msgstr "Nustatyti datą"
+
+#: src/modules/datetime_input_popup/datetime_input_popup.c:384
+msgid "Set time"
+msgstr "Nustatyti laiką"
+
+#: src/modules/datetime_input_popup/datetime_input_popup.c
+msgid "IDS_ACCS_BODY_PD_M_DAY"
+msgstr "%d"
+
+#: src/modules/datetime_input_popup/datetime_input_popup.c
+msgid "IDS_ACCS_BODY_PD_M_YEAR"
+msgstr "%Y"
+
+#: src/modules/datetime_input_popup/datetime_input_popup.c
+msgid "IDS_ACCS_BODY_PD_M_24HOUR"
+msgstr "%H"
+
+#: src/modules/datetime_input_popup/datetime_input_popup.c
+msgid "IDS_ACCS_BODY_PD_M_12HOUR"
+msgstr "%I"
+
+#: src/modules/datetime_input_popup/datetime_input_popup.c
+msgid "IDS_ACCS_BODY_PD_M_MINUTES"
+msgstr "%M"
+
+#: src/lib/elm_win.c
+msgid "Portrait Mode"
+msgstr "Portreto režimas"
+
+#: src/lib/elm_win.c
+msgid "Landscape Mode"
+msgstr "Kraštovaizdžio režimas"
+
+#: src/lib/elm_index.c
+msgid "Double tap to enable fast scrolling"
+msgstr "Bakstelėkite du kartus, kad įjungtumėte greitąjį slinkimą."
+
+#: src/lib/elm_entry.c
+msgid "Editing"
+msgstr "Redaguojama."
+
+#: src/lib/elm_entry.c
+msgid "Flick up and down to adjust the position"
+msgstr "Braukite aukštyn ir žemyn, kad sureguliuotumėte padėtį."
+
+#: src/lib/elm_entry.c
+msgid "%d characters"
+msgstr "Simbolių: %d."
+
+#: src/lib/elc_ctxpopup.c
+msgid "Contextual popup"
+msgstr "Kontekstinis iškylantysis langas"
+
+#: src/lib/elc_ctxpopup.c
+msgid "Double tap to close popup"
+msgstr "Bakstelėkite du kartus ir uždarykite iškylantįjį langą."
+
+#: src/lib/elc_popup.c
+msgid "Central popup"
+msgstr "Centrinis iškylantysis langas"
+
+#: src/lib/elc_popup.c
+msgid "Double tap to close it"
+msgstr "Bakstelėkite du kartus norėdami uždaryti."
+
+#: src/lib/elm_panel.c
+msgid "A drawer is open"
+msgstr "Atidarytas stalčius."
+
+#: src/lib/elm_panel.c
+msgid "Double tap to close drawer menu"
+msgstr "Bakstelėkite dukart, kad uždarytumėte stalčiaus meniu."
+
+#: src/lib/elm_entry.c
+msgid "Cursor at beginning of text"
+msgstr "Žymeklis teksto pradžioje"
+
+#: src/lib/elm_entry.c
+msgid "Cursor at end of text"
+msgstr "Žymeklis teksto pabaigoje"
+
+msgid "tap to change"
+msgstr "Bakstelėkite, kad pakeistumėte režimą."
+
+msgid "date"
+msgstr "Data"
+
+msgid "hour"
+msgstr "valanda"
+
+msgid "minute"
+msgstr "minutė"
+
+msgid "month"
+msgstr "mėnuo"
+
+msgid "year"
+msgstr "metai"
+
+msgid "IDS_ST_BODY_P1SD_OF_P2SD_TTS"
+msgstr "%1$d iš %2$d."
+
+msgid "IDS_COM_BODY_DECREASE_DAY"
+msgstr "Sumažinti dienų"
+
+msgid "IDS_COM_BODY_DECREASE_HOUR"
+msgstr "Sumažinti valandų"
+
+msgid "IDS_COM_BODY_DECREASE_MINUTE"
+msgstr "Sumažinti minučių"
+
+msgid "IDS_COM_BODY_DECREASE_MONTH"
+msgstr "Sumažinti mėnesių"
+
+msgid "IDS_COM_BODY_DECREASE_YEAR"
+msgstr "Sumažinti metų"
+
+msgid "IDS_COM_BODY_INCREASE_DAY"
+msgstr "Padidinti dienų"
+
+msgid "IDS_COM_BODY_INCREASE_HOUR"
+msgstr "Padidinti valandų"
+
+msgid "IDS_COM_BODY_INCREASE_MINUTE"
+msgstr "Padidinti minučių"
+
+msgid "IDS_COM_BODY_INCREASE_MONTH"
+msgstr "Padidinti mėnesių"
+
+msgid "IDS_COM_BODY_INCREASE_YEAR"
+msgstr "Padidinti metų"
+
+msgid "IDS_IDLE_BODY_TAP_TO_CHANGE"
+msgstr "Spustelėkite norėdami pakeisti."
+
+msgid "IDS_COM_BODY_SELECT_ALL"
+msgstr "Pasirinkti visus"
+
+msgid "IDS_COM_BODY_COPY"
+msgstr "Kopijuoti"
+
+msgid "IDS_COM_SK_SELECT"
+msgstr "Rinktis"
+
+msgid "IDS_COM_BODY_CUT"
+msgstr "Iškirpti"
+
+msgid "IDS_COM_BODY_PASTE"
+msgstr "Įklijuoti"
+
+msgid "IDS_COM_BODY_CLIPBOARD"
+msgstr "Iškarpinė"

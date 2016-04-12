@@ -176,5 +176,6 @@
 ./src/lib/els_cursor.c
 ./src/lib/els_tooltip.c
 ./src/lib/elu_ews_wm.c
+./src/modules/copypasteUI_ctxpopup/copypaste.c
 ./src/modules/test_entry/mod.c
 ./src/modules/test_map/mod.c

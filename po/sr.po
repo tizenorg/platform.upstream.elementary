@@ -7,8 +7,8 @@ msgstr ""
 "Project-Id-Version: а\n"
 "Report-Msgid-Bugs-To: enlightenment-devel@lists.sourceforge.net\n"
 "POT-Creation-Date: 2015-11-09 11:01+0100\n"
-"PO-Revision-Date: 2015-01-31 14:06+0100\n"
-"Last-Translator: Саша Петровић <salepetronije@gmail.com>\n"
+"PO-Revision-Date: 2016-04-12 14:06+0100\n"
+"Last-Translator: Thiep Ha <thiep.ha@samsung.com>\n"
 "Language-Team: српски <xfce4@xfce4.org>\n"
 "Language: sr\n"
 "MIME-Version: 1.0\n"
@@ -324,3 +324,187 @@ msgstr "Неозначено"
 #: src/lib/elm_toolbar.c:2321
 msgid "Toolbar Item"
 msgstr "Ставка траке алата"
+
+
+#: src/modules/datetime_input_popup/datetime_input_popup.c:749
+#: src/modules/datetime_input_popup/datetime_input_popup.c:992
+msgid "AM"
+msgstr "AM"
+
+#: src/modules/datetime_input_popup/datetime_input_popup.c:754
+#: src/modules/datetime_input_popup/datetime_input_popup.c:993
+msgid "PM"
+msgstr "PM"
+
+#: src/modules/datetime_input_popup/datetime_input_popup.c:786
+msgid "Set"
+msgstr "Podesi"
+
+#: src/modules/copypasteUI_ctxpopup/copypaste.c
+msgid "Translate"
+msgstr "Prevedi"
+
+#: src/modules/datetime_input_popup/datetime_input_popup.c
+msgid "flick up and down to adjust %s or double tap to open keyboard"
+msgstr "Kvrcni nagore i nadole da bi podesio/la %s ili dvaput kucni za otvaranje tastature."
+
+#: src/modules/datetime_input_popup/datetime_input_popup.c
+msgid "Double tap to change"
+msgstr "Dvaput kucni za promenu."
+
+#: src/modules/datetime_input_popup/datetime_input_popup.c:375
+msgid "Set date"
+msgstr "Podesi datum"
+
+#: src/modules/datetime_input_popup/datetime_input_popup.c:384
+msgid "Set time"
+msgstr "Podesi vreme"
+
+#: src/modules/datetime_input_popup/datetime_input_popup.c
+msgid "IDS_ACCS_BODY_PD_M_DAY"
+msgstr "%d"
+
+#: src/modules/datetime_input_popup/datetime_input_popup.c
+msgid "IDS_ACCS_BODY_PD_M_YEAR"
+msgstr "%Y"
+
+#: src/modules/datetime_input_popup/datetime_input_popup.c
+msgid "IDS_ACCS_BODY_PD_M_24HOUR"
+msgstr "%H"
+
+#: src/modules/datetime_input_popup/datetime_input_popup.c
+msgid "IDS_ACCS_BODY_PD_M_12HOUR"
+msgstr "%I"
+
+#: src/modules/datetime_input_popup/datetime_input_popup.c
+msgid "IDS_ACCS_BODY_PD_M_MINUTES"
+msgstr "%M"
+
+#: src/lib/elm_win.c
+msgid "Portrait Mode"
+msgstr "Uspravni prikaz"
+
+#: src/lib/elm_win.c
+msgid "Landscape Mode"
+msgstr "Položeni prikaz"
+
+#: src/lib/elm_index.c
+msgid "Double tap to enable fast scrolling"
+msgstr "Dvaput kucni za omogućavanje brzog listanja."
+
+#: src/lib/elm_entry.c
+msgid "Editing"
+msgstr "Izmena."
+
+#: src/lib/elm_entry.c
+msgid "Flick up and down to adjust the position"
+msgstr "Lako udari nagore i nadole za podešavanje pozicije."
+
+#: src/lib/elm_entry.c
+msgid "%d characters"
+msgstr "Karaktera: %d."
+
+#: src/lib/elc_ctxpopup.c
+msgid "Contextual popup"
+msgstr "Kontekstualni iskačući prozor"
+
+#: src/lib/elc_ctxpopup.c
+msgid "Double tap to close popup"
+msgstr "Dvaput kucni za zatvaranje iskačućeg prozora."
+
+#: src/lib/elc_popup.c
+msgid "Central popup"
+msgstr "Centralni iskačući prozor"
+
+#: src/lib/elc_popup.c
+msgid "Double tap to close it"
+msgstr "Dvaput kucni za njegovo zatvaranje."
+
+#: src/lib/elm_panel.c
+msgid "A drawer is open"
+msgstr "Fioka je otvorena."
+
+#: src/lib/elm_panel.c
+msgid "Double tap to close drawer menu"
+msgstr "Dvaput kucni za zatvaranje menija za fioke."
+
+#: src/lib/elm_entry.c
+msgid "Cursor at beginning of text"
+msgstr "Kursor na početku teksta"
+
+#: src/lib/elm_entry.c
+msgid "Cursor at end of text"
+msgstr "Kursor na kraju teksta"
+
+msgid "tap to change"
+msgstr "Kucni za promenu režima."
+
+msgid "date"
+msgstr "Datum"
+
+msgid "hour"
+msgstr "sat"
+
+msgid "minute"
+msgstr "minut"
+
+msgid "month"
+msgstr "mesec"
+
+msgid "year"
+msgstr "godina"
+
+msgid "IDS_ST_BODY_P1SD_OF_P2SD_TTS"
+msgstr "%1$d od %2$d."
+
+msgid "IDS_COM_BODY_DECREASE_DAY"
+msgstr "Skrati dan"
+
+msgid "IDS_COM_BODY_DECREASE_HOUR"
+msgstr "Skrati sat"
+
+msgid "IDS_COM_BODY_DECREASE_MINUTE"
+msgstr "Skrati minut"
+
+msgid "IDS_COM_BODY_DECREASE_MONTH"
+msgstr "Skrati mesec"
+
+msgid "IDS_COM_BODY_DECREASE_YEAR"
+msgstr "Skrati godinu"
+
+msgid "IDS_COM_BODY_INCREASE_DAY"
+msgstr "Produži dan"
+
+msgid "IDS_COM_BODY_INCREASE_HOUR"
+msgstr "Produži sat"
+
+msgid "IDS_COM_BODY_INCREASE_MINUTE"
+msgstr "Produži minut"
+
+msgid "IDS_COM_BODY_INCREASE_MONTH"
+msgstr "Produži mesec"
+
+msgid "IDS_COM_BODY_INCREASE_YEAR"
+msgstr "Produži godinu"
+
+msgid "IDS_IDLE_BODY_TAP_TO_CHANGE"
+msgstr "Kucni za promenu."
+
+msgid "IDS_COM_BODY_SELECT_ALL"
+msgstr "Izaberi sve"
+
+msgid "IDS_COM_BODY_COPY"
+msgstr "Kopiraj"
+
+msgid "IDS_COM_SK_SELECT"
+msgstr "Izaberi"
+
+msgid "IDS_COM_BODY_CUT"
+msgstr "Iseci"
+
+msgid "IDS_COM_BODY_PASTE"
+msgstr "Zalepi"
+
+msgid "IDS_COM_BODY_CLIPBOARD"
+msgstr "Privremena memorija"
+
