@@ -9,6 +9,9 @@
 #include <Elementary.h>
 
 #include "elm_priv.h"
+//TIZEN_ONLY(20160412): fix 'more' style size problem
+#include "elm_interface_scrollable.h"
+//
 #include "elm_widget_ctxpopup.h"
 
 #define MY_CLASS ELM_CTXPOPUP_CLASS
@@ -206,6 +209,11 @@ _base_geometry_calc(Evas_Object *obj,
    Evas_Coord_Point max_size;
    Evas_Coord_Point min_size;
    Evas_Coord_Point temp;
+   //TIZEN_ONLY(20160412): fix 'more' style size problem
+   Evas_Coord maxh = 0;
+   Evas_Coord scrh = 0;
+   const char *str = NULL;
+   //
    int idx;
 
    ELM_CTXPOPUP_DATA_GET(obj, sd);
@@ -234,13 +242,42 @@ _base_geometry_calc(Evas_Object *obj,
    //Limit to Max Size
    evas_object_size_hint_max_get(obj, &max_size.x, &max_size.y);
 
+   //TIZEN_ONLY(20160412): fix 'more' style size problem
+   if (sd->list && sd->list_visible)
+     {
+        eo_do(sd->list, elm_interface_scrollable_content_size_get(NULL, &scrh));
+        if (base_size.y < scrh)
+          base_size.y = scrh;
+     }
+   //
+
    if ((max_size.y > 0) && (base_size.y > max_size.y))
      base_size.y = max_size.y;
 
    if ((max_size.x > 0) && (base_size.x > max_size.x))
      base_size.x = max_size.x;
+
+   //TIZEN_ONLY(20160412): fix 'more' style size problem
+   if ((wd->orient_mode == 90) || (wd->orient_mode == 270))
+     str = edje_object_data_get(elm_layout_edje_get(obj), "visible_landscape_maxh");
+
+   if (!str) str = edje_object_data_get(elm_layout_edje_get(obj), "visible_maxh");
+
+   if (str) maxh = (int)(atoi(str)
+                         * elm_config_scale_get() * elm_object_scale_get(obj)
+                         / edje_object_base_scale_get(elm_layout_edje_get(obj)));
+
+   if ((maxh > 0) && (base_size.y > maxh))
+     base_size.y = maxh;
+   //
+
    //Limit to Min Size
    evas_object_size_hint_min_get(obj, &min_size.x, &min_size.y);
+
+   //TIZEN_ONLY(20160412): fix 'more' style size problem
+   if ((min_size.y > 0) && (min_size.y > maxh))
+     min_size.y = maxh;
+   //
 
    if ((min_size.y > 0) && (base_size.y < min_size.y))
      base_size.y = min_size.y;
@@ -976,6 +1013,11 @@ _on_show(void *data EINA_UNUSED,
          * that seems to be spread all over Elementary.
          */
         //elm_object_focus_set(sd->list, EINA_TRUE);
+
+        //TIZEN_ONLY(20160412): fix 'more' style size problem
+        elm_layout_sizing_eval(obj);
+        //
+
         return;
      }
 
