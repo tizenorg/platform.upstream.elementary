@@ -935,6 +935,7 @@ _on_prop_change(void *data,
 #endif
 
 // TIZEN_ONLY(20150707): implemented elm_win_conformant_set/get for wayland
+#ifdef HAVE_ELEMENTARY_WAYLAND
 static void
 _on_conformant_changed(void *data,
                      Evas_Object *obj,
@@ -979,6 +980,7 @@ _on_conformant_changed(void *data,
         _conformant_part_sizing_eval(data, ELM_CONFORMANT_VIRTUAL_KEYPAD_PART);
      }
 }
+#endif
 //
 
 EOLIAN static void
@@ -1023,8 +1025,10 @@ _elm_conformant_evas_object_smart_del(Eo *obj, Elm_Conformant_Data *sd)
          eo_event_callback_del(ELM_WIN_EVENT_ROTATION_CHANGED,
             _on_rotation_changed, obj));
    // TIZEN_ONLY(20150707): implemented elm_win_conformant_set/get for wayland
+#ifdef HAVE_ELEMENTARY_WAYLAND
    evas_object_smart_callback_del_full
      (sd->win, "conformant,changed", _on_conformant_changed, obj);
+#endif
    //
 
    eo_do_super(obj, MY_CLASS, evas_obj_smart_del());
@@ -1121,8 +1125,10 @@ _elm_conformant_eo_base_constructor(Eo *obj, Elm_Conformant_Data *sd)
          eo_event_callback_add(ELM_WIN_EVENT_ROTATION_CHANGED,
             _on_rotation_changed, obj));
    // TIZEN_ONLY(20150707): implemented elm_win_conformant_set/get for wayland
+#ifdef HAVE_ELEMENTARY_WAYLAND
    evas_object_smart_callback_add
      (sd->win, "conformant,changed", _on_conformant_changed, obj);
+#endif
    //
 
    return obj;

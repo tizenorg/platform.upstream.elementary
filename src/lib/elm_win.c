@@ -259,7 +259,9 @@ static const char SIG_INDICATOR_PROP_CHANGED[] = "indicator,prop,changed";
 static const char SIG_ROTATION_CHANGED[] = "rotation,changed";
 static const char SIG_PROFILE_CHANGED[] = "profile,changed";
 static const char SIG_WM_ROTATION_CHANGED[] = "wm,rotation,changed";
+#ifdef HAVE_ELEMENTARY_WAYLAND
 static const char SIG_CONFORMANT_CHANGED[] = "conformant,changed";
+#endif
 static const char SIG_AUX_HINT_ALLOWED[] = "aux,hint,allowed";
 static const char SIG_VISIBILITY_CHANGED[] = "visibility,changed";
 static const char SIG_EFFECT_STARTED[] = "effect,started";
@@ -286,7 +288,9 @@ static const Evas_Smart_Cb_Description _smart_callbacks[] = {
    {SIG_WM_ROTATION_CHANGED, ""},
    {SIG_WIDGET_FOCUSED, ""}, /**< handled by elm_widget */
    {SIG_WIDGET_UNFOCUSED, ""}, /**< handled by elm_widget */
+#ifdef HAVE_ELEMENTARY_WAYLAND
    {SIG_CONFORMANT_CHANGED, ""},
+#endif
    {SIG_AUX_HINT_ALLOWED, ""},
    {SIG_VISIBILITY_CHANGED, ""},
    {SIG_EFFECT_STARTED, ""},
@@ -1338,7 +1342,9 @@ _elm_win_state_change(Ecore_Evas *ee)
    Eina_Bool ch_maximized = EINA_FALSE;
    Eina_Bool ch_profile = EINA_FALSE;
    Eina_Bool ch_wm_rotation = EINA_FALSE;
+#ifdef HAVE_ELEMENTARY_WAYLAND
    Eina_Bool ch_conformant  = EINA_FALSE;
+#endif
    Eina_Bool ch_visibility = EINA_FALSE;
    Eina_Bool ch_aux_hint = EINA_FALSE;
    Eina_List *aux_hints = NULL;
@@ -1526,11 +1532,13 @@ _elm_win_state_change(Ecore_Evas *ee)
         eo_do(obj, eo_event_callback_call
           (ELM_WIN_EVENT_WM_ROTATION_CHANGED, NULL));
      }
+#ifdef HAVE_ELEMENTARY_WAYLAND
    if (ch_conformant)
      {
         evas_object_smart_callback_call(obj, SIG_CONFORMANT_CHANGED, (void *)property); //TIZEN_ONLY(20160330): add processing properties of window
 
      }
+#endif
    if (ch_aux_hint)
      {
         void *id;
