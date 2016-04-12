@@ -6973,8 +6973,11 @@ _elm_genlist_item_fields_update(Eo *eo_item EINA_UNUSED, Elm_Gen_Item *it,
    if ((!itf) || (itf & ELM_GENLIST_ITEM_FIELD_STATE))
      _item_state_realize(it, VIEW(it), parts);
 
-   if (!it->item->mincalcd)
-     elm_genlist_item_update(eo_item);
+   // TIZEN_ONLY(20160412): recalculate item size when its fields are updated.
+   //if (!it->item->mincalcd)
+   //  elm_genlist_item_update(eo_item);
+   _elm_genlist_item_update(eo_item, it);
+   //
 }
 
 EOLIAN static void
