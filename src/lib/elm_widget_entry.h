@@ -37,8 +37,14 @@ struct _Elm_Entry_Data
    Evas_Object                          *mgf_proxy;
    Evas_Object                          *start_handler;
    Evas_Object                          *end_handler;
+   Evas_Object                          *cursor_handler; // TIZEN ONLY
    Ecore_Job                            *deferred_recalc_job;
+   Ecore_Job                            *sel_handler_update_job; // TIZEN ONLY
+   Ecore_Job                            *cursor_handler_update_job; // TIZEN ONLY
+   Ecore_Event_Handler                  *sel_notify_handler; // TIZEN ONLY
+   Ecore_Event_Handler                  *sel_clear_handler; // TIZEN ONLY
    Ecore_Timer                          *longpress_timer;
+   Ecore_Timer                          *cursor_handler_longpress_timer; // TIZEN ONLY
    Ecore_Timer                          *delay_write;
    /* for deferred appending */
    Ecore_Idler                          *append_text_idler;
@@ -62,6 +68,10 @@ struct _Elm_Entry_Data
    Ecore_Job                            *hov_deljob;
    Mod_Api                              *api; // module api if supplied
    int                                   cursor_pos;
+   int                                   mgf_r, mgf_g, mgf_b, mgf_a; // TIZEN ONLY
+   int                                   start_sel_pos, end_sel_pos; // TIZEN ONLY
+   int                                   cursor_move_pos; // TIZEN ONLY
+   int                                   cursor_handler_down_pos; // TIZEN ONLY
    Elm_Scroller_Policy                   policy_h, policy_v;
    Elm_Wrap_Type                         line_wrap;
    Elm_Input_Panel_Layout                input_panel_layout;
@@ -115,6 +125,11 @@ struct _Elm_Entry_Data
    Eina_Bool                             changed : 1;
    Eina_Bool                             scroll : 1;
    Eina_Bool                             input_panel_show_on_demand : 1;
+   Eina_Bool                             drag_started : 1; // TIZEN ONLY
+   Eina_Bool                             cursor_handler_down : 1; // TIZEN ONLY
+   Eina_Bool                             cursor_handler_shown : 1; // TIZEN ONLY
+   Eina_Bool                             mgf_bg_color_set : 1; // TIZEN ONLY
+   Eina_Bool                             long_pressing : 1; // TIZEN ONLY
 };
 
 typedef struct _Elm_Entry_Item_Provider     Elm_Entry_Item_Provider;
