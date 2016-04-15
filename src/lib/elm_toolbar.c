@@ -2395,6 +2395,9 @@ _item_new(Evas_Object *obj,
    VIEW(it) = elm_layout_add(obj);
    evas_object_data_set(VIEW(it), "item", it);
 
+   if (_elm_config->atspi_mode)
+     if (icon_obj) eo_do(icon_obj, elm_interface_atspi_accessible_parent_set(eo_it));
+
    if (_elm_config->access_mode == ELM_ACCESS_MODE_ON)
      _access_widget_item_register(it);
 
