@@ -1349,7 +1349,9 @@ _elm_win_state_change(Ecore_Evas *ee)
    Eina_Bool ch_aux_hint = EINA_FALSE;
    Eina_List *aux_hints = NULL;
    const char *profile;
+#ifdef HAVE_ELEMENTARY_WAYLAND
    Conformant_Property property = CONFORMANT_DEFAULT; //TIZEN_ONLY(20160330): add processing properties of window
+#endif
 
    if (!sd) return;
 
