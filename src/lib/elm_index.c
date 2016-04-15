@@ -3,6 +3,7 @@
 #endif
 
 #define ELM_INTERFACE_ATSPI_ACCESSIBLE_PROTECTED
+#define ELM_INTERFACE_ATSPI_WIDGET_ACTION_PROTECTED
 
 #define ELM_WIDGET_ITEM_PROTECTED
 #include <Elementary.h>
@@ -533,7 +534,9 @@ _elm_index_item_eo_base_constructor(Eo *obj, Elm_Index_Item_Data *it)
 {
    obj = eo_do_super_ret(obj, ELM_INDEX_ITEM_CLASS, obj, eo_constructor());
    it->base = eo_data_scope_get(obj, ELM_WIDGET_ITEM_CLASS);
-
+   //TIZEN_ONLY(20150716) : improve atspi support
+   eo_do(obj, elm_interface_atspi_accessible_role_set(ELM_ATSPI_ROLE_PUSH_BUTTON));
+   ///
    return obj;
 }
 
@@ -1236,7 +1239,7 @@ _elm_index_eo_base_constructor(Eo *obj, Elm_Index_Data *_pd EINA_UNUSED)
    eo_do(obj,
          evas_obj_type_set(MY_CLASS_NAME_LEGACY),
          evas_obj_smart_callbacks_descriptions_set(_smart_callbacks),
-         elm_interface_atspi_accessible_role_set(ELM_ATSPI_ROLE_LIST));
+         elm_interface_atspi_accessible_role_set(ELM_ATSPI_ROLE_SCROLL_BAR));
 
    return obj;
 }
@@ -1651,6 +1654,37 @@ _elm_index_class_constructor(Eo_Class *klass)
 {
    evas_smart_legacy_type_register(MY_CLASS_NAME_LEGACY, klass);
 }
+
+//TIZEN_ONLY(20150716) : improve atspi support
+static Eina_Bool
+_item_action_activate(Eo *obj, const char *params EINA_UNUSED EINA_UNUSED)
+{
+   elm_index_item_selected_set(obj, EINA_TRUE);
+   return EINA_FALSE;
+}
+
+EOLIAN static Eina_List*
+_elm_index_elm_interface_atspi_accessible_children_get(Eo *eo_it EINA_UNUSED, Elm_Index_Data *data)
+{
+   return eina_list_clone(data->items);
+}
+
+EOLIAN static char*
+_elm_index_item_elm_interface_atspi_accessible_name_get(Eo *eo_it EINA_UNUSED, Elm_Index_Item_Data *data)
+{
+   return data->letter ? strdup(data->letter) : NULL;
+}
+
+EOLIAN static const Elm_Atspi_Action*
+_elm_index_item_elm_interface_atspi_widget_action_elm_actions_get(Eo *eo_it EINA_UNUSED, Elm_Index_Item_Data *data EINA_UNUSED)
+{
+   static Elm_Atspi_Action atspi_actions[] = {
+          { "activate", "activate", NULL, _item_action_activate},
+          { NULL, NULL, NULL, NULL }
+   };
+   return &atspi_actions[0];
+}
+///
 
 #include "elm_index_item.eo.c"
 #include "elm_index.eo.c"
