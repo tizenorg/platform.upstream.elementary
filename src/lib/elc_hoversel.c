@@ -780,6 +780,14 @@ _elm_hoversel_item_add(Eo *obj, Elm_Hoversel_Data *sd, const char *label, const 
    return eo_item;
 }
 
+// TIZEN_ONLY (20150615): Adds elm_hoversel_item_object_get API
+EOLIAN static Evas_Object*
+_elm_hoversel_item_object_get(Eo *eo_it EINA_UNUSED, Elm_Hoversel_Item_Data *it)
+{
+   return VIEW(it);
+}
+// END-ONLY
+
 EOLIAN static void
 _elm_hoversel_item_icon_set(Eo *eo_item EINA_UNUSED,
                             Elm_Hoversel_Item_Data *item,
