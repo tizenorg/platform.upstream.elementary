@@ -1286,6 +1286,20 @@ _item_new(Evas_Object *obj,
 
    it->title_enabled = EINA_TRUE;
 
+   //TIZEN ONLY(20150707): expose title as at-spi object
+   if (_elm_config->atspi_mode)
+     {
+         Evas_Object *part = (Evas_Object*)edje_object_part_object_get(elm_layout_edje_get(VIEW(it)), TITLE_ACCESS_PART);
+         if (part)
+           {
+              Evas_Object *access = elm_access_object_register(part, VIEW(it));
+              _elm_access_callback_set(_elm_access_info_get(access),
+                                       ELM_ACCESS_INFO, _access_info_cb, it);
+              elm_atspi_accessible_role_set(access, ELM_ATSPI_ROLE_HEADING);
+           }
+     }
+   //
+
    return EO_OBJ(it);
 }
 
