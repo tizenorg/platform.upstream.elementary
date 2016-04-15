@@ -237,7 +237,6 @@ class Elm.Spinner (Elm.Layout, Elm_Interface_Atspi_Value, Elm_Interface_Atspi_Wi
       Elm_Interface_Atspi_Value.value_and_text.set;
       Elm_Interface_Atspi_Value.range.get;
       Elm_Interface_Atspi_Value.increment.get;
-      Elm_Interface_Atspi_Widget_Action.elm_actions.get;
    }
    events {
       changed;
