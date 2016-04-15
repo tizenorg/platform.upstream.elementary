@@ -672,7 +672,7 @@ _elm_icon_eo_base_constructor(Eo *obj, Elm_Icon_Data *sd)
    eo_do(obj,
          evas_obj_type_set(MY_CLASS_NAME_LEGACY),
          evas_obj_smart_callbacks_descriptions_set(_smart_callbacks),
-         elm_interface_atspi_accessible_role_set(ELM_ATSPI_ROLE_IMAGE));
+         elm_interface_atspi_accessible_role_set(ELM_ATSPI_ROLE_ICON));
 
    return obj;
 }
