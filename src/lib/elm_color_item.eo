@@ -1,4 +1,4 @@
-class Elm.Color_Item(Elm.Widget_Item)
+class Elm.Color_Item(Elm.Widget_Item, Elm_Interface_Atspi_Widget_Action)
 {
    eo_prefix: elm_obj_color_item;
    methods {
@@ -39,5 +39,11 @@ class Elm.Color_Item(Elm.Widget_Item)
       Eo.Base.destructor;
       Elm.Widget_Item.access_register;
       Elm.Widget_Item.signal_emit;
+      //TIZEN_ONLY(20150707) : improve colorselctor atspi support
+      Elm_Interface_Atspi_Accessible.state_set.get;
+      Elm_Interface_Atspi_Component.highlight_grab;
+      Elm_Interface_Atspi_Component.highlight_clear;
+      Elm_Interface_Atspi_Widget_Action.elm_actions.get;
+      //
    }
 }
