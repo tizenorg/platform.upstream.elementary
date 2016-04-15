@@ -16,6 +16,18 @@ class Elm.Hoversel_Item(Elm.Widget_Item)
                 icon_type: Elm_Icon_Type; [[The icon type]]
              }
         }
+        // TIZEN_ONLY (20150615): Adds elm_hoversel_item_object_get API
+        @property object {
+            [[Get view object of hoversel item
+              since_tizen 2.2.1
+            ]]
+            get {
+            }
+            values {
+                obj: Evas_Object*; [[ View object of item ]]
+            }
+        }
+        // END-ONLY
    }
    implements {
         Eo.Base.constructor;
