@@ -3,6 +3,7 @@
 #endif
 
 #define ELM_INTERFACE_ATSPI_ACCESSIBLE_PROTECTED
+#define ELM_INTERFACE_ATSPI_COMPONENT_PROTECTED
 #define ELM_INTERFACE_ATSPI_SELECTION_PROTECTED
 #define ELM_INTERFACE_ATSPI_WIDGET_ACTION_PROTECTED
 #define ELM_WIDGET_ITEM_PROTECTED
@@ -3900,6 +3901,24 @@ _elm_toolbar_elm_interface_atspi_accessible_state_set_get(Eo *obj, Elm_Toolbar_D
 
    return ret;
 }
+
+// TIZEN_ONLY(20150701): Add accessibility highlight for toolbar items
+
+EOLIAN static Eina_Bool
+_elm_toolbar_item_elm_interface_atspi_component_highlight_grab(Eo *eo_it, Elm_Toolbar_Item_Data *it)
+{
+   elm_toolbar_item_show(eo_it, ELM_TOOLBAR_ITEM_SCROLLTO_IN);
+   elm_object_accessibility_highlight_set(VIEW(it), EINA_TRUE);
+   return EINA_TRUE;
+}
+
+EOLIAN static Eina_Bool
+_elm_toolbar_item_elm_interface_atspi_component_highlight_clear(Eo *eo_it, Elm_Toolbar_Item_Data *it)
+{
+   elm_object_accessibility_highlight_set(VIEW(it), EINA_FALSE);
+   return EINA_TRUE;
+}
+//
 
 EOLIAN int
 _elm_toolbar_elm_interface_atspi_selection_selected_children_count_get(Eo *obj EINA_UNUSED, Elm_Toolbar_Data *pd)
