@@ -1,4 +1,4 @@
-class Elm.Access (Elm.Widget)
+class Elm.Access (Elm.Widget, Elm_Interface_Atspi_Action)
 {
 eo_prefix: elm_obj_access;
    data: null;
@@ -8,6 +8,12 @@ eo_prefix: elm_obj_access;
       Evas.Object_Smart.add;
       Elm.Widget.activate;
       Elm.Widget.on_focus;
+      Elm_Interface_Atspi_Accessible.name.get;
+      Elm_Interface_Atspi_Accessible.description.get;
+      Elm_Interface_Atspi_Component.highlight_grab;
+      Elm_Interface_Atspi_Component.highlight_clear;
+      Elm_Interface_Atspi_Action.action_do;
+      Elm_Interface_Atspi_Action.name.get;
+      Elm_Interface_Atspi_Action.actions.get;
    }
-
 }

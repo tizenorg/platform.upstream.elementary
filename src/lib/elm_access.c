@@ -2,6 +2,10 @@
 # include "elementary_config.h"
 #endif
 
+#define ELM_INTERFACE_ATSPI_ACCESSIBLE_PROTECTED
+#define ELM_INTERFACE_ATSPI_COMPONENT_PROTECTED
+#define ELM_INTERFACE_ATSPI_ACTION_PROTECTED
+
 #include <Elementary.h>
 #include "elm_priv.h"
 
@@ -71,6 +75,17 @@ _access_action_callback_call(Evas_Object *obj,
    free(ai);
 
    return ret;
+}
+
+static Eina_Bool
+_access_action_callback_have(Evas_Object *obj, Elm_Access_Action_Type type)
+{
+   Action_Info *a;
+   a = evas_object_data_get(obj, "_elm_access_action_info");
+
+   if (!a) return EINA_FALSE;
+
+   return a->fn[type].cb ? EINA_TRUE : EINA_FALSE;
 }
 
 EOLIAN static Eina_Bool
@@ -1449,6 +1464,64 @@ EOLIAN static void
 _elm_access_class_constructor(Eo_Class *klass)
 {
    evas_smart_legacy_type_register(MY_CLASS_NAME_LEGACY, klass);
+}
+
+EOLIAN static char*
+_elm_access_elm_interface_atspi_accessible_name_get(Eo *obj, void *pd EINA_UNUSED)
+{
+   return elm_access_info_get(obj, ELM_ACCESS_INFO);
+}
+
+EOLIAN static const char*
+_elm_access_elm_interface_atspi_accessible_description_get(Eo *obj, void *pd EINA_UNUSED)
+{
+   return elm_access_info_get(obj, ELM_ACCESS_CONTEXT_INFO);
+}
+
+EOLIAN static Eina_Bool
+_elm_access_elm_interface_atspi_component_highlight_grab(Eo *obj, void *pd EINA_UNUSED)
+{
+   if (!_access_action_callback_call(obj, ELM_ACCESS_ACTION_HIGHLIGHT, NULL))
+     eo_do_super(obj, ELM_ACCESS_CLASS, elm_interface_atspi_component_highlight_grab());
+
+   return EINA_TRUE;
+}
+
+EOLIAN static Eina_Bool
+_elm_access_elm_interface_atspi_component_highlight_clear(Eo *obj, void *pd EINA_UNUSED)
+{
+   if (!_access_action_callback_call(obj, ELM_ACCESS_ACTION_UNHIGHLIGHT, NULL))
+     eo_do_super(obj, ELM_ACCESS_CLASS, elm_interface_atspi_component_highlight_clear());
+
+   return EINA_TRUE;
+}
+
+EOLIAN static Eina_Bool
+_elm_access_elm_interface_atspi_action_action_do(Eo *obj, void *pd EINA_UNUSED, int id)
+{
+   if (id != 0)
+     return EINA_FALSE;
+
+   return _access_action_callback_call(obj, ELM_ACCESS_ACTION_ACTIVATE, NULL);
+}
+
+EOLIAN static const char *
+_elm_access_elm_interface_atspi_action_name_get(Eo *obj, void *pd EINA_UNUSED, int id)
+{
+   if ((id != 0) || !_access_action_callback_have(obj, ELM_ACCESS_ACTION_ACTIVATE))
+     return NULL;
+   return "activate";
+}
+
+EOLIAN static Eina_List*
+_elm_access_elm_interface_atspi_action_actions_get(Eo *obj, void *pd EINA_UNUSED)
+{
+   Eina_List *ret = NULL;
+
+   if (_access_action_callback_have(obj, ELM_ACCESS_ACTION_ACTIVATE))
+      ret = eina_list_append(ret, &("activate"));
+
+   return ret;
 }
 
 #include "elm_access.eo.c"
