@@ -3,6 +3,7 @@
 #endif
 
 #define ELM_INTERFACE_ATSPI_ACCESSIBLE_PROTECTED
+#define ELM_INTERFACE_ATSPI_VALUE_PROTECTED
 
 #include <Elementary.h>
 
@@ -562,6 +563,17 @@ _elm_progressbar_elm_widget_focus_direction_manager_is(Eo *obj EINA_UNUSED, Elm_
 {
    return EINA_FALSE;
 }
+
+/////////////////////////////////////////////////////////
+//TIZENONLY (20150825) Add atspi value interface to progressbar
+
+EOLIAN static void
+_elm_progressbar_elm_interface_atspi_value_value_and_text_get(Eo *obj, Elm_Progressbar_Data *_pd, double *value, const char **text)
+{
+   if (value) *value = _pd->val;
+}
+
+//
 
 EOLIAN static void
 _elm_progressbar_class_constructor(Eo_Class *klass)

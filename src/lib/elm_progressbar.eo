@@ -1,4 +1,4 @@
-class Elm.Progressbar (Elm.Layout)
+class Elm.Progressbar (Elm.Layout, Elm_Interface_Atspi_Value)
 {
    eo_prefix: elm_obj_progressbar;
    methods {
@@ -166,6 +166,7 @@ class Elm.Progressbar (Elm.Layout)
       Elm.Layout.text_aliases.get;
       Elm.Layout.content_aliases.get;
       Elm.Layout.sizing_eval;
+      Elm_Interface_Atspi_Value.value_and_text.get;
    }
    events {
       changed;
