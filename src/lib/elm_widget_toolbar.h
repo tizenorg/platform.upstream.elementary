@@ -35,6 +35,9 @@ struct _Elm_Toolbar_Data
    Eina_Inlist                          *items;
    Elm_Toolbar_Item_Data                *more_item;
    Elm_Object_Item                      *selected_item; /**< a selected item by mouse click, return key, api, and etc. */
+   /* TIZEN_ONLY(20160418): Add auto selected item feature for navigation style. */
+   Elm_Object_Item                      *auto_selected_last_item; /**< a automatically selected item by its order. */
+   /* END */
    Elm_Object_Item                      *focused_item; /**< a focused item by keypad arrow or mouse. This is set to NULL if widget looses focus. */
    Elm_Object_Item                      *last_focused_item; /**< This records the last focused item when widget looses focus. This is required to set the focus on last focused item when widgets gets focus. */
    Elm_Toolbar_Item_Data                *reorder_empty, *reorder_item;
