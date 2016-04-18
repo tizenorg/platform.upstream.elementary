@@ -639,6 +639,7 @@ struct _Elm_Widget_Item_Data
    //TIZEN_ONLY(20150709) add relations atpi
    Elm_Atspi_Relation_Set        atspi_custom_relations; /**< Developer-defined accessiblity relations */
    ///////////////////////////////////
+   const char                    *name;
 
    Eina_Bool                      disabled : 1;
    Eina_Bool                      on_deletion : 1;
