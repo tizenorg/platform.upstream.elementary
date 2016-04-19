@@ -544,9 +544,5 @@ class Elm.Widget_Item(Eo.Base, Elm_Interface_Atspi_Accessible,
            Elm_Interface_Atspi_Component.alpha.get;
            Elm_Interface_Atspi_Component.layer.get;
            Elm_Interface_Atspi_Component.focus_grab;
-           //TIZEN_ONLY(20160329): atspi: implement HighlightGrab and HighlightClear methods (29e253e2f7ef3c632ac3a64c489bf569df407f30)
-           Elm_Interface_Atspi_Component.highlight_grab;
-           Elm_Interface_Atspi_Component.highlight_clear;
-           //
       }
 }

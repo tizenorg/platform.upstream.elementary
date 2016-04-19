@@ -3,6 +3,7 @@
 #endif
 
 #define ELM_INTERFACE_ATSPI_ACCESSIBLE_PROTECTED
+#define ELM_INTERFACE_ATSPI_COMPONENT_PROTECTED
 #define ELM_INTERFACE_ATSPI_SELECTION_PROTECTED
 #define ELM_INTERFACE_ATSPI_WIDGET_ACTION_PROTECTED
 #define ELM_WIDGET_ITEM_PROTECTED
@@ -5584,6 +5585,24 @@ _elm_gengrid_item_elm_interface_atspi_accessible_children_get(Eo *eo_it EINA_UNU
           }
      }
    return ret;
+}
+
+EOLIAN static Eina_Bool
+_elm_gengrid_item_elm_interface_atspi_component_highlight_grab(Eo *eo_it, Elm_Gen_Item *it)
+{
+   elm_gengrid_item_show(eo_it, ELM_GENGRID_ITEM_SCROLLTO_IN);
+
+   elm_object_accessibility_highlight_set(VIEW(it), EINA_TRUE);
+
+   return EINA_TRUE;
+}
+
+EOLIAN static Eina_Bool
+_elm_gengrid_item_elm_interface_atspi_component_highlight_clear(Eo *eo_it, Elm_Gen_Item *it)
+{
+   elm_object_accessibility_highlight_set(VIEW(it), EINA_FALSE);
+
+   return EINA_TRUE;
 }
 
 EAPI Elm_Object_Item *

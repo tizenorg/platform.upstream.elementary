@@ -6119,37 +6119,6 @@ _elm_widget_item_elm_interface_atspi_component_focus_grab(Eo *obj EINA_UNUSED, E
    return elm_object_item_focus_get(obj);
 }
 
-//TIZEN_ONLY(20160329): atspi: implement HighlightGrab and HighlightClear methods (29e253e2f7ef3c632ac3a64c489bf569df407f30)
-EOLIAN static Eina_Bool
-_elm_widget_item_elm_interface_atspi_component_highlight_grab(Eo *obj, Elm_Widget_Item_Data *sd)
-{
-   Evas_Object *win = elm_widget_top_get(sd->widget);
-   if (win && eo_isa(win, ELM_WIN_CLASS))
-     {
-        _elm_win_accessibility_highlight_set(win, sd->view);
-        elm_interface_atspi_accessible_state_changed_signal_emit(obj, ELM_ATSPI_STATE_HIGHLIGHTED, EINA_TRUE);
-        return EINA_TRUE;
-     }
-   return EINA_FALSE;
-}
-
-EOLIAN static Eina_Bool
-_elm_widget_item_elm_interface_atspi_component_highlight_clear(Eo *obj, Elm_Widget_Item_Data *sd)
-{
-   Evas_Object *win = elm_widget_top_get(sd->widget);
-   if (win && eo_isa(win, ELM_WIN_CLASS))
-     {
-        if (_elm_win_accessibility_highlight_get(win) != sd->view)
-          return EINA_TRUE;
-
-        _elm_win_accessibility_highlight_set(win, NULL);
-        elm_interface_atspi_accessible_state_changed_signal_emit(obj, ELM_ATSPI_STATE_HIGHLIGHTED, EINA_FALSE);
-        return EINA_TRUE;
-     }
-   return EINA_FALSE;
-}
-//
-
 EOLIAN static double
 _elm_widget_item_elm_interface_atspi_component_alpha_get(Eo *obj EINA_UNUSED, Elm_Widget_Item_Data *sd EINA_UNUSED)
 {
