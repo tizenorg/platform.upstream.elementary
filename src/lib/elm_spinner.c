@@ -25,12 +25,18 @@ static const char SIG_CHANGED[] = "changed";
 static const char SIG_DRAG_START[] = "spinner,drag,start";
 static const char SIG_DRAG_STOP[] = "spinner,drag,stop";
 static const char SIG_DELAY_CHANGED[] = "delay,changed";
+//TIZEN_ONLY(20160419): Spinner entry changed callback support for datetime UX.
+static const char SIG_ENTRY_CHANGED[] = "entry,changed";
+//
 
 static const Evas_Smart_Cb_Description _smart_callbacks[] = {
    {SIG_CHANGED, ""},
    {SIG_DELAY_CHANGED, ""},
    {SIG_DRAG_START, ""},
    {SIG_DRAG_STOP, ""},
+   //TIZEN_ONLY(20160419): Spinner entry changed callback support for datetime UX.
+   {SIG_ENTRY_CHANGED, ""},
+   //
    {SIG_WIDGET_LANG_CHANGED, ""}, /**< handled by elm_widget */
    {SIG_WIDGET_ACCESS_CHANGED, ""}, /**< handled by elm_widget */
    {SIG_LAYOUT_FOCUSED, ""}, /**< handled by elm_layout */
@@ -415,6 +421,37 @@ _decimal_points_get(const char *label)
    return atoi(result);
 }
 
+//TIZEN_ONLY(20160419): Spinner entry changed callback support for datetime UX.
+static void
+_entry_changed_user_cb(void *data,
+                       Evas_Object *obj,
+                       void *event_info EINA_UNUSED)
+{
+   Evas_Object *spinner;
+   const char *str;
+   int len, max_len;
+   double min, max, val;
+
+   spinner = data;
+   str = elm_object_text_get(obj);
+   len = strlen(str);
+   if (len < 1) return;
+   val = atof(str);
+   elm_spinner_min_max_get(spinner, &min, &max);
+   max_len = log10(abs(max)) + 1;
+   if (max_len == len)
+     {
+        val = (val < min) ? min : (val > max ? max : val);
+        elm_spinner_value_set(spinner, val);
+        _label_write(spinner);
+        elm_entry_cursor_end_set(obj);
+        str = elm_object_text_get(obj);
+     }
+
+   evas_object_smart_callback_call(spinner, SIG_ENTRY_CHANGED, (void *)str);
+}
+//
+
 static void
 _entry_filter_add(Evas_Object *obj)
 {
@@ -469,13 +506,20 @@ _toggle_entry(Evas_Object *obj)
              eina_strbuf_append_printf(buf, "spinner/%s", elm_widget_style_get(obj));
              elm_widget_style_set(sd->ent, eina_strbuf_string_get(buf));
              eina_strbuf_free(buf);
-             //TIZEN_ONLY(20151214): Number only keypad activate.
+             //TIZEN_ONLY(20160419): Apply default properties for entry widget in the spinner.
+             elm_entry_context_menu_disabled_set(sd->ent, EINA_TRUE);
              elm_entry_input_panel_layout_set(sd->ent, ELM_INPUT_PANEL_LAYOUT_NUMBERONLY);
+             elm_entry_cnp_mode_set(sd->ent, ELM_CNP_MODE_PLAINTEXT);
+             elm_entry_prediction_allow_set(sd->ent, EINA_FALSE);
              //
              if (sd->button_layout)
                {
                   evas_object_event_callback_add
                     (sd->ent, EVAS_CALLBACK_SHOW, _entry_show_cb, obj);
+                  //TIZEN_ONLY(20160419): Spinner entry changed callback support for datetime UX.
+                  evas_object_smart_callback_add
+                     (sd->ent, "changed,user", _entry_changed_user_cb, obj);
+                  //
                }
              elm_entry_single_line_set(sd->ent, EINA_TRUE);
              eo_do(sd->ent, eo_event_callback_add
@@ -517,11 +561,14 @@ _spin_value(void *data)
         real_speed = sd->spin_speed > 0 ? sd->round : -sd->round;
      }
 
+   //TIZEN_ONLY(20160419): This is not SPIN UX.
+   /*
    sd->interval = sd->interval / 1.05;
 
    // spin_timer does not exist when _spin_value() is called from wheel event
    if (sd->spin_timer)
      ecore_timer_interval_set(sd->spin_timer, sd->interval);
+   */
    if (_value_set(data, sd->val + real_speed)) _label_write(data);
 
    return ECORE_CALLBACK_RENEW;
@@ -535,9 +582,18 @@ _val_inc_start(void *data)
    sd->interval = sd->first_interval;
    sd->spin_speed = sd->step;
    sd->longpress_timer = NULL;
-   ecore_timer_del(sd->spin_timer);
+   //TIZEN_ONLY(20160419): This is not SPIN UX.
+   //ecore_timer_del(sd->spin_timer);
+   elm_layout_signal_emit(data, "elm,action,longpress", "elm");
+   if (sd->spin_timer) ecore_timer_del(sd->spin_timer);
+   //
    sd->spin_timer = ecore_timer_add(sd->interval, _spin_value, data);
    _spin_value(data);
+
+   //TIZEN_ONLY(20160419): Prevent scroll in longpressed state.
+   elm_widget_scroll_freeze_push(data);
+   //
+
    return ECORE_CALLBACK_CANCEL;
 }
 
@@ -549,9 +605,18 @@ _val_dec_start(void *data)
    sd->interval = sd->first_interval;
    sd->spin_speed = -sd->step;
    sd->longpress_timer = NULL;
-   ecore_timer_del(sd->spin_timer);
+   //TIZEN_ONLY(20160419): This is not SPIN UX.
+   //ecore_timer_del(sd->spin_timer);
+   elm_layout_signal_emit(data, "elm,action,longpress", "elm");
+   if (sd->spin_timer) ecore_timer_del(sd->spin_timer);
+   //
    sd->spin_timer = ecore_timer_add(sd->interval, _spin_value, data);
    _spin_value(data);
+
+   //TIZEN_ONLY(20160419): Prevent scroll in longpressed state.
+   elm_widget_scroll_freeze_push(data);
+   //
+
    return ECORE_CALLBACK_CANCEL;
 }
 
@@ -563,6 +628,10 @@ _spin_stop(Evas_Object *obj)
    sd->interval = sd->first_interval;
    sd->spin_speed = 0;
    ELM_SAFE_FREE(sd->spin_timer, ecore_timer_del);
+
+   //TIZEN_ONLY(20160419): Prevent scroll in longpressed state.
+   elm_widget_scroll_freeze_pop(obj);
+   //
 }
 
 static Eina_Bool
@@ -1100,6 +1169,9 @@ _elm_spinner_evas_object_smart_add(Eo *obj, Elm_Spinner_Data *priv)
    priv->val_max = 100.0;
    priv->step = 1.0;
    priv->first_interval = 0.85;
+   //TIZEN_ONLY(20160419): Maintain compatibility.
+   priv->editable = EINA_TRUE;
+   //
 
    if (!elm_layout_theme_set(obj, "spinner", "base",
                              elm_widget_style_get(obj)))
@@ -1387,6 +1459,9 @@ _elm_spinner_min_max_set(Eo *obj, Elm_Spinner_Data *sd, double min, double max)
    if (sd->val > sd->val_max) sd->val = sd->val_max;
    _val_set(obj);
    _label_write(obj);
+   //TIZEN_ONLY(20160419): Added entry filter feature.
+   _entry_filter_add(obj);
+   //
 }
 
 EOLIAN static void
@@ -1426,6 +1501,9 @@ _elm_spinner_value_set(Eo *obj, Elm_Spinner_Data *sd, double val)
      }
    _val_set(obj);
    _label_write(obj);
+   //TIZEN_ONLY(20160419): Changed smart callback call for value update.
+   evas_object_smart_callback_call(obj, SIG_CHANGED, NULL);
+   //
 }
 
 EOLIAN static double
