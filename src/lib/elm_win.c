@@ -242,6 +242,7 @@ struct _Elm_Win_Data
    Eina_Bool    theme_alpha : 1; /**< alpha value fetched by a theme. this has higher priority than application_alpha */
    Eina_Bool    application_alpha : 1; /**< alpha value set by an elm_win_alpha_set() api. this has lower priority than theme_alpha */
    Eina_Bool    obscured :1;
+   Eina_Bool    borderless : 1;
 };
 
 static const char SIG_DELETE_REQUEST[] = "delete,request";
@@ -4667,6 +4668,8 @@ _elm_win_borderless_set(Eo *obj EINA_UNUSED, Elm_Win_Data *sd, Eina_Bool borderl
           evas_object_show(sd->frame_obj);
      }
 
+   sd->borderless = borderless;
+
    TRAP(sd, borderless_set, borderless);
 #ifdef HAVE_ELEMENTARY_X
    _elm_win_xwin_update(sd);
@@ -6008,6 +6011,36 @@ elm_win_floating_mode_set(Evas_Object *obj, Eina_Bool floating)
    floating = !!floating;
    if (floating == sd->floating) return;
    sd->floating = floating;
+#if HAVE_ELEMENTARY_WAYLAND
+   _elm_win_wlwindow_get(sd);
+   if (sd->wl.win)
+     {
+        if (floating)
+          {
+             const char *engine_name = ecore_evas_engine_name_get(sd->ee);
+             Eina_Bool need_frame = engine_name &&
+                ((!strcmp(engine_name, ELM_WAYLAND_SHM)) ||
+                 (!strcmp(engine_name, ELM_WAYLAND_EGL)));
+
+             if (need_frame)
+               need_frame = !sd->fullscreen;
+
+             if (need_frame)
+               {
+                  _elm_win_frame_del(sd);
+                  _elm_win_frame_add(sd, "floating");
+               }
+
+             if (sd->frame_obj)
+               evas_object_show(sd->frame_obj);
+          }
+        else
+          {
+             elm_win_borderless_set(obj, sd->borderless);
+          }
+        ecore_wl_window_floating_mode_set(sd->wl.win, floating);
+     }
+#endif
 #ifdef HAVE_ELEMENTARY_X
    _internal_elm_win_xwindow_get(sd);
    if (sd->x.xwin)
