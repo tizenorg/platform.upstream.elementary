@@ -6008,6 +6008,15 @@ elm_win_floating_mode_set(Evas_Object *obj, Eina_Bool floating)
    floating = !!floating;
    if (floating == sd->floating) return;
    sd->floating = floating;
+#if HAVE_ELEMENTARY_WAYLAND
+   _elm_win_wlwindow_get(sd);
+   if (sd->wl.win)
+     {
+        elm_win_borderless_set(obj, EINA_FALSE);
+        elm_win_border_style_set(obj, "floating");
+        ecore_wl_window_floating_mode_set(sd->wl.win, floating);
+     }
+#endif
 #ifdef HAVE_ELEMENTARY_X
    _internal_elm_win_xwindow_get(sd);
    if (sd->x.xwin)
