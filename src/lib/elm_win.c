@@ -3193,6 +3193,21 @@ _elm_win_frame_cb_resize_start(void *data,
 }
 
 static void
+_elm_win_frame_cb_resize_end(void *data,
+                             Evas_Object *obj EINA_UNUSED,
+                             const char *sig EINA_UNUSED,
+                             const char *source EINA_UNUSED)
+{
+#ifdef HAVE_ELEMENTARY_WAYLAND
+   ELM_WIN_DATA_GET(data, sd);
+
+   if (!sd) return;
+   if (sd->resizing) sd->resizing = EINA_FALSE;
+#else
+   (void)data;
+#endif
+}
+static void
 _elm_win_frame_cb_minimize(void *data,
                            Evas_Object *obj EINA_UNUSED,
                            const char *sig EINA_UNUSED,
@@ -3365,6 +3380,9 @@ _elm_win_frame_add(Elm_Win_Data *sd,
      (sd->frame_obj, "elm,action,resize,start", "*",
      _elm_win_frame_cb_resize_start, obj);
    edje_object_signal_callback_add
+     (sd->frame_obj, "elm,action,resize,end", "*",
+     _elm_win_frame_cb_resize_end, obj);
+   edje_object_signal_callback_add
      (sd->frame_obj, "elm,action,minimize", "elm",
      _elm_win_frame_cb_minimize, obj);
    edje_object_signal_callback_add
@@ -3415,6 +3433,9 @@ _elm_win_frame_del(Elm_Win_Data *sd)
         edje_object_signal_callback_del
           (sd->frame_obj, "elm,action,resize,start", "*",
               _elm_win_frame_cb_resize_start);
+        edje_object_signal_callback_del
+          (sd->frame_obj, "elm,action,resize,end", "*",
+              _elm_win_frame_cb_resize_end);
         edje_object_signal_callback_del
           (sd->frame_obj, "elm,action,minimize", "elm",
               _elm_win_frame_cb_minimize);
