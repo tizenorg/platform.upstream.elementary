@@ -26,6 +26,8 @@ AM_CPPFLAGS = \
 -DELEMENTARY_BUILD \
 @ELEMENTARY_CFLAGS@
 
+AM_CPPFLAGS += $(DEFAULT_CFLAGS) $(TTRACE_CPPFLAGS)
+
 lib_LTLIBRARIES = libelementary.la
 
 includes_HEADERS = \
@@ -502,7 +504,8 @@ tizen_vector.c
 libelementary_la_CFLAGS = @ELEMENTARY_CFLAGS@
 libelementary_la_LIBADD = \
 @ELEMENTARY_LIBS@ \
-@LTLIBINTL@
+@LTLIBINTL@ \
+$(TTRACE_LIBS)
 
 libelementary_la_LDFLAGS = @EFL_LTLIBRARY_FLAGS@
 
