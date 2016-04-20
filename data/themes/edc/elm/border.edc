@@ -2047,5 +2047,9 @@ group { name: "elm/border/base/floating";
          signal: "mouse,down,1"; source: "e.event.resize.br";
          action: SIGNAL_EMIT "elm,action,resize,start" "elm.event.resize.br";
       }
+      program {
+         signal: "mouse,up,1"; source: "e.event.resize.br";
+         action: SIGNAL_EMIT "elm,action,resize,end" "elm.event.resize.br";
+      }
    }
 }
