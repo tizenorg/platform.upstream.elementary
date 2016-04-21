@@ -1520,6 +1520,7 @@ _sizing_eval(Evas_Object *obj)
    Evas_Coord minw = -1, minh = -1, minw_bx = -1, minh_bx = -1;
    Evas_Coord vw = 0, vh = 0;
    Evas_Coord w, h;
+   Evas_Coord w_bx, h_bx;
 
    ELM_TOOLBAR_DATA_GET(obj, sd);
    ELM_WIDGET_DATA_GET_OR_RETURN(obj, wd);
@@ -1580,7 +1581,17 @@ _sizing_eval(Evas_Object *obj)
           minh_bx = vh;
      }
 
-   evas_object_resize(sd->bx, minw_bx, minh_bx);
+   evas_object_geometry_get(sd->bx, NULL, NULL, &w_bx, &h_bx);
+
+   /* Resize it only when current box's size is smaller than min size */
+   if ((w_bx < minw_bx) || (h_bx < minw_bx))
+     {
+        if (w_bx < minw_bx) w_bx = minw_bx;
+        if (h_bx < minh_bx) h_bx = minh_bx;
+
+        evas_object_resize(sd->bx, w_bx, h_bx);
+     }
+
    evas_object_resize(sd->more, minw_bx, minh_bx);
    evas_object_size_hint_min_set(obj, minw, minh);
    evas_object_size_hint_max_set(obj, -1, -1);
