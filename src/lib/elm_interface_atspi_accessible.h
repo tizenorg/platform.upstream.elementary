@@ -14,17 +14,17 @@ typedef uint64_t Elm_Atspi_State_Set;
 /*
  * Sets a particilar state type for given state set.
  */
-#define STATE_TYPE_SET(state_set, type)   (state_set|= (1ULL << type))
+#define STATE_TYPE_SET(state_set, type)   (state_set|= ((Elm_Atspi_State_Set)1 << type))
 
 /**
  * Unsets a particilar state type for given state set.
  */
-#define STATE_TYPE_UNSET(state_set, type) (state_set &= ~(1ULL << type))
+#define STATE_TYPE_UNSET(state_set, type) (state_set &= ~((Elm_Atspi_State_Set)1 << type))
 
 /**
  * Gets value of a particilar state type for given state set.
  */
-#define STATE_TYPE_GET(state_set, type)   (state_set & (1ULL << type))
+#define STATE_TYPE_GET(state_set, type)   (state_set & ((Elm_Atspi_State_Set)1 << type))
 
 
 /**

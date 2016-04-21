@@ -451,6 +451,10 @@ typedef struct _Elm_Widget_Smart_Data
    Eina_Bool                     on_translate : 1; /**< This is true when any types of elm translate function is being called. */
    Eina_Bool                     on_create : 1; /**< This is true when the widget is on creation(general widget constructor). */
    Eina_Bool                     on_destroy: 1; /**< This is true when the widget is on destruction(general widget destructor). */
+   ///TIZEN_ONLY(20170717) : expose highlight information on atspi
+   Eina_Bool                     can_highlight : 1; /**< true if widget have at-spi HIGHLIGHTABLE state */
+   ///
+
 } Elm_Widget_Smart_Data;
 
 /**
@@ -548,6 +552,8 @@ void                  _elm_win_focus_auto_hide(Evas_Object *obj);
 //TIZEN_ONLY(20160404) Accessibility Highlight Frame added (99248ce)
 void                  _elm_win_object_set_accessibility_highlight(Evas_Object *win, Evas_Object *obj);
 //
+void                 *_elm_object_accessibility_currently_highlighted_get();
+
 EAPI void             _elm_access_clear(Elm_Access_Info *ac);
 EAPI void             _elm_access_text_set(Elm_Access_Info *ac, int type, const char *text);
 EAPI void             _elm_access_callback_set(Elm_Access_Info *ac, int type, Elm_Access_Info_Cb func, const void *data);
@@ -643,6 +649,9 @@ struct _Elm_Widget_Item_Data
    Eina_Bool                      on_deletion : 1;
    Eina_Bool                      on_translate : 1;
    Eina_Bool                      still_in : 1;
+   ///TIZEN_ONLY(20170717) : expose highlight information on atspi
+   Eina_Bool                      can_highlight : 1; /**< true if widget have at-spi HIGHLIGHTABLE state */
+   ///
 };
 
 #define ELM_NEW(t) calloc(1, sizeof(t))

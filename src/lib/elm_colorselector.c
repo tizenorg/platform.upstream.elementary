@@ -2441,6 +2441,9 @@ _elm_color_item_elm_interface_atspi_component_highlight_grab(Eo *eo_it, Elm_Colo
    elm_genlist_item_show(eo_it, ELM_GENLIST_ITEM_SCROLLTO_IN);
 
    elm_object_accessibility_highlight_set(VIEW(it), EINA_TRUE);
+///TIZEN_ONLY(20170717) : expose highlight information on atspi
+   elm_interface_atspi_accessible_state_changed_signal_emit(eo_it, ELM_ATSPI_STATE_HIGHLIGHTED, EINA_TRUE);
+///
 
    return EINA_TRUE;
 }
@@ -2449,6 +2452,9 @@ EOLIAN static Eina_Bool
 _elm_color_item_elm_interface_atspi_component_highlight_clear(Eo *eo_it EINA_UNUSED, Elm_Color_Item_Data *it)
 {
    elm_object_accessibility_highlight_set(VIEW(it), EINA_FALSE);
+///TIZEN_ONLY(20170717) : expose highlight information on atspi
+   elm_interface_atspi_accessible_state_changed_signal_emit(eo_it, ELM_ATSPI_STATE_HIGHLIGHTED, EINA_FALSE);
+///
 
    return EINA_TRUE;
 }
