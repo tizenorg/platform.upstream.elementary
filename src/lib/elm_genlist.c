@@ -4928,6 +4928,9 @@ _item_mouse_up_cb(void *data,
 
    evas_object_ref(sd->obj);
 
+   if (sd->focused_item != EO_OBJ(it))
+     elm_object_item_focus_set(EO_OBJ(it), EINA_TRUE);
+
    if (sd->multi &&
        ((sd->multi_select_mode != ELM_OBJECT_MULTI_SELECT_MODE_WITH_CONTROL) ||
         (evas_key_modifier_is_set(ev->modifiers, "Control"))))
@@ -4966,9 +4969,6 @@ _item_mouse_up_cb(void *data,
         _item_highlight(it);
         if (_item_select(it)) goto deleted;
      }
-
-   if (sd->focused_item != EO_OBJ(it))
-     elm_object_item_focus_set(EO_OBJ(it), EINA_TRUE);
 
 deleted:
    evas_object_unref(sd->obj);
