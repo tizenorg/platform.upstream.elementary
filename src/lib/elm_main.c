@@ -464,7 +464,7 @@ EAPI void
 elm_app_base_scale_set(double base_scale)
 {
    if (base_scale < 0.0) return;
-   if (fabs(base_scale) < DBL_EPSILON) return;	
+   if (fabs(base_scale) < DBL_EPSILON) return;
    app_base_scale = base_scale;
 }
 
@@ -1516,6 +1516,20 @@ elm_object_focus_move_policy_get(const Evas_Object *obj)
 {
    EINA_SAFETY_ON_NULL_RETURN_VAL(obj, EINA_FALSE);
    return elm_widget_focus_move_policy_get(obj);
+}
+
+EAPI Eina_Bool
+elm_object_focus_move_policy_automatic_get(const Evas_Object *obj)
+{
+   EINA_SAFETY_ON_NULL_RETURN_VAL(obj, EINA_FALSE);
+   return elm_widget_focus_move_policy_automatic_get(obj);
+}
+
+EAPI void
+elm_object_focus_move_policy_automatic_set(Evas_Object *obj, Eina_Bool automatic)
+{
+   EINA_SAFETY_ON_NULL_RETURN(obj);
+   elm_widget_focus_move_policy_automatic_set(obj, automatic);
 }
 
 EAPI void
