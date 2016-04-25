@@ -83,7 +83,10 @@ _format_count(int count, void *data EINA_UNUSED)
 {
    char buf[32];
 
-   if (!snprintf(buf, sizeof(buf), "... + %d", count)) return NULL;
+   //TIZEN_ONLY(20160425): It's for mobile UX.
+   //if (!snprintf(buf, sizeof(buf), "... + %d", count)) return NULL;
+   if (!snprintf(buf, sizeof(buf), "+%d", count)) return NULL;
+   //
    return strdup(buf);
 }
 
@@ -545,6 +548,17 @@ _on_item_deleted(void *data,
      }
 }
 
+static void
+_on_item_unfocused(void *data,
+		                   Evas_Object *obj EINA_UNUSED,
+						                      void *event_info EINA_UNUSED)
+{
+   Elm_Multibuttonentry_Item_Data *it = data;
+
+   if (!it) return;
+   elm_layout_signal_emit(VIEW(it), "elm,state,unfocused", "elm");
+}
+
 static Eina_Bool
 _long_press_cb(void *data)
 {
@@ -754,10 +768,16 @@ _item_new(Elm_Multibuttonentry_Data *sd,
    //entry is cleared when text is made to button
    elm_object_text_set(sd->entry, "");
 
+   //TIZEN_ONLY(20160524): Layout click signal change.
+   //elm_layout_signal_callback_add
+   //  (obj, "mouse,clicked,1", "*", _mouse_clicked_signal_cb, NULL);
    elm_layout_signal_callback_add
-     (VIEW(item), "mouse,clicked,1", "*", _on_item_clicked, EO_OBJ(item));
+     (VIEW(item), "elm,action,click", "*", _on_item_clicked, EO_OBJ(item));
+   //
    elm_layout_signal_callback_add
      (VIEW(item), "elm,deleted", "elm", _on_item_deleted, EO_OBJ(item));
+   evas_object_smart_callback_add
+     (VIEW(item), "unfocused", _on_item_unfocused, item);
    evas_object_event_callback_add
       (VIEW(item),
        EVAS_CALLBACK_MOUSE_DOWN, _mouse_down_cb, item);
@@ -1155,8 +1175,12 @@ _callbacks_register(Evas_Object *obj)
    ELM_MULTIBUTTONENTRY_DATA_GET_OR_RETURN(obj, sd);
    ELM_WIDGET_DATA_GET_OR_RETURN(obj, wd);
 
+   //TIZEN_ONLY(20160425): Layout click signal change.
+   //elm_layout_signal_callback_add
+   //  (obj, "mouse,clicked,1", "*", _mouse_clicked_signal_cb, NULL);
    elm_layout_signal_callback_add
-     (obj, "mouse,clicked,1", "*", _mouse_clicked_signal_cb, NULL);
+     (obj, "elm,action,click", "*", _mouse_clicked_signal_cb, NULL);
+   //
 
    evas_object_event_callback_add
      (wd->resize_obj, EVAS_CALLBACK_KEY_DOWN,
@@ -1431,6 +1455,11 @@ _view_init(Evas_Object *obj, Elm_Multibuttonentry_Data *sd)
    sd->entry = elm_entry_add(obj);
    if (!sd->entry) return;
    elm_entry_single_line_set(sd->entry, EINA_TRUE);
+   //TIZEN_ONLY(20160425): Entry property set for mobile UX.
+   elm_object_style_set(sd->entry, "multibuttonentry");
+   elm_entry_scrollable_set(sd->entry, EINA_TRUE);
+   elm_entry_cnp_mode_set(sd->entry, ELM_CNP_MODE_PLAINTEXT);
+   //
    elm_object_text_set(sd->entry, "");
    elm_entry_input_panel_enabled_set(sd->entry, EINA_FALSE);
    evas_object_size_hint_min_set(sd->entry, MIN_W_ENTRY, 0);
@@ -1448,7 +1477,10 @@ _view_init(Evas_Object *obj, Elm_Multibuttonentry_Data *sd)
         sd->end = edje_object_add(evas_object_evas_get(obj));
         if (!sd->end) return;
         elm_widget_theme_object_set
-          (obj, sd->end, "multibuttonentry", "closedbutton",
+          //TIZEN_ONLY(20150429): "Closedbutton" name is only for upstream.
+          //(obj, sd->end, "multibuttonentry", "closedbutton",
+          (obj, sd->end, "multibuttonentry", "number",
+          //
           elm_widget_style_get(obj));
 
         edje_object_size_min_calc(sd->end, &button_min_width, &button_min_height);
