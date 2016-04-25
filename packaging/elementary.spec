@@ -47,6 +47,10 @@ BuildRequires:  eolian-devel
 BuildRequires:  python-devel
 BuildRequires:  pkgconfig(ttrace)
 
+#TINEN ONLY(20160425) : Support Mobile target language.
+BuildRequires:  pkgconfig(icu-i18n)
+#
+
 Recommends:     %{name}-locale = %{version}
 
 %description
