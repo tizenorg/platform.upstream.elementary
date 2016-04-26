@@ -566,3 +566,17 @@ msgstr "Zalijepi"
 msgid "IDS_COM_BODY_CLIPBOARD"
 msgstr "Međuspremnik"
 
+msgid "WDS_ST_OPT_DAY_ABB"
+msgstr "Dan"
+
+msgid "WDS_ST_OPT_HRS_ABB"
+msgstr "h"
+
+msgid "WDS_ST_OPT_MINS_ABB"
+msgstr "min"
+
+msgid "WDS_ST_OPT_MONTH_ABB"
+msgstr "Mjesec"
+
+msgid "WDS_ST_OPT_YEAR_ABB"
+msgstr "Godina"

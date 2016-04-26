@@ -566,3 +566,17 @@ msgstr "Prilepi"
 msgid "IDS_COM_BODY_CLIPBOARD"
 msgstr "Odložišče"
 
+msgid "WDS_ST_OPT_DAY_ABB"
+msgstr "Dan"
+
+msgid "WDS_ST_OPT_HRS_ABB"
+msgstr "Ur"
+
+msgid "WDS_ST_OPT_MINS_ABB"
+msgstr "Minut"
+
+msgid "WDS_ST_OPT_MONTH_ABB"
+msgstr "Mesec"
+
+msgid "WDS_ST_OPT_YEAR_ABB"
+msgstr "Leto"

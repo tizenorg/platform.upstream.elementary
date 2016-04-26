@@ -504,3 +504,18 @@ msgstr "Įklijuoti"
 
 msgid "IDS_COM_BODY_CLIPBOARD"
 msgstr "Iškarpinė"
+
+msgid "WDS_ST_OPT_DAY_ABB"
+msgstr "Diena"
+
+msgid "WDS_ST_OPT_HRS_ABB"
+msgstr "Val."
+
+msgid "WDS_ST_OPT_MINS_ABB"
+msgstr "Min."
+
+msgid "WDS_ST_OPT_MONTH_ABB"
+msgstr "Mėnuo"
+
+msgid "WDS_ST_OPT_YEAR_ABB"
+msgstr "Metai"

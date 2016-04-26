@@ -131,3 +131,17 @@ msgstr "අලවන්න"
 msgid "IDS_COM_BODY_CLIPBOARD"
 msgstr "ක්ලිප් පුවරුව"
 
+msgid "WDS_ST_OPT_DAY_ABB"
+msgstr "දිනය"
+
+msgid "WDS_ST_OPT_HRS_ABB"
+msgstr "පැය"
+
+msgid "WDS_ST_OPT_MINS_ABB"
+msgstr "විනා"
+
+msgid "WDS_ST_OPT_MONTH_ABB"
+msgstr "මාසය"
+
+msgid "WDS_ST_OPT_YEAR_ABB"
+msgstr "වර්ෂය"

@@ -566,3 +566,17 @@ msgstr "Տեղադրել"
 msgid "IDS_COM_BODY_CLIPBOARD"
 msgstr "Գզրոց"
 
+msgid "WDS_ST_OPT_DAY_ABB"
+msgstr "Օր"
+
+msgid "WDS_ST_OPT_HRS_ABB"
+msgstr "Ժամ"
+
+msgid "WDS_ST_OPT_MINS_ABB"
+msgstr "Րոպե"
+
+msgid "WDS_ST_OPT_MONTH_ABB"
+msgstr "Ամիս"
+
+msgid "WDS_ST_OPT_YEAR_ABB"
+msgstr "Տարի"
