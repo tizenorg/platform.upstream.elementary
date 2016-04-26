@@ -8,6 +8,12 @@
 #include <Elementary.h>
 #include "elm_priv.h"
 #include "elm_widget_calendar.h"
+//TIZEN_ONLY(20160425): Using icu lib to support languages which not support
+//                      in strftime().
+#include <unicode/udat.h>
+#include <unicode/ustring.h>
+#include <unicode/udatpg.h>
+//
 
 #define MY_CLASS ELM_CALENDAR_CLASS
 
@@ -78,13 +84,138 @@ _button_widget_year_dec_start(void *data,
                               Evas_Object *obj EINA_UNUSED,
                               void *event_info EINA_UNUSED);
 
+//TIZEN_ONLY(20160425): Using icu lib to support languages which not support
+//                      in strftime().
+static char *
+_current_region_date_string_get(const char *format, struct tm *tm)
+{
+#ifndef HAVE_ELEMENTARY_WIN32
+   char *p, *locale;
+   char buf[128] = {0, };
+   UDateFormat *dt_formatter = NULL;
+   UErrorCode status = U_ZERO_ERROR;
+   UChar pattern[128] = {0, };
+   UChar str[128] = {0, };
+   UChar weekday[128] = {0, };
+   UChar ufield[128] = {0, };
+   UChar custom_skeleton[128] = {0, };
+   UDate date;
+   UDateTimePatternGenerator *pattern_generator;
+   UCalendar *calendar = NULL;
+   char *skeleton = "MMMM y";
+   int32_t pos = 0;
+
+   //Current locale get form evn.
+   locale = getenv("LC_TIME");
+   if (!locale)
+     {
+        locale = setlocale(LC_TIME, NULL);
+        if (!locale) return NULL;
+     }
+
+   //Separate up with useless string in locale.
+   p = strstr(locale, ".UTF-8");
+   if (p) *p = 0;
+
+   //Get the pattern from format or get a best pattern to use icu.
+   if (!strcmp(format, "%a"))
+     u_uastrcpy(pattern, "EE");
+   else
+   {
+      pattern_generator = udatpg_open(locale, &status);
+
+      u_uastrcpy(custom_skeleton, skeleton);
+      int32_t best_pattern_capacity = (int32_t)(sizeof(pattern) /
+                                      sizeof((pattern)[0]));
+
+      udatpg_getBestPattern(pattern_generator, custom_skeleton,
+                            u_strlen(custom_skeleton), pattern,
+                            best_pattern_capacity, &status);
+   }
+
+   //Open a new UDateFormat for formatting and parsing date.
+   dt_formatter = udat_open(UDAT_IGNORE, UDAT_IGNORE, locale,
+                            NULL, -1, pattern, -1, &status);
+   if (!dt_formatter)
+     return NULL;
+
+   if (!strcmp(format, "%a"))
+     {
+        udat_getSymbols(dt_formatter, UDAT_SHORT_WEEKDAYS, (tm->tm_mday - 3),
+                        weekday, sizeof(weekday), &status);
+        u_austrcpy(buf, weekday);
+        udat_close(dt_formatter);
+
+        return strdup(buf);
+     }
+   else
+     {
+        if (pattern[0] == 'M')
+          {
+             snprintf(buf, sizeof(buf), "%d %d", tm->tm_mon + 1, tm->tm_year + 1900);
+             u_uastrcpy(ufield, buf);
+          }
+        else
+          {
+             snprintf(buf, sizeof(buf), "%d %d", tm->tm_year + 1900, tm->tm_mon + 1);
+             u_uastrcpy(ufield, buf);
+          }
+     }
+
+   //Open a UCalendar.
+   //A UCalendar may be used to convert a millisecond value to a year, month, and day.
+   calendar = ucal_open(NULL, -1, locale, UCAL_GREGORIAN, &status);
+   if (!calendar)
+     {
+        udat_close(dt_formatter);
+        return NULL;
+     }
+   ucal_clear(calendar);
+
+   //Parse a string into an date/time using a UDateFormat.
+   udat_parseCalendar(dt_formatter, calendar, ufield, sizeof(ufield), &pos, &status);
+   date = ucal_getMillis(calendar, &status);
+   ucal_close(calendar);
+
+   udat_format(dt_formatter, date, str, sizeof(str), NULL, &status);
+   u_austrcpy(buf, str);
+   udat_close(dt_formatter);
+
+   return strdup(buf);
+#else
+   return NULL;
+#endif
+}
+//
+
 /* This two functions should be moved in Eina for next release. */
 static Eina_Tmpstr *
-_eina_tmpstr_strftime(const char *format, const struct tm *tm)
+//TIZEN_ONLY(20160425): Using icu lib to support languages which not support
+//                      in strftime().
+_eina_tmpstr_strftime(const char *format, struct tm *tm)
+//_eina_tmpstr_strftime(const char *format, const struct tm *tm)
+//
 {
    const size_t flen = strlen(format);
    size_t buflen = 16; // An arbitrary starting size
    char *buf = NULL;
+
+   //TIZEN_ONLY(20160425): Using icu lib to support languages which not support
+   //                      in strftime().
+   buf = _current_region_date_string_get(format, tm);
+
+   if (buf)
+     {
+        size_t len;
+        Eina_Tmpstr *r;
+
+        len = strlen(buf);
+
+        r = eina_tmpstr_add_length(buf, len + 1);
+        free(buf);
+        return r;
+     }
+   //
 
    do {
       char *tmp;

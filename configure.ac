@@ -211,6 +211,11 @@ case "$host_os" in
    mingw*)
       requirement_elm_pc="evil >= efl_version"
       ;;
+#TIZEN_ONLY(20160425): Mobile Ux needs icu.
+   *)
+      requirement_elm_pc="icu-i18n >= 4.8"
+      ;;
+#
 esac
 
 requirement_elm_pc_only="\
