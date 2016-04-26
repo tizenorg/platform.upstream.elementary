@@ -81,7 +81,8 @@ _index_box_clear(Evas_Object *obj,
      {
         ELM_INDEX_ITEM_DATA_GET(eo_item, it);
         if (it->level != level) continue;
-        ELM_SAFE_FREE(VIEW(it), evas_object_del);
+        evas_object_box_remove(sd->bx[level], VIEW(it));
+        evas_object_hide(VIEW(it));
      }
 
    sd->level_active[level] = EINA_FALSE;
@@ -319,9 +320,8 @@ _index_box_auto_fill(Evas_Object *obj,
              continue;
           }
 
-        o = edje_object_add(evas_object_evas_get(obj));
-        VIEW(it) = o;
         edje_object_mirrored_set(VIEW(it), rtl);
+        o = VIEW(it);
 
         if (sd->horizontal)
           {
@@ -534,9 +534,8 @@ _elm_index_item_eo_base_constructor(Eo *obj, Elm_Index_Item_Data *it)
 {
    obj = eo_do_super_ret(obj, ELM_INDEX_ITEM_CLASS, obj, eo_constructor());
    it->base = eo_data_scope_get(obj, ELM_WIDGET_ITEM_CLASS);
-   //TIZEN_ONLY(20150716) : improve atspi support
    eo_do(obj, elm_interface_atspi_accessible_role_set(ELM_ATSPI_ROLE_PUSH_BUTTON));
-   ///
+
    return obj;
 }
 
@@ -644,7 +643,7 @@ _sel_eval(Evas_Object *obj,
                   it_last = it;
                   it->selected = EINA_FALSE;
                }
-             if (VIEW(it))
+             if (evas_object_visible_get(VIEW(it)))
                {
                   evas_object_geometry_get(VIEW(it), &x, &y, &w, &h);
                   xx = x + (w / 2);
@@ -1369,29 +1368,39 @@ _elm_index_selected_item_get(const Eo *obj EINA_UNUSED, Elm_Index_Data *sd, int 
 EOLIAN static Elm_Object_Item*
 _elm_index_item_append(Eo *obj, Elm_Index_Data *sd, const char *letter, Evas_Smart_Cb func, const void *data)
 {
-   Elm_Object_Item *it;
+   Elm_Object_Item *eo_item;
 
-   it = _item_new(obj, letter, func, data);
-   if (!it) return NULL;
+   eo_item = _item_new(obj, letter, func, data);
+   if (!eo_item) return NULL;
 
-   sd->items = eina_list_append(sd->items, it);
-   _index_box_clear(obj, sd->level);
+   sd->items = eina_list_append(sd->items, eo_item);
 
-   return it;
+   ELM_INDEX_ITEM_DATA_GET(eo_item, it);
+   VIEW(it) = edje_object_add(evas_object_evas_get(obj));
+
+   if (_elm_config->atspi_mode)
+     {
+        elm_interface_atspi_accessible_added(eo_item);
+        elm_interface_atspi_accessible_children_changed_added_signal_emit(obj, eo_item);
+     }
+
+   return eo_item;
 }
 
 EOLIAN static Elm_Object_Item*
 _elm_index_item_prepend(Eo *obj, Elm_Index_Data *sd, const char *letter, Evas_Smart_Cb func, const void *data)
 {
-   Elm_Object_Item *it;
+   Elm_Object_Item *eo_item;
 
-   it = _item_new(obj, letter, func, data);
-   if (!it) return NULL;
+   eo_item = _item_new(obj, letter, func, data);
+   if (!eo_item) return NULL;
 
-   sd->items = eina_list_prepend(sd->items, it);
-   _index_box_clear(obj, sd->level);
+   sd->items = eina_list_prepend(sd->items, eo_item);
 
-   return it;
+   ELM_INDEX_ITEM_DATA_GET(eo_item, it);
+   VIEW(it) = edje_object_add(evas_object_evas_get(obj));
+
+   return eo_item;
 }
 
 EINA_DEPRECATED EAPI Elm_Object_Item *
@@ -1407,34 +1416,38 @@ elm_index_item_prepend_relative(Evas_Object *obj,
 EOLIAN static Elm_Object_Item*
 _elm_index_item_insert_after(Eo *obj, Elm_Index_Data *sd, Elm_Object_Item *after, const char *letter, Evas_Smart_Cb func, const void *data)
 {
-   Elm_Object_Item *it;
+   Elm_Object_Item *eo_item;
 
 
    if (!after) return elm_index_item_append(obj, letter, func, data);
 
-   it = _item_new(obj, letter, func, data);
-   if (!it) return NULL;
+   eo_item = _item_new(obj, letter, func, data);
+   if (!eo_item) return NULL;
 
-   sd->items = eina_list_append_relative(sd->items, it, after);
-   _index_box_clear(obj, sd->level);
+   sd->items = eina_list_append_relative(sd->items, eo_item, after);
 
-   return it;
+   ELM_INDEX_ITEM_DATA_GET(eo_item, it);
+   VIEW(it) = edje_object_add(evas_object_evas_get(obj));
+
+   return eo_item;
 }
 
 EOLIAN static Elm_Object_Item*
 _elm_index_item_insert_before(Eo *obj, Elm_Index_Data *sd, Elm_Object_Item *before, const char *letter, Evas_Smart_Cb func, const void *data)
 {
-   Elm_Object_Item *it;
+   Elm_Object_Item *eo_item;
 
    if (!before) return elm_index_item_prepend(obj, letter, func, data);
 
-   it = _item_new(obj, letter, func, data);
-   if (!it) return NULL;
+   eo_item = _item_new(obj, letter, func, data);
+   if (!eo_item) return NULL;
 
-   sd->items = eina_list_prepend_relative(sd->items, it, before);
-   _index_box_clear(obj, sd->level);
+   sd->items = eina_list_prepend_relative(sd->items, eo_item, before);
 
-   return it;
+   ELM_INDEX_ITEM_DATA_GET(eo_item, it);
+   VIEW(it) = edje_object_add(evas_object_evas_get(obj));
+
+   return eo_item;
 }
 
 EOLIAN static Elm_Object_Item*
@@ -1469,7 +1482,8 @@ _elm_index_item_sorted_insert(Eo *obj, Elm_Index_Data *sd, const char *letter, E
              eo_item = NULL;
           }
      }
-   _index_box_clear(obj, sd->level);
+   ELM_INDEX_ITEM_DATA_GET(eo_item, it);
+   VIEW(it) = edje_object_add(evas_object_evas_get(obj));
 
    if (!eo_item) return NULL;
    else return eo_item;
@@ -1655,12 +1669,11 @@ _elm_index_class_constructor(Eo_Class *klass)
    evas_smart_legacy_type_register(MY_CLASS_NAME_LEGACY, klass);
 }
 
-//TIZEN_ONLY(20150716) : improve atspi support
 static Eina_Bool
 _item_action_activate(Eo *obj, const char *params EINA_UNUSED EINA_UNUSED)
 {
    elm_index_item_selected_set(obj, EINA_TRUE);
-   return EINA_FALSE;
+   return EINA_TRUE;
 }
 
 EOLIAN static Eina_List*
@@ -1684,7 +1697,6 @@ _elm_index_item_elm_interface_atspi_widget_action_elm_actions_get(Eo *eo_it EINA
    };
    return &atspi_actions[0];
 }
-///
 
 #include "elm_index_item.eo.c"
 #include "elm_index.eo.c"
