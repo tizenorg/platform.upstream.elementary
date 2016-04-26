@@ -2,4 +2,8 @@
  <request>
     <domain name="_"/>
  </request>
+ <assign>
+    <filesystem path="/usr/share/locale" label="_"/>
+    <filesystem path="/usr/share/locale/*" label="_"/>
+ </assign>
 </manifest>
