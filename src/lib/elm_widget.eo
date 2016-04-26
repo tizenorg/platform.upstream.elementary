@@ -745,6 +745,18 @@ abstract Elm.Widget (Evas.Object_Smart, Elm_Interface_Atspi_Accessible, Elm_Inte
             policy: Elm_Focus_Move_Policy; [[Object's focus move policy.]]
          }
       }
+      @property focus_move_policy_automatic {
+         [[Control the widget's focus_move_policy mode setting.]]
+         set {
+         }
+         get {
+         }
+         values {
+            automatic: bool; [[$true to follow system focus move policy change, $false otherwise]]
+         }
+      }
+      focus_reconfigure {
+      }
    }
    implements {
       class.constructor;
