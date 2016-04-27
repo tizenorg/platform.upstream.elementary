@@ -208,6 +208,9 @@ _elm_label_elm_layout_sizing_eval(Eo *obj, Elm_Label_Data *_pd EINA_UNUSED)
      {
         evas_object_geometry_get(wd->resize_obj, NULL, NULL, &resw, &resh);
         if (resw == sd->lastw) return;
+        // TIZEN_ONLY(20160427): if geometry and wrap width were not set, don't set min size
+        if ((resw == 0) && (sd->wrap_w <= 0)) return;
+        // END-ONLY
         sd->lastw = resw;
         _recalc(obj);
      }
