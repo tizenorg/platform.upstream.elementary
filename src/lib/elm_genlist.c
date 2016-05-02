@@ -996,7 +996,6 @@ _item_position(Elm_Gen_Item *it,
 
    if ((void*)view == _elm_object_accessibility_currently_highlighted_get())
      {
-        Elm_Genlist_Data * sd = it->item->wsd;
         int x,y,w,h;
         evas_object_geometry_get(sd->obj, &x, &y, &w, &h);
 
@@ -2304,7 +2303,6 @@ _item_block_position(Item_Block *itb,
                      int in)
 {
    Elm_Gen_Item *it;
-   Elm_Gen_Item *git;
    const Eina_List *l;
    Eina_Bool vis = EINA_FALSE;
    Evas_Coord y = 0, ox, oy, ow, oh, cvx, cvy, cvw, cvh;
