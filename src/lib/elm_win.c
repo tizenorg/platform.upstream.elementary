@@ -362,12 +362,12 @@ _elm_win_first_frame_do(void *data, Evas *e EINA_UNUSED, void *event_info EINA_U
 static void
 _win_noblank_eval(void)
 {
+#ifdef HAVE_ELEMENTARY_X
    Eina_List *l;
    Evas_Object *obj;
    int noblanks = 0;
    Eina_Bool change = EINA_FALSE;
 
-#ifdef HAVE_ELEMENTARY_X
    EINA_LIST_FOREACH(_elm_win_list, l, obj)
      {
         ELM_WIN_DATA_GET(obj, sd);
@@ -428,6 +428,8 @@ _elm_win_apply_alpha(Eo *obj, Elm_Win_Data *sd)
              _elm_win_xwin_update(sd);
           }
         else
+#else
+        (void)obj;
 #endif
           TRAP(sd, alpha_set, enabled);
      }
@@ -1040,7 +1042,6 @@ _elm_win_accessibility_highlight_show(void *data)
 {
    ELM_WIN_DATA_GET(data, sd);
    Evas_Object *fobj = sd->accessibility_highlight.fobj;
-   const char *sig = NULL;
    elm_widget_theme_object_set (sd->obj, fobj, "accessibility_highlight", "top", "default");
    evas_object_raise(fobj);
    _elm_win_accessibility_highlight_simple_setup(sd, fobj);
@@ -1541,14 +1542,14 @@ _elm_win_state_change(Ecore_Evas *ee)
         _elm_win_frame_obj_update(sd);
         if (sd->fullscreen)
           {
-             int w, h;
+             int w2, h2;
 
              eo_do(obj, eo_event_callback_call
                (ELM_WIN_EVENT_FULLSCREEN, NULL));
              if (sd->frame_obj)
                evas_object_hide(sd->frame_obj);
-             ecore_evas_geometry_get(sd->ee, NULL, NULL, &w, &h);
-             ecore_evas_resize(sd->ee, w, h);
+             ecore_evas_geometry_get(sd->ee, NULL, NULL, &w2, &h2);
+             ecore_evas_resize(sd->ee, w2, h2);
           }
         else
           {
@@ -1982,7 +1983,12 @@ _elm_win_accessibility_highlight_callbacks_del(Elm_Win_Data *sd)
    evas_object_event_callback_del_full
      (obj, EVAS_CALLBACK_DEL, _elm_win_focus_target_del, sd->obj);
 }
-
+//this function is unused. if you will use this function, remove this code.
+static void
+_elm_win_object_accessibility_highlight_in(void *data,
+                                   Evas *e EINA_UNUSED,
+                                   void *event_info) EINA_UNUSED;// __attribute__((unused));
+//
 static void
 _elm_win_object_accessibility_highlight_in(void *data,
                                    Evas *e EINA_UNUSED,
@@ -1998,9 +2004,13 @@ _elm_win_object_accessibility_highlight_in(void *data,
 
    sd->accessibility_highlight.cur.target = target;
    _elm_win_accessibility_highlight_callbacks_add(sd);
-
 }
-
+//this function is unused. if you will use this function, remove this code.
+static void
+_elm_win_object_accessibility_highlight_out(void *data,
+                                    Evas *e EINA_UNUSED,
+                                    void *event_info EINA_UNUSED) EINA_UNUSED;//__attribute__((unused));
+//
 static void
 _elm_win_object_accessibility_highlight_out(void *data,
                                     Evas *e EINA_UNUSED,
@@ -4888,8 +4898,9 @@ _dbus_menu_set(Eina_Bool dbus_connect, void *data)
 EOLIAN static Evas_Object *
 _elm_win_main_menu_get(Eo *obj, Elm_Win_Data *sd)
 {
+#ifdef HAVE_ELEMENTARY_X
    Eina_Bool use_dbus = EINA_FALSE;
-
+#endif
    if (sd->main_menu) goto end;
 
    sd->main_menu = elm_menu_add(obj);
@@ -5455,6 +5466,7 @@ _elm_win_keyboard_win_set(Eo *obj EINA_UNUSED, Elm_Win_Data *sd, Eina_Bool is_ke
    if (sd->x.xwin)
      ecore_x_e_virtual_keyboard_set(sd->x.xwin, is_keyboard);
 #else
+   (void)sd;
    (void)is_keyboard;
 #endif
 }
@@ -5465,6 +5477,8 @@ _elm_win_keyboard_win_get(Eo *obj EINA_UNUSED, Elm_Win_Data *sd)
 #ifdef HAVE_ELEMENTARY_X
    _internal_elm_win_xwindow_get(sd);
    if (sd->x.xwin) return ecore_x_e_virtual_keyboard_get(sd->x.xwin);
+#else
+   (void)sd;
 #endif
    return EINA_FALSE;
 }
@@ -5643,6 +5657,8 @@ _elm_win_quickpanel_set(Eo *obj EINA_UNUSED, Elm_Win_Data *sd, Eina_Bool quickpa
              ecore_x_icccm_hints_set(sd->x.xwin, 0, 0, 0, 0, 0, 0, 0);
           }
      }
+#else
+   (void)quickpanel;
 #endif
 #ifdef HAVE_ELEMENTARY_WAYLAND
    _elm_win_focus_skip_set(sd, EINA_TRUE);
@@ -5656,6 +5672,8 @@ _elm_win_quickpanel_get(Eo *obj EINA_UNUSED, Elm_Win_Data *sd)
    _internal_elm_win_xwindow_get(sd);
    if (sd->x.xwin)
      return ecore_x_e_illume_quickpanel_get(sd->x.xwin);
+#else
+   (void)sd;
 #endif
 
    return EINA_FALSE;
@@ -5669,6 +5687,7 @@ _elm_win_quickpanel_priority_major_set(Eo *obj EINA_UNUSED, Elm_Win_Data *sd, in
    if (sd->x.xwin)
      ecore_x_e_illume_quickpanel_priority_major_set(sd->x.xwin, priority);
 #else
+   (void)sd;
    (void)priority;
 #endif
 }
@@ -5680,6 +5699,8 @@ _elm_win_quickpanel_priority_major_get(Eo *obj EINA_UNUSED, Elm_Win_Data *sd)
    _internal_elm_win_xwindow_get(sd);
    if (sd->x.xwin)
      return ecore_x_e_illume_quickpanel_priority_major_get(sd->x.xwin);
+#else
+   (void)sd;
 #endif
 
    return -1;
@@ -5693,6 +5714,7 @@ _elm_win_quickpanel_priority_minor_set(Eo *obj EINA_UNUSED, Elm_Win_Data *sd, in
    if (sd->x.xwin)
      ecore_x_e_illume_quickpanel_priority_minor_set(sd->x.xwin, priority);
 #else
+   (void)sd;
    (void)priority;
 #endif
 }
@@ -5704,6 +5726,8 @@ _elm_win_quickpanel_priority_minor_get(Eo *obj EINA_UNUSED, Elm_Win_Data *sd)
    _internal_elm_win_xwindow_get(sd);
    if (sd->x.xwin)
      return ecore_x_e_illume_quickpanel_priority_minor_get(sd->x.xwin);
+#else
+   (void)sd;
 #endif
 
    return -1;
@@ -5717,6 +5741,7 @@ _elm_win_quickpanel_zone_set(Eo *obj EINA_UNUSED, Elm_Win_Data *sd, int zone)
    if (sd->x.xwin)
      ecore_x_e_illume_quickpanel_zone_set(sd->x.xwin, zone);
 #else
+   (void)sd;
    (void)zone;
 #endif
 }
@@ -5728,6 +5753,8 @@ _elm_win_quickpanel_zone_get(Eo *obj EINA_UNUSED, Elm_Win_Data *sd)
    _internal_elm_win_xwindow_get(sd);
    if (sd->x.xwin)
      return ecore_x_e_illume_quickpanel_zone_get(sd->x.xwin);
+#else
+   (void)sd;
 #endif
 
    return 0;
@@ -5771,6 +5798,7 @@ _elm_win_illume_command_send(Eo *obj EINA_UNUSED, Elm_Win_Data *sd, Elm_Illume_C
           }
      }
 #else
+   (void)sd;
    (void)command;
 #endif
 }
@@ -5980,6 +6008,8 @@ _elm_win_xwindow_get(Eo *obj EINA_UNUSED, Elm_Win_Data *sd)
 #ifdef HAVE_ELEMENTARY_X
    if (sd->x.xwin) return sd->x.xwin;
    if (sd->parent) return elm_win_xwindow_get(sd->parent);
+#else
+   (void)sd;
 #endif
    return 0;
 }
