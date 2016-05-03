@@ -4573,7 +4573,7 @@ _elm_widget_item_eo_base_destructor(Eo *eo_item, Elm_Widget_Item_Data *item)
    elm_interface_atspi_accessible_removed(eo_item);
 
    if (item->atspi_custom_relations)
-     elm_atspi_relation_set_free(&item->atspi_custom_relations);
+     elm_atspi_relation_set_free(item->atspi_custom_relations);
 
    EINA_MAGIC_SET(item, EINA_MAGIC_NONE);
 
@@ -5860,7 +5860,7 @@ _elm_widget_eo_base_destructor(Eo *obj, Elm_Widget_Smart_Data *sd EINA_UNUSED)
          );
    // TIZEN_ONLY(20150709) : atspi relations api
    if (sd->atspi_custom_relations)
-     elm_atspi_relation_set_free(&sd->atspi_custom_relations);
+     elm_atspi_relation_set_free(sd->atspi_custom_relations);
    //
    //TIZEN_ONLY(20150717) add widget name setter
    if (sd->name)
@@ -6152,9 +6152,11 @@ _elm_widget_elm_interface_atspi_accessible_attributes_get(Eo *obj, Elm_Widget_Sm
 
 // TIZEN_ONLY(20150709) : atspi relations api
 EOLIAN static Elm_Atspi_Relation_Set
+_elm_widget_elm_interface_atspi_accessible_relation_set_get(Eo *obj EINA_UNUSED, Elm_Widget_Smart_Data *sd) EINA_UNUSED;
+EOLIAN static Elm_Atspi_Relation_Set
 _elm_widget_elm_interface_atspi_accessible_relation_set_get(Eo *obj EINA_UNUSED, Elm_Widget_Smart_Data *sd)
 {
-   return elm_atspi_relation_set_clone(&sd->atspi_custom_relations);
+   return elm_atspi_relation_set_clone(sd->atspi_custom_relations);
 }
 //////////////////////////////
 
