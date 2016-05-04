@@ -3491,6 +3491,23 @@ elm_config_preferred_engine_set(const char *engine)
 {
    char *d;
    if (engine) {
+        //TIZEN ONLY (20160504): "opengl_x11" is not supported on wayland.
+        if (!strcasecmp(engine, "opengl_x11"))
+          {
+             ERR("\"opengl_x11\" engine is not supported on wayland. "
+                 "Therefore, please call "
+                 "elm_config_accel_preference_set(\"opengl\"); instead of "
+                 "calling elm_config_preferred_engine_set(\"opengl_x11\"); to "
+                 "use opengl engine.");
+
+             /* Set accel preference and Do not set preferred engine if the
+                given preferred engine name is \"opengl_x11\" on Tizen because
+                Tizen runs on wayland. */
+             elm_config_accel_preference_set("opengl");
+             return;
+          }
+        //
+
 #define ENGINE_COMPARE(name) (!strcmp(name, engine))
      if (!(d = getenv("DISPLAY")) && (ENGINE_COMPARE(ELM_SOFTWARE_X11) ||
 			              ENGINE_COMPARE(ELM_OPENGL_X11)))
