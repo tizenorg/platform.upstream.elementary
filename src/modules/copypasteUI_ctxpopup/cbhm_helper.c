@@ -105,6 +105,8 @@ _cbhm_msg_send(Evas_Object *obj, char *msg)
    ecore_x_sync();
    return EINA_TRUE;
 #else
+   (void)obj;
+   (void)msg;
    return EINA_FALSE;
 #endif
 }
@@ -197,6 +199,8 @@ _cbhm_item_count_get(Evas_Object *obj EINA_UNUSED, int atom_index)
         return count;
      }
    DMSG("ret: 0x%x\n", ret);
+#else
+   (void)atom_index;
 #endif
    return -1;
 }
@@ -233,7 +237,7 @@ Eina_Bool
 _cbhm_item_get(Evas_Object *obj EINA_UNUSED, int idx, Ecore_X_Atom *data_type, char **buf)
 #else
 Eina_Bool
-_cbhm_item_get(Evas_Object *obj, int idx, void *data_type, char **buf)
+_cbhm_item_get(Evas_Object *obj EINA_UNUSED, int idx EINA_UNUSED, void *data_type, char **buf)
 #endif
 
 {
