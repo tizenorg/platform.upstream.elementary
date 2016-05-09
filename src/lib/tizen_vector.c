@@ -883,7 +883,7 @@ check_default_init(check_default *vd)
 }
 
 static void
-_update_default_check_shape(check_default *vd, Efl_VG *shape, Eina_Bool outline, Eo *obj)
+_update_default_check_shape(check_default *vd EINA_UNUSED, Efl_VG *shape, Eina_Bool outline, Eo *obj)
 {
    Evas_Coord w, h;
    Eina_Matrix3 m;
@@ -2262,8 +2262,8 @@ slider_level_rest_resize_cb(void *data , Evas *e EINA_UNUSED,
 
 //TIZEN_ONLY(20150915): slider: fix slider's handler bug
 static void
-slider_unfocused_cb(void *data,
-                   Evas_Object *obj EINA_UNUSED,
+slider_unfocused_cb(void *data EINA_UNUSED,
+                   Evas_Object *obj,
                    void *event_info EINA_UNUSED)
 {
    vg_slider *vd = evas_object_data_get(obj, vg_key);
