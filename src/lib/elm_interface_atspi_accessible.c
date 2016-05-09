@@ -519,21 +519,6 @@ elm_atspi_relation_set_clone(const Elm_Atspi_Relation_Set set)
    return ret;
 }
 
-EOLIAN static Eina_Bool
-_elm_interface_atspi_accessible_relationship_append(Eo *obj EINA_UNUSED, Elm_Interface_Atspi_Accessible_Data *sd, Elm_Atspi_Relation_Type type, const Elm_Interface_Atspi_Accessible *relation_obj)
-{
-   return elm_atspi_relation_set_relation_append(&sd->relations, type, relation_obj);
-}
-
-EOLIAN static void
-_elm_interface_atspi_accessible_relationship_remove(Eo *obj EINA_UNUSED, Elm_Interface_Atspi_Accessible_Data *sd, Elm_Atspi_Relation_Type type, const Elm_Interface_Atspi_Accessible *relation_obj)
-{
-   if (relation_obj)
-     elm_atspi_relation_set_relation_remove(&sd->relations, type, relation_obj);
-   else
-     elm_atspi_relation_set_relation_type_remove(&sd->relations, type);
-}
-
 EOLIAN static void
 _elm_interface_atspi_accessible_relationships_clear(Eo *obj EINA_UNUSED, Elm_Interface_Atspi_Accessible_Data *sd)
 {
