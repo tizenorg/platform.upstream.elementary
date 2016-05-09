@@ -1668,6 +1668,9 @@ obj_longpress(Evas_Object *obj)
         else
           ext_mod->caller = NULL;
      }
+#ifndef HAVE_ELEMENTARY_X
+   (void)first_cbhm_item_type;
+#endif
 }
 
 EAPI void
