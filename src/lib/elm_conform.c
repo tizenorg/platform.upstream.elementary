@@ -266,6 +266,9 @@ _conformant_parts_swallow(Evas_Object *obj)
    Evas *e;
    ELM_CONFORMANT_DATA_GET(obj, sd);
    ELM_WIDGET_DATA_GET_OR_RETURN(obj, wd);
+   // TIZEN_ONLY(20160509): support different thing in Tizen 3.0
+   Elm_Win_Keyboard_Mode mode;
+   //
    e = evas_object_evas_get(obj);
 
    sd->scroller = NULL;
@@ -273,13 +276,18 @@ _conformant_parts_swallow(Evas_Object *obj)
    //Virtual Keyboard
    if (edje_object_part_exists(wd->resize_obj, VIRTUALKEYPAD_PART))
      {
+        // TIZEN_ONLY(20160509): support different thing in Tizen 3.0
+        mode = elm_win_keyboard_mode_get(sd->win);
+        //
         if (!sd->virtualkeypad)
           {
              sd->virtualkeypad = evas_object_rectangle_add(e);
              elm_widget_sub_object_add(obj, sd->virtualkeypad);
              evas_object_size_hint_max_set(sd->virtualkeypad, -1, 0);
           }
-        else
+        // TIZEN_ONLY(20160509): support different thing in Tizen 3.0
+        else if (mode == ELM_WIN_KEYBOARD_ON)
+        //
           _conformant_part_sizing_eval(obj, ELM_CONFORMANT_VIRTUAL_KEYPAD_PART);
 
         evas_object_color_set(sd->virtualkeypad, 0, 0, 0, 0);
