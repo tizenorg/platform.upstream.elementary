@@ -444,6 +444,9 @@ _desc_init(void)
    // TIZEN_ONLY(20160411): spinner: add united widget mode
    ELM_CONFIG_VAL(D, T, spinner_united_mode_enable, T_UCHAR);
    // END-ONLY
+   // TIZEN_ONLY(20160509): add focus looping config
+   ELM_CONFIG_VAL(D, T, focus_looping_enable, T_UCHAR);
+   // END-ONLY
 #undef T
 #undef D
 #undef T_INT
@@ -1483,6 +1486,9 @@ _config_load(void)
 
    // TIZEN_ONLY(20160411): spinner: add united widget mode
    _elm_config->spinner_united_mode_enable = 0;
+   // END-ONLY
+   // TIZEN_ONLY(20160509): add focus looping config
+   _elm_config->focus_looping_disable = 0;
    // END-ONLY
 }
 
