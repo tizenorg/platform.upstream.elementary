@@ -842,7 +842,8 @@ _key_action_move(Evas_Object *obj, const char *params)
    if (!strcmp(dir, "down"))
      {
         if ((!sd->horizontal) &&
-            (item_focused_get(sd) == eo_litem))
+            (item_focused_get(sd) == eo_litem) &&
+            !_elm_config->focus_looping_disable)
           {
             ELM_HOVERSEL_ITEM_DATA_GET(eo_fitem, fitem);
             elm_object_focus_set(VIEW(fitem), EINA_TRUE);
@@ -854,7 +855,8 @@ _key_action_move(Evas_Object *obj, const char *params)
    else if (!strcmp(dir, "up"))
      {
         if ((!sd->horizontal) &&
-            (item_focused_get(sd) == eo_fitem))
+            (item_focused_get(sd) == eo_fitem) &&
+            !_elm_config->focus_looping_disable)
           {
             ELM_HOVERSEL_ITEM_DATA_GET(eo_litem, litem);
             elm_object_focus_set(VIEW(litem), EINA_TRUE);
@@ -866,7 +868,8 @@ _key_action_move(Evas_Object *obj, const char *params)
    else if (!strcmp(dir, "left"))
      {
         if (sd->horizontal &&
-            (item_focused_get(sd) == eo_fitem))
+            (item_focused_get(sd) == eo_fitem) &&
+            !_elm_config->focus_looping_disable)
           {
             ELM_HOVERSEL_ITEM_DATA_GET(eo_litem, litem);
             elm_object_focus_set(VIEW(litem), EINA_TRUE);
@@ -878,7 +881,8 @@ _key_action_move(Evas_Object *obj, const char *params)
    else if (!strcmp(dir, "right"))
      {
         if (sd->horizontal &&
-            (item_focused_get(sd) == eo_litem))
+            (item_focused_get(sd) == eo_litem) &&
+            !_elm_config->focus_looping_disable)
           {
             ELM_HOVERSEL_ITEM_DATA_GET(eo_fitem, fitem);
             elm_object_focus_set(VIEW(fitem), EINA_TRUE);
