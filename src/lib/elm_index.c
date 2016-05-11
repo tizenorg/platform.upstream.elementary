@@ -750,10 +750,12 @@ _sel_eval(Evas_Object *obj,
                        eina_strbuf_free(buf);
 
                        _elm_access_highlight_set(it->base->access_obj);
-                       _elm_access_say(ret);
+                       // TIZEN-ONLY(20160510): support voice_guide
+                       elm_access_say(ret);
+                       //
                     }
 
-                  if (om_closest) 
+                  if (om_closest)
                     eo_do(obj, eo_event_callback_call
                       (ELM_INDEX_EVENT_CHANGED, EO_OBJ(om_closest)));
                   else

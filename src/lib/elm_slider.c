@@ -73,6 +73,12 @@ _val_fetch(Evas_Object *obj, Eina_Bool user_event)
 {
    Eina_Bool rtl;
    double posx = 0.0, posy = 0.0, pos = 0.0, val;
+   // TIZEN-ONLY(20160510): support voice_guide
+   double per;
+   char text[1024] = {0,};
+   Eina_Strbuf *buf = NULL;
+   char *str = NULL;
+   //
 
    ELM_SLIDER_DATA_GET(obj, sd);
    ELM_WIDGET_DATA_GET_OR_RETURN(obj, wd);
@@ -99,6 +105,34 @@ _val_fetch(Evas_Object *obj, Eina_Bool user_event)
              ecore_timer_del(sd->delay);
              sd->delay = ecore_timer_add(SLIDER_DELAY_CHANGED_INTERVAL, _delay_change, obj);
           }
+
+        // TIZEN-ONLY(20160510): support voice_guide
+        if ((elm_object_focus_get(obj) == EINA_TRUE) &&
+            ((_elm_config->access_mode != ELM_ACCESS_MODE_OFF) || (_elm_config->voice_guide)))
+          {
+             buf = eina_strbuf_new();
+             if (sd->indicator_format_func)
+               {
+                  str = sd->indicator_format_func(sd->val);
+                  eina_strbuf_append(buf, str);
+                  if (sd->indicator_format_free) sd->indicator_format_free(str);
+               }
+             else if (sd->indicator)
+               {
+                  snprintf(text, sizeof(text), sd->indicator, sd->val);
+                  eina_strbuf_append(buf, text);
+               }
+             else
+               {
+                  per = (sd->val / (sd->val_max - sd->val_min)) * 100;
+                  per = abs(per);
+                  eina_strbuf_append_printf(buf, "%d ", (int)floor(per));
+               }
+
+             _elm_access_say(obj, eina_strbuf_string_get(buf), EINA_FALSE);
+             eina_strbuf_free(buf);
+          }
+        //
      }
 }
 

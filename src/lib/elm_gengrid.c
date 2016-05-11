@@ -1333,6 +1333,11 @@ _elm_gengrid_item_focus_update(Elm_Gen_Item *it)
            (VIEW(it), "elm,state,focused", "elm");
      }
 
+   // TIZEN-ONLY(20160510): support voice_guide
+   if (_elm_config->access_mode || _elm_config->voice_guide)
+          _elm_access_highlight_set(it->base->access_obj);
+   //
+
    focus_raise = edje_object_data_get(VIEW(it), "focusraise");
    if ((focus_raise) && (!strcmp(focus_raise, "on")))
      {
@@ -1377,7 +1382,10 @@ _item_realize(Elm_Gen_Item *it)
      }
 
    /* access */
-   if (_elm_config->access_mode) _access_widget_item_register(it);
+   // TIZEN-ONLY(20160510): support voice_guide
+   if (_elm_config->access_mode || _elm_config->voice_guide)
+     _access_widget_item_register(it);
+   //
 
    /* infate texts, contents and states of view object */
    _view_inflate(VIEW(it), it, &it->texts, &it->contents);
@@ -2727,7 +2735,7 @@ _anim_end(Elm_Gengrid_Data *sd)
            {
               sd->items = eina_inlist_remove(sd->items, EINA_INLIST_GET(sd->reorder.it1));
               sd->items = eina_inlist_remove(sd->items, EINA_INLIST_GET(sd->reorder.it2));
-           
+
               if (it1_prev)
                 {
                    tmp = eina_inlist_find(sd->items, EINA_INLIST_GET(it1_prev));
@@ -2736,7 +2744,7 @@ _anim_end(Elm_Gengrid_Data *sd)
                 }
               else
                 sd->items = eina_inlist_prepend(sd->items, EINA_INLIST_GET(sd->reorder.it2));
-           
+
               if (it2_prev)
                 {
                    tmp = eina_inlist_find(sd->items, EINA_INLIST_GET(it2_prev));
@@ -2760,16 +2768,16 @@ _anim_end(Elm_Gengrid_Data *sd)
           {
              sd->items = eina_inlist_remove(sd->items, EINA_INLIST_GET(sd->reorder.it1));
              sd->items = eina_inlist_remove(sd->items, EINA_INLIST_GET(sd->reorder.it2));
-          
+
              if (it1_prev)
-               {  
+               {
                   tmp = eina_inlist_find(sd->items, EINA_INLIST_GET(it1_prev));
                   sd->items = eina_inlist_append_relative(sd->items, EINA_INLIST_GET(sd->reorder.it2),
                                                           tmp);
                }
              else
                sd->items = eina_inlist_prepend(sd->items, EINA_INLIST_GET(sd->reorder.it2));
-        
+
              if (it2_prev)
                {
                   tmp = eina_inlist_find(sd->items, EINA_INLIST_GET(it2_prev));

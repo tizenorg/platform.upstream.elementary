@@ -14,6 +14,25 @@
 #define MY_CLASS_NAME "Elm_Access"
 #define MY_CLASS_NAME_LEGACY "elm_access"
 
+// TIZEN-ONLY(20160510): support voice_guide
+static const char SIG_HIGHLIGHTED[] = "access,highlighted";
+static const char SIG_UNHIGHLIGHTED[] = "access,unhighlighted";
+static const char SIG_ACTIVATED[] = "access,activated";
+static const char SIG_READ_START[] = "access,read,start";
+static const char SIG_READ_STOP[] = "access,read,stop";
+static const char SIG_READ_CANCEL[] = "access,read,cancel";
+
+static const Evas_Smart_Cb_Description _smart_callbacks[] = {
+  {SIG_HIGHLIGHTED, ""},
+  {SIG_UNHIGHLIGHTED, ""},
+  {SIG_ACTIVATED, ""},
+  {SIG_READ_START, ""},
+  {SIG_READ_STOP, ""},
+  {SIG_READ_CANCEL, ""},
+  {NULL, NULL}
+};
+//
+
 struct _Func_Data
 {
    void                *user_data; /* Holds user data to CB */
@@ -30,6 +49,14 @@ struct _Action_Info
 
 typedef struct _Action_Info Action_Info;
 
+// TIZEN-ONLY(20160510): support voice_guide
+static Eina_Bool highlight_read_enable = EINA_FALSE;
+static Ecore_Timer *highlight_read_timer = NULL;
+static Eina_Bool force_saying = EINA_FALSE;
+static Eina_Bool reading_cancel = EINA_FALSE;
+static char *waiting_text = NULL;
+//
+
 static Eina_Bool mouse_event_enable = EINA_TRUE;
 static Eina_Bool auto_highlight = EINA_FALSE;
 static Elm_Access_Action_Type action_by = ELM_ACCESS_ACTION_FIRST;
@@ -37,6 +64,10 @@ static Elm_Access_Action_Type action_by = ELM_ACCESS_ACTION_FIRST;
 static Evas_Object * _elm_access_add(Evas_Object *parent);
 
 static void _access_object_unregister(Evas_Object *obj);
+
+// TIZEN-ONLY(20160510): support voice_guide
+static void _access_read_obj_del_cb(void *data EINA_UNUSED, Evas *e EINA_UNUSED, Evas_Object *obj, void *event_info EINA_UNUSED);
+//
 
 EOLIAN static void
 _elm_access_evas_object_smart_add(Eo *obj, void *_pd EINA_UNUSED)
@@ -255,8 +286,10 @@ _access_highlight_read(Elm_Access_Info *ac, Evas_Object *obj)
 
    strbuf = eina_strbuf_new();
 
-   if (_elm_config->access_mode != ELM_ACCESS_MODE_OFF)
+   // TIZEN-ONLY(20160510): support voice_guide
+   if (_elm_config->access_mode != ELM_ACCESS_MODE_OFF || _elm_config->voice_guide)
      {
+   //
         if (ac->on_highlight) ac->on_highlight(ac->on_highlight_data);
         _elm_access_object_highlight(obj);
 
@@ -277,7 +310,9 @@ _access_highlight_read(Elm_Access_Info *ac, Evas_Object *obj)
    txt = eina_strbuf_string_steal(strbuf);
    eina_strbuf_free(strbuf);
 
-   _elm_access_say(txt);
+   // TIZEN-ONLY(20160510): support voice_guide
+   _elm_access_say(obj, txt, EINA_FALSE);
+   //
    free(txt);
 }
 
@@ -328,11 +363,46 @@ _access_hover_mouse_out_cb(void *data, Evas *e EINA_UNUSED, Evas_Object *obj EIN
    ELM_SAFE_FREE(ac->delay_timer, ecore_timer_del);
 }
 
+// TIZEN-ONLY(20160510): support voice_guide
+static void
+_access_parent_callback_call(Evas_Object *obj, const char *sig, void *data)
+{
+    Elm_Access_Info *ac;
+    ac = evas_object_data_get(obj, "_elm_access");
+    if (ac && ac->parent)
+        evas_object_smart_callback_call(ac->parent, sig, data);
+
+}
+//
+
 static void
 _access_read_done(void *data EINA_UNUSED)
 {
-   DBG("read done");
-   // FIXME: produce event here
+    // TIZEN-ONLY(20160510): support voice_guide
+    Evas_Object *obj = data;
+    if (!reading_cancel)
+      {
+        evas_object_smart_callback_call(obj, SIG_READ_STOP, NULL);
+        _access_parent_callback_call(obj, SIG_READ_STOP, NULL);
+      }
+    else
+      {
+        evas_object_smart_callback_call(obj, SIG_READ_CANCEL, NULL);
+        _access_parent_callback_call(obj, SIG_READ_CANCEL, NULL);
+      }
+    evas_object_event_callback_del_full(obj, EVAS_CALLBACK_DEL,
+            _access_read_obj_del_cb, NULL);
+
+    if (force_saying)
+      {
+        force_saying = EINA_FALSE;
+        if (waiting_text)
+          {
+            _elm_access_say(NULL, waiting_text, EINA_FALSE);
+            waiting_text = NULL;
+          }
+      }
+    //
 }
 
 static void
@@ -561,7 +631,9 @@ _elm_access_highlight_set(Evas_Object* obj)
    if (!obj) return;
 
    ho = _access_highlight_object_get(obj);
-   if (ho == obj) return;
+   // TIZEN-ONLY(20160510): support voice_guide
+   if (ho == obj && _elm_config->voice_guide) return;
+   //
 
    ac = evas_object_data_get(obj, "_elm_access");
    if (!ac) return;
@@ -750,24 +822,69 @@ _elm_access_read(Elm_Access_Info *ac, int type, const Evas_Object *obj)
    free(txt);
 }
 
-EAPI void
-_elm_access_say(const char *txt)
+// TIZEN-ONLY(20160510): support voice_guide
+static void
+_access_read_obj_del_cb(void *data EINA_UNUSED, Evas *e EINA_UNUSED, Evas_Object *obj, void *event_info EINA_UNUSED)
 {
-   if (!_elm_config->access_mode) return;
+   if (mapi && mapi->out_done_callback_set)
+     mapi->out_done_callback_set(NULL, obj);
+}
+//
+
+// TIZEN-ONLY(20160510): support voice_guide
+EAPI void
+_elm_access_say(Evas_Object *obj, const char *txt, Eina_Bool force)
+{
+   if (!_elm_config) return;
+   if (!_elm_config->access_mode && !_elm_config->voice_guide) return;
+   if (!highlight_read_enable && !_elm_config->voice_guide) return;
+   if (!txt) return;
+   if (strlen(txt) == 0) return; /* Tizen only: TTS engine does not work properly */
+
+   if (!force)
+     {
+       if (highlight_read_timer && !force)
+         {
+           ecore_timer_del(highlight_read_timer);
+           highlight_read_timer = NULL;
+         }
+        if (force_saying)
+          {
+             waiting_text = strdup(txt);
+             return;
+          }
+     }
 
    _access_init();
    if (mapi)
      {
-        if (mapi->out_done_callback_set)
-           mapi->out_done_callback_set(_access_read_done, NULL);
-        if (mapi->out_cancel) mapi->out_cancel();
-        if (txt)
-          {
-             if (mapi->out_read) mapi->out_read(txt);
-             if (mapi->out_read) mapi->out_read(".\n");
-          }
-        if (mapi->out_read_done) mapi->out_read_done();
+       reading_cancel = EINA_TRUE;
+       if (mapi->out_cancel) mapi->out_cancel();
+       reading_cancel = EINA_FALSE;
+
+       /* NULL check of txt is done before */
+       evas_object_smart_callback_call(obj, SIG_READ_START, NULL);
+       _access_parent_callback_call(obj, SIG_READ_START, NULL);
+
+       if (mapi->out_read)
+         {
+           if(force_saying) ERR("[ACCESS] [F] %s(%p) = %s", evas_object_type_get(obj), obj, txt);
+           else ERR("[ACCESS] [  ] %s(%p) = %s", evas_object_type_get(obj), obj, txt);
+           mapi->out_read(txt);
+         }
+       if (obj != NULL)
+        {
+          evas_object_event_callback_add(obj, EVAS_CALLBACK_DEL, _access_read_obj_del_cb, NULL);
+        }
+
+       // out_done callback have to be set when obj is null or not.
+       if (mapi->out_done_callback_set)
+          mapi->out_done_callback_set(_access_read_done, obj);
+       //
+
+       if (mapi->out_read_done) mapi->out_read_done();
      }
+   //
 }
 
 EAPI Elm_Access_Info *
@@ -1319,7 +1436,9 @@ elm_access_say(const char *text)
 {
    if (!text) return;
 
-   _elm_access_say(text);
+   // TIZEN-ONLY(20160510): support voice_guide
+   _elm_access_say(NULL, text, EINA_FALSE);
+   //
 }
 
 EAPI void
@@ -1531,3 +1650,39 @@ _elm_access_elm_interface_atspi_action_actions_get(Eo *obj, void *pd EINA_UNUSED
 }
 
 #include "elm_access.eo.c"
+
+// TIZEN-ONLY(20160510): support voice_guide
+EAPI void
+elm_access_force_say(const char *text)
+{
+   if (!text) return;
+
+   if(elm_config_access_get())
+     {
+       if (force_saying) return;
+
+       force_saying = EINA_TRUE;
+    _  _elm_access_say(NULL, text, EINA_TRUE);
+     }
+}
+
+EAPI void
+elm_access_force_stop(void)
+{
+   if(!force_saying) return;
+
+   _access_init();
+   if(mapi)
+     {
+       mapi->out_cancel;
+       force_saying = EINA_FALSE;
+     }
+}
+
+EAPI void
+elm_access_object_say(Evas_Object *obj, const char *text)
+{
+   if (!text) return;
+   _elm_access_say(obj, text, EINA_FALSE);
+}
+//
