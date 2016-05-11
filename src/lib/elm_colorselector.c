@@ -160,16 +160,35 @@ _color_picker_init(Elm_Colorselector_Data *sd)
    evas_object_image_data_update_add(sd->picker_display, 0, 0, w, h);
 }
 
+//TIZEN_ONLY(20150713) : colorselector default names clasifier
+static const char *_hsl_to_string(double h, double s, double l)
+{
+   if (l < 0.2) return "black";
+   if (l > 0.8) return "white";
+
+   if (s < 0.25) return "grey";
+
+   if (h < 10) return "red";
+   if (h < 20) return "orange";
+   if (h < 70) return "yellow";
+   if (h < 75) return "lime";
+   if (h < 150) return "green";
+   if (h < 210) return "cyan";
+   if (h < 270) return "blue";
+   if (h < 280) return "violet";
+   if (h < 320) return "pink";
+   if (h < 330) return "magenta";
+
+   return "red";
+}
+///
+
 static void
-_rgb_to_hsl(Elm_Colorselector_Data *sd)
+_rgb_to_hsl(double r, double g, double b, double *rh, double *rs, double *rl)
 {
    double r2, g2, b2;
    double v, m, vm;
-   double r, g, b;
-
-   r = sd->r;
-   g = sd->g;
-   b = sd->b;
+   double h, s, l;
 
    r /= 255.0;
    g /= 255.0;
@@ -181,30 +200,34 @@ _rgb_to_hsl(Elm_Colorselector_Data *sd)
    m = (r < g) ? r : g;
    m = (m < b) ? m : b;
 
-   sd->h = 0.0;
-   sd->s = 0.0;
-   sd->l = 0.0;
+   h = 0.0;
+   s = 0.0;
+   l = 0.0;
 
-   sd->l = (m + v) / 2.0;
+   l = (m + v) / 2.0;
+   if (rl) *rl = l;
 
-   if (sd->l <= 0.0) return;
+   if (l <= 0.0) return;
 
    vm = v - m;
-   sd->s = vm;
+   s = vm;
 
-   if (sd->s > 0.0) sd->s /= (sd->l <= 0.5) ? (v + m) : (2.0 - v - m);
+   if (s > 0.0) s /= (l <= 0.5) ? (v + m) : (2.0 - v - m);
    else return;
 
    r2 = (v - r) / vm;
    g2 = (v - g) / vm;
    b2 = (v - b) / vm;
 
-   if (r == v) sd->h = (g == m ? 5.0 + b2 : 1.0 - g2);
+   if (r == v) h = (g == m ? 5.0 + b2 : 1.0 - g2);
    else if (g == v)
-     sd->h = (b == m ? 1.0 + r2 : 3.0 - b2);
-   else sd->h = (r == m ? 3.0 + g2 : 5.0 - r2);
+     h = (b == m ? 1.0 + r2 : 3.0 - b2);
+   else h = (r == m ? 3.0 + g2 : 5.0 - r2);
 
-   sd->h *= 60.0;
+   h *= 60.0;
+
+   if (rh) *rh = h;
+   if (rs) *rs = s;
 }
 
 static Eina_Bool
@@ -431,7 +454,7 @@ _colors_set(Evas_Object *obj,
    if ((sd->mode == ELM_COLORSELECTOR_ALL) || (sd->mode == ELM_COLORSELECTOR_COMPONENTS)
       || (sd->mode == ELM_COLORSELECTOR_BOTH))
      {
-        _rgb_to_hsl(sd);
+        _rgb_to_hsl((double)sd->r, (double)sd->g, (double)sd->b, &sd->h, &sd->s, &sd->l);
 
         edje_object_part_drag_value_get
           (sd->cb_data[0]->colorbar, "elm.arrow", &x, &y);
@@ -2468,6 +2491,22 @@ _elm_color_item_elm_interface_atspi_widget_action_elm_actions_get(Eo *eo_it EINA
    };
    return &atspi_actions[0];
 }
+
+EOLIAN static char*
+_elm_color_item_elm_interface_atspi_accessible_name_get(Eo *eo_it, Elm_Color_Item_Data *it)
+{
+   char *name;
+   double h, s, l;
+   eo_do_super(eo_it, ELM_COLOR_ITEM_CLASS, name = elm_interface_atspi_accessible_name_get());
+   if (!name)
+     {
+        _rgb_to_hsl((double)it->color->r, (double)it->color->g, (double)it->color->b, &h, &s, &l);
+        name = strdup(_hsl_to_string(h, s, l));
+     }
+
+   return name;
+}
+
 /////
 
 #include "elm_colorselector.eo.c"
