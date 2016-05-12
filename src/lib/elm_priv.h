@@ -263,6 +263,9 @@ struct _Elm_Config
    double        glayer_long_tap_start_timeout;
    double        glayer_double_tap_timeout;
    Eina_Bool     access_mode;
+   // TIZEN_ONLY(20160510): support voice_guide
+   Eina_Bool     voice_guide;
+   //
    unsigned char glayer_continues_enable;
    int           week_start;
    int           weekend_start;

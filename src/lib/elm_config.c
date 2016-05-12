@@ -399,6 +399,9 @@ _desc_init(void)
    ELM_CONFIG_VAL(D, T, glayer_long_tap_start_timeout, T_DOUBLE);
    ELM_CONFIG_VAL(D, T, glayer_double_tap_timeout, T_DOUBLE);
    ELM_CONFIG_VAL(D, T, access_mode, T_UCHAR);
+   // TIZEN_ONLY(20160510): support voice_guide
+   ELM_CONFIG_VAL(D, T, voice_guide, T_UCHAR);
+   //
    ELM_CONFIG_VAL(D, T, selection_clear_enable, T_UCHAR);
    ELM_CONFIG_VAL(D, T, glayer_continues_enable, T_UCHAR);
    ELM_CONFIG_VAL(D, T, week_start, T_INT);
@@ -650,6 +653,24 @@ _elm_config_font_overlays_list(void)
 {
    return _elm_config->font_overlays;
 }
+
+// TIZEN_ONLY(20160510): support voice_guide
+Eina_Bool _elm_config_voice_guide_get(void)
+{
+   return _elm_config->voice_guide;
+}
+
+void _elm_config_voice_guide_set(Eina_Bool is_voice_guide)
+{
+   is_voice_guide = !!is_voice_guide;
+
+   if (_elm_config->voice_guide == is_voice_guide) return;
+   _elm_config->voice_guide = is_voice_guide;
+   _elm_win_access(is_voice_guide);
+
+   if (!is_voice_guide) _elm_access_shutdown();
+}
+//
 
 Eina_Bool _elm_config_access_get(void)
 {
@@ -2148,6 +2169,11 @@ _env_get(void)
    if (s) _elm_config->desktop_entry = !!atoi(s);
    s = getenv("ELM_ACCESS_MODE");
    if (s) _elm_config->access_mode = ELM_ACCESS_MODE_ON;
+
+   // TIZEN_ONLY(20160510): support voice_guide
+   s = getenv("ELM_VOICE_GUIDE");
+   if (s) _elm_config->voice_guide = EINA_TRUE;
+   //
 
    s = getenv("ELM_SELECTION_CLEAR_ENABLE");
    if (s) _elm_config->selection_clear_enable = !!atoi(s);

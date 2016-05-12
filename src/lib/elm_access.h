@@ -212,6 +212,48 @@ EAPI void elm_access_activate_cb_set(Evas_Object *obj, Elm_Access_Activate_Cb fu
  */
 EAPI void elm_access_say(const char *text);
 
+// TIZEN_ONLY(20160510): support voice_guide
+/**
+ * @brief Read out text information forcibly and directly.
+ * @since 1.11
+ *
+ * @param text The text information that will be read
+ *
+ * This text isn't interupted any other elm_access_say.
+ * Don't use this API continuous and repeatedly
+ * This function will not free the @p text internally.
+ * TIZEN_ONLY API
+ *
+ * @ingroup Access
+ */
+EAPI void elm_access_force_say(const char *text);
+
+/**
+ * @brief Stop reading out the text information requested by elm_access_force_say()
+ * @since 1.11
+ *
+ * This function will not affect a reading out by elm_access_say().
+ * TIZEN_ONLY API
+ *
+ * @ingroup Access
+ */
+EAPI void elm_access_force_stop(void);
+
+/**
+ * @brief Read out text informaiton directly with accessibility signals.
+ * @since 1.11
+ *
+ * @param obj Accessible object
+ * @param text The text information that will be read
+ *
+ * TIZEN_ONLY API
+ *
+ * @ingroup Access
+ *
+ */
+EAPI void elm_access_object_say(Evas_Object *obj, const char *text);
+//
+
 /**
  * @brief Give the highlight to the object directly.
  * @since 1.8
