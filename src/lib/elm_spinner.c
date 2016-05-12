@@ -1060,7 +1060,9 @@ _access_activate_cb(void *data,
    eina_strbuf_append_printf(buf, "%s, %s", text,
                              elm_layout_text_get(data, "elm.text"));
 
-   _elm_access_say(eina_strbuf_string_get(buf));
+   // TIZEN-ONLY(20160510): support voice_guide
+   elm_access_say(eina_strbuf_string_get(buf));
+   //
    eina_strbuf_free(buf);
 }
 
@@ -1134,7 +1136,9 @@ _access_increment_decrement_info_say(Evas_Object *obj,
    eina_strbuf_append_printf
       (buf, "%s", elm_object_text_get(sd->text_button));
 
-   _elm_access_say(eina_strbuf_string_get(buf));
+   // TIZEN-ONLY(20160510): support voice_guide
+   elm_access_say(eina_strbuf_string_get(buf));
+   //
    eina_strbuf_free(buf);
 }
 

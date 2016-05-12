@@ -1880,8 +1880,10 @@ _action_click_cb(void *data,
    if ((_elm_config->access_mode == ELM_ACCESS_MODE_OFF) ||
        (_elm_access_2nd_click_timeout(VIEW(it))))
      {
-        if (_elm_config->access_mode != ELM_ACCESS_MODE_OFF)
-          _elm_access_say(E_("Selected"));
+        // TIZEN-ONLY(20160510): support voice_guide
+        if (_elm_config->access_mode != ELM_ACCESS_MODE_OFF || _elm_config->voice_guide)
+          elm_access_say(E_("Selected"));
+        //
         _item_select(it);
      }
 }
@@ -2475,12 +2477,16 @@ _access_activate_cb(void *data EINA_UNUSED,
 
    if (it->selected && (sd->select_mode != ELM_OBJECT_SELECT_MODE_ALWAYS))
      {
-        _elm_access_say(E_("Unselected"));
+        // TIZEN-ONLY(20160510): support voice_guide
+        elm_access_say(E_("Unselected"));
+        //
         _item_unselect(it);
      }
    else
      {
-        _elm_access_say(E_("Selected"));
+        // TIZEN-ONLY(20160510): support voice_guide
+        elm_access_say(E_("Selected"));
+        //
         _item_select(it);
      }
 }

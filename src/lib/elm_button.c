@@ -62,8 +62,10 @@ _activate(Evas_Object *obj)
    if ((_elm_config->access_mode == ELM_ACCESS_MODE_OFF) ||
        (_elm_access_2nd_click_timeout(obj)))
      {
-        if (_elm_config->access_mode != ELM_ACCESS_MODE_OFF)
-          _elm_access_say(E_("Clicked"));
+        // TIZEN-ONLY(20160510): support voice_guide
+        if (_elm_config->access_mode != ELM_ACCESS_MODE_OFF || _elm_config->voice_guide)
+          _elm_access_say(obj, E_("Clicked"), EINA_FALSE);
+        //
         if (!elm_widget_disabled_get(obj) &&
             !evas_object_freeze_events_get(obj))
           eo_do(obj, eo_event_callback_call
