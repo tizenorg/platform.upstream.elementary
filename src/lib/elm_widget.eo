@@ -790,6 +790,10 @@ abstract Elm.Widget (Evas.Object_Smart, Elm_Interface_Atspi_Accessible, Elm_Inte
       Elm_Interface_Atspi_Accessible.relationship_append;
       Elm_Interface_Atspi_Accessible.relationship_remove;
       //
+      //TIZEN_ONLY(20150731) : add i18n support for name and description
+      Elm_Interface_Atspi_Accessible.translation_domain.set;
+      Elm_Interface_Atspi_Accessible.translation_domain.get;
+      ///
       Elm_Interface_Atspi_Component.focus_grab;
       //TIZEN_ONLY(20160329): atspi: implement HighlightGrab and HighlightClear methods (29e253e2f7ef3c632ac3a64c489bf569df407f30)
       Elm_Interface_Atspi_Component.highlight_grab;

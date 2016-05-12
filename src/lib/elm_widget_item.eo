@@ -539,6 +539,10 @@ class Elm.Widget_Item(Eo.Base, Elm_Interface_Atspi_Accessible,
            Elm_Interface_Atspi_Accessible.relationship_append;
            Elm_Interface_Atspi_Accessible.relationship_remove;
            //
+           //TIZEN_ONLY(20150731) : add i18n support for name and description
+           Elm_Interface_Atspi_Accessible.translation_domain.set;
+           Elm_Interface_Atspi_Accessible.translation_domain.get;
+           ///
            Elm_Interface_Atspi_Component.extents.get;
            Elm_Interface_Atspi_Component.extents.set;
            Elm_Interface_Atspi_Component.alpha.get;
