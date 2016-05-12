@@ -133,8 +133,10 @@ _activate(Evas_Object *obj)
 
         _state_set_all(sd, EINA_TRUE);
 
-        if (_elm_config->access_mode)
+        // TIZEN-ONLY(20160510): support voice_guide
+        if (_elm_config->access_mode || _elm_config->voice_guide)
           _elm_access_say(E_("State: On"));
+        // END-ONLY
         eo_do(obj, eo_event_callback_call
           (ELM_RADIO_EVENT_CHANGED, NULL));
 
