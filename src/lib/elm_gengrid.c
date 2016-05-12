@@ -430,14 +430,21 @@ _item_show_region(void *data)
        }
 }
 
+//TIZEN_ONLY(20160511) : Remove job for fixing calculate timing issue.
+//static void
+//_calc_job(void *data)
 static void
-_calc_job(void *data)
+_calc(void *data)
 {
    ELM_GENGRID_DATA_GET(data, sd);
    Evas_Coord minw = 0, minh = 0, nmax = 0, cvw, cvh;
    Elm_Gen_Item *it, *group_item = NULL;
    int count_group = 0;
    long count = 0;
+
+   //TIZEN_ONLY(20160511) : Remove job for fixing calculate timing issue.
+   if (sd->calc_done) return;
+   //
 
    sd->items_lost = 0;
 
@@ -496,12 +503,18 @@ _calc_job(void *data)
           }
 
         sd->nmax = nmax;
-        evas_object_smart_changed(sd->pan_obj);
+
+        //TIZEN_ONLY(20160511) : Remove job for fixing calculate timing issue.
+        //evas_object_smart_changed(sd->pan_obj);
+        //
 
         if (sd->show_region || sd->bring_in)
           _item_show_region(sd);
      }
-   sd->calc_job = NULL;
+
+   //TIZEN_ONLY(20160511) : Remove job for fixing calculate timing issue.
+   sd->calc_done = EINA_TRUE;
+   //
 }
 
 EOLIAN static void
@@ -512,10 +525,14 @@ _elm_gengrid_pan_eo_base_destructor(Eo *obj, Elm_Gengrid_Pan_Data *psd)
 }
 
 EOLIAN static void
-_elm_gengrid_pan_evas_object_smart_move(Eo *obj EINA_UNUSED, Elm_Gengrid_Pan_Data *psd, Evas_Coord _gen_param2 EINA_UNUSED, Evas_Coord _gen_param3 EINA_UNUSED)
+_elm_gengrid_pan_evas_object_smart_move(Eo *obj, Elm_Gengrid_Pan_Data *psd, Evas_Coord _gen_param2 EINA_UNUSED, Evas_Coord _gen_param3 EINA_UNUSED)
 {
-   ecore_job_del(psd->wsd->calc_job);
-   psd->wsd->calc_job = ecore_job_add(_calc_job, psd->wobj);
+   //TIZEN_ONLY(20160511) : Remove job for fixing calculate timing issue.
+   psd->wsd->calc_done = EINA_FALSE;
+   evas_object_smart_changed(obj);
+   //ecore_job_del(psd->wsd->calc_job);
+   //psd->wsd->calc_job = ecore_job_add(_calc_job, psd->wobj);
+   //
 }
 
 EOLIAN static void
@@ -525,8 +542,12 @@ _elm_gengrid_pan_evas_object_smart_resize(Eo *obj, Elm_Gengrid_Pan_Data *psd, Ev
 
    evas_object_geometry_get(obj, NULL, NULL, &ow, &oh);
    if ((ow == w) && (oh == h)) return;
-   ecore_job_del(psd->wsd->calc_job);
-   psd->wsd->calc_job = ecore_job_add(_calc_job, psd->wobj);
+   //TIZEN_ONLY(20160511) : Remove job for fixing calculate timing issue.
+   psd->wsd->calc_done = EINA_FALSE;
+   evas_object_smart_changed(obj);
+   //ecore_job_del(psd->wsd->calc_job);
+   //psd->wsd->calc_job = ecore_job_add(_calc_job, psd->wobj);
+   //
 }
 
 static void
@@ -628,8 +649,12 @@ _item_mouse_move_cb(void *data,
                sd->reorder_item_y = oy + oh - sd->item_height;
              else sd->reorder_item_y = it_scrl_y;
 
-             ecore_job_del(sd->calc_job);
-             sd->calc_job = ecore_job_add(_calc_job, sd->obj);
+             //TIZEN_ONLY(20160511) : Remove job for fixing calculate timing issue.
+             sd->calc_done = EINA_FALSE;
+             evas_object_smart_changed(sd->pan_obj);
+             //ecore_job_del(sd->calc_job);
+             //sd->calc_job = ecore_job_add(_calc_job, sd->obj);
+             //
           }
         return;
      }
@@ -1115,9 +1140,13 @@ _item_mouse_up_cb(void *data,
           (ELM_WIDGET_EVENT_MOVED, EO_OBJ(sd->reorder_it)));
         sd->reorder_it = NULL;
         sd->move_effect_enabled = EINA_FALSE;
-        ecore_job_del(sd->calc_job);
-        sd->calc_job =
-          ecore_job_add(_calc_job, sd->obj);
+        //TIZEN_ONLY(20160511) : Remove job for fixing calculate timing issue.
+        sd->calc_done = EINA_FALSE;
+        evas_object_smart_changed(sd->pan_obj);
+        //ecore_job_del(sd->calc_job);
+        //sd->calc_job =
+        //  ecore_job_add(_calc_job, sd->obj);
+        //
 
         eo_do(WIDGET(it), elm_interface_scrollable_hold_set(EINA_FALSE));
         eo_do(WIDGET(it), elm_interface_scrollable_bounce_allow_set(
@@ -1810,9 +1839,14 @@ _item_place(Elm_Gen_Item *it,
 
                             wsd->reorder_item_changed = EINA_TRUE;
                             wsd->move_effect_enabled = EINA_TRUE;
-                            ecore_job_del(wsd->calc_job);
-                            wsd->calc_job =
-                              ecore_job_add(_calc_job, wsd->obj);
+
+                            //TIZEN_ONLY(20160511) : Remove job for fixing calculate timing issue.
+                            wsd->calc_done = EINA_FALSE;
+                            evas_object_smart_changed(wsd->pan_obj);
+                            //ecore_job_del(wsd->calc_job);
+                            //wsd->calc_job =
+                            //  ecore_job_add(_calc_job, wsd->obj);
+                            //
 
                             return;
                          }
@@ -1893,6 +1927,9 @@ _elm_gengrid_pan_evas_object_smart_calculate(Eo *obj EINA_UNUSED, Elm_Gengrid_Pa
 
    Elm_Gengrid_Data *sd = psd->wsd;
 
+   //TIZEN_ONLY(20160511) : Remove job for fixing calculate timing issue.
+   if (!sd->calc_done) _calc(sd->obj);
+   //
    if (!sd->nmax) return;
 
    sd->reorder_item_changed = EINA_FALSE;
@@ -2788,8 +2825,12 @@ _anim_end(Elm_Gengrid_Data *sd)
      }
    _item_position_update(sd->items, 0);
 
-   ecore_job_del(sd->calc_job);
-   sd->calc_job = ecore_job_add(_calc_job, sd->obj);
+   //TIZEN_ONLY(20160511) : Remove job for fixing calculate timing issue.
+   sd->calc_done = EINA_FALSE;
+   evas_object_smart_changed(sd->pan_obj);
+   //ecore_job_del(sd->calc_job);
+   //sd->calc_job = ecore_job_add(_calc_job, sd->obj);
+   //
 }
 
 static Eina_Bool
@@ -3870,9 +3911,12 @@ _elm_gengrid_item_del_serious(Elm_Gen_Item *it)
      sd->group_items = eina_list_remove(sd->group_items, it);
 
    ELM_SAFE_FREE(sd->state, eina_inlist_sorted_state_free);
-   ecore_job_del(sd->calc_job);
-   sd->calc_job = ecore_job_add(sd->calc_cb, sd->obj);
-
+   //TIZEN_ONLY(20160511) : Remove job for fixing calculate timing issue.
+   sd->calc_done = EINA_FALSE;
+   evas_object_smart_changed(sd->pan_obj);
+   //ecore_job_del(sd->calc_job);
+   //sd->calc_job = ecore_job_add(sd->calc_cb, sd->obj);
+   //
    ELM_SAFE_FREE(it->item, free);
 }
 
@@ -4112,7 +4156,9 @@ _internal_elm_gengrid_clear(Evas_Object *obj,
      }
    sd->clear_me = EINA_FALSE;
    sd->pan_changed = EINA_TRUE;
-   ELM_SAFE_FREE(sd->calc_job, ecore_job_del);
+   //TIZEN_ONLY(20160511) : Remove job for fixing calculate timing issue.
+   //ELM_SAFE_FREE(sd->calc_job, ecore_job_del);
+   //
    sd->selected = eina_list_free(sd->selected);
    if (sd->clear_cb) sd->clear_cb(sd);
    sd->pan_x = 0;
@@ -4258,7 +4304,9 @@ _elm_gengrid_evas_object_smart_add(Eo *obj, Elm_Gengrid_Data *priv)
 
    elm_widget_can_focus_set(obj, EINA_TRUE);
 
-   priv->calc_cb = (Ecore_Cb)_calc_job;
+   //TIZEN_ONLY(20160511) : Remove job for fixing calculate timing issue.
+   //priv->calc_cb = (Ecore_Cb)_calc_job;
+   //
 
    priv->generation = 1;
 
@@ -4313,7 +4361,10 @@ _elm_gengrid_evas_object_smart_del(Eo *obj, Elm_Gengrid_Data *sd)
    ELM_SAFE_FREE(sd->stack, evas_object_del);
 
    _item_cache_zero(sd);
-   ecore_job_del(sd->calc_job);
+
+   //TIZEN_ONLY(20160511) : Remove job for fixing calculate timing issue.
+   //ecore_job_del(sd->calc_job);
+   //
 
    eo_do_super(obj, MY_CLASS, evas_obj_smart_del());
 }
@@ -4393,8 +4444,12 @@ _elm_gengrid_item_size_set(Eo *obj, Elm_Gengrid_Data *sd, Evas_Coord w, Evas_Coo
    if ((sd->item_width == w) && (sd->item_height == h)) return;
    sd->item_width = w;
    sd->item_height = h;
-   ecore_job_del(sd->calc_job);
-   sd->calc_job = ecore_job_add(_calc_job, obj);
+   //TIZEN_ONLY(20160511) : Remove job for fixing calculate timing issue.
+   sd->calc_done = EINA_FALSE;
+   evas_object_smart_changed(sd->pan_obj);
+   //ecore_job_del(sd->calc_job);
+   //sd->calc_job = ecore_job_add(_calc_job, obj);
+   //
 }
 
 EOLIAN static void
@@ -4405,13 +4460,17 @@ _elm_gengrid_item_size_get(Eo *obj EINA_UNUSED, Elm_Gengrid_Data *sd, Evas_Coord
 }
 
 EOLIAN static void
-_elm_gengrid_group_item_size_set(Eo *obj, Elm_Gengrid_Data *sd, Evas_Coord w, Evas_Coord h)
+_elm_gengrid_group_item_size_set(Eo *obj EINA_UNUSED, Elm_Gengrid_Data *sd, Evas_Coord w, Evas_Coord h)
 {
    if ((sd->group_item_width == w) && (sd->group_item_height == h)) return;
    sd->group_item_width = w;
    sd->group_item_height = h;
-   ecore_job_del(sd->calc_job);
-   sd->calc_job = ecore_job_add(_calc_job, obj);
+   //TIZEN_ONLY(20160511) : Remove job for fixing calculate timing issue.
+   sd->calc_done = EINA_FALSE;
+   evas_object_smart_changed(sd->pan_obj);
+   //ecore_job_del(sd->calc_job);
+   //sd->calc_job = ecore_job_add(_calc_job, obj);
+   //
 }
 
 EOLIAN static void
@@ -4453,7 +4512,7 @@ _elm_gengrid_align_get(Eo *obj EINA_UNUSED, Elm_Gengrid_Data *sd, double *align_
 }
 
 EOLIAN static Elm_Object_Item*
-_elm_gengrid_item_append(Eo *obj, Elm_Gengrid_Data *sd, const Elm_Gengrid_Item_Class *itc, const void *data, Evas_Smart_Cb func, const void *func_data)
+_elm_gengrid_item_append(Eo *obj EINA_UNUSED, Elm_Gengrid_Data *sd, const Elm_Gengrid_Item_Class *itc, const void *data, Evas_Smart_Cb func, const void *func_data)
 {
    Elm_Gen_Item *it;
 
@@ -4467,8 +4526,11 @@ _elm_gengrid_item_append(Eo *obj, Elm_Gengrid_Data *sd, const Elm_Gengrid_Item_C
    if (it->group)
      sd->group_items = eina_list_prepend(sd->group_items, it);
 
-   ecore_job_del(sd->calc_job);
-   sd->calc_job = ecore_job_add(_calc_job, obj);
+   //TIZEN_ONLY(20160511) : Remove job for fixing calculate timing issue.
+   sd->calc_done = EINA_FALSE;
+   evas_object_smart_changed(sd->pan_obj);
+   //ecore_job_del(sd->calc_job);
+   //sd->calc_job = ecore_job_add(_calc_job, obj);
 
    if (_elm_config->atspi_mode)
      {
@@ -4480,7 +4542,7 @@ _elm_gengrid_item_append(Eo *obj, Elm_Gengrid_Data *sd, const Elm_Gengrid_Item_C
 }
 
 EOLIAN static Elm_Object_Item*
-_elm_gengrid_item_prepend(Eo *obj, Elm_Gengrid_Data *sd, const Elm_Gengrid_Item_Class *itc, const void *data, Evas_Smart_Cb func, const void *func_data)
+_elm_gengrid_item_prepend(Eo *obj EINA_UNUSED, Elm_Gengrid_Data *sd, const Elm_Gengrid_Item_Class *itc, const void *data, Evas_Smart_Cb func, const void *func_data)
 {
    Elm_Gen_Item *it;
 
@@ -4493,8 +4555,12 @@ _elm_gengrid_item_prepend(Eo *obj, Elm_Gengrid_Data *sd, const Elm_Gengrid_Item_
    if (it->group)
      sd->group_items = eina_list_append(sd->group_items, it);
 
-   ecore_job_del(sd->calc_job);
-   sd->calc_job = ecore_job_add(_calc_job, obj);
+   //TIZEN_ONLY(20160511) : Remove job for fixing calculate timing issue.
+   sd->calc_done = EINA_FALSE;
+   evas_object_smart_changed(sd->pan_obj);
+   //ecore_job_del(sd->calc_job);
+   //sd->calc_job = ecore_job_add(_calc_job, obj);
+   //
 
    if (_elm_config->atspi_mode)
      {
@@ -4506,7 +4572,7 @@ _elm_gengrid_item_prepend(Eo *obj, Elm_Gengrid_Data *sd, const Elm_Gengrid_Item_
 }
 
 EOLIAN static Elm_Object_Item*
-_elm_gengrid_item_insert_before(Eo *obj, Elm_Gengrid_Data *sd, const Elm_Gengrid_Item_Class *itc, const void *data, Elm_Object_Item *eo_relative, Evas_Smart_Cb func, const void *func_data)
+_elm_gengrid_item_insert_before(Eo *obj EINA_UNUSED, Elm_Gengrid_Data *sd, const Elm_Gengrid_Item_Class *itc, const void *data, Elm_Object_Item *eo_relative, Evas_Smart_Cb func, const void *func_data)
 {
    Elm_Gen_Item *it;
    Eina_Inlist *tmp;
@@ -4527,14 +4593,18 @@ _elm_gengrid_item_insert_before(Eo *obj, Elm_Gengrid_Data *sd, const Elm_Gengrid
      sd->group_items = eina_list_append_relative
          (sd->group_items, it, relative->parent);
 
-   ecore_job_del(sd->calc_job);
-   sd->calc_job = ecore_job_add(_calc_job, obj);
+   //TIZEN_ONLY(20160511) : Remove job for fixing calculate timing issue.
+   sd->calc_done = EINA_FALSE;
+   evas_object_smart_changed(sd->pan_obj);
+   //ecore_job_del(sd->calc_job);
+   //sd->calc_job = ecore_job_add(_calc_job, obj);
+   //
 
    return EO_OBJ(it);
 }
 
 EOLIAN static Elm_Object_Item*
-_elm_gengrid_item_insert_after(Eo *obj, Elm_Gengrid_Data *sd, const Elm_Gengrid_Item_Class *itc, const void *data, Elm_Object_Item *eo_relative, Evas_Smart_Cb func, const void *func_data)
+_elm_gengrid_item_insert_after(Eo *obj EINA_UNUSED, Elm_Gengrid_Data *sd, const Elm_Gengrid_Item_Class *itc, const void *data, Elm_Object_Item *eo_relative, Evas_Smart_Cb func, const void *func_data)
 {
    Elm_Gen_Item *it;
    Eina_Inlist *tmp;
@@ -4555,14 +4625,18 @@ _elm_gengrid_item_insert_after(Eo *obj, Elm_Gengrid_Data *sd, const Elm_Gengrid_
      sd->group_items = eina_list_prepend_relative
          (sd->group_items, it, relative->parent);
 
-   ecore_job_del(sd->calc_job);
-   sd->calc_job = ecore_job_add(_calc_job, obj);
+   //TIZEN_ONLY(20160511) : Remove job for fixing calculate timing issue.
+   sd->calc_done = EINA_FALSE;
+   evas_object_smart_changed(sd->pan_obj);
+   //ecore_job_del(sd->calc_job);
+   //sd->calc_job = ecore_job_add(_calc_job, obj);
+   //
 
    return EO_OBJ(it);
 }
 
 EOLIAN static Elm_Object_Item*
-_elm_gengrid_item_sorted_insert(Eo *obj, Elm_Gengrid_Data *sd, const Elm_Gengrid_Item_Class *itc, const void *data, Eina_Compare_Cb comp, Evas_Smart_Cb func, const void *func_data)
+_elm_gengrid_item_sorted_insert(Eo *obj EINA_UNUSED, Elm_Gengrid_Data *sd, const Elm_Gengrid_Item_Class *itc, const void *data, Eina_Compare_Cb comp, Evas_Smart_Cb func, const void *func_data)
 {
    Elm_Gen_Item *it;
 
@@ -4580,22 +4654,29 @@ _elm_gengrid_item_sorted_insert(Eo *obj, Elm_Gengrid_Data *sd, const Elm_Gengrid
        (sd->items, EINA_INLIST_GET(it), _elm_gengrid_item_compare, sd->state);
    _item_position_update(sd->items, 0);
 
-   ecore_job_del(sd->calc_job);
-   sd->calc_job = ecore_job_add(_calc_job, obj);
-
+   //TIZEN_ONLY(20160511) : Remove job for fixing calculate timing issue.
+   sd->calc_done = EINA_FALSE;
+   evas_object_smart_changed(sd->pan_obj);
+   //ecore_job_del(sd->calc_job);
+   //sd->calc_job = ecore_job_add(_calc_job, obj);
+   //
    return EO_OBJ(it);
 }
 
 EOLIAN static void
-_elm_gengrid_horizontal_set(Eo *obj, Elm_Gengrid_Data *sd, Eina_Bool horizontal)
+_elm_gengrid_horizontal_set(Eo *obj EINA_UNUSED, Elm_Gengrid_Data *sd, Eina_Bool horizontal)
 {
    horizontal = !!horizontal;
    if (horizontal == sd->horizontal) return;
    sd->horizontal = horizontal;
 
    /* Update the items to conform to the new layout */
-   ecore_job_del(sd->calc_job);
-   sd->calc_job = ecore_job_add(_calc_job, obj);
+   //TIZEN_ONLY(20160511) : Remove job for fixing calculate timing issue.
+   sd->calc_done = EINA_FALSE;
+   evas_object_smart_changed(sd->pan_obj);
+   //ecore_job_del(sd->calc_job);
+   //sd->calc_job = ecore_job_add(_calc_job, obj);
+   //
 }
 
 EOLIAN static Eina_Bool
