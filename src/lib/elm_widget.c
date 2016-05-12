@@ -3032,6 +3032,12 @@ _elm_widget_focus_steal(Eo *obj, Elm_Widget_Smart_Data *sd, Elm_Object_Item *ite
      }
    _parent_focus(obj, item);
    elm_widget_focus_region_show(obj);
+
+   // TIZEN-ONLY(20160510): support voice_guide
+   if (_elm_config->voice_guide && !evas_object_smart_type_check(obj, "elm_genlist"))
+     _elm_access_highlight_set(obj);
+   //
+
    return;
 }
 

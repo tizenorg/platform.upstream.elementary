@@ -536,6 +536,9 @@ struct _Elm_Access_Info
    /* the owner part object that owns this access info */
    Evas_Object               *part_object;
 
+   //TIZEN-ONLY(20160510): support voice_guide
+   Evas_Object               *parent;
+   //
    Evas_Object               *next;
    Evas_Object               *prev;
 };
@@ -577,6 +580,9 @@ EAPI void             _elm_access_callback_set(Elm_Access_Info *ac, int type, El
 EAPI char            *_elm_access_text_get(const Elm_Access_Info *ac, int type, const Evas_Object *obj); /* this is ok it actually returns a strduped string - it's meant to! */
 EAPI void             _elm_access_read(Elm_Access_Info *ac, int type, const Evas_Object *obj);
 EAPI void             _elm_access_say(const char *txt);
+// TIZEN-ONLY(20160510): support voice_guide
+EAPI void             _elm_access_voice_guide(Evas_Object *obj, const char *txt, Eina_Bool force);
+//
 EAPI Elm_Access_Info *_elm_access_info_get(const Evas_Object *obj);
 EAPI void             _elm_access_object_highlight(Evas_Object *obj);
 EAPI void             _elm_access_object_unhighlight(Evas_Object *obj);

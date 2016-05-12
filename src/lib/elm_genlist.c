@@ -1757,6 +1757,11 @@ _elm_genlist_item_focus_update(Elm_Gen_Item *it)
    if (elm_widget_focus_highlight_enabled_get(obj))
      edje_object_signal_emit(VIEW(it), SIGNAL_FOCUSED, "elm");
 
+   // TIZEN-ONLY(20160510): support voice_guide
+   if (_elm_config->access_mode || _elm_config->voice_guide)
+     _elm_access_highlight_set(it->base->access_obj);
+   //
+
    focus_raise = edje_object_data_get(VIEW(it), "focusraise");
    if ((focus_raise) && (!strcmp(focus_raise, "on")))
      {
@@ -1802,7 +1807,10 @@ _item_realize(Elm_Gen_Item *it,
      }
 
    /* access */
-   if (_elm_config->access_mode) _access_widget_item_register(it);
+   // TIZEN-ONLY(20160510): support voice_guide
+   if (_elm_config->access_mode || _elm_config->voice_guide)
+     _access_widget_item_register(it);
+   //
 
    _item_order_update(EINA_INLIST_GET(it), in);
 
@@ -1985,6 +1993,15 @@ _item_realize(Elm_Gen_Item *it,
           }
 
         eo_do(WIDGET(it), eo_event_callback_call(ELM_GENLIST_EVENT_REALIZED, EO_OBJ(it)));
+
+        // TIZEN-ONLY(20160510): support voice_guide
+        if (sd->focus_update && EO_OBJ(it) == sd->focused_item)
+          {
+             sd->focus_update = EINA_FALSE;
+             if (!_elm_config->atspi_mode && (_elm_config->access_mode || _elm_config->voice_guide))
+               _elm_access_highlight_set(it->base->access_obj);
+          }
+        //
      }
 
    //Send a signal so that an item changes its style according to its expand depth
@@ -2714,6 +2731,10 @@ _elm_genlist_item_focused(Elm_Object_Item *eo_it)
 
    if (it->realized)
      _elm_genlist_item_focus_update(it);
+   // TIZEN-ONLY(20160510): support voice_guide
+   else
+     sd->focus_update = EINA_TRUE;
+   //
    eo_do(obj, eo_event_callback_call(ELM_GENLIST_EVENT_ITEM_FOCUSED, eo_it));
    if (_elm_config->atspi_mode)
      elm_interface_atspi_accessible_state_changed_signal_emit(eo_it, ELM_ATSPI_STATE_FOCUSED, EINA_TRUE);
