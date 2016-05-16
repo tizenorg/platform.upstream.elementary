@@ -438,6 +438,7 @@ _desc_init(void)
    ELM_CONFIG_VAL(D, T, naviframe_prev_btn_auto_pushed, T_UCHAR);
    ELM_CONFIG_VAL(D, T, popup_horizontal_align, T_DOUBLE);
    ELM_CONFIG_VAL(D, T, popup_vertical_align, T_DOUBLE);
+   ELM_CONFIG_VAL(D, T, popup_scrollable, T_UCHAR);
    ELM_CONFIG_VAL(D, T, spinner_min_max_filter_enable, T_UCHAR);
 #undef T
 #undef D
@@ -1472,6 +1473,8 @@ _config_load(void)
    _elm_config->naviframe_prev_btn_auto_pushed = EINA_TRUE;
    _elm_config->popup_horizontal_align = 0.5;
    _elm_config->popup_vertical_align = 0.5;
+
+   _elm_config->popup_scrollable = EINA_FALSE;
 }
 
 static void
@@ -2157,6 +2160,8 @@ _env_get(void)
    if (s) _elm_config->popup_horizontal_align = _elm_atof(s);
    s = getenv("ELM_POPUP_VERTICAL_ALIGN");
    if (s) _elm_config->popup_vertical_align = _elm_atof(s);
+   s = getenv("ELM_POPUP_SCROLLABLE");
+   if (s) _elm_config->popup_scrollable = atoi(s);
 }
 
 static void
@@ -3195,6 +3200,18 @@ EAPI void
 elm_config_window_auto_focus_animate_set(Eina_Bool enable)
 {
    _elm_config->win_auto_focus_animate = enable;
+}
+
+EAPI Eina_Bool
+elm_config_popup_scrollable_get(void)
+{
+   return _elm_config->popup_scrollable;
+}
+
+EAPI void
+elm_config_popup_scrollable_set(Eina_Bool scrollable)
+{
+   _elm_config->popup_scrollable = scrollable;
 }
 
 EAPI void
