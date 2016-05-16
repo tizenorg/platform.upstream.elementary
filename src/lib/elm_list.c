@@ -1422,6 +1422,10 @@ call:
    evas_object_ref(obj);
    _elm_list_walk(sd);
 
+   // TIZEN_ONLY(20160515): send message signal for sound plugin
+   //                       before calling callback.
+   edje_object_message_signal_process(VIEW(it));
+   //
    if (it->func) it->func((void *)WIDGET_ITEM_DATA_GET(eo_it), WIDGET(it), eo_it);
    eo_do(obj, eo_event_callback_call(EVAS_SELECTABLE_INTERFACE_EVENT_SELECTED, eo_it));
      if (_elm_config->atspi_mode)
