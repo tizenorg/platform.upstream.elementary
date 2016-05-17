@@ -114,6 +114,17 @@ _access_info_cb(void *data, Evas_Object *obj EINA_UNUSED)
    return NULL;
 }
 
+//TIZEN_ONLY(20160519): improve index atspi support
+static Eina_Bool _atspi_enabled()
+{
+    Eo *bridge = NULL;
+    Eina_Bool ret = EINA_FALSE;
+    if (_elm_config->atspi_mode && (bridge = _elm_atspi_bridge_get()))
+      eo_do(bridge, ret = elm_obj_atspi_bridge_connected_get());
+    return ret;
+}
+//
+
 EOLIAN static Evas_Object*
 _elm_index_item_elm_widget_item_access_register(Eo *eo_item, Elm_Index_Item_Data *it)
 {
@@ -534,7 +545,7 @@ _elm_index_item_eo_base_constructor(Eo *obj, Elm_Index_Item_Data *it)
 {
    obj = eo_do_super_ret(obj, ELM_INDEX_ITEM_CLASS, obj, eo_constructor());
    it->base = eo_data_scope_get(obj, ELM_WIDGET_ITEM_CLASS);
-   eo_do(obj, elm_interface_atspi_accessible_role_set(ELM_ATSPI_ROLE_PUSH_BUTTON));
+   eo_do(obj, elm_interface_atspi_accessible_role_set(ELM_ATSPI_ROLE_RADIO_MENU_ITEM));
 
    return obj;
 }
@@ -1238,7 +1249,9 @@ _elm_index_eo_base_constructor(Eo *obj, Elm_Index_Data *_pd EINA_UNUSED)
    eo_do(obj,
          evas_obj_type_set(MY_CLASS_NAME_LEGACY),
          evas_obj_smart_callbacks_descriptions_set(_smart_callbacks),
-         elm_interface_atspi_accessible_role_set(ELM_ATSPI_ROLE_SCROLL_BAR));
+         elm_interface_atspi_accessible_role_set(ELM_ATSPI_ROLE_SCROLL_BAR),
+         elm_interface_atspi_accessible_name_set(N_("Index")),
+         elm_interface_atspi_accessible_description_set(N_("Swipe right or left with one finger to adjust value")));
 
    return obj;
 }
@@ -1311,6 +1324,9 @@ _elm_index_item_selected_set(Eo *eo_it,
 
              edje_object_signal_emit(VIEW(it_inactive),
                                      "elm,state,inactive", "elm");
+             //TIZEN_ONLY(20160519): improve index atspi support
+             if (_atspi_enabled()) elm_layout_signal_emit(obj, "elm,indicator,state,inactive", "elm");
+             //
              edje_object_message_signal_process(VIEW(it_inactive));
           }
 
@@ -1321,6 +1337,15 @@ _elm_index_item_selected_set(Eo *eo_it,
           it_active = it_sel;
 
         edje_object_signal_emit(VIEW(it_active), "elm,state,active", "elm");
+
+        //TIZEN_ONLY(20160519): improve index atspi support
+        if (_atspi_enabled())
+          {
+             elm_layout_text_set(obj, "elm.text", strdup(it_sel->letter));
+             elm_layout_signal_emit(obj, "elm,indicator,state,active", "elm");
+          }
+        //
+
         edje_object_message_signal_process(VIEW(it_active));
 
         eo_do(obj, eo_event_callback_call
