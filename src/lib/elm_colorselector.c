@@ -1460,6 +1460,45 @@ _on_color_released(void *data,
      return;
 
    elm_object_signal_emit(VIEW(item), "elm,state,selected", "elm");
+   /* TIZEN_ONLY(20160517): item selection procedure is handled by _on_color_selected()
+   elm_colorselector_color_set(WIDGET(item), item->color->r, item->color->g,
+                               item->color->b, item->color->a);
+   eo_do(WIDGET(item), eo_event_callback_call
+     (ELM_COLORSELECTOR_EVENT_COLOR_ITEM_SELECTED, EO_OBJ(item)));
+
+   eo_temp_item = eina_list_data_get(sd->selected);
+   if (eo_temp_item && (eo_temp_item != EO_OBJ(item)))
+     {
+        ELM_COLOR_ITEM_DATA_GET(eo_temp_item, temp_item);
+        elm_object_signal_emit(VIEW(temp_item), "elm,state,unselected", "elm");
+     }
+
+   EINA_LIST_FOREACH(sd->items, l, eo_temp_item)
+     {
+        ELM_COLOR_ITEM_DATA_GET(eo_temp_item, temp_item);
+        if (item == temp_item) sd->selected = l;
+     }
+   sd->focused = ELM_COLORSELECTOR_PALETTE;
+   */
+}
+
+// TIZEN_ONLY(20160517): "elm,state,selected" signal is handled by
+//                        _on_color_selected()
+static void
+_on_color_selected(void *data,
+                   Evas_Object *obj EINA_UNUSED,
+                   const char *emission EINA_UNUSED,
+                   const char *source EINA_UNUSED)
+
+{
+   Elm_Color_Item_Data *item = (Elm_Color_Item_Data *)data;
+   Eina_List *l;
+   Elm_Object_Item *eo_temp_item;
+
+   if (!item) return;
+
+   ELM_COLORSELECTOR_DATA_GET(WIDGET(item), sd);
+
    elm_colorselector_color_set(WIDGET(item), item->color->r, item->color->g,
                                item->color->b, item->color->a);
    eo_do(WIDGET(item), eo_event_callback_call
@@ -1479,6 +1518,7 @@ _on_color_released(void *data,
      }
    sd->focused = ELM_COLORSELECTOR_PALETTE;
 }
+//
 
 static char *
 _access_info_cb(void *data, Evas_Object *obj EINA_UNUSED)
@@ -1609,6 +1649,10 @@ _elm_color_item_eo_base_constructor(Eo *eo_item, Elm_Color_Item_Data *item)
      (item->color_obj, EVAS_CALLBACK_MOUSE_MOVE, _on_color_moved, item);
    evas_object_event_callback_add
      (item->color_obj, EVAS_CALLBACK_MOUSE_UP, _on_color_released, item);
+   // TIZEN_ONLY(20160517): "elm,state,selected" signal is handled by
+   //                        _on_color_selected()
+   eo_do(VIEW(item), elm_obj_layout_signal_callback_add("elm,state,selected", "elm", _on_color_selected, item));
+   //
    elm_object_part_content_set(VIEW(item), "color_obj", item->color_obj);
 
    _item_sizing_eval(item);
