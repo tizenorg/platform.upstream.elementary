@@ -4989,7 +4989,13 @@ static void _socket_addr_get_cb(void *data, const Eldbus_Message *msg, Eldbus_Pe
    const char *bus, *path, *err, *txt;
    Eldbus_Message_Iter *iter, *iter_variant, *iter_struct;
 
-   ELM_ATSPI_BRIDGE_DATA_GET_OR_RETURN(proxy, pd);
+   Eo *bridge = _elm_atspi_bridge_get();
+   if (!bridge)
+     {
+        ERR("AT-SPI: Atspi bridge is not enabled.");
+        return;
+     }
+   ELM_ATSPI_BRIDGE_DATA_GET_OR_RETURN(bridge, pd);
 
    if (eldbus_message_error_get(msg, &err, &txt))
      {
@@ -5183,7 +5189,14 @@ static void
 _proxy_interface_register(Eldbus_Connection *conn, Eo *proxy, const char *bus, const char *path)
 {
    Eldbus_Service_Interface *proxy_infc;
-   ELM_ATSPI_BRIDGE_DATA_GET_OR_RETURN(proxy, pd);
+   Eo *bridge = _elm_atspi_bridge_get();
+   if (!bridge)
+     {
+        ERR("AT-SPI: Atspi bridge is not enabled.");
+        return;
+     }
+   ELM_ATSPI_BRIDGE_DATA_GET_OR_RETURN(bridge, pd);
+
    eldbus_name_request(conn, bus, ELDBUS_NAME_REQUEST_FLAG_DO_NOT_QUEUE, NULL, NULL);
    proxy_infc = eldbus_service_interface_register(pd->a11y_bus, path, &_proxy_iface_desc);
    if (!proxy_infc)
