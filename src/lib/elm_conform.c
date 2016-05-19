@@ -56,6 +56,7 @@ static Evas_Object *_precreated_conform_obj = NULL;
  * ILLUME_IND="0, 0, 800, 32"
  * ILLUME_STK="0, 568, 800, 32"
  */
+#ifdef HAVE_ELEMENTARY_X
 static Eina_Bool
 _conformant_part_geometry_get_from_env(const char *part,
                                        int *sx,
@@ -96,6 +97,7 @@ _conformant_part_geometry_get_from_env(const char *part,
 
    return EINA_TRUE;
 }
+#endif
 
 static void
 _conformant_part_size_hints_set(Evas_Object *obj,
@@ -949,12 +951,8 @@ _on_conformant_changed(void *data,
                      Evas_Object *obj,
                      void *event_info)
 {
-   Conformant_Part_Type part_type;
    Conformant_Property property = (Conformant_Property) event_info;
    Elm_Win_Keyboard_Mode mode;
-
-   part_type = (ELM_CONFORMANT_INDICATOR_PART |
-                ELM_CONFORMANT_VIRTUAL_KEYPAD_PART);
 
    ELM_CONFORMANT_DATA_GET(data, sd);
 
@@ -1058,6 +1056,10 @@ _elm_conformant_elm_widget_parent_set(Eo *obj, Elm_Conformant_Data *sd, Evas_Obj
         sd->clipboard_state = ECORE_X_ILLUME_CLIPBOARD_STATE_OFF;
      }
    // FIXME: get kbd region prop
+#else
+   (void)obj;
+   (void)sd;
+   (void)parent;
 #endif
 }
 
