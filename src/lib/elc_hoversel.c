@@ -942,5 +942,13 @@ _elm_hoversel_auto_update_get(Eo *obj EINA_UNUSED, Elm_Hoversel_Data *sd)
    return sd->auto_update;
 }
 
+//TIZEN ONLY(20160519): added atspi children get api
+EOLIAN Eina_List*
+_elm_hoversel_elm_interface_atspi_accessible_children_get(Eo *eo EINA_UNUSED, Elm_Hoversel_Data *pd)
+{
+   return eina_list_clone(pd->items);
+}
+//
+
 #include "elm_hoversel_item.eo.c"
 #include "elm_hoversel.eo.c"
