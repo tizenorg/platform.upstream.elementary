@@ -3563,6 +3563,9 @@ elm_win_add(Evas_Object *parent,
             const char *name,
             Elm_Win_Type type)
 {
+// TIZEN_ONLY(20160520):  Add Performance Clock log level
+   eina_evlog("+ elm_win_add", NULL, 0.0, NULL);
+
 // TIZEN_ONLY(20160218): Improve launching performance.
    if (_precreated_win_obj)
      {
@@ -3586,6 +3589,10 @@ elm_win_add(Evas_Object *parent,
    Evas_Object *obj = eo_add(MY_CLASS, parent,
                              elm_obj_win_name_set(name),
                              elm_obj_win_type_set(type));
+
+// TIZEN_ONLY(20160520):  Add Performance Clock log level
+   eina_evlog("+ elm_win_add", NULL, 0.0, NULL);
+
    return obj;
 }
 
