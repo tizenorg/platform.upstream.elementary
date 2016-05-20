@@ -15,6 +15,10 @@
 
 #include <Eio.h>
 
+// TIZEN_ONLY(20160520):  Add Performance Clock log level
+#include <trace.h>
+
+
 #ifdef EAPI
 # undef EAPI
 #endif
