@@ -376,7 +376,8 @@ _cursor_handler_mouse_up_cb(void *data, Evas *e EINA_UNUSED, Evas_Object *obj EI
    sd->cursor_handler_down = EINA_FALSE;
    if (_elm_config->magnifier_enable)
      _magnifier_hide(data);
-   if (!_elm_config->desktop_entry)
+   if ((!_elm_config->context_menu_disabled) &&
+       (!_elm_config->desktop_entry))
      _menu_call(data);
 }
 
@@ -646,7 +647,8 @@ _select_word(void *data, Evas_Object *obj EINA_UNUSED, void *event_info)
 
    if (edje_object_part_text_selection_get(sd->entry_edje, "elm.text"))
      sd->have_selection = EINA_TRUE;
-   if (!sd->long_pressed || event_info)
+   if ((!_elm_config->context_menu_disabled) &&
+       (!sd->long_pressed || event_info))
      _menu_call(data);
    if (!_elm_config->desktop_entry)
         edje_object_part_text_select_allow_set(sd->entry_edje, "elm.text",
