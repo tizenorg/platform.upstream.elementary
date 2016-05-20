@@ -307,6 +307,10 @@ elm_init(int    argc,
 {
    _elm_init_count++;
    if (_elm_init_count > 1) return _elm_init_count;
+
+// TIZEN_ONLY(20160520):  Add Performance Clock log level
+   trace_begin(__func__);
+
    elm_quicklaunch_init(argc, argv);
    elm_quicklaunch_sub_init(argc, argv);
    _prefix_shutdown();
@@ -317,6 +321,9 @@ elm_init(int    argc,
 
    if (_elm_config->atspi_mode != ELM_ATSPI_MODE_OFF)
      _elm_atspi_bridge_init();
+
+// TIZEN_ONLY(20160520):  Add Performance Clock log level
+   trace_end();
 
    return _elm_init_count;
 }
