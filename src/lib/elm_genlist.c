@@ -3988,7 +3988,12 @@ _long_press_cb(void *data)
           }
 
         if (!sd->decorate_all_mode)
-          edje_object_signal_emit(VIEW(it), SIGNAL_REORDER_ENABLED, "elm");
+          {
+             edje_object_signal_emit(VIEW(it), SIGNAL_REORDER_ENABLED, "elm");
+             //TIZEN_ONLY(20160520): genlist: added atspi support for drag n drop
+             elm_interface_atspi_accessible_state_changed_signal_emit(EO_OBJ(it), ELM_ATSPI_STATE_ANIMATED, EINA_TRUE);
+             //
+          }
      }
 
 end:
@@ -4896,6 +4901,9 @@ _item_mouse_up_cb(void *data,
              sd->calc_job = ecore_job_add(_calc_job, sd->obj);
           }
         edje_object_signal_emit(VIEW(it), SIGNAL_REORDER_DISABLED, "elm");
+        //TIZEN_ONLY(20160520): genlist: added atspi support for drag n drop
+        elm_interface_atspi_accessible_state_changed_signal_emit(EO_OBJ(it), ELM_ATSPI_STATE_ANIMATED, EINA_FALSE);
+        //
         sd->reorder_it = sd->reorder_rel = NULL;
         eo_do(sd->obj, elm_interface_scrollable_hold_set(EINA_FALSE));
         eo_do(sd->obj, elm_interface_scrollable_bounce_allow_set
@@ -8326,6 +8334,11 @@ _elm_genlist_elm_interface_atspi_accessible_state_set_get(Eo *obj, Elm_Genlist_D
 
    if (elm_genlist_multi_select_get(obj))
      STATE_TYPE_SET(ret, ELM_ATSPI_STATE_MULTISELECTABLE);
+
+   //TIZEN_ONLY(20160520): genlist: added atspi support for drag n drop
+   if (elm_genlist_reorder_mode_get(obj))
+     STATE_TYPE_SET(ret, ELM_ATSPI_STATE_ANIMATED);
+   //
 
    return ret;
 }
