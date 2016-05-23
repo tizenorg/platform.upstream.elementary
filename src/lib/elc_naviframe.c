@@ -1628,6 +1628,11 @@ _elm_naviframe_item_push(Eo *obj, Elm_Naviframe_Data *sd EINA_UNUSED, const char
                   title_label, prev_btn, next_btn, content, item_style);
    ELM_NAVIFRAME_ITEM_DATA_GET(eo_item, item);
    if (!item) return NULL;
+
+   /* TIZEN_ONLY(20160523): give the new item's view to decorate it */
+   evas_object_smart_callback_call(obj, "item,pushed,internal", VIEW(item));
+   /* END */
+
    _item_push_helper(item);
    return eo_item;
 }
@@ -1653,6 +1658,10 @@ _elm_naviframe_item_insert_before(Eo *obj, Elm_Naviframe_Data *sd, Elm_Object_It
    if (!eo_it) return NULL;
 
    it = eo_data_scope_get(eo_it, ELM_NAVIFRAME_ITEM_CLASS);
+
+   /* TIZEN_ONLY(20160523): give the new item's view to decorate it */
+   evas_object_smart_callback_call(obj, "item,pushed,internal", VIEW(it));
+   /* END */
 
    sd->stack = eina_inlist_prepend_relative
        (sd->stack, EINA_INLIST_GET(it),
@@ -1683,6 +1692,10 @@ _elm_naviframe_item_insert_after(Eo *obj, Elm_Naviframe_Data *sd, Elm_Object_Ite
    if (!eo_item) return NULL;
 
    ELM_NAVIFRAME_ITEM_DATA_GET(eo_item, it);
+
+   /* TIZEN_ONLY(20160523): give the new item's view to decorate it */
+   evas_object_smart_callback_call(obj, "item,pushed,internal", VIEW(it));
+   /* END */
 
    if (elm_naviframe_top_item_get(obj) == eo_after) top_inserted = EINA_TRUE;
 
