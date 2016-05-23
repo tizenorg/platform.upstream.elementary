@@ -294,7 +294,10 @@ _elm_interface_atspi_accessible_state_set_get(Eo *obj EINA_UNUSED, Elm_Interface
 EOLIAN Elm_Atspi_Relation_Set
 _elm_interface_atspi_accessible_relation_set_get(Eo *obj EINA_UNUSED, Elm_Interface_Atspi_Accessible_Data *pd EINA_UNUSED)
 {
-   return elm_atspi_relation_set_clone(pd->relations);
+   Elm_Atspi_Relation_Set ret = 0;
+   WRN("The %s object does not implement the \"accessible_relation_set\" function.",
+       eo_class_name_get(eo_class_get(obj)));
+   return ret;
 }
 
 EAPI void elm_atspi_attributes_list_free(Eina_List *list)
@@ -489,13 +492,12 @@ elm_atspi_relation_set_relation_type_remove(Elm_Atspi_Relation_Set *set, Elm_Ats
 }
 
 EAPI void
-elm_atspi_relation_set_free(Elm_Atspi_Relation_Set set)
+elm_atspi_relation_set_free(Elm_Atspi_Relation_Set *set)
 {
    Elm_Atspi_Relation *rel;
    Eina_List *l;
    Eo *obj;
-
-   EINA_LIST_FREE(set, rel)
+   EINA_LIST_FREE(*set, rel)
      {
         EINA_LIST_FOREACH(rel->objects, l, obj)
            eo_do(obj, eo_event_callback_del(EO_BASE_EVENT_DEL, _on_rel_obj_del, set));
@@ -504,13 +506,13 @@ elm_atspi_relation_set_free(Elm_Atspi_Relation_Set set)
 }
 
 EAPI Elm_Atspi_Relation_Set
-elm_atspi_relation_set_clone(const Elm_Atspi_Relation_Set set)
+elm_atspi_relation_set_clone(const Elm_Atspi_Relation_Set *set)
 {
    Elm_Atspi_Relation_Set ret = NULL;
    Eina_List *l;
    Elm_Atspi_Relation *rel;
 
-   EINA_LIST_FOREACH(set, l, rel)
+   EINA_LIST_FOREACH(*set, l, rel)
      {
         Elm_Atspi_Relation *cpy = elm_atspi_relation_clone(rel);
         ret = eina_list_append(ret, cpy);
@@ -522,7 +524,7 @@ elm_atspi_relation_set_clone(const Elm_Atspi_Relation_Set set)
 EOLIAN static void
 _elm_interface_atspi_accessible_relationships_clear(Eo *obj EINA_UNUSED, Elm_Interface_Atspi_Accessible_Data *sd)
 {
-   elm_atspi_relation_set_free(sd->relations);
+   elm_atspi_relation_set_free(&sd->relations);
    sd->relations = NULL;
 }
 
