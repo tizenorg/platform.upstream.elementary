@@ -837,7 +837,7 @@ _accessible_get_relation_set(const Eldbus_Service_Interface *iface EINA_UNUSED, 
         eldbus_message_iter_container_close(iter_struct, iter_array2);
         eldbus_message_iter_container_close(iter_array, iter_struct);
      }
-   elm_atspi_relation_set_free(rels);
+   elm_atspi_relation_set_free(&rels);
    eldbus_message_iter_container_close(iter, iter_array);
 
    return ret;
@@ -5029,11 +5029,6 @@ static void _socket_addr_get_cb(void *data, const Eldbus_Message *msg, Eldbus_Pe
 
 fail:
    eo_do(proxy, eo_event_callback_call(ELM_ATSPI_PROXY_EVENT_DISCONNECTED, NULL));
-}
-
-static void _free_stringshared(void *data)
-{
-   eina_stringshare_del(data);
 }
 
 static void

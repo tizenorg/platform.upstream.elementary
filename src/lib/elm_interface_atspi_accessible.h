@@ -296,12 +296,12 @@ EAPI void elm_atspi_relation_set_relation_type_remove(Elm_Atspi_Relation_Set *se
 /**
  * Frees Elm_Atspi_Relation_Set
  */
-EAPI void elm_atspi_relation_set_free(Elm_Atspi_Relation_Set set);
+EAPI void elm_atspi_relation_set_free(Elm_Atspi_Relation_Set *set);
 
 /**
  * Clones Elm_Atspi_Relation_Set
  */
-EAPI Elm_Atspi_Relation_Set elm_atspi_relation_set_clone(const Elm_Atspi_Relation_Set set);
+EAPI Elm_Atspi_Relation_Set elm_atspi_relation_set_clone(const Elm_Atspi_Relation_Set *set);
 
 #ifdef EFL_EO_API_SUPPORT
 
