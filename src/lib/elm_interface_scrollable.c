@@ -3541,7 +3541,10 @@ _on_edje_resize(void *data,
    if (current_calc == sid->current_calc)
      {
         sid->size_count++;
-        if (sid->size_count > 3) reconf_ok = EINA_FALSE;
+        //TIZEN_ONLY(20160524): support for ctxpopup 'more/default' style
+        //if (sid->size_count > 3) reconf_ok = EINA_FALSE;
+        if (sid->size_count > 4) reconf_ok = EINA_FALSE;
+        //
      }
    else
      {
