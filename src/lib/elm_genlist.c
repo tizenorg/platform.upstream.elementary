@@ -1877,6 +1877,8 @@ _item_realize(Elm_Gen_Item *it,
                     "will fix it");
 
         _view_inflate(VIEW(it), it, &it->texts, &it->contents);
+        edje_object_message_signal_process(VIEW(it));
+
         if (it->has_contents != (!!it->contents))
           it->item->mincalcd = EINA_FALSE;
         it->has_contents = !!it->contents;
