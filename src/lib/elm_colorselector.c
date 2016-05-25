@@ -40,6 +40,149 @@ static const Evas_Smart_Cb_Description _smart_callbacks[] =
    {NULL, NULL}
 };
 
+static const Elm_Color_Name _color_name[] = {
+   {{0, 0, 0, 255},       "black"},
+   {{0, 0, 128, 255},     "navy"},
+   {{0, 0, 205, 255},     "medium blue"},
+   {{0, 0, 255, 255},     "blue"},
+   {{0, 100, 0, 255},     "dark green"},
+   {{0, 128, 0, 255},     "green"},
+   {{0, 128, 128, 255},   "teal"},
+   {{0, 139, 139, 255},   "dark cyan"},
+   {{0, 191, 255, 255},   "deep sky blue"},
+   {{0, 206, 209, 255},   "dark turquoise"},
+   {{0, 250, 154, 255},   "medium spring green"},
+   {{0, 255, 0, 255},     "lime"},
+   {{0, 255, 127, 255},   "spring green"},
+   {{0, 255, 255, 255},   "aqua"},
+   {{0, 255, 255, 255},   "cyan"},
+   {{9, 56, 107, 255},    "dark blue"},
+   {{25, 25, 112, 255},   "midnight blue"},
+   {{30, 144, 255, 255},  "dodger blue"},
+   {{32, 178, 170, 255},  "light sea green"},
+   {{33, 140, 33, 255},   "forest green"},
+   {{46, 139, 87, 255},   "sea green"},
+   {{47, 79, 79, 255},    "dark slate grey"},
+   {{50, 100, 252, 255},  "royal blue"},
+   {{56, 168, 255, 255},  "sky blue"},
+   {{60, 179, 113, 255},  "medium sea green"},
+   {{64, 224, 208, 255},  "turquoise"},
+   {{70, 130, 180, 255},  "steel blue"},
+   {{72, 61, 139, 255},   "dark slate blue"},
+   {{72, 209, 204, 255},  "medium turquoise"},
+   {{75, 0, 130, 255},    "indigo"},
+   {{85, 107, 47, 255},   "dark olive green"},
+   {{91, 221, 55, 255},   "lime green"},
+   {{95, 158, 160, 255},  "cadet blue"},
+   {{100, 149, 237, 255}, "corn flower blue"},
+   {{102, 205, 170, 255}, "medium aquamarine"},
+   {{105, 105, 105, 255}, "dim grey"},
+   {{106, 90, 205, 255},  "slate blue"},
+   {{107, 142, 35, 255},  "olive drab"},
+   {{110, 55, 221, 255},  "blue violet"},
+   {{112, 128, 144, 255}, "slate grey"},
+   {{119, 136, 153, 255}, "light slate grey"},
+   {{123, 104, 238, 255}, "medium slate blue"},
+   {{124, 252, 0, 255},   "lawn green"},
+   {{127, 255, 0, 255},   "chartreuse"},
+   {{127, 255, 212, 255}, "aquamarine"},
+   {{128, 0, 0, 255},     "maroon"},
+   {{128, 0, 128, 255},   "purple"},
+   {{128, 128, 0, 255},   "olive"},
+   {{128, 128, 128, 255}, "grey"},
+   {{135, 206, 250, 255}, "light sky blue"},
+   {{139, 0, 0, 255},     "dark red"},
+   {{139, 0, 139, 255},   "dark magenta"},
+   {{139, 69, 19, 255},   "saddle brown"},
+   {{143, 188, 143, 255}, "dark sea green"},
+   {{144, 238, 144, 255}, "light green"},
+   {{147, 112, 219, 255}, "medium purple"},
+   {{148, 0, 211, 255},   "dark violet"},
+   {{152, 251, 152, 255}, "pale green"},
+   {{153, 50, 204, 255},  "dark orchid"},
+   {{154, 205, 50, 255},  "yellow green"},
+   {{160, 82, 45, 255},   "sienna"},
+   {{165, 42, 42, 255},   "brown"},
+   {{165, 164, 164, 255}, "dark grey"},
+   {{173, 216, 230, 255}, "light blue"},
+   {{173, 255, 47, 255},  "green yellow"},
+   {{175, 238, 238, 255}, "pale turquoise"},
+   {{176, 196, 222, 255}, "light steel blue"},
+   {{176, 224, 230, 255}, "powder blue"},
+   {{178, 34, 34, 255},   "fire brick"},
+   {{184, 134, 11, 255},  "dark golden rod"},
+   {{186, 85, 211, 255},  "medium orchid"},
+   {{188, 3, 31, 255},    "red"},
+   {{188, 143, 143, 255}, "rosy brown"},
+   {{189, 183, 107, 255}, "dark khaki"},
+   {{192, 192, 192, 255}, "silver"},
+   {{199, 21, 133, 255},  "medium violet red"},
+   {{201, 132, 255, 255}, "plum"},
+   {{205, 92, 92, 255},   "indian red"},
+   {{205, 133, 63, 255},  "peru"},
+   {{210, 105, 30, 255},  "chocolate"},
+   {{210, 180, 140, 255}, "tan"},
+   {{211, 211, 211, 255}, "light grey"},
+   {{216, 191, 216, 255}, "thistle"},
+   {{218, 112, 214, 255}, "orchid"},
+   {{218, 165, 32, 255},  "golden rod"},
+   {{219, 112, 147, 255}, "pale violet red"},
+   {{220, 20, 60, 255},   "crimson"},
+   {{220, 220, 220, 255}, "gainsboro"},
+   {{222, 184, 135, 255}, "burly wood"},
+   {{224, 255, 255, 255}, "light cyan"},
+   {{230, 230, 250, 255}, "lavender"},
+   {{233, 150, 122, 255}, "dark salmon"},
+   {{238, 130, 238, 255}, "violet"},
+   {{238, 232, 170, 255}, "pale golden rod"},
+   {{240, 128, 128, 255}, "light coral"},
+   {{240, 230, 140, 255}, "khaki"},
+   {{240, 248, 255, 255}, "alice blue"},
+   {{240, 255, 255, 255}, "azure"},
+   {{240, 255, 240, 255}, "honey dew"},
+   {{244, 164, 96, 255},  "sandy brown"},
+   {{245, 222, 179, 255}, "wheat"},
+   {{245, 245, 220, 255}, "beige"},
+   {{245, 245, 245, 255}, "white smoke"},
+   {{245, 255, 250, 255}, "mint cream"},
+   {{248, 248, 255, 255}, "ghost white"},
+   {{250, 235, 215, 255}, "antique white"},
+   {{250, 128, 114, 255}, "salmon"},
+   {{250, 250, 210, 255}, "light golden rod yellow"},
+   {{250, 240, 230, 255}, "linen"},
+   {{251, 255, 45, 255},  "yellow"},
+   {{253, 245, 230, 255}, "old lace"},
+   {{255, 0, 255, 255},   "fuchsia"},
+   {{255, 0, 255, 255},   "magenta"},
+   {{255, 20, 147, 255},  "deep pink"},
+   {{255, 69, 0, 255},    "orange red"},
+   {{255, 73, 200, 255},  "hot pink"},
+   {{255, 99, 71, 255},   "tomato"},
+   {{255, 129, 91, 255},  "coral"},
+   {{255, 140, 0, 255},   "dark orange"},
+   {{255, 160, 122, 255}, "light salmon"},
+   {{255, 165, 0, 255},   "orange"},
+   {{255, 182, 193, 255}, "light pink "},
+   {{255, 192, 203, 255}, "pink"},
+   {{255, 215, 0, 255},   "gold"},
+   {{255, 218, 185, 255}, "peach puff"},
+   {{255, 222, 173, 255}, "navajo white"},
+   {{255, 228, 181, 255}, "moccasin"},
+   {{255, 228, 196, 255}, "bisque"},
+   {{255, 228, 225, 255}, "misty rose"},
+   {{255, 235, 205, 255}, "blanched almond"},
+   {{255, 239, 213, 255}, "papaya whip"},
+   {{255, 240, 245, 255}, "lavender blush"},
+   {{255, 245, 238, 255}, "sea shell"},
+   {{255, 248, 220, 255}, "corn silk"},
+   {{255, 250, 205, 255}, "lemon chiffon"},
+   {{255, 250, 240, 255}, "floral white"},
+   {{255, 255, 224, 255}, "light yellow"},
+   {{255, 255, 240, 255}, "ivory"},
+   {{255, 250, 250, 255}, "snow"},
+   {{255, 255, 255, 255}, "white"}
+};
+
 static Eina_Bool _key_action_move(Evas_Object *obj, const char *params);
 
 static const Elm_Action key_actions[] = {
@@ -52,6 +195,34 @@ enum Palette_Box_Direction
    PALETTE_BOX_UP,
    PALETTE_BOX_DOWN
 };
+
+static const char *
+_get_color_name(unsigned int R, unsigned int G, unsigned int B, unsigned int A)
+{
+   unsigned int low, mid, high;
+   unsigned int r, g, b;
+
+   if (A != 255) return NULL;
+   low = 0;
+   high = EINA_C_ARRAY_LENGTH(_color_name) - 1;
+   while (low <= high)
+     {
+        mid = (low + high) / 2;
+
+        r = _color_name[mid].color.r;
+        g = _color_name[mid].color.g;
+        b = _color_name[mid].color.b;
+
+        if (r == R && g == G && B == b)
+          return _color_name[mid].name;
+
+        if ((r < R) || ((r == R) && (g < G)) || ((r == R) && (g == G) && b < B))
+          low = mid + 1;
+        else
+          high = mid - 1;
+      }
+    return NULL;
+}
 
 static void
 _items_del(Elm_Colorselector_Data *sd)
@@ -159,29 +330,6 @@ _color_picker_init(Elm_Colorselector_Data *sd)
    evas_object_geometry_get(sd->picker_display, NULL, NULL, &w, &h);
    evas_object_image_data_update_add(sd->picker_display, 0, 0, w, h);
 }
-
-//TIZEN_ONLY(20150713) : colorselector default names clasifier
-static const char *_hsl_to_string(double h, double s, double l)
-{
-   if (l < 0.2) return "black";
-   if (l > 0.8) return "white";
-
-   if (s < 0.25) return "grey";
-
-   if (h < 10) return "red";
-   if (h < 20) return "orange";
-   if (h < 70) return "yellow";
-   if (h < 75) return "lime";
-   if (h < 150) return "green";
-   if (h < 210) return "cyan";
-   if (h < 270) return "blue";
-   if (h < 280) return "violet";
-   if (h < 320) return "pink";
-   if (h < 330) return "magenta";
-
-   return "red";
-}
-///
 
 static void
 _rgb_to_hsl(double r, double g, double b, double *rh, double *rs, double *rl)
@@ -1485,7 +1633,8 @@ _access_info_cb(void *data, Evas_Object *obj EINA_UNUSED)
 {
    char *ret;
    Eina_Strbuf *buf;
-   int r = 0, g = 0, b = 0 ,a = 0;
+   const char *color_name = NULL;
+   int r = 0, g = 0, b = 0, a = 0;
 
    Elm_Color_Item_Data *it = data;
    ELM_COLORSELECTOR_ITEM_CHECK_OR_RETURN(it, NULL);
@@ -1493,7 +1642,11 @@ _access_info_cb(void *data, Evas_Object *obj EINA_UNUSED)
    elm_colorselector_palette_item_color_get(EO_OBJ(it), &r, &g, &b, &a);
 
    buf = eina_strbuf_new();
-   eina_strbuf_append_printf(buf, "red %d, green %d, blue %d, alpha %d", r, g, b, a);
+   color_name = _get_color_name(r, g, b, a);
+   if (color_name)
+     eina_strbuf_append_printf(buf, "%s", color_name);
+   else
+     eina_strbuf_append_printf(buf, "red %d, green %d, blue %d, alpha %d", r, g, b, a);
    ret = eina_strbuf_string_steal(buf);
    eina_strbuf_free(buf);
    return ret;
@@ -2425,18 +2578,27 @@ _elm_colorselector_elm_interface_atspi_widget_action_elm_actions_get(Eo *obj EIN
 
 //TIZEN_ONLY(20150707) : improve colorselctor atspi support
 EOLIAN static Eina_List*
-_elm_colorselector_elm_interface_atspi_accessible_children_get(Eo *obj EINA_UNUSED, Elm_Colorselector_Data *sd EINA_UNUSED)
+_elm_colorselector_elm_interface_atspi_accessible_children_get(Eo *obj EINA_UNUSED, Elm_Colorselector_Data *sd)
 {
    Eina_List *ret = NULL;
 
-   eo_do_super(obj, ELM_COLORSELECTOR_CLASS, ret = elm_interface_atspi_accessible_children_get());
-
-   // filter - out box contiainer
-   ret = eina_list_remove(ret, sd->palette_box);
-
-   // append items as colorselector children
-   ret = eina_list_merge(ret, eina_list_clone(sd->items));
-
+   //UX defines only for palette mode and not for other modes
+   //and as default format is BOTH, buttons added as subobject of
+   //colorselector also gets included in accessible list, if colorbar is made
+   //as layout this issue can be solved.
+   if (sd->mode == ELM_COLORSELECTOR_PALETTE)
+     {
+        ret = eina_list_clone(sd->items);
+     }
+   else
+     {
+        eo_do_super(obj, ELM_COLORSELECTOR_CLASS,
+                    ret = elm_interface_atspi_accessible_children_get());
+        // filter - out box contiainer
+        ret = eina_list_remove(ret, sd->palette_box);
+        // append items as colorselector children
+        ret = eina_list_merge(ret, eina_list_clone(sd->items));
+     }
    return ret;
 }
 
@@ -2495,13 +2657,21 @@ _elm_color_item_elm_interface_atspi_widget_action_elm_actions_get(Eo *eo_it EINA
 EOLIAN static char*
 _elm_color_item_elm_interface_atspi_accessible_name_get(Eo *eo_it, Elm_Color_Item_Data *it)
 {
+   Eina_Strbuf *buf;
+   const char *color_name = NULL;
    char *name;
-   double h, s, l;
    eo_do_super(eo_it, ELM_COLOR_ITEM_CLASS, name = elm_interface_atspi_accessible_name_get());
    if (!name)
      {
-        _rgb_to_hsl((double)it->color->r, (double)it->color->g, (double)it->color->b, &h, &s, &l);
-        name = strdup(_hsl_to_string(h, s, l));
+        buf = eina_strbuf_new();
+        color_name = _get_color_name(it->color->r, it->color->g, it->color->b, it->color->a);
+        if (color_name)
+          eina_strbuf_append_printf(buf, "%s", color_name);
+        else
+          eina_strbuf_append_printf(buf, "red %d, green %d, blue %d, alpha %d",
+                                    it->color->r, it->color->g, it->color->b, it->color->a);
+        name = strdup(eina_strbuf_string_steal(buf));
+        eina_strbuf_free(buf);
      }
 
    return name;
