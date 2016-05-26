@@ -450,6 +450,12 @@ _elm_scroller_elm_widget_focus_next(Eo *obj EINA_UNUSED, Elm_Scroller_Data *sd, 
           return ret;
      }
 
+   // TIZEN_ONLY(20160526) : scroller: fix to skip focus to unfocusable scroller
+   if (!(elm_widget_can_focus_get(obj)) &&
+       !(elm_widget_child_can_focus_get(obj)))
+     return EINA_FALSE;
+   // END-ONLY
+
    /* Return */
    *next = (Evas_Object *)obj;
 
