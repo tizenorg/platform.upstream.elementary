@@ -654,9 +654,31 @@ _elm_notify_allow_events_set(Eo *obj, Elm_Notify_Data *sd, Eina_Bool allow)
    sd->allow_events = allow;
    if (!allow)
      {
-        sd->block_events = elm_layout_add(obj);
+        //TIZEN_ONLY(20160526): fix block_events area problem
+        //sd->block_events = elm_layout_add(obj);
+        Evas_Object *win;
+        win = elm_widget_top_get(obj);
+        if (win && !strcmp(evas_object_type_get(win), "elm_win"))
+          {
+             sd->block_events = elm_layout_add(win);
+             evas_object_size_hint_weight_set(sd->block_events, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+             elm_win_resize_object_add(win, sd->block_events);
+
+             Evas_Coord wx, wy, ww, wh;
+             evas_object_geometry_get(win, &wx, &wy, &ww, &wh);
+             evas_object_move(sd->block_events, wx, wy);
+             evas_object_resize(sd->block_events, ww, wh);
+
+             evas_object_smart_member_add(sd->block_events, obj);
+          }
+        else
+          {
+             sd->block_events = elm_layout_add(obj);
+             elm_widget_resize_object_set(obj, sd->block_events, EINA_TRUE);
+          }
+        //
         _block_events_theme_apply(obj);
-        elm_widget_resize_object_set(obj, sd->block_events, EINA_TRUE);
+        //elm_widget_resize_object_set(obj, sd->block_events, EINA_TRUE);
         evas_object_stack_above(sd->notify, sd->block_events);
         elm_layout_signal_callback_add
           (sd->block_events, "elm,action,click", "elm",
