@@ -2161,7 +2161,7 @@ _elm_win_evas_object_smart_del(Eo *obj, Elm_Win_Data *sd)
        DECREMENT_MODALITY()
      }
 
-   if ((sd->modal) && (sd->modal_count > 0)) 
+   if ((sd->modal) && (sd->modal_count > 0))
      ERR("Deleted modal win was blocked by another modal win which was created after creation of that win.");
 
    evas_object_event_callback_del_full(sd->edje,
@@ -3563,6 +3563,9 @@ elm_win_add(Evas_Object *parent,
             const char *name,
             Elm_Win_Type type)
 {
+// TIZEN_ONLY(20160520):  Add Performance Clock log level
+   eina_evlog("+ elm_win_add", NULL, 0.0, NULL);
+
 // TIZEN_ONLY(20160218): Improve launching performance.
    if (_precreated_win_obj)
      {
@@ -3577,6 +3580,9 @@ elm_win_add(Evas_Object *parent,
                   _precreated_win_obj = NULL;
                   INF("Return precreated obj(%p).", tmp);
 
+// TIZEN_ONLY(20160520):  Add Performance Clock log level
+                  eina_evlog("- elm_win_add", NULL, 0.0, NULL);
+
                   return tmp;
                }
           }
@@ -3586,6 +3592,11 @@ elm_win_add(Evas_Object *parent,
    Evas_Object *obj = eo_add(MY_CLASS, parent,
                              elm_obj_win_name_set(name),
                              elm_obj_win_type_set(type));
+1
+// TIZEN_ONLY(20160520):  Add Performance Clock log level
+   eina_evlog("- elm_win_add", NULL, 0.0, NULL);
+
+
    return obj;
 }
 

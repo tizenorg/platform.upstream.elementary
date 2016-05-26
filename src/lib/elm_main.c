@@ -305,6 +305,10 @@ EAPI int
 elm_init(int    argc,
          char **argv)
 {
+
+// TIZEN_ONLY(20160520):  Add Performance Clock log level
+   eina_evlog("+ elm_init", NULL, 0.0, NULL);
+
    _elm_init_count++;
    if (_elm_init_count > 1) return _elm_init_count;
    elm_quicklaunch_init(argc, argv);
@@ -317,6 +321,9 @@ elm_init(int    argc,
 
    if (_elm_config->atspi_mode != ELM_ATSPI_MODE_OFF)
      _elm_atspi_bridge_init();
+
+// TIZEN_ONLY(20160520):  Add Performance Clock log level
+   eina_evlog("- elm_init", NULL, 0.0, NULL);
 
    return _elm_init_count;
 }
