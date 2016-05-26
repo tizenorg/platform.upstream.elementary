@@ -6236,6 +6236,12 @@ _elm_widget_elm_interface_atspi_accessible_relation_set_get(Eo *obj EINA_UNUSED,
 {
    return elm_atspi_relation_set_clone(&sd->atspi_custom_relations);
 }
+
+EOLIAN static Elm_Atspi_Relation_Set
+_elm_widget_item_elm_interface_atspi_accessible_relation_set_get(Eo *obj EINA_UNUSED, Elm_Widget_Item_Data *sd)
+{
+   return elm_atspi_relation_set_clone(&sd->atspi_custom_relations);
+}
 //////////////////////////////
 
 EOLIAN static void
