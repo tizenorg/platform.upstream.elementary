@@ -3592,7 +3592,7 @@ elm_win_add(Evas_Object *parent,
    Evas_Object *obj = eo_add(MY_CLASS, parent,
                              elm_obj_win_name_set(name),
                              elm_obj_win_type_set(type));
-1
+
 // TIZEN_ONLY(20160520):  Add Performance Clock log level
    eina_evlog("- elm_win_add", NULL, 0.0, NULL);
 
