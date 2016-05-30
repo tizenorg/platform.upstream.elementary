@@ -1298,7 +1298,7 @@ _elm_ctxpopup_horizontal_get(Eo *obj EINA_UNUSED, Elm_Ctxpopup_Data *sd)
 }
 
 static void
-_item_wrap_cb(void *data, Evas_Object *obj, void *event_info EINA_UNUSED)
+_item_wrap_cb(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Elm_Ctxpopup_Item_Data *item = data;
    if (!item->wcb.org_func_cb) return;

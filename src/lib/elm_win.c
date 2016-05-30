@@ -1042,7 +1042,6 @@ _elm_win_accessibility_highlight_show(void *data)
 {
    ELM_WIN_DATA_GET(data, sd);
    Evas_Object *fobj = sd->accessibility_highlight.fobj;
-   const char *sig = NULL;
    elm_widget_theme_object_set (sd->obj, fobj, "accessibility_highlight", "top", "default");
    evas_object_raise(fobj);
    _elm_win_accessibility_highlight_simple_setup(sd, fobj);
@@ -1977,42 +1976,14 @@ static void
 _elm_win_accessibility_highlight_callbacks_del(Elm_Win_Data *sd)
 {
    Evas_Object *obj = sd->accessibility_highlight.cur.target;
+   if (!obj) return;
+
    evas_object_event_callback_del_full
-     (obj, EVAS_CALLBACK_MOVE, _elm_win_focus_target_move, sd->obj);
+     (obj, EVAS_CALLBACK_DEL, _elm_win_accessibility_highlight_obj_del, sd->obj);
    evas_object_event_callback_del_full
-     (obj, EVAS_CALLBACK_RESIZE, _elm_win_focus_target_resize, sd->obj);
+     (obj, EVAS_CALLBACK_MOVE, _elm_win_accessibility_highlight_obj_move, sd->obj);
    evas_object_event_callback_del_full
-     (obj, EVAS_CALLBACK_DEL, _elm_win_focus_target_del, sd->obj);
-}
-
-static void
-_elm_win_object_accessibility_highlight_in(void *data,
-                                   Evas *e EINA_UNUSED,
-                                   void *event_info)
-{
-   Evas_Object *obj = event_info, *target;
-   ELM_WIN_DATA_GET(data, sd);
-
-   if (sd->accessibility_highlight.cur.target == obj)
-     return;
-
-   target = _elm_win_focus_target_get(obj);
-
-   sd->accessibility_highlight.cur.target = target;
-   _elm_win_accessibility_highlight_callbacks_add(sd);
-
-}
-
-static void
-_elm_win_object_accessibility_highlight_out(void *data,
-                                    Evas *e EINA_UNUSED,
-                                    void *event_info EINA_UNUSED)
-{
-   ELM_WIN_DATA_GET(data, sd);
-
-   if (!sd->accessibility_highlight.cur.target)
-     return;
-   _elm_win_accessibility_highlight_callbacks_del(sd);
+     (obj, EVAS_CALLBACK_RESIZE, _elm_win_accessibility_highlight_obj_resize, sd->obj);
 }
 
 static void
