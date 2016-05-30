@@ -236,7 +236,7 @@ _elm_mapbuf_elm_container_content_unset(Eo *obj, Elm_Mapbuf_Data *sd, const char
    if (!sd->content) return NULL;
 
    content = sd->content;
-   elm_widget_sub_object_del(obj, content);
+   _elm_widget_sub_object_redirect_to_top(obj, content);
    _elm_mapbuf_content_unset(sd, obj, content);
    return content;
 }

@@ -420,7 +420,7 @@ _elm_notify_elm_container_content_unset(Eo *obj, Elm_Notify_Data *sd, const char
    if (!sd->content) return NULL;
 
    content = sd->content;
-   elm_widget_sub_object_del(obj, sd->content);
+   _elm_widget_sub_object_redirect_to_top(obj, sd->content);
    edje_object_part_unswallow(sd->notify, content);
 
    return content;
