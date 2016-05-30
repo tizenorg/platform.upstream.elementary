@@ -1255,7 +1255,7 @@ class Elm.Win (Elm.Widget, Elm_Interface_Atspi_Window,
            This function grabs the $key of window using $grab_mode.
          ]]
 
-         return: bool;
+         return: bool; [[$true = success, $false = error]]
          params {
             @in key: const(char)*; [[This string is the keyname to grab.]]
             @in modifiers: Evas_Modifier_Mask; [[This is for the keymask feature. Currently this feature is not supported.]]
@@ -1269,7 +1269,7 @@ class Elm.Win (Elm.Widget, Elm_Interface_Atspi_Window,
 
            This function unset keygrab value. Ungrab $key of window.
          ]]
-         return: bool;
+         return: bool; [[$true = success, $false = error]]
          params {
             @in key: const(char)*; [[This string is the keyname to grab.]]
             @in modifiers: Evas_Modifier_Mask; [[This is for the keymask feature. Currently this feature is not supported.]]
