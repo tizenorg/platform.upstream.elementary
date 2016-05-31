@@ -184,6 +184,9 @@ class Elm.Multibuttonentry (Elm.Layout)
       Elm.Layout.text_set;
       Elm.Layout.text_get;
       Elm.Layout.sizing_eval;
+      //TIZEN_ONLY(20160527) : Improve MBE atspi support
+      Elm_Interface_Atspi_Accessible.children.get;
+      ///
    }
    events {
       item,selected;
