@@ -140,10 +140,16 @@ _label_slide_change(Evas_Object *obj)
           }
 
         // calculate speed or duration
+        // TIZEN_ONLY(160531): if set unknown styles then use full text block width as calculation
         if (!strcmp(elm_object_style_get(obj), "slide_long"))
           w = tb_w + w;
-        else // slide_short or slide_bounce
+        else if (!strcmp(elm_object_style_get(obj), "slide_short") ||
+                 !strcmp(elm_object_style_get(obj), "slide_bounce"))
           w = tb_w - w;
+        else
+          w = tb_w;
+        // END-ONLY
+
         if (sd->use_slide_speed)
           {
              if (sd->slide_speed <= 0) sd->slide_speed = 1;
