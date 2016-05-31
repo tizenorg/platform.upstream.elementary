@@ -3,6 +3,7 @@
 #endif
 
 #define ELM_INTERFACE_ATSPI_ACCESSIBLE_PROTECTED
+#define ELM_INTERFACE_ATSPI_WIDGET_ACTION_PROTECTED
 #define ELM_WIDGET_ITEM_PROTECTED
 
 #include <Elementary.h>
@@ -816,6 +817,10 @@ _item_new(Elm_Multibuttonentry_Data *sd,
         _access_multibuttonentry_item_register(obj, eo_item, EINA_TRUE);
      }
 
+   //TIZEN_ONLY(20160527) : register mbe item as radio button
+   eo_do(eo_item, elm_interface_atspi_accessible_role_set(ELM_ATSPI_ROLE_RADIO_BUTTON));
+   ///
+
    if (func)
      {
         item->func = func;
@@ -1417,6 +1422,13 @@ _box_layout_cb(Evas_Object *o,
      }
 }
 
+static char *
+_label_access_info_cb(void *data, Evas_Object *obj EINA_UNUSED)
+{
+   ELM_MULTIBUTTONENTRY_DATA_GET_OR_RETURN_VAL(data, sd, NULL);
+   return strdup((char *)sd->label_str);
+}
+
 static void
 _view_init(Evas_Object *obj, Elm_Multibuttonentry_Data *sd)
 {
@@ -1449,6 +1461,21 @@ _view_init(Evas_Object *obj, Elm_Multibuttonentry_Data *sd)
    // ACCESS
    if (_elm_config->access_mode == ELM_ACCESS_MODE_ON)
      _access_multibuttonentry_label_register(obj, EINA_TRUE);
+
+   //TIZEN_ONLY(20160527) : expose label as at-spi object
+   if (_elm_config->atspi_mode)
+   {
+      Evas_Object *label_obj;
+      label_obj = (Evas_Object *)edje_object_part_object_get(sd->label, "elm.text");
+      if (label_obj)
+        {
+            sd->label_access = elm_access_object_register(label_obj, obj);
+            _elm_access_callback_set(_elm_access_info_get(sd->label_access),
+                                  ELM_ACCESS_INFO, _label_access_info_cb, obj);
+            elm_atspi_accessible_role_set(sd->label_access, ELM_ATSPI_ROLE_HEADING);
+        }
+   }
+   ///
 
    sd->entry = elm_entry_add(obj);
    if (!sd->entry) return;
@@ -1727,7 +1754,7 @@ _elm_multibuttonentry_eo_base_constructor(Eo *obj, Elm_Multibuttonentry_Data *sd
    eo_do(obj,
          evas_obj_type_set(MY_CLASS_NAME_LEGACY),
          evas_obj_smart_callbacks_descriptions_set(_smart_callbacks),
-         elm_interface_atspi_accessible_role_set(ELM_ATSPI_ROLE_ENTRY));
+         elm_interface_atspi_accessible_role_set(ELM_ATSPI_ROLE_FILLER));
 
    return obj;
 }
@@ -2014,6 +2041,56 @@ _elm_multibuttonentry_class_constructor(Eo_Class *klass)
 
    if (_elm_config->access_mode != ELM_ACCESS_MODE_OFF)
       _elm_multibuttonentry_smart_focus_next_enable = EINA_TRUE;
+}
+
+//TIZEN_ONLY(20160527) : Improve MBE atspi support
+EOLIAN static Eina_List*
+_elm_multibuttonentry_elm_interface_atspi_accessible_children_get(Eo *obj, Elm_Multibuttonentry_Data *sd)
+{
+   Eina_List *ret = NULL;
+
+   if (sd->label && sd->label_packed)
+     ret = eina_list_append(ret, sd->label_access);
+   ret = eina_list_merge(ret, eina_list_clone(sd->items));
+   if (sd->editable && (sd->view_state != MULTIBUTTONENTRY_VIEW_SHRINK))
+     ret = eina_list_append(ret, sd->entry);
+
+   return ret;
+}
+
+static Eina_Bool
+_item_action_activate(Eo *eo_it, const char *params EINA_UNUSED)
+{
+   ELM_MULTIBUTTONENTRY_ITEM_DATA_GET(eo_it, it);
+   ELM_MULTIBUTTONENTRY_DATA_GET_OR_RETURN_VAL(WIDGET(it), sd, EINA_FALSE);
+
+   _item_select(WIDGET(it), it);
+
+   if (sd->selected_it)
+     eo_do(WIDGET(it), eo_event_callback_call
+       (ELM_MULTIBUTTONENTRY_EVENT_ITEM_CLICKED, eo_it));
+   return EINA_TRUE;
+}
+//
+
+EOLIAN static const Elm_Atspi_Action*
+_elm_multibuttonentry_item_elm_interface_atspi_widget_action_elm_actions_get(Eo *eo_it EINA_UNUSED, Elm_Multibuttonentry_Item_Data *it EINA_UNUSED)
+{
+   static Elm_Atspi_Action atspi_actions[] = {
+          { "activate", "activate", NULL, _item_action_activate},
+          { NULL, NULL, NULL, NULL }
+   };
+   return &atspi_actions[0];
+}
+
+EOLIAN static char*
+_elm_multibuttonentry_item_elm_interface_atspi_accessible_name_get(Eo *eo_it, Elm_Multibuttonentry_Item_Data *it)
+{
+   char *ret;
+   eo_do_super(eo_it, ELM_MULTIBUTTONENTRY_ITEM_CLASS, ret = elm_interface_atspi_accessible_name_get());
+   if (ret) return ret;
+   ret = (char *)elm_object_part_text_get(VIEW(it), "elm.btn.text");
+   return ret ? strdup(ret) : NULL;
 }
 
 #include "elm_multibuttonentry_item.eo.c"

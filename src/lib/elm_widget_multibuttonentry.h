@@ -83,6 +83,9 @@ struct _Elm_Multibuttonentry_Data
    Evas_Object                        *end; /* used to represent the
                                              * total number of
                                              * invisible buttons */
+   //Tizen only(20160531) get access object
+   Evas_Object                        *label_access;
+   //
 
    Eina_List                          *items;
    Eina_List                          *filter_list;
