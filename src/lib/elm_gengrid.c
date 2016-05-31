@@ -4447,6 +4447,7 @@ _elm_gengrid_item_size_set(Eo *obj, Elm_Gengrid_Data *sd, Evas_Coord w, Evas_Coo
    //TIZEN_ONLY(20160511) : Remove job for fixing calculate timing issue.
    sd->calc_done = EINA_FALSE;
    evas_object_smart_changed(sd->pan_obj);
+   (void)obj;
    //ecore_job_del(sd->calc_job);
    //sd->calc_job = ecore_job_add(_calc_job, obj);
    //
