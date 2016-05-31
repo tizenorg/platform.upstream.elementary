@@ -23,6 +23,15 @@
 
 typedef struct _Mod_Api                     Mod_Api;
 
+// TIZEN ONLY
+typedef enum
+{
+   SELECTION_HANDLER_TOP_LEFT,
+   SELECTION_HANDLER_TOP_RIGHT,
+   SELECTION_HANDLER_BOTTOM_LEFT,
+   SELECTION_HANDLER_BOTTOM_RIGHT
+} Selection_Handler_State;
+//
 /**
  * Base widget smart data extended with entry instance data.
  */
@@ -131,6 +140,23 @@ struct _Elm_Entry_Data
    Eina_Bool                             cursor_handler_shown : 1; // TIZEN ONLY
    Eina_Bool                             mgf_bg_color_set : 1; // TIZEN ONLY
    Eina_Bool                             long_pressing : 1; // TIZEN ONLY
+   Eina_Bool                             handler_switch : 1; // TIZEN ONLY
+   Selection_Handler_State               start_handler_state; // TIZEN ONLY
+   Selection_Handler_State               end_handler_state; // TIZEN ONLY
+   Evas_Coord                            start_handler_x; // TIZEN_ONLY
+   Evas_Coord                            start_handler_from_y; // TIZEN_ONLY
+   Evas_Coord                            start_handler_to_y; // TIZEN_ONLY
+   Evas_Coord                            end_handler_x; // TIZEN_ONLY
+   Evas_Coord                            end_handler_from_y; // TIZEN_ONLY
+   Evas_Coord                            end_handler_to_y; // TIZEN_ONLY
+   Evas_Coord                            handler_x1; // TIZEN_ONLY
+   Evas_Coord                            handler_y1; // TIZEN_ONLY
+   Evas_Coord                            handler_x2; // TIZEN_ONLY
+   Evas_Coord                            handler_y2; // TIZEN_ONLY
+   int                                   current_handler_move : 1; // TIZEN_ONLY
+   Evas_Coord_Rectangle                  layrect; // TIZEN ONLY
+   int                                   handler_h; // TIZEN ONLY
+   int                                   handler_w; // TIZEN ONLY
 };
 
 typedef struct _Elm_Entry_Item_Provider     Elm_Entry_Item_Provider;
