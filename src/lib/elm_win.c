@@ -4284,6 +4284,7 @@ _elm_win_finalize_internal(Eo *obj, Elm_Win_Data *sd, const char *name, Elm_Win_
              TRAP(sd, fullscreen_set, 1);
           }
         else if ((type != ELM_WIN_INLINED_IMAGE) &&
+                 (!_elm_config->win_no_border) && //TIZEN_ONLY(20160601): In order to avoid creating unnecessary part.
                  ((engine) &&
                   ((!strcmp(engine, ELM_WAYLAND_SHM) ||
                    (!strcmp(engine, ELM_WAYLAND_EGL))))))
