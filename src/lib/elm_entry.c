@@ -121,6 +121,32 @@ static void _paste_cb(void *data, Evas_Object *obj, void *event_info);
 static Eina_Rectangle *_viewport_region_get(Evas_Object *obj);
 static Evas_Coord_Rectangle _layout_region_get(Evas_Object *obj);
 
+// TIZEN ONLY (20160531): Support tizen 3.0 CNPUI
+static void
+_sel_cursor_geometry_get(Evas_Object *obj, Edje_Cursor cur, Evas_Coord *x, Evas_Coord *y, Evas_Coord *w, Evas_Coord *h)
+{
+   ELM_ENTRY_DATA_GET(obj, sd);
+   Evas_Coord ex, ey, cx, cy, cw, ch;
+   int mpos, spos;
+
+   evas_object_geometry_get(sd->entry_edje, &ex, &ey, NULL, NULL);
+   spos = edje_object_part_text_cursor_pos_get(sd->entry_edje, "elm.text", cur);
+   mpos = edje_object_part_text_cursor_pos_get(sd->entry_edje, "elm.text",
+                                               EDJE_CURSOR_MAIN);
+   edje_object_part_text_cursor_pos_set(sd->entry_edje, "elm.text",
+                                        EDJE_CURSOR_MAIN, spos);
+   edje_object_part_text_cursor_geometry_get(sd->entry_edje, "elm.text",
+                                             &cx, &cy, &cw, &ch);
+   edje_object_part_text_cursor_pos_set(sd->entry_edje, "elm.text",
+                                        EDJE_CURSOR_MAIN, mpos);
+
+   if (x) *x = ex + cx;
+   if (y) *y = ey + cy;
+   if (w) *w = cw;
+   if (h) *h = ch;
+}
+//
+
 static inline Eina_Iterator *
 _selection_range_geometry_get(Evas_Object *obj)
 {
@@ -1164,7 +1190,7 @@ _layout_region_get(Evas_Object *obj)
 //
 
 static void
-_update_selection_handler(Evas_Object *obj)
+_update_selection_handler(Evas_Object *obj, Eina_Bool full) // TIZEN ONLY (20160531): Support tizen 3.0 CNPUI
 {
    ELM_ENTRY_DATA_GET(obj, sd);
 
@@ -1209,108 +1235,166 @@ _update_selection_handler(Evas_Object *obj)
                                                   &ex, &ey, &ew, &eh);
         edje_object_part_text_cursor_pos_set(sd->entry_edje, "elm.text",
                                              EDJE_CURSOR_MAIN, last_pos);
-        if (start_pos < end_pos)
+
+        // TIZEN ONLY (20160531): Support tizen 3.0 CNPUI
+        if (!sd->start_handler_down || full)
           {
+             DBG("Update start handler");
+             //feature: keep handler shape while moving
              hx = ent_x + sx;
              hy = ent_y + sy + sh;
              evas_object_move(sd->start_handler, hx, hy);
+
+             if (hy + hh > layrect.y + layrect.h)
+               {
+                  if (full)
+                    {
+                       edje_object_signal_emit(sd->start_handler, "elm,state,top", "elm");
+                       sd->start_handler_state = SELECTION_HANDLER_TOP_LEFT;
+                    }
+                  else
+                    {
+                       if (sd->start_handler_state == SELECTION_HANDLER_BOTTOM_LEFT)
+                         {
+                            edje_object_signal_emit(sd->start_handler, "elm,state,top", "elm");
+                            sd->start_handler_state = SELECTION_HANDLER_TOP_LEFT;
+                         }
+                       else if (sd->start_handler_state == SELECTION_HANDLER_BOTTOM_RIGHT)
+                         {
+                            edje_object_signal_emit(sd->start_handler, "elm,state,top,reversed", "elm");
+                            sd->start_handler_state = SELECTION_HANDLER_TOP_RIGHT;
+                         }
+                    }
+                  hy = hy - sh;
+                  evas_object_move(sd->start_handler, hx, hy);
+               }
+             else
+               {
+                  hy--;
+                  if (full)
+                    {
+                       edje_object_signal_emit(sd->start_handler, "elm,state,bottom", "elm");
+                       sd->start_handler_state = SELECTION_HANDLER_BOTTOM_LEFT;
+                    }
+                  else
+                    {
+                       if (sd->start_handler_state == SELECTION_HANDLER_TOP_LEFT)
+                         {
+                            edje_object_signal_emit(sd->start_handler, "elm,state,bottom", "elm");
+                            sd->start_handler_state = SELECTION_HANDLER_BOTTOM_LEFT;
+                         }
+                       else if (sd->start_handler_state == SELECTION_HANDLER_TOP_RIGHT)
+                         {
+                            edje_object_signal_emit(sd->start_handler, "elm,state,bottom,reversed", "elm");
+                            sd->start_handler_state = SELECTION_HANDLER_BOTTOM_RIGHT;
+                         }
+                    }
+               }
+             edje_object_message_signal_process(sd->start_handler);
+             //
+
+             if (!eina_rectangle_xcoord_inside(rect, hx) ||
+                 !eina_rectangle_ycoord_inside(rect, hy))
+               {
+                  hidden = EINA_TRUE;
+               }
+             if (!sd->start_handler_shown && !hidden)
+               {
+                  // TIZEN ONLY (20140204): Support tizen 2.4 CNPUI
+                  /*edje_object_signal_emit(sd->start_handler,
+                    "elm,handler,show", "elm");*/
+                  evas_object_show(sd->start_handler);
+                  //
+                  sd->start_handler_shown = EINA_TRUE;
+               }
+             else if (sd->start_handler_shown && hidden)
+               {
+                  // TIZEN ONLY (20140204): Support tizen 2.4 CNPUI
+                  /*edje_object_signal_emit(sd->start_handler,
+                    "elm,handler,hide", "elm");*/
+                  evas_object_hide(sd->start_handler);
+                  //
+                  sd->start_handler_shown = EINA_FALSE;
+               }
           }
-        else
+
+        if (!sd->end_handler_down || full)
           {
+             DBG("update end handler");
+             hidden = EINA_FALSE;
              hx = ent_x + ex;
              hy = ent_y + ey + eh;
-             evas_object_move(sd->start_handler, hx, hy);
+             evas_object_move(sd->end_handler, hx, hy);
+             // TIZEN ONLY (20150723): Show sel handler on top
+             if (hy + hh > layrect.y + layrect.h)
+               {
+                  if (full)
+                    {
+                       edje_object_signal_emit(sd->end_handler, "elm,state,top", "elm");
+                       sd->end_handler_state = SELECTION_HANDLER_TOP_RIGHT;
+                    }
+                  else
+                    {
+                       if (sd->end_handler_state == SELECTION_HANDLER_BOTTOM_LEFT)
+                         {
+                            edje_object_signal_emit(sd->end_handler, "elm,state,top,reversed", "elm");
+                            sd->end_handler_state = SELECTION_HANDLER_TOP_LEFT;
+                         }
+                       else if (sd->end_handler_state == SELECTION_HANDLER_BOTTOM_RIGHT)
+                         {
+                            edje_object_signal_emit(sd->end_handler, "elm,state,top", "elm");
+                            sd->end_handler_state = SELECTION_HANDLER_TOP_RIGHT;
+                         }
+                    }
+                  hy = hy - sh;
+                  evas_object_move(sd->end_handler, hx, hy);
+               }
+             else
+               {
+                  hy--;
+                  if (full)
+                    {
+                       edje_object_signal_emit(sd->end_handler, "elm,state,bottom", "elm");
+                       sd->end_handler_state = SELECTION_HANDLER_BOTTOM_RIGHT;
+                    }
+                  else
+                    {
+                       if (sd->end_handler_state == SELECTION_HANDLER_TOP_LEFT)
+                         {
+                            edje_object_signal_emit(sd->end_handler, "elm,state,bottom,reversed", "elm");
+                            sd->end_handler_state = SELECTION_HANDLER_BOTTOM_LEFT;
+                         }
+                       else if (sd->end_handler_state == SELECTION_HANDLER_TOP_RIGHT)
+                         {
+                            edje_object_signal_emit(sd->end_handler, "elm,state,bottom", "elm");
+                            sd->end_handler_state = SELECTION_HANDLER_BOTTOM_RIGHT;
+                         }
+                    }
+               }
+             //edje_object_message_signal_process(sd->end_handler);
+             //
+
+             if (!eina_rectangle_xcoord_inside(rect, hx) ||
+                 !eina_rectangle_ycoord_inside(rect, hy))
+               {
+                  hidden = EINA_TRUE;
+               }
+             if (!sd->end_handler_shown && !hidden)
+               {
+                  /*edje_object_signal_emit(sd->end_handler,
+                    "elm,handler,show", "elm");*/
+                  evas_object_show(sd->end_handler);
+                  sd->end_handler_shown = EINA_TRUE;
+               }
+             else if (sd->end_handler_shown && hidden)
+               {
+                  /*edje_object_signal_emit(sd->end_handler,
+                    "elm,handler,hide", "elm");*/
+                  evas_object_hide(sd->end_handler);
+                  sd->end_handler_shown = EINA_FALSE;
+               }
           }
-        // TIZEN ONLY (20150901): Show start sel handler on top by default
-        if (ent_y + sy - hh < layrect.y)
-          {
-             hy--;
-             edje_object_signal_emit(sd->start_handler, "elm,state,bottom", "elm");
-          }
-        else
-          {
-             edje_object_signal_emit(sd->start_handler, "elm,state,top", "elm");
-             hy = hy - sh;
-             evas_object_move(sd->start_handler, hx, hy);
-          }
-        edje_object_message_signal_process(sd->start_handler);
         //
-
-        if (!eina_rectangle_xcoord_inside(rect, hx) ||
-            !eina_rectangle_ycoord_inside(rect, hy))
-          {
-             hidden = EINA_TRUE;
-          }
-        if (!sd->start_handler_shown && !hidden)
-          {
-             // TIZEN ONLY (20140204): Support tizen 2.4 CNPUI
-             /*edje_object_signal_emit(sd->start_handler,
-                                     "elm,handler,show", "elm");*/
-             evas_object_show(sd->start_handler);
-             //
-             sd->start_handler_shown = EINA_TRUE;
-          }
-        else if (sd->start_handler_shown && hidden)
-          {
-             // TIZEN ONLY (20140204): Support tizen 2.4 CNPUI
-             /*edje_object_signal_emit(sd->start_handler,
-                                     "elm,handler,hide", "elm");*/
-             evas_object_hide(sd->start_handler);
-             //
-             sd->start_handler_shown = EINA_FALSE;
-          }
-
-        hidden = EINA_FALSE;
-        if (start_pos < end_pos)
-          {
-             hx = ent_x + ex;
-             hy = ent_y + ey + eh;
-             evas_object_move(sd->end_handler, hx, hy);
-          }
-        else
-          {
-             hx = ent_x + sx;
-             hy = ent_y + sy + sh;
-             evas_object_move(sd->end_handler, hx, hy);
-          }
-        // TIZEN ONLY (20150723): Show sel handler on top
-        if (hy + hh > layrect.y + layrect.h)
-          {
-             edje_object_signal_emit(sd->end_handler, "elm,state,top", "elm");
-             hy = hy - sh;
-             evas_object_move(sd->end_handler, hx, hy);
-          }
-        else
-          {
-             hy--;
-             edje_object_signal_emit(sd->end_handler, "elm,state,bottom", "elm");
-          }
-        edje_object_message_signal_process(sd->end_handler);
-        //
-
-        if (!eina_rectangle_xcoord_inside(rect, hx) ||
-            !eina_rectangle_ycoord_inside(rect, hy))
-          {
-             hidden = EINA_TRUE;
-          }
-        if (!sd->end_handler_shown && !hidden)
-          {
-             // TIZEN ONLY (20140204): Support tizen 2.4 CNPUI
-             /*edje_object_signal_emit(sd->end_handler,
-                                     "elm,handler,show", "elm");*/
-             evas_object_show(sd->end_handler);
-             //
-             sd->end_handler_shown = EINA_TRUE;
-          }
-        else if (sd->end_handler_shown && hidden)
-          {
-             // TIZEN ONLY (20140204): Support tizen 2.4 CNPUI
-             /*edje_object_signal_emit(sd->end_handler,
-                                     "elm,handler,hide", "elm");*/
-             evas_object_hide(sd->end_handler);
-             //
-             sd->end_handler_shown = EINA_FALSE;
-          }
         eina_rectangle_free(rect);
      }
    else
@@ -2820,7 +2904,7 @@ _mouse_up_cb(void *data,
              if (sd->have_selection)
                {
                   if (elm_widget_focus_get(data))
-                    _update_selection_handler(data);
+                    _update_selection_handler(data, EINA_TRUE); // TIZEN ONLY (20160531): Support tizen 3.0 CNPUI
                   else
                     elm_entry_select_none(data);
                }
@@ -3229,7 +3313,7 @@ _entry_selection_changed_signal_cb(void *data,
    eo_do(data, eo_event_callback_call
      (EVAS_SELECTABLE_INTERFACE_EVENT_SELECTION_CHANGED, NULL));
    _selection_store(ELM_SEL_TYPE_PRIMARY, data);
-   _update_selection_handler(data);
+   _update_selection_handler(data, EINA_FALSE); // TIZEN ONLY (20160531): Support tizen 3.0 CNPUI
    if (_elm_config->atspi_mode)
      eo_do(ELM_INTERFACE_ATSPI_ACCESSIBLE_MIXIN, elm_interface_atspi_accessible_event_emit(data, ELM_INTERFACE_ATSPI_TEXT_EVENT_ACCESS_TEXT_SELECTION_CHANGED, NULL));
 }
@@ -4349,6 +4433,124 @@ _resize_cb(void *data,
    _elm_entry_resize_internal(data);
 }
 
+// TIZEN ONLY (20160531): Support tizen 3.0 CNPUI
+static void
+_rotate_selection_handler(void *data)
+{
+   ELM_ENTRY_DATA_GET(data, sd);
+
+   _update_selection_handler(data, EINA_FALSE);
+   DBG("start handler state: %d", sd->start_handler_state);
+   if (sd->handler_switch)
+     {
+        if (sd->start_handler_state == SELECTION_HANDLER_BOTTOM_LEFT)
+          {
+             DBG("start: bottom left -> bottom right");
+             //just do bottom left -> bottom right
+             edje_object_signal_emit(sd->start_handler, "elm,rotate,bl_br", "elm");
+             edje_object_message_signal_process(sd->start_handler);
+             sd->start_handler_state = SELECTION_HANDLER_BOTTOM_RIGHT;
+          }
+        else if (sd->start_handler_state == SELECTION_HANDLER_TOP_LEFT)
+          {
+             DBG("start: top left -> top right");
+             //just do top left -> top right
+             edje_object_signal_emit(sd->start_handler, "elm,rotate,tl_tr", "elm");
+             edje_object_message_signal_process(sd->start_handler);
+             sd->start_handler_state = SELECTION_HANDLER_TOP_RIGHT;
+          }
+     }
+   else
+     {
+        if (sd->start_handler_state == SELECTION_HANDLER_BOTTOM_RIGHT)
+          {
+             DBG("start: bottom right -> bottom left");
+             //just do bottom right -> bottom left
+             edje_object_signal_emit(sd->start_handler, "elm,rotate,br_bl", "elm");
+             edje_object_message_signal_process(sd->start_handler);
+             sd->start_handler_state = SELECTION_HANDLER_BOTTOM_LEFT;
+          }
+        else if (sd->start_handler_state == SELECTION_HANDLER_TOP_RIGHT)
+          {
+             DBG("start: top right -> top left");
+             //just do top right -> top left
+             edje_object_signal_emit(sd->start_handler, "elm,rotate,tr_tl", "elm");
+             edje_object_message_signal_process(sd->start_handler);
+             sd->start_handler_state = SELECTION_HANDLER_TOP_LEFT;
+          }
+     }
+
+   DBG("end handler state: %d", sd->end_handler_state);
+   if (sd->handler_switch)
+     {
+        if (sd->end_handler_state == SELECTION_HANDLER_BOTTOM_RIGHT)
+          {
+             DBG("end: bottom right -> bottom left");
+             //just do bottom right -> bottom left
+             edje_object_signal_emit(sd->end_handler, "elm,rotate,br_bl", "elm");
+             edje_object_message_signal_process(sd->end_handler);
+             sd->end_handler_state = SELECTION_HANDLER_BOTTOM_LEFT;
+          }
+        else if (sd->end_handler_state == SELECTION_HANDLER_TOP_RIGHT)
+          {
+             DBG("end: top right -> top left");
+             //just do top right -> top left
+             edje_object_signal_emit(sd->end_handler, "elm,rotate,tr_tl", "elm");
+             edje_object_message_signal_process(sd->end_handler);
+             sd->end_handler_state = SELECTION_HANDLER_TOP_LEFT;
+          }
+     }
+   else
+     {
+        if (sd->end_handler_state == SELECTION_HANDLER_BOTTOM_LEFT)
+          {
+             DBG("end: bottom left -> bottom right");
+             //just do bottom left -> bottom right
+             edje_object_signal_emit(sd->end_handler, "elm,rotate,bl_br", "elm");
+             edje_object_message_signal_process(sd->end_handler);
+             sd->end_handler_state = SELECTION_HANDLER_BOTTOM_RIGHT;
+          }
+        else if (sd->end_handler_state == SELECTION_HANDLER_TOP_LEFT)
+          {
+             DBG("end: top left -> top right");
+             //just do top left -> top right
+             edje_object_signal_emit(sd->end_handler, "elm,rotate,tl_tr", "elm");
+             edje_object_message_signal_process(sd->end_handler);
+             sd->end_handler_state = SELECTION_HANDLER_TOP_RIGHT;
+          }
+     }
+   DBG("end handler state: %d", sd->end_handler_state);
+}
+
+static Eina_Bool
+_move_back_selection_handler(void *data, double pos)
+{
+   ELM_ENTRY_DATA_GET(data, sd);
+   if (!sd) return ECORE_CALLBACK_CANCEL;
+   Evas_Coord x, y;
+   double frame;
+
+   frame = ecore_animator_pos_map(pos, ECORE_POS_MAP_ACCELERATE, 0.0, 0.0);
+   x = sd->handler_x1 - (sd->handler_x1 - sd->handler_x2) * frame;
+   y = sd->handler_y1 - (sd->handler_y1 - sd->handler_y2) * frame;
+   if (sd->current_handler_move == 0)
+     {
+        evas_object_move(sd->start_handler, x, y);
+     }
+   else
+     {
+        evas_object_move(sd->end_handler, x, y);
+     }
+   if (frame == 1.0)
+     {
+        _update_selection_handler(data, EINA_TRUE);
+        sd->api->obj_longpress(data);
+     }
+
+   return ECORE_CALLBACK_RENEW;
+}
+//
+
 static void
 _start_handler_mouse_down_cb(void *data,
                              Evas *e EINA_UNUSED,
@@ -4392,8 +4594,15 @@ _start_handler_mouse_down_cb(void *data,
    edje_object_part_text_cursor_geometry_get(sd->entry_edje, "elm.text",
                                              &cx, &cy, &cw, &ch);
    evas_object_geometry_get(sd->entry_edje, &ex, &ey, NULL, NULL);
-   sd->ox = ev->canvas.x - (ex + cx + (cw / 2));
-   sd->oy = ev->canvas.y - (ey + cy + (ch / 2));
+   // TIZEN ONLY (20160531): Support tizen 3.0 CNPUI
+   //sd->ox = ev->canvas.x - (ex + cx + (cw / 2));
+   //sd->oy = ev->canvas.y - (ey + cy + (ch / 2));
+   sd->layrect = _layout_region_get(data);
+   Evas_Coord x, y;
+   evas_object_geometry_get(sd->start_handler, &x, &y, NULL, NULL);
+   sd->ox = ev->canvas.x - x;
+   sd->oy = ev->canvas.y - y;
+   //
 
    ELM_SAFE_FREE(sd->longpress_timer, ecore_timer_del);
    sd->long_pressed = EINA_FALSE;
@@ -4403,6 +4612,8 @@ _start_handler_mouse_down_cb(void *data,
         _magnifier_show(data);
         _magnifier_move(data, ex + cx, ey + cy + (ch / 2));
      }
+
+   sd->handler_switch = EINA_FALSE; // TIZEN ONLY (20160531): Support tizen 3.0 CNPUI
 }
 
 static void
@@ -4413,7 +4624,9 @@ _start_handler_mouse_up_cb(void *data,
 {
    ELM_ENTRY_DATA_GET(data, sd);
 
-   sd->start_handler_down = EINA_FALSE;
+   // TIZEN ONLY (20160531): Support tizen 3.0 CNPUI
+   //sd->start_handler_down = EINA_FALSE;
+   //
 
    // TIZEN ONLY(20150815): feature: remove mgf, popup, handlers if entry changed
    int start_pos, end_pos;
@@ -4471,6 +4684,40 @@ _start_handler_mouse_up_cb(void *data,
         edje_object_part_text_select_allow_set(sd->entry_edje, "elm.text",
                                                EINA_FALSE);
    //
+   // TIZEN ONLY (20160531): Support tizen 3.0 CNPUI
+   if (start_pos > end_pos)
+     sd->handler_switch = EINA_TRUE;
+   else
+     sd->handler_switch = EINA_FALSE;
+   if (sd->start_handler_down)
+     {
+        Evas_Coord y, h;
+        evas_object_geometry_get(sd->start_handler, &sd->handler_x1,
+                                 &sd->handler_y1, NULL, NULL);
+        if (!sd->handler_switch)
+          {
+             _sel_cursor_geometry_get(data, EDJE_CURSOR_SELECTION_BEGIN,
+                                      &sd->handler_x2, &y, NULL, &h);
+          }
+        else
+          {
+             _sel_cursor_geometry_get(data, EDJE_CURSOR_SELECTION_END,
+                                      &sd->handler_x2, &y, NULL, &h);
+          }
+        if (y + h + sd->handler_h > sd->layrect.y + sd->layrect.h)
+          {
+             sd->handler_y2 = y;
+          }
+        else
+          {
+             sd->handler_y2 = y + h;
+          }
+        sd->current_handler_move = 0;
+        sd->api->obj_hidemenu(data);
+        ecore_animator_timeline_add(0.3, _move_back_selection_handler, data);
+     }
+   sd->start_handler_down = EINA_FALSE;
+   //
 }
 
 static void
@@ -4485,6 +4732,7 @@ _start_handler_mouse_move_cb(void *data,
    Evas_Event_Mouse_Move *ev = event_info;
    Evas_Coord ex, ey;
    Evas_Coord cx, cy, ch;
+   Evas_Coord cly, clh, sel_offset; // TIZEN ONLY (20160531): Support tizen 3.0 CNPUI
    int pos;
 
    // TIZEN ONLY(20150815): feature: remove mgf, popup, handlers if entry changed
@@ -4504,21 +4752,51 @@ _start_handler_mouse_move_cb(void *data,
    // TIZEN ONLY (20150715): for easy movement in single line
    const Evas_Object *tb = NULL;
    Evas_Textblock_Cursor *tc;
-   Evas_Coord fy = 0, fh = 0, ly = 0, lh = 0;
+   // TIZEN ONLY (20160531): Support tizen 3.0 CNPUI
+   Evas_Coord fx, fw, lx, lw, fy = 0, fh = 0, ly = 0, lh = 0;
+   //
 
    tb = edje_object_part_object_get(sd->entry_edje, "elm.text");
    tc = evas_object_textblock_cursor_new(tb);
    evas_textblock_cursor_paragraph_first(tc);
-   evas_textblock_cursor_line_geometry_get(tc, NULL, &fy, NULL, &fh);
+   // TIZEN ONLY (20160531): Support tizen 3.0 CNPUI
+   evas_textblock_cursor_line_geometry_get(tc, &fx, &fy, &fw, &fh);
    evas_textblock_cursor_paragraph_last(tc);
-   evas_textblock_cursor_line_geometry_get(tc, NULL, &ly, NULL, &lh);
+   evas_textblock_cursor_line_geometry_get(tc, &lx, &ly, &lw, &lh);
+   evas_textblock_cursor_char_coord_set(tc, cx, cy);
+   evas_textblock_cursor_line_geometry_get(tc, NULL, &cly, NULL, &clh);
+   //
    evas_textblock_cursor_free(tc);
    if (cy < fy + fh / 2) cy = fy + fh / 2;
    else if (cy > ly + lh) cy = ly + lh - 1;
    //
 
-   edje_object_part_text_cursor_coord_set(sd->entry_edje, "elm.text",
-                                        sd->sel_handler_cursor, cx, cy);
+   // TIZEN ONLY (20160531): Support tizen 3.0 CNPUI
+   const char *str = edje_object_data_get(sd->start_handler, "selection_offset");
+   if (str)
+     {
+        sel_offset = (int)(atoi(str)
+                         * elm_config_scale_get() * elm_object_scale_get(data)
+                         / edje_object_base_scale_get(sd->start_handler));
+     }
+   else
+     {
+        ERR("Cannot get selection_offset");
+        sel_offset = clh / 3;
+     }
+
+   if (cy < cly + sel_offset)
+     {
+        edje_object_part_text_cursor_coord_set(sd->entry_edje, "elm.text",
+                                                         sd->sel_handler_cursor, cx, cy - clh);
+     }
+   else
+     {
+        edje_object_part_text_cursor_coord_set(sd->entry_edje, "elm.text",
+                                                         sd->sel_handler_cursor, cx, cy);
+     }
+   //
+
    pos = edje_object_part_text_cursor_pos_get(sd->entry_edje, "elm.text",
                                                sd->sel_handler_cursor);
    // TIZEN ONLY (20150720): Keep at least one character in selection
@@ -4548,6 +4826,80 @@ _start_handler_mouse_move_cb(void *data,
    sd->long_pressed = EINA_FALSE;
    if (_elm_config->magnifier_enable)
      _magnifier_move(data, ex + cx, ey + cy + (ch / 2));
+
+   // TIZEN ONLY (20160531): Support tizen 3.0 CNPUI
+   Evas_Coord hw, hh;
+   edje_object_parts_extends_calc(sd->start_handler, NULL, NULL, &hw, &hh);
+
+   Evas_Coord x, y;
+   x = ev->cur.canvas.x - sd->ox;
+   y = ev->cur.canvas.y - sd->oy;
+
+   Evas_Coord_Rectangle layrect;
+   layrect = _layout_region_get(data);
+   DBG("pointer: %d %d, layrect: %d %d %d %d; x y: %d %d, hw hh: %d %d", ev->cur.canvas.x, ev->cur.canvas.y, layrect.x, layrect.y, layrect.w, layrect.h, x, y, hw, hh);
+   y = (y - hh / 2) < layrect.y ? layrect.y : y;
+   if (y + hh > sd->layrect.y + sd->layrect.h)
+     {
+        if (ey + cy + ch + hh / 2 >= sd->layrect.y + sd->layrect.h)
+          {
+             //reverse + move
+             y = ey + cy;
+             edje_object_signal_emit(sd->start_handler, "elm,state,top", "elm");
+             sd->start_handler_state = SELECTION_HANDLER_TOP_LEFT;
+             edje_object_message_signal_process(sd->start_handler);
+          }
+        else
+          {
+             //just move
+             y = sd->layrect.y + sd->layrect.h - hh / 2;
+          }
+     }
+   else
+     {
+        if (sd->start_handler_state == SELECTION_HANDLER_TOP_LEFT)
+          {
+             edje_object_signal_emit(sd->start_handler, "elm,state,bottom", "elm");
+             edje_object_message_signal_process(sd->start_handler);
+             sd->start_handler_state = SELECTION_HANDLER_BOTTOM_LEFT;
+          }
+        else if (sd->start_handler_state == SELECTION_HANDLER_TOP_RIGHT)
+          {
+             edje_object_signal_emit(sd->start_handler, "elm,state,bottom,reversed", "elm");
+             edje_object_message_signal_process(sd->start_handler);
+             sd->start_handler_state = SELECTION_HANDLER_BOTTOM_RIGHT;
+          }
+        //follow
+     }
+   evas_object_move(sd->start_handler, x, y);
+
+
+   Evas_Coord start_pos, end_pos;
+   start_pos = edje_object_part_text_cursor_pos_get(sd->entry_edje, "elm.text",
+                                                    EDJE_CURSOR_SELECTION_BEGIN);
+   end_pos = edje_object_part_text_cursor_pos_get(sd->entry_edje, "elm.text",
+                                                  EDJE_CURSOR_SELECTION_END);
+   if (start_pos > end_pos)
+     {
+        DBG("start pos > end pos");
+        if (!sd->handler_switch)
+          {
+             sd->handler_switch = EINA_TRUE;
+             DBG("Rotate");
+             _rotate_selection_handler(data);
+          }
+     }
+   else
+     {
+        DBG("start pos <= end pos");
+        if (sd->handler_switch)
+          {
+             sd->handler_switch = EINA_FALSE;
+             DBG("Switch back");
+             _rotate_selection_handler(data);
+          }
+     }
+   //
 }
 
 static void
@@ -4594,8 +4946,15 @@ _end_handler_mouse_down_cb(void *data,
    edje_object_part_text_cursor_geometry_get(sd->entry_edje, "elm.text",
                                              &cx, &cy, &cw, &ch);
    evas_object_geometry_get(sd->entry_edje, &ex, &ey, NULL, NULL);
-   sd->ox = ev->canvas.x - (ex + cx + (cw / 2));
-   sd->oy = ev->canvas.y - (ey + cy + (ch / 2));
+   // TIZEN ONLY (20160531): Support tizen 3.0 CNPUI
+   //sd->ox = ev->canvas.x - (ex + cx + (cw / 2));
+   //sd->oy = ev->canvas.y - (ey + cy + (ch / 2));
+   sd->layrect = _layout_region_get(data);
+   Evas_Coord x, y;
+   evas_object_geometry_get(sd->end_handler, &x, &y, NULL, NULL);
+   sd->ox = ev->canvas.x - x;
+   sd->oy = ev->canvas.y - y;
+   //
 
    ELM_SAFE_FREE(sd->longpress_timer, ecore_timer_del);
    sd->long_pressed = EINA_FALSE;
@@ -4615,7 +4974,9 @@ _end_handler_mouse_up_cb(void *data,
 {
    ELM_ENTRY_DATA_GET(data, sd);
 
-   sd->end_handler_down = EINA_FALSE;
+   // TIZEN ONLY (20160531): Support tizen 3.0 CNPUI
+   //sd->end_handler_down = EINA_FALSE;
+   //
    // TIZEN ONLY(20150815): feature: remove mgf, popup, handlers if entry changed
    int start_pos, end_pos;
    Eina_Bool hidden = EINA_FALSE;
@@ -4672,6 +5033,40 @@ _end_handler_mouse_up_cb(void *data,
    if (!_elm_config->desktop_entry)
         edje_object_part_text_select_allow_set(sd->entry_edje, "elm.text",
                                                EINA_FALSE);
+   // TIZEN ONLY (20160531): Support tizen 3.0 CNPUI
+   if (start_pos > end_pos)
+     sd->handler_switch = EINA_TRUE;
+   else
+     sd->handler_switch = EINA_FALSE;
+   if (sd->end_handler_down)
+     {
+        Evas_Coord y, h;
+
+        evas_object_geometry_get(sd->end_handler, &sd->handler_x1,
+                                 &sd->handler_y1, NULL, NULL);
+        if (!sd->handler_switch)
+          {
+             _sel_cursor_geometry_get(data, EDJE_CURSOR_SELECTION_END,
+                                      &sd->handler_x2, &y, NULL, &h);
+          }
+        else
+          {
+             _sel_cursor_geometry_get(data, EDJE_CURSOR_SELECTION_BEGIN,
+                                      &sd->handler_x2, &y, NULL, &h);
+          }
+        if (y + h + sd->handler_h > sd->layrect.y + sd->layrect.h)
+          {
+             sd->handler_y2 = y;
+          }
+        else
+          {
+             sd->handler_y2 = y + h;
+          }
+        sd->current_handler_move = 1;
+        sd->api->obj_hidemenu(data);
+        ecore_animator_timeline_add(0.3, _move_back_selection_handler, data);
+     }
+   sd->end_handler_down = EINA_FALSE;
    //
 }
 
@@ -4687,6 +5082,7 @@ _end_handler_mouse_move_cb(void *data,
    Evas_Event_Mouse_Move *ev = event_info;
    Evas_Coord ex, ey;
    Evas_Coord cx, cy, ch;
+   Evas_Coord cly, clh, sel_offset; // TIZEN ONLY (20160531): Support tizen 3.0 CNPUI
    int pos;
 
    // TIZEN ONLY(20150815): feature: remove mgf, popup, handlers if entry changed
@@ -4706,21 +5102,51 @@ _end_handler_mouse_move_cb(void *data,
    // TIZEN ONLY (20150715): for easy movement in single line
    const Evas_Object *tb = NULL;
    Evas_Textblock_Cursor *tc;
-   Evas_Coord fy = 0, fh = 0, ly = 0, lh = 0;
+   // TIZEN ONLY (20160531): Support tizen 3.0 CNPUI
+   Evas_Coord fx, fw, lx, lw, fy = 0, fh = 0, ly = 0, lh = 0;
+   //
  
    tb = edje_object_part_object_get(sd->entry_edje, "elm.text");
    tc = evas_object_textblock_cursor_new(tb);
    evas_textblock_cursor_paragraph_first(tc);
-   evas_textblock_cursor_line_geometry_get(tc, NULL, &fy, NULL, &fh);
+   // TIZEN ONLY (20160531): Support tizen 3.0 CNPUI
+   evas_textblock_cursor_line_geometry_get(tc, &fx, &fy, &fw, &fh);
    evas_textblock_cursor_paragraph_last(tc);
-   evas_textblock_cursor_line_geometry_get(tc, NULL, &ly, NULL, &lh);
+   evas_textblock_cursor_line_geometry_get(tc, &lx, &ly, &lw, &lh);
+   evas_textblock_cursor_char_coord_set(tc, cx, cy);
+   evas_textblock_cursor_line_geometry_get(tc, NULL, &cly, NULL, &clh);
+   //
    evas_textblock_cursor_free(tc);
    if (cy < fy + fh / 2) cy = fy + fh / 2;
    if (cy > ly + lh) cy = ly + lh - 1;
    //
 
-   edje_object_part_text_cursor_coord_set(sd->entry_edje, "elm.text",
-                                          sd->sel_handler_cursor, cx, cy);
+   // TIZEN ONLY (20160531): Support tizen 3.0 CNPUI
+   const char *str = edje_object_data_get(sd->end_handler, "selection_offset");
+   if (str)
+     {
+        sel_offset = (int)(atoi(str)
+                         * elm_config_scale_get() * elm_object_scale_get(data)
+                         / edje_object_base_scale_get(sd->end_handler));
+     }
+   else
+     {
+        ERR("Cannot get selection_offset");
+        sel_offset = clh / 3;
+     }
+
+   if (cy < cly + sel_offset)
+     {
+        edje_object_part_text_cursor_coord_set(sd->entry_edje, "elm.text",
+                                                         sd->sel_handler_cursor, cx, cy - clh);
+     }
+   else
+     {
+        edje_object_part_text_cursor_coord_set(sd->entry_edje, "elm.text",
+                                                         sd->sel_handler_cursor, cx, cy);
+     }
+   //
+
    pos = edje_object_part_text_cursor_pos_get(sd->entry_edje, "elm.text",
                                               sd->sel_handler_cursor);
    // TIZEN ONLY (20150720): Keep at least one character in selection
@@ -4745,6 +5171,86 @@ _end_handler_mouse_move_cb(void *data,
    sd->long_pressed = EINA_FALSE;
    if (_elm_config->magnifier_enable)
      _magnifier_move(data, ex + cx, ey + cy + (ch / 2));
+
+   // TIZEN ONLY (20160531): Support tizen 3.0 CNPUI
+   Evas_Coord hw, hh;
+   edje_object_parts_extends_calc(sd->end_handler, NULL, NULL, &hw, &hh);
+
+   Evas_Coord x, y;
+   x = ev->cur.canvas.x - sd->ox;
+   y = ev->cur.canvas.y - sd->oy;
+
+   DBG("layrect: %d %d %d %d; x y: %d %d, hw hh: %d %d", sd->layrect.x, sd->layrect.y, sd->layrect.w, sd->layrect.h, x, y, hw, hh);
+   y = y < sd->layrect.y ? sd->layrect.y : y;
+   if (y + hh > sd->layrect.y + sd->layrect.h)
+     {
+        DBG("lay y h: %d %d, last: %d %d", sd->layrect.y, sd->layrect.h, ly, lh);
+        if (ey + cy + ch + hh / 2 >= sd->layrect.y + sd->layrect.h)
+          {
+             //reverse + move
+             DBG("Reverse and Move");
+             y = ey + cy;
+             evas_object_move(sd->end_handler, x, y);
+             if (sd->end_handler_state == SELECTION_HANDLER_BOTTOM_LEFT)
+               {
+                  edje_object_signal_emit(sd->end_handler, "elm,state,top,reversed", "elm");
+                  sd->end_handler_state = SELECTION_HANDLER_TOP_LEFT;
+               }
+             else if (sd->end_handler_state == SELECTION_HANDLER_BOTTOM_RIGHT)
+               {
+                  edje_object_signal_emit(sd->end_handler, "elm,state,top", "elm");
+                  sd->end_handler_state = SELECTION_HANDLER_TOP_RIGHT;
+               }
+             edje_object_message_signal_process(sd->end_handler);
+          }
+        else
+          {
+             DBG("Just move");
+             //just move
+             y = sd->layrect.y + sd->layrect.h - hh / 2;
+             evas_object_move(sd->end_handler, x, y);
+          }
+     }
+   else
+     {
+        if (sd->end_handler_state == SELECTION_HANDLER_TOP_RIGHT)
+          {
+             ERR("back to bottom");
+             edje_object_signal_emit(sd->end_handler, "elm,state,bottom", "elm");
+             edje_object_message_signal_process(sd->end_handler);
+             sd->end_handler_state = SELECTION_HANDLER_BOTTOM_RIGHT;
+          }
+        //follow
+        evas_object_move(sd->end_handler, x, y);
+     }
+
+
+   Evas_Coord start_pos, end_pos;
+   start_pos = edje_object_part_text_cursor_pos_get(sd->entry_edje, "elm.text",
+                                                    EDJE_CURSOR_SELECTION_BEGIN);
+   end_pos = edje_object_part_text_cursor_pos_get(sd->entry_edje, "elm.text",
+                                                  EDJE_CURSOR_SELECTION_END);
+   if (start_pos > end_pos)
+     {
+        DBG("start pos > end pos");
+        if (!sd->handler_switch)
+          {
+             sd->handler_switch = EINA_TRUE;
+             DBG("Rotate");
+             _rotate_selection_handler(data);
+          }
+     }
+   else
+     {
+        DBG("start pos <= end pos");
+        if (sd->handler_switch)
+          {
+             sd->handler_switch = EINA_FALSE;
+             DBG("Switch back");
+             _rotate_selection_handler(data);
+          }
+     }
+   //
 }
 
 EOLIAN static void
@@ -4917,6 +5423,7 @@ _elm_entry_evas_object_smart_add(Eo *obj, Elm_Entry_Data *priv)
      priv->sel_handler_disabled = EINA_TRUE;
 
    priv->cursor_handler_shown = EINA_FALSE; // TIZEN ONLY (20150201)
+   priv->handler_switch = EINA_FALSE; // TIZEN ONLY (20160531): Support tizen 3.0 CNPUI
 }
 
 static void
@@ -4931,6 +5438,7 @@ _create_selection_handlers(Evas_Object *obj, Elm_Entry_Data *sd)
    // TIZEN ONLY(20150605): support tizen theme
    edje_object_signal_emit(handle, "edje,focus,in", "edje");
    edje_object_signal_emit(handle, "elm,state,bottom", "elm");
+   sd->start_handler_state = SELECTION_HANDLER_BOTTOM_LEFT; // TIZEN ONLY (20160531): Support tizen 3.0 CNPUI
    sd->start_handler_shown = EINA_TRUE;
    //
    evas_object_event_callback_add(handle, EVAS_CALLBACK_MOUSE_DOWN,
@@ -4948,6 +5456,7 @@ _create_selection_handlers(Evas_Object *obj, Elm_Entry_Data *sd)
    edje_object_signal_emit(handle, "edje,focus,in", "edje");
    //edje_object_signal_emit(handle, "elm,state,top", "elm");
    edje_object_signal_emit(handle, "elm,state,bottom", "elm");
+   sd->end_handler_state = SELECTION_HANDLER_BOTTOM_RIGHT; // TIZEN ONLY (20160531): Support tizen 3.0 CNPUI
    sd->end_handler_shown = EINA_TRUE;
    //
    evas_object_event_callback_add(handle, EVAS_CALLBACK_MOUSE_DOWN,
@@ -4957,6 +5466,9 @@ _create_selection_handlers(Evas_Object *obj, Elm_Entry_Data *sd)
    evas_object_event_callback_add(handle, EVAS_CALLBACK_MOUSE_UP,
                                   _end_handler_mouse_up_cb, obj);
    evas_object_show(handle);
+   // TIZEN ONLY (20160531): Support tizen 3.0 CNPUI
+   edje_object_parts_extends_calc(sd->start_handler, NULL, NULL, &sd->handler_w, &sd->handler_h);
+   //
 }
 
 EOLIAN static void
@@ -5057,7 +5569,7 @@ _sel_handler_update_job_cb(void *data)
 
    ELM_ENTRY_DATA_GET(obj, sd);
    sd->sel_handler_update_job = NULL;
-   _update_selection_handler(obj);
+   _update_selection_handler(obj, EINA_TRUE); // TIZEN ONLY (20160531): Support tizen 3.0 CNPUI
 }
 
 static void
@@ -5082,7 +5594,7 @@ _elm_entry_evas_object_smart_move(Eo *obj, Elm_Entry_Data *sd, Evas_Coord x, Eva
 
    if (edje_object_part_text_selection_get(sd->entry_edje, "elm.text"))
      {
-        _update_selection_handler(obj);
+        _update_selection_handler(obj, EINA_TRUE); // TIZEN ONLY (20160531): Support tizen 3.0 CNPUI
         // TIZEN ONLY (20150721): use job to get correct parent's gometry
         if (sd->sel_handler_update_job)
           ecore_job_del(sd->sel_handler_update_job);
@@ -5110,7 +5622,7 @@ _elm_entry_evas_object_smart_resize(Eo *obj, Elm_Entry_Data *sd, Evas_Coord w, E
    evas_object_resize(sd->hit_rect, w, h);
    if (sd->have_selection)
      {
-        _update_selection_handler(obj);
+        _update_selection_handler(obj, EINA_TRUE); // TIZEN ONLY (20160531): Support tizen 3.0 CNPUI
         // TIZEN ONLY (20150721): use job to get correct parent's gometry
         if (sd->sel_handler_update_job)
           ecore_job_del(sd->sel_handler_update_job);
@@ -5126,7 +5638,7 @@ _elm_entry_evas_object_smart_show(Eo *obj, Elm_Entry_Data *sd)
    eo_do_super(obj, MY_CLASS, evas_obj_smart_show());
 
    if (sd->have_selection)
-     _update_selection_handler(obj);
+     _update_selection_handler(obj, EINA_TRUE); // TIZEN ONLY (20160531): Support tizen 3.0 CNPUI
 }
 
 EOLIAN static void
@@ -6194,7 +6706,7 @@ _scroll_cb(Evas_Object *obj, void *data EINA_UNUSED)
      (EVAS_SCROLLABLE_INTERFACE_EVENT_SCROLL, NULL));
 
    if (sd->have_selection)
-     _update_selection_handler(obj);
+     _update_selection_handler(obj, EINA_TRUE); // TIZEN ONLY (20160531): Support tizen 3.0 CNPUI
    // TIZEN ONLY (20150625): Update cursor handler
    if (sd->cursor_handler_shown)
      {
