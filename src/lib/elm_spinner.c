@@ -901,6 +901,10 @@ _inc_dec_button_clicked_cb(void *data,
 {
    ELM_SPINNER_DATA_GET(data, sd);
 
+   //TIZEN_ONLY(201604602): fix for atspi inc/dec bug
+   sd->inc_clicked = sd->inc_button == obj ? EINA_TRUE : EINA_FALSE;
+   //
+
    _spin_stop(data);
    sd->spin_speed = sd->inc_clicked ? sd->step : -sd->step;
    _spin_value(data);
