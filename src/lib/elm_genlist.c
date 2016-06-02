@@ -8100,7 +8100,7 @@ _elm_genlist_item_elm_interface_atspi_accessible_name_get(Eo *eo_it,
                   eina_strbuf_append(buf, str_utf8);
                   free(str_utf8);
 
-                  if((genlist_item_type & ELM_GENLIST_ITEM_TREE) && texts_list_item_index == 0)
+                  if(((genlist_item_type & ELM_GENLIST_ITEM_GROUP) || (genlist_item_type & ELM_GENLIST_ITEM_TREE)) && texts_list_item_index == 0)
                     {
                       eina_strbuf_append(buf, ", ");
                       eina_strbuf_append(buf, E_("group index"));
@@ -8110,7 +8110,6 @@ _elm_genlist_item_elm_interface_atspi_accessible_name_get(Eo *eo_it,
              ++texts_list_item_index;
           }
      }
-
    ret = eina_strbuf_string_steal(buf);
    eina_strbuf_free(buf);
    return ret;
