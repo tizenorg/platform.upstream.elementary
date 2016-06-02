@@ -168,9 +168,11 @@ static int _dragx = 0, _dragy = 0;
 static Ecore_Event_Handler *handler_pos = NULL;
 static Ecore_Event_Handler *handler_drop = NULL;
 static Ecore_Event_Handler *handler_enter = NULL;
-static Ecore_Event_Handler *handler_status = NULL;
 static Ecore_Event_Handler *handler_leave = NULL;
+#ifdef HAVE_ELEMENTARY_X
+static Ecore_Event_Handler *handler_status = NULL;
 static Ecore_Event_Handler *handler_up = NULL;
+#endif
 
 /* TODO BUG: should NEVER have these as globals! They should be per context (window). */
 static Elm_Drag_Pos dragposcb = NULL;
@@ -3952,6 +3954,7 @@ _elm_cnp_shutdown(void)
    return EINA_TRUE;
 }
 
+#ifdef HAVE_ELEMENTARY_X
 /* TODO: this should not be an actual tempfile, but rather encode the object
  * as http://dataurl.net/ if it's an image or similar. Evas should support
  * decoding it as memfile. */
@@ -4041,7 +4044,7 @@ _tmpinfo_free(Tmp_Info *info)
    free(info);
    return 0;
 }
-
+#endif
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
@@ -4723,8 +4726,9 @@ elm_drag_cancel(Evas_Object *obj)
    if (_wl_elm_widget_window_get(obj))
       ecore_wl_dnd_drag_end(ecore_wl_input_get());
 #endif
-
+#ifdef HAVE_ELEMENTARY_X
 end:
+#endif
    ELM_SAFE_FREE(dragwin, evas_object_del);
    dragdonecb = NULL;
    dragacceptcb = NULL;
