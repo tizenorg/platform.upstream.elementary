@@ -8071,6 +8071,37 @@ _elm_genlist_item_elm_interface_atspi_accessible_name_get(Eo *eo_it,
 {
    char *ret;
    Eina_Strbuf *buf;
+   /* TIZEN_ONLY(20160602): to support group item as per UX Guide 0.3 
+   ret = elm_interface_atspi_accessible_name_get(eo_super(eo_it, ELM_GENLIST_ITEM_CLASS));
+   if (ret) return ret;
+
+   buf = eina_strbuf_new();
+
+   if (it->itc->func.text_get)
+     {
+        Eina_List *texts;
+        const char *key;
+
+        texts =
+           elm_widget_stringlist_get(edje_object_data_get(VIEW(it), "texts"));
+
+        EINA_LIST_FREE(texts, key)
+          {
+             char *str_markup = it->itc->func.text_get
+                ((void *)WIDGET_ITEM_DATA_GET(EO_OBJ(it)), WIDGET(it), key);
+             char *str_utf8 = _elm_util_mkup_to_text(str_markup);
+
+             free(str_markup);
+
+             if (str_utf8)
+               {
+                  if (eina_strbuf_length_get(buf) > 0) eina_strbuf_append(buf, ", ");
+                  eina_strbuf_append(buf, str_utf8);
+                  free(str_utf8);
+               }
+          }
+     }
+   */
    eo_do_super(eo_it, ELM_GENLIST_ITEM_CLASS, ret = elm_interface_atspi_accessible_name_get());
    if (ret) return ret;
    Elm_Genlist_Item_Type genlist_item_type = elm_genlist_item_type_get(eo_it);
@@ -8100,7 +8131,7 @@ _elm_genlist_item_elm_interface_atspi_accessible_name_get(Eo *eo_it,
                   eina_strbuf_append(buf, str_utf8);
                   free(str_utf8);
 
-                  if((genlist_item_type & ELM_GENLIST_ITEM_TREE) && texts_list_item_index == 0)
+                  if(((genlist_item_type & ELM_GENLIST_ITEM_GROUP) || (genlist_item_type & ELM_GENLIST_ITEM_TREE)) && texts_list_item_index == 0)
                     {
                       eina_strbuf_append(buf, ", ");
                       eina_strbuf_append(buf, E_("group index"));
@@ -8110,7 +8141,7 @@ _elm_genlist_item_elm_interface_atspi_accessible_name_get(Eo *eo_it,
              ++texts_list_item_index;
           }
      }
-
+   /* END */
    ret = eina_strbuf_string_steal(buf);
    eina_strbuf_free(buf);
    return ret;
