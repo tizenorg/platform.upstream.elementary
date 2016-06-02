@@ -1593,8 +1593,10 @@ _on_color_released(void *data,
                    void *event_info)
 {
    Elm_Color_Item_Data *item = (Elm_Color_Item_Data *)data;
+   /* TIZEN_ONLY(20160517): item selection procedure is handled by _on_color_selected()
    Eina_List *l;
    Elm_Object_Item *eo_temp_item;
+   */
    Evas_Event_Mouse_Down *ev = event_info;
 
    if (!item) return;
