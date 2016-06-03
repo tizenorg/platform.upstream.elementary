@@ -528,3 +528,9 @@ EAPI Eina_Bool   elm_object_orientation_mode_disabled_get(const Evas_Object *obj
  */
 EAPI void elm_object_accessibility_highlight_set(Evas_Object *obj, Eina_Bool val);
 //
+
+//TIZEN_ONLY(20160614): add callbacks for reading state changed event: stop/cancel/skip
+typedef void (*Elm_Object_Say_Signal_Cb)(void *data, Evas_Object *obj, const char *say_signal);
+
+EAPI Eina_Bool elm_object_say_signal_cb_add(Evas_Object *obj, const Elm_Object_Say_Signal_Cb cb, const void *data);
+//
