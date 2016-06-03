@@ -1,5 +1,12 @@
+//TIZEN_ONLY(20160527): widget: add AtspiAction interface to all widgets
+/*
 class Elm.Widget_Item(Eo.Base, Elm_Interface_Atspi_Accessible,
                       Elm_Interface_Atspi_Component)
+*/
+class Elm.Widget_Item (Eo.Base, Elm_Interface_Atspi_Accessible,
+         Elm_Interface_Atspi_Component, Elm_Interface_Atspi_Widget_Action)
+//
+
 {
       eo_prefix: elm_wdg_item;
       legacy_prefix: elm_object_item;
@@ -551,5 +558,8 @@ class Elm.Widget_Item(Eo.Base, Elm_Interface_Atspi_Accessible,
            Elm_Interface_Atspi_Component.focus_grab;
            Elm_Interface_Atspi_Component.highlight_grab;
            Elm_Interface_Atspi_Component.highlight_clear;
+           //TIZEN_ONLY(20160527): widget item: add AtspiAction interface to all widget items
+           Elm_Interface_Atspi_Widget_Action.elm_actions.get;
+           //
       }
 }

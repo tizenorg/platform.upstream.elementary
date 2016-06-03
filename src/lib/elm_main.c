@@ -1846,3 +1846,99 @@ elm_object_accessibility_highlight_set(Evas_Object *obj, Eina_Bool visible)
 
 }
 //
+
+//TIZEN_ONLY(20160614): add callback mechanism for direct reading stop/cancel/skip signals
+struct _Elm_Object_Say_Callback_Info
+{
+   void                     *data;
+   Elm_Object_Say_Signal_Cb  func; //this function will be called when state of related reading is changed
+};
+typedef struct _Elm_Object_Say_Callback_Info Elm_Object_Say_Callback_Info;
+
+struct _Elm_Object_Item_Say_Callback_Info
+{
+   void                          *data;
+   Elm_Object_Item_Say_Signal_Cb  func; //this function will be called when state of related reading is changed
+};
+typedef struct _Elm_Object_Item_Say_Callback_Info Elm_Object_Item_Say_Callback_Info;
+
+static void
+_object_delegating_cb(void *data, Eo *o, const Eo_Event_Description *desc EINA_UNUSED, void *event_info)
+{
+   Elm_Object_Say_Callback_Info *say_cb_info = data;
+   char *signal_name = event_info;
+
+   if (!say_cb_info) {
+      return;
+   }
+
+   if (!o || !eo_isa(o,EVAS_OBJECT_CLASS)) {
+      return;
+   }
+
+   if (!signal_name) {
+      return;
+   }
+
+   say_cb_info->func(say_cb_info->data, o, signal_name);
+   free(say_cb_info);
+}
+
+static void
+_object_item_delegating_cb(void *data, Eo *o, const Eo_Event_Description *desc EINA_UNUSED, void *event_info)
+{
+   Elm_Object_Item_Say_Callback_Info *say_cb_info = data;
+   char *signal_name = event_info;
+
+   if (!say_cb_info) {
+      return;
+   }
+
+   if (!o || !eo_isa(o,ELM_WIDGET_ITEM_CLASS)) {
+      return;
+   }
+
+   if (!signal_name) {
+      return;
+   }
+
+   say_cb_info->func(say_cb_info->data, o, signal_name);
+   free(say_cb_info);
+}
+
+EAPI Eina_Bool
+elm_object_say_signal_cb_add(Evas_Object *obj, const Elm_Object_Say_Signal_Cb cb, const void *data)
+{
+   if (!obj)
+      return EINA_FALSE;
+
+   if (!cb)
+      return EINA_FALSE;
+
+   Elm_Object_Say_Callback_Info *say_cb_info;
+   say_cb_info = calloc(1, sizeof(Elm_Object_Say_Callback_Info));
+   say_cb_info->func = cb;
+   say_cb_info->data = (void *)data;
+   eo_do(obj, eo_event_callback_add(ELM_INTERFACE_ATSPI_WIDGET_ACTION_EVENT_READING_STATE_CHANGED, _object_delegating_cb, say_cb_info));
+
+   return EINA_TRUE;
+}
+
+EAPI Eina_Bool
+elm_object_item_say_signal_cb_add(Elm_Object_Item *it, const Elm_Object_Item_Say_Signal_Cb cb, const void *data)
+{
+   if (!it)
+     return EINA_FALSE;
+
+   if (!cb)
+      return EINA_FALSE;
+
+   Elm_Object_Item_Say_Callback_Info *say_cb_info;
+   say_cb_info = calloc(1, sizeof(Elm_Object_Item_Say_Callback_Info));
+   say_cb_info->func = cb;
+   say_cb_info->data = (void *)data;
+   eo_do(it, eo_event_callback_add(ELM_INTERFACE_ATSPI_WIDGET_ACTION_EVENT_READING_STATE_CHANGED, _object_item_delegating_cb, say_cb_info));
+
+   return EINA_TRUE;
+}
+//

@@ -4,6 +4,7 @@
 
 #define ELM_INTERFACE_ATSPI_ACCESSIBLE_PROTECTED
 #define ELM_INTERFACE_ATSPI_COMPONENT_PROTECTED
+#define ELM_INTERFACE_ATSPI_WIDGET_ACTION_PROTECTED
 #define ELM_WIDGET_ITEM_PROTECTED
 #include <Elementary.h>
 
@@ -6478,6 +6479,21 @@ _elm_widget_item_elm_interface_atspi_accessible_translation_domain_get(Eo *obj E
    return _pd->atspi_translation_domain;
 }
 ///
+
+
+//TIZEN_ONLY(20160527): widget: add AtspiAction interface to all widgets and widget_items, add handlers for reading stopped/cancelled
+EOLIAN const Elm_Atspi_Action *
+_elm_widget_elm_interface_atspi_widget_action_elm_actions_get(Eo *obj EINA_UNUSED, Elm_Widget_Smart_Data *pd EINA_UNUSED)
+{
+   return NULL;
+}
+
+EOLIAN const Elm_Atspi_Action *
+_elm_widget_item_elm_interface_atspi_widget_action_elm_actions_get(Eo *obj EINA_UNUSED, Elm_Widget_Item_Data *pd EINA_UNUSED)
+{
+   return NULL;
+}
+//
 
 #include "elm_widget_item.eo.c"
 #include "elm_widget.eo.c"
