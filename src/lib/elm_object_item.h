@@ -19,7 +19,7 @@ typedef Eo Elm_Object_Item;
  *
  * @ingroup General
  */
-typedef void                  (*Elm_Object_Item_Signal_Cb)(void *data, Elm_Object_Item *it, const char *emission, const char *source);
+typedef void (*Elm_Object_Item_Signal_Cb)(void *data, Elm_Object_Item *it, const char *emission, const char *source);
 
 #include "elm_widget_item.eo.h"
 #include "elm_widget_item.eo.legacy.h"
@@ -77,3 +77,9 @@ EAPI void *elm_object_item_data_get(const Elm_Object_Item *it);
  * @ingroup General
  */
 EAPI void elm_object_item_data_set(Elm_Object_Item *it, void *data);
+
+
+//TIZEN_ONLY(20160614): add calbacks for reading state changed event: stop/cancel/skip
+typedef void (*Elm_Object_Item_Say_Signal_Cb)(void *data, Elm_Object_Item *it, const char *say_signal);
+EAPI Eina_Bool elm_object_item_say_signal_cb_add(Elm_Object_Item *it, const Elm_Object_Item_Say_Signal_Cb cb, const void *data);
+//
