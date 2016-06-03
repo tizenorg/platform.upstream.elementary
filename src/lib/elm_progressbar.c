@@ -575,6 +575,15 @@ _elm_progressbar_elm_interface_atspi_value_value_and_text_get(Eo *obj EINA_UNUSE
 
 //
 
+//TIZEN_ONLY(20160603): added description_get API
+const char * _elm_progressbar_elm_interface_atspi_accessible_description_get(Eo *obj, Elm_Progressbar_Data *pd EINA_UNUSED)
+{
+    const char *ret;
+    ret = elm_object_part_text_get(obj, "elm.text.status");
+    return ret ? strdup(ret) : NULL;
+}
+//
+
 EOLIAN static void
 _elm_progressbar_class_constructor(Eo_Class *klass)
 {
