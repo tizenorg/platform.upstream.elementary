@@ -11,6 +11,17 @@
 
 extern Eina_Hash *_elm_key_bindings;
 
+//Tizen only(20160524):apply callbacks on direct reading stop/cancel
+static const char SIG_READ_STOP[] = "access,read,stop";
+static const char SIG_READ_CANCEL[] = "access,read,cancel";
+
+EOLIAN static Eina_List*
+_elm_interface_atspi_widget_action_elm_interface_atspi_action_actions_get(Eo *obj, void *pd EINA_UNUSED);
+
+EOLIAN static const char *
+_elm_interface_atspi_widget_action_elm_interface_atspi_action_name_get(Eo *obj, void *pd EINA_UNUSED, int id);
+//
+
 EOLIAN static Eina_Bool
 _elm_interface_atspi_widget_action_elm_interface_atspi_action_action_do(Eo *obj, void *pd EINA_UNUSED, int id)
 {
@@ -19,20 +30,40 @@ _elm_interface_atspi_widget_action_elm_interface_atspi_action_action_do(Eo *obj,
    Eina_Bool (*func)(Eo *eo, const char *params) = NULL;
    int tmp = 0;
 
-   eo_do(obj, actions = elm_interface_atspi_widget_action_elm_actions_get());
-   if (!actions) return EINA_FALSE;
+   //Tizen only(20160524):apply callbacks on direct reading stop/cancel
+   const char *action_name;
+   action_name = _elm_interface_atspi_widget_action_elm_interface_atspi_action_name_get(obj, NULL, id);
 
-   while (actions[tmp].name)
+   if (!strcmp("ReadingStopped", action_name))
      {
-        if (tmp == id)
-          {
-             func = actions[tmp].func;
-             param = actions[tmp].param;
-             break;
-          }
-        tmp++;
+        Eina_Bool ret;
+        eo_do(obj, ret = elm_interface_atspi_widget_action_on_reading_stopped());
+        return ret;
      }
+   else if (!strcmp("ReadingCancelled", action_name))
+     {
+        Eina_Bool ret;
+        eo_do(obj, ret = elm_interface_atspi_widget_action_on_reading_cancelled());
+        return ret;
+     }
+   else
+     {
+        eo_do(obj, actions = elm_interface_atspi_widget_action_elm_actions_get());
 
+        if (!actions) return EINA_FALSE;
+
+        while (actions[tmp].name)
+          {
+             if (tmp == id)
+               {
+                  func = actions[tmp].func;
+                  param = actions[tmp].param;
+                  break;
+               }
+             tmp++;
+         }
+     }
+   //
    if (!func)
      return EINA_FALSE;
 
@@ -95,18 +126,10 @@ _elm_interface_atspi_widget_action_elm_interface_atspi_action_keybinding_get(Eo 
 EOLIAN static const char *
 _elm_interface_atspi_widget_action_elm_interface_atspi_action_name_get(Eo *obj, void *pd EINA_UNUSED, int id)
 {
-   const Elm_Atspi_Action *actions = NULL;
-   int tmp = 0;
-
-   eo_do(obj, actions = elm_interface_atspi_widget_action_elm_actions_get());
-   if (!actions) return NULL;
-
-   while (actions[tmp].name)
-     {
-        if (tmp == id) return actions[tmp].name;
-        tmp++;
-     }
-   return NULL;
+   //Tizen only(20160524):apply callbacks on direct reading stop/cancel
+   Eina_List *action_names = _elm_interface_atspi_widget_action_elm_interface_atspi_action_actions_get(obj, NULL);
+   return eina_list_nth(action_names, id);
+   //
 }
 
 EOLIAN static Eina_Bool
@@ -129,13 +152,17 @@ _elm_interface_atspi_widget_action_elm_interface_atspi_action_actions_get(Eo *ob
    int tmp = 0;
 
    eo_do(obj, actions = elm_interface_atspi_widget_action_elm_actions_get());
-   if (!actions) return NULL;
 
-   while (actions[tmp].name)
+   //Tizen only(20160524):apply callbacks on direct reading stop/cancel
+   while (actions && actions[tmp].name)
      {
         ret = eina_list_append(ret, actions[tmp].name);
         tmp++;
      }
+
+   ret = eina_list_append(ret, "ReadingStopped");
+   ret = eina_list_append(ret, "ReadingCancelled");
+   //
 
    return ret;
 }

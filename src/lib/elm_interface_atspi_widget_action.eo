@@ -11,6 +11,12 @@ mixin Elm_Interface_Atspi_Widget_Action (Elm_Interface_Atspi_Action)
             actions: const(Elm_Atspi_Action)*; [[NULL-terminated array of Elm_Atspi_Action]]
          }
       }
+      on_reading_stopped @protected {
+         return: Eina_Bool;
+      }
+      on_reading_cancelled @protected {
+         return: Eina_Bool;
+      }
    }
    implements {
       Elm_Interface_Atspi_Action.action_do;
@@ -20,5 +26,7 @@ mixin Elm_Interface_Atspi_Widget_Action (Elm_Interface_Atspi_Action)
       Elm_Interface_Atspi_Action.description.get;
       Elm_Interface_Atspi_Action.actions.get;
       @virtual .elm_actions.get;
+      @virtual .on_reading_stopped;
+      @virtual .on_reading_cancelled;
    }
 }

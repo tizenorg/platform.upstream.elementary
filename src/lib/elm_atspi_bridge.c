@@ -35,7 +35,19 @@
 #define ELM_ACCESS_OBJECT_REFERENCE_TEMPLATE ELM_ACCESS_OBJECT_PATH_PREFIX "%llu"
 
 #define ELM_ATSPI_DBUS_INTERFACE_PROXY "elm.atspi.bridge.proxy.Socket"
-
+//TIZEN_ONLY(20160527) - Add direct reading feature
+#define ELM_ATSPI_DIRECT_READ_BUS "org.tizen.ScreenReader"
+#define ELM_ATSPI_DIRECT_READ_PATH "/org/tizen/DirectReading"
+#define ELM_ATSPI_DIRECT_READ_INTERFACE "org.tizen.DirectReading"
+struct _Elm_Atspi_Say_Info
+{
+   void             *data;
+   Elm_Atspi_Say_Cb  func;
+};
+typedef struct _Elm_Atspi_Say_Info Elm_Atspi_Say_Info;
+static Eina_Hash *read_command_id = NULL;
+static Eina_Hash *read_eo_obj = NULL;
+//
 #define SIZE(x) sizeof(x)/sizeof(x[0])
 #define ELM_ATSPI_BRIDGE_CLASS_NAME "__Elm_Atspi_Bridge"
 
@@ -74,6 +86,8 @@ typedef struct _Elm_Atspi_Bridge_Data
    Eldbus_Service_Interface *cache_interface;
    Eldbus_Signal_Handler *register_hdl;
    Eldbus_Signal_Handler *unregister_hdl;
+   Eldbus_Signal_Handler *dr_stop_hdl;
+   Eldbus_Signal_Handler *dr_cancel_hdl;
    unsigned long object_broadcast_mask;
    unsigned long object_property_broadcast_mask;
    unsigned long object_children_broadcast_mask;
@@ -4289,6 +4303,44 @@ _text_selection_changed_send(void *data, Eo *obj, const Eo_Event_Description *de
    return EINA_TRUE;
 }
 
+//TIZEN_ONLY(20160527) - Add direct reading feature
+static void
+_on_reading_stopped(void *data EINA_UNUSED, const Eldbus_Message *msg)
+{
+   const int32_t i;
+   Elm_Atspi_Say_Info *say_info;
+
+   if (eldbus_message_arguments_get(msg, "i", &i))
+     {
+        say_info = eina_hash_find(read_command_id, &i);
+        if (say_info)
+          {
+             say_info->func(say_info->data);
+          }
+        eina_hash_del(read_command_id, &i, NULL);
+        free(say_info);
+     }
+}
+
+static void
+_on_reading_cancelled(void *data EINA_UNUSED, const Eldbus_Message *msg)
+{
+   const int32_t i;
+   Elm_Atspi_Say_Info *say_info;
+
+   if (eldbus_message_arguments_get(msg, "i", &i))
+     {
+        say_info = eina_hash_find(read_command_id, &i);
+        if (say_info)
+          {
+             say_info->func(say_info->data);
+          }
+        eina_hash_del(read_command_id, &i, NULL);
+        free(say_info);
+     }
+}
+//
+
 static void
 _event_handlers_register(Eo *bridge)
 {
@@ -4299,6 +4351,10 @@ _event_handlers_register(Eo *bridge)
    // register signal handlers in order to update list of registered listeners of ATSPI-Clients
    pd->register_hdl = eldbus_signal_handler_add(pd->a11y_bus, ATSPI_DBUS_NAME_REGISTRY, ATSPI_DBUS_PATH_REGISTRY, ATSPI_DBUS_INTERFACE_REGISTRY, "EventListenerRegistered", _handle_listener_change, bridge);
    pd->unregister_hdl = eldbus_signal_handler_add(pd->a11y_bus, ATSPI_DBUS_NAME_REGISTRY, ATSPI_DBUS_PATH_REGISTRY, ATSPI_DBUS_INTERFACE_REGISTRY, "EventListenerDeregistered", _handle_listener_change, bridge);
+   //TIZEN_ONLY(20160527) - Add direct reading feature
+   pd->dr_stop_hdl = eldbus_signal_handler_add(pd->a11y_bus, ELM_ATSPI_DIRECT_READ_BUS, ELM_ATSPI_DIRECT_READ_PATH, ELM_ATSPI_DIRECT_READ_INTERFACE, "ReadingStopped", _on_reading_stopped, bridge);
+   pd->dr_cancel_hdl = eldbus_signal_handler_add(pd->a11y_bus, ELM_ATSPI_DIRECT_READ_BUS, ELM_ATSPI_DIRECT_READ_PATH, ELM_ATSPI_DIRECT_READ_INTERFACE, "ReadingCancelled", _on_reading_cancelled, bridge);
+   //
 
    pd->key_flr = ecore_event_filter_add(NULL, _elm_atspi_bridge_key_filter, NULL, bridge);
 }
@@ -4424,6 +4480,13 @@ _a11y_connection_shutdown(Eo *bridge)
 
    if (pd->unregister_hdl) eldbus_signal_handler_del(pd->unregister_hdl);
    pd->unregister_hdl = NULL;
+
+   //TIZEN_ONLY(20160527) - Add direct reading feature
+   if (pd->dr_stop_hdl) eldbus_signal_handler_del(pd->dr_stop_hdl);
+   pd->dr_stop_hdl = NULL;
+   if (pd->dr_cancel_hdl) eldbus_signal_handler_del(pd->dr_cancel_hdl);
+   pd->dr_cancel_hdl = NULL;
+   //
 
    EINA_LIST_FREE(pd->pending_requests, pending)
       eldbus_pending_cancel(pending);
@@ -5236,4 +5299,103 @@ EAPI void elm_atspi_bridge_utils_proxy_listen(Eo *proxy)
      }
    _socket_ifc_create(pd->a11y_bus, proxy);
 }
+
+//TIZEN_ONLY(20160527) - Add direct reading feature
+static void
+_on_read_command_call(void *data, const Eldbus_Message *msg, Eldbus_Pending *pending EINA_UNUSED)
+{
+   const char *errname, *errmsg;
+   const char *s;
+   const Eina_Bool b;
+   const int32_t i;
+   Elm_Atspi_Say_Info *say_info = data;
+
+   ERR("[KSW] -----  START  ----");
+
+   if (eldbus_message_error_get(msg, &errname, &errmsg))
+     {
+        ERR("%s %s", errname, errmsg);
+        return;
+     }
+
+   if (say_info)
+     {
+        // get read command id and mapp it to obj
+        if (eldbus_message_arguments_get(msg, "sbi", &s, &b, &i))
+          {
+             if (!read_command_id)
+               read_command_id = eina_hash_int32_new(NULL);
+
+             eina_hash_add(read_command_id, &i, say_info);
+          }
+     }
+}
+
+EAPI void
+elm_atspi_bridge_utils_say(const char* text, Eina_Bool interruptable, const Elm_Atspi_Say_Cb func, const void *data)
+{
+   Eldbus_Message *msg;
+   Eldbus_Message_Iter *iter;
+   Elm_Atspi_Say_Info *say_info;
+   Eo *bridge = _elm_atspi_bridge_get();
+   if (!bridge)
+     {
+        ERR("AT-SPI: Atspi bridge is not enabled.");
+        return;
+     }
+   ELM_ATSPI_BRIDGE_DATA_GET_OR_RETURN(bridge, pd);
+   if (!pd->a11y_bus)
+     {
+        ERR("AT-SPI: a11y bus is not set.");
+        return;
+     }
+
+   msg = eldbus_message_method_call_new(ELM_ATSPI_DIRECT_READ_BUS,
+                    ELM_ATSPI_DIRECT_READ_PATH,
+                    ELM_ATSPI_DIRECT_READ_INTERFACE,
+                    "ReadCommand");
+   iter = eldbus_message_iter_get(msg);
+   eldbus_message_iter_arguments_append(iter, "sb", text, interruptable);
+
+   say_info = calloc(1, sizeof(Elm_Atspi_Say_Info));
+   say_info->func = func;
+   say_info->data = (void *)data;
+   eldbus_connection_send(pd->a11y_bus, msg, _on_read_command_call, say_info, -1);
+}
+
+EAPI void
+elm_atspi_bridge_utils_reading_cb_register(Eo* obj, const Elm_Atspi_Say_Cb func, const void *data)
+{
+   if (!obj)
+     return;
+   Elm_Atspi_Say_Info *say_info;
+   say_info = calloc(1, sizeof(Elm_Atspi_Say_Info));
+   say_info->func = func;
+   say_info->data = (void *)data;
+   if (!read_eo_obj)
+      read_eo_obj = eina_hash_int32_new(NULL);
+
+   eina_hash_add(read_eo_obj, obj, say_info);
+}
+
+EAPI Eina_Bool
+elm_atspi_bridge_utils_reading_cb_call(Eo * obj)
+{
+   if (!obj)
+     return EINA_FALSE;
+   Elm_Atspi_Say_Info *say_info;
+   say_info = eina_hash_find(read_eo_obj, obj);
+   if (say_info)
+     {
+        say_info->func(say_info->data);
+     }
+   else
+     {
+        return EINA_FALSE;
+     }
+   eina_hash_del(read_eo_obj, obj, NULL);
+   free(say_info);
+   return EINA_TRUE;
+}
+//
 #include "elm_atspi_bridge.eo.c"
