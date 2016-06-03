@@ -167,6 +167,9 @@ class Elm.Progressbar (Elm.Layout, Elm_Interface_Atspi_Value)
       Elm.Layout.content_aliases.get;
       Elm.Layout.sizing_eval;
       Elm_Interface_Atspi_Value.value_and_text.get;
+      //TIZEN_ONLY(20160603): added description_get API
+      Elm_Interface_Atspi_Accessible.description.get;
+      //
    }
    events {
       changed;
