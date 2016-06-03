@@ -7,7 +7,13 @@ enum Elm.Theme.Apply
    success = 3
 }
 
+//TIZEN_ONLY(20160527): widget: add AtspiAction interface to all widgets
+/*
 abstract Elm.Widget (Evas.Object_Smart, Elm_Interface_Atspi_Accessible, Elm_Interface_Atspi_Component)
+*/
+abstract Elm.Widget (Evas.Object_Smart, Elm_Interface_Atspi_Accessible,
+         Elm_Interface_Atspi_Component, Elm_Interface_Atspi_Widget_Action)
+//
 {
    eo_prefix: elm_obj_widget;
    data: Elm_Widget_Smart_Data;
@@ -828,6 +834,9 @@ abstract Elm.Widget (Evas.Object_Smart, Elm_Interface_Atspi_Accessible, Elm_Inte
       //
       //TIZEN_ONLY(20160329): widget: improve accessibile_at_point getter (a8aff0423202b9a55dbb3843205875226678fbd6)
       Elm_Interface_Atspi_Component.accessible_at_point_get;
+      //
+      //TIZEN_ONLY(20160527): widget: add AtspiAction interface to all widgets
+      Elm_Interface_Atspi_Widget_Action.elm_actions.get;
       //
    }
    events {

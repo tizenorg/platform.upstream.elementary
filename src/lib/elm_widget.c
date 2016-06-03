@@ -4,6 +4,7 @@
 
 #define ELM_INTERFACE_ATSPI_ACCESSIBLE_PROTECTED
 #define ELM_INTERFACE_ATSPI_COMPONENT_PROTECTED
+#define ELM_INTERFACE_ATSPI_WIDGET_ACTION_PROTECTED
 #define ELM_WIDGET_ITEM_PROTECTED
 #include <Elementary.h>
 
@@ -6826,6 +6827,20 @@ _elm_widget_efl_gfx_base_color_part_get(Eo *obj, Elm_Widget_Smart_Data *sd, cons
         ERR("%s does not support %s API.", elm_widget_type_get(obj), "elm_object_part_color_get()");
         return EINA_FALSE;
      }
+}
+//
+
+//TIZEN_ONLY(20160527): widget: add AtspiAction interface to all widgets and widget_items, add handlers for reading stopped/cancelled
+EOLIAN const Elm_Atspi_Action *
+_elm_widget_elm_interface_atspi_widget_action_elm_actions_get(Eo *obj EINA_UNUSED, Elm_Widget_Smart_Data *pd EINA_UNUSED)
+{
+   return NULL;
+}
+
+EOLIAN const Elm_Atspi_Action *
+_elm_widget_item_elm_interface_atspi_widget_action_elm_actions_get(Eo *obj EINA_UNUSED, Elm_Widget_Item_Data *pd EINA_UNUSED)
+{
+   return NULL;
 }
 //
 
