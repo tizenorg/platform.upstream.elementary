@@ -19,7 +19,7 @@ typedef Eo Elm_Object_Item;
  *
  * @ingroup General
  */
-typedef void                  (*Elm_Object_Item_Signal_Cb)(void *data, Elm_Object_Item *it, const char *emission, const char *source);
+typedef void (*Elm_Object_Item_Signal_Cb)(void *data, Elm_Object_Item *it, const char *emission, const char *source);
 
 #include "elm_widget_item.eo.h"
 #include "elm_widget_item.eo.legacy.h"

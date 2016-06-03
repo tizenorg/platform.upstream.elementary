@@ -21,4 +21,9 @@ mixin Elm_Interface_Atspi_Widget_Action (Elm_Interface_Atspi_Action)
       Elm_Interface_Atspi_Action.actions.get;
       @virtual .elm_actions.get;
    }
+   //TIZEN_ONLY(20160614): add callbacks for reading state changed events: cancel/stop/skip
+   events {
+      reading,state,changed;
+   }
+   //
 }
