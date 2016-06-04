@@ -228,6 +228,16 @@ enum _Elm_Atspi_Relation_Type {
 
 typedef enum _Elm_Atspi_Relation_Type Elm_Atspi_Relation_Type;
 
+enum _Elm_Atspi_Info_Type {
+     ELM_ATSPI_INFO_INVALID,
+     ELM_ATSPI_INFO_NAME,
+     ELM_ATSPI_INFO_ROLE,
+     ELM_ATSPI_INFO_DESCRIPTION,
+     ELM_ATSPI_INFO_LAST_DEFINED,
+};
+typedef enum _Elm_Atspi_Info_Type Elm_Atspi_Info_Type;
+typedef char *(*Elm_Atspi_Info_Cb)(void *data, Evas_Object *obj);
+
 struct _Elm_Atspi_Event_State_Changed_Data
 {
    Elm_Atspi_State_Type type;
