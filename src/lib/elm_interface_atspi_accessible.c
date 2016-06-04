@@ -528,4 +528,10 @@ _elm_interface_atspi_accessible_relationships_clear(Eo *obj EINA_UNUSED, Elm_Int
    sd->relations = NULL;
 }
 
+EOLIAN void
+_elm_interface_atspi_accessible_info_cb_set(Eo *obj, Elm_Interface_Atspi_Accessible_Data *pd EINA_UNUSED, Elm_Atspi_Info_Type type EINA_UNUSED, Elm_Atspi_Info_Cb cb EINA_UNUSED, void *data EINA_UNUSED)
+{
+   WRN("The %s object does not implement the \"accessible_info_cb_set\" function.",
+       eo_class_name_get(eo_class_get(obj)));
+}
 #include "elm_interface_atspi_accessible.eo.c"

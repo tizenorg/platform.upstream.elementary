@@ -185,6 +185,14 @@ mixin Elm_Interface_Atspi_Accessible ()
       relationships_clear {
          [[Removes all relationships in accessible object.]]
       }
+      info_cb_set {
+         [[Set callback to get information of accessible object.]]
+         params {
+            @in type: Elm_Atspi_Info_Type;
+            @in cb: Elm_Atspi_Info_Cb; [[callback]]
+            @in data: void*; [[data]]
+         }
+      }
    }
    events {
       property,changed: const(char)*;
