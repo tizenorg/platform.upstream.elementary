@@ -544,6 +544,7 @@ class Elm.Widget_Item(Eo.Base, Elm_Interface_Atspi_Accessible,
            Elm_Interface_Atspi_Accessible.translation_domain.set;
            Elm_Interface_Atspi_Accessible.translation_domain.get;
            ///
+           Elm_Interface_Atspi_Accessible.info_cb_set;
            Elm_Interface_Atspi_Component.extents.get;
            Elm_Interface_Atspi_Component.extents.set;
            Elm_Interface_Atspi_Component.alpha.get;

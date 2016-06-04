@@ -410,6 +410,7 @@ typedef struct _Elm_Widget_Smart_Data
    Eina_Inlist                  *translate_strings;
    Eina_List                    *focus_chain;
    Eina_List                    *event_cb;
+   Eina_List                    *atspi_info_cb;
 
    int                          role;         /**< Accessibility role */
    const char                   *description; /**< Accessibility description */
@@ -501,6 +502,14 @@ typedef Eina_Bool             (*Elm_Widget_Focus_Get_Cb)(const void *data);
 #define ELM_ACCESS_CANCEL        -2   /* stop reading immediately */
 
 typedef void (*Elm_Access_On_Highlight_Cb)(void *data);
+
+struct _Elm_Atspi_Info_Cb_Item
+{
+   Elm_Atspi_Info_Type   type;
+   const void           *data;
+   Elm_Atspi_Info_Cb     cb;
+};
+typedef struct _Elm_Atspi_Info_Cb_Item Elm_Atspi_Info_Cb_Item;
 
 struct _Elm_Access_Item
 {
@@ -647,6 +656,7 @@ struct _Elm_Widget_Item_Data
    /**< A11Y info */
    const char                    *description;
    int                            role;
+   Eina_List                     *atspi_info_cb;
    //TIZEN_ONLY(20150709) add relations atpi
    Elm_Atspi_Relation_Set        atspi_custom_relations; /**< Developer-defined accessiblity relations */
    ///////////////////////////////////

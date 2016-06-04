@@ -4534,6 +4534,7 @@ EOLIAN static void
 _elm_widget_item_eo_base_destructor(Eo *eo_item, Elm_Widget_Item_Data *item)
 {
    Elm_Translate_String_Data *ts;
+   Elm_Atspi_Info_Cb_Item *aici;
 
    ELM_WIDGET_ITEM_CHECK_OR_RETURN(item);
 
@@ -4579,6 +4580,9 @@ _elm_widget_item_eo_base_destructor(Eo *eo_item, Elm_Widget_Item_Data *item)
    if (item->atspi_translation_domain)
      eina_stringshare_del(item->atspi_translation_domain);
    ///
+
+   EINA_LIST_FREE(item->atspi_info_cb, aici)
+      free(aici);
 
    EINA_MAGIC_SET(item, EINA_MAGIC_NONE);
 
@@ -5856,6 +5860,7 @@ _elm_widget_eo_base_constructor(Eo *obj, Elm_Widget_Smart_Data *sd EINA_UNUSED)
 EOLIAN static void
 _elm_widget_eo_base_destructor(Eo *obj, Elm_Widget_Smart_Data *sd EINA_UNUSED)
 {
+   Elm_Atspi_Info_Cb_Item *aici;
    sd->on_destroy = EINA_TRUE;
    eo_do(obj,
          elm_interface_atspi_accessible_description_set(NULL),
@@ -5876,6 +5881,9 @@ _elm_widget_eo_base_destructor(Eo *obj, Elm_Widget_Smart_Data *sd EINA_UNUSED)
    if (sd->atspi_translation_domain)
      eina_stringshare_del(sd->atspi_translation_domain);
    ///
+
+   EINA_LIST_FREE(sd->atspi_info_cb, aici)
+      free(aici);
 
    eo_do_super(obj, ELM_WIDGET_CLASS, eo_destructor());
    sd->on_destroy = EINA_FALSE;
@@ -5991,6 +5999,20 @@ EOLIAN static char*
 _elm_widget_elm_interface_atspi_accessible_name_get(Eo *obj EINA_UNUSED, Elm_Widget_Smart_Data *_pd EINA_UNUSED)
 {
    const char *ret;
+   Elm_Atspi_Info_Cb_Item *aici;
+   Eina_List *l;
+
+   ret = NULL;
+   EINA_LIST_FOREACH(_pd->atspi_info_cb, l, aici)
+     {
+        if (aici->type == ELM_ATSPI_INFO_NAME)
+          {
+             if (aici->cb)
+               ret = aici->cb((void *)(aici->data), (Evas_Object *)obj);
+          }
+     }
+   if (ret) return strdup(ret);
+
    //TIZEN_ONLY(20150717) add widget name setter
    if (_pd->name)
      {
@@ -6479,5 +6501,37 @@ _elm_widget_item_elm_interface_atspi_accessible_translation_domain_get(Eo *obj E
 }
 ///
 
+static Eina_List*
+_atspi_info_cb_item_add(Eina_List *atspi_info_cb, Elm_Atspi_Info_Type type, Elm_Atspi_Info_Cb cb, void *data)
+{
+   Elm_Atspi_Info_Cb_Item *aici;
+   Eina_List *l;
+   EINA_LIST_FOREACH(atspi_info_cb, l, aici)
+     {
+        if (aici->type == type)
+          {
+             free(aici);
+             atspi_info_cb = eina_list_remove_list(atspi_info_cb, l);
+             break;
+          }
+     }
+   aici = calloc(1, sizeof(Elm_Atspi_Info_Cb_Item));
+   aici->type = type;
+   aici->data = data;
+   aici->cb = cb;
+   return eina_list_prepend(atspi_info_cb, aici);
+}
+
+EOLIAN static void
+_elm_widget_elm_interface_atspi_accessible_info_cb_set(Eo *obj EINA_UNUSED, Elm_Widget_Smart_Data *_pd, Elm_Atspi_Info_Type type, Elm_Atspi_Info_Cb cb, void *data)
+{
+   _pd->atspi_info_cb = _atspi_info_cb_item_add(_pd->atspi_info_cb, type, cb, data);
+}
+
+EOLIAN static void
+_elm_widget_item_elm_interface_atspi_accessible_info_cb_set(Eo *obj EINA_UNUSED, Elm_Widget_Item_Data *_pd, Elm_Atspi_Info_Type type, Elm_Atspi_Info_Cb cb, void *data)
+{
+   _pd->atspi_info_cb = _atspi_info_cb_item_add(_pd->atspi_info_cb, type, cb, data);
+}
 #include "elm_widget_item.eo.c"
 #include "elm_widget.eo.c"
