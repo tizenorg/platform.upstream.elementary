@@ -396,6 +396,9 @@ _entry_hide(Evas_Object *obj)
    else
      elm_layout_signal_emit(obj, "elm,state,inactive", "elm");
 
+   //TIZEN_ONLY(20160606): Forcefully setting highlight frame on spinner entry as on entry activation frame goes to window again.
+   eo_do(obj, elm_interface_atspi_component_highlight_clear());
+   //
    sd->entry_visible = EINA_FALSE;
 }
 
@@ -624,6 +627,9 @@ _entry_show_cb(void *data,
    elm_entry_select_all(obj);
    sd->entry_visible = EINA_TRUE;
    elm_layout_signal_emit(data, "elm,state,button,inactive", "elm");
+   //TIZEN_ONLY(20160606): Forcefully setting highlight frame on spinner entry as on entry activation frame goes to window again.
+   eo_do(obj, elm_interface_atspi_component_highlight_grab());
+   //
 }
 
 static void
