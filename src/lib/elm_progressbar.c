@@ -265,7 +265,10 @@ _elm_progressbar_evas_object_smart_add(Eo *obj, Elm_Progressbar_Data *priv)
    elm_widget_sub_object_parent_add(obj);
 
    priv->horizontal = EINA_TRUE;
-   priv->units = eina_stringshare_add("%.0f %%");
+   // TIZEN_ONLY(20150810): add config for default progress unit
+   if (!_elm_config->progressbar_default_unit_disable)
+     priv->units = eina_stringshare_add("%.0f %%");
+   // END-ONLY
    priv->val = MIN_RATIO_LVL;
 
    if (!elm_layout_theme_set
