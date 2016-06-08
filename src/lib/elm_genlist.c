@@ -8060,7 +8060,20 @@ _elm_genlist_item_elm_interface_atspi_accessible_state_set_get(Eo *eo_it, Elm_Ge
         STATE_TYPE_SET(ret, ELM_ATSPI_STATE_EXPANDABLE);
         if (elm_genlist_item_expanded_get(eo_it))
            STATE_TYPE_SET(ret, ELM_ATSPI_STATE_EXPANDED);
+        //TIZEN_ONLY(20160606): In order to distinguish group item(TREE/GROUP) added STATE_TYPE_SET
+        else
+           STATE_TYPE_SET(ret, ELM_ATSPI_STATE_COLLAPSED);
+        //
      }
+   //TIZEN_ONLY(20160608): In order to distinguish group item(TREE/GROUP) added STATE_TYPE_SET
+   else if (elm_genlist_item_type_get(eo_it) == ELM_GENLIST_ITEM_GROUP)
+     {
+        if (elm_genlist_item_expanded_get(eo_it))
+            STATE_TYPE_SET(ret, ELM_ATSPI_STATE_EXPANDED);
+         else
+            STATE_TYPE_SET(ret, ELM_ATSPI_STATE_COLLAPSED);
+     }
+   //
 
    return ret;
 }
@@ -8082,9 +8095,55 @@ _elm_genlist_item_elm_interface_atspi_accessible_name_get(Eo *eo_it,
         Eina_List *texts;
         const char *key;
 
+        //TIZEN ONLY (160609) : Added in order to read when group item contain checkbox, sub text and normal as per UX guide 0.3.
+        Eina_Bool flag_contain_checkbox = EINA_FALSE;
+        Eina_Bool flag_group_index = EINA_FALSE;
+        Eina_Bool flag_group_title = EINA_FALSE;
+        Eina_Bool flag_sub_title = EINA_FALSE;
+
         texts =
            elm_widget_stringlist_get(edje_object_data_get(VIEW(it), "texts"));
-        int texts_list_item_index = 0;
+
+        EINA_LIST_FREE(texts, key)
+          {
+             char *str_markup = it->itc->func.text_get
+                ((void *)WIDGET_ITEM_DATA_GET(EO_OBJ(it)), WIDGET(it), key);
+             char *str_utf8 = _elm_util_mkup_to_text(str_markup);
+             free(str_markup);
+             if(str_utf8)
+               {
+                  free(str_utf8);
+                  if(elm_genlist_item_type_get(eo_it) == ELM_GENLIST_ITEM_GROUP || (genlist_item_type & ELM_GENLIST_ITEM_TREE))
+                    {
+                       Eina_List *child = NULL;
+                       eo_do(eo_it,child = elm_interface_atspi_accessible_children_get());
+                       for ( ; child != NULL; child = child->next)
+                         {
+                            if (EINA_UNLIKELY(!eo_isa((child), ELM_CHECK_CLASS)))
+                              {
+                                 flag_contain_checkbox = EINA_TRUE;
+                                 break;
+                              }
+                         }
+                       if(!flag_contain_checkbox)
+                         {
+                            flag_group_index = EINA_TRUE;
+                            if(!strcmp(key, "elm.text"))
+                              {
+                                 flag_group_title = EINA_TRUE;
+                              }
+                            else if(!strcmp(key, "elm.text.end"))
+                              {
+                                 flag_sub_title = EINA_TRUE;
+                              }
+                        }
+                   }
+               }
+          }
+        //
+
+        texts =
+             elm_widget_stringlist_get(edje_object_data_get(VIEW(it), "texts"));
 
         EINA_LIST_FREE(texts, key)
           {
@@ -8094,22 +8153,34 @@ _elm_genlist_item_elm_interface_atspi_accessible_name_get(Eo *eo_it,
 
              free(str_markup);
 
+             //TIZEN ONLY (160609) : Added in order to read when group item contain checkbox, sub text and normal as per UX guide 0.3
              if (str_utf8)
                {
                   if (eina_strbuf_length_get(buf) > 0) eina_strbuf_append(buf, ", ");
                   eina_strbuf_append(buf, str_utf8);
                   free(str_utf8);
 
-                  if(((genlist_item_type & ELM_GENLIST_ITEM_GROUP) || (genlist_item_type & ELM_GENLIST_ITEM_TREE)) && texts_list_item_index == 0)
+                  if(!flag_contain_checkbox)
                     {
-                      eina_strbuf_append(buf, ", ");
-                      eina_strbuf_append(buf, E_("group index"));
+                       if(flag_group_title && !flag_sub_title)
+                         {
+                            eina_strbuf_append(buf,", group index");
+                         }
+                       else if(flag_group_title)
+                         {
+                            eina_strbuf_append(buf,", group index title");
+                            flag_group_title = EINA_FALSE;
+                         }
+                       else if(flag_sub_title)
+                         {
+                            eina_strbuf_append(buf,", subtext");
+                         }
                     }
                }
-
-             ++texts_list_item_index;
+             //
           }
      }
+
    ret = eina_strbuf_string_steal(buf);
    eina_strbuf_free(buf);
    return ret;
