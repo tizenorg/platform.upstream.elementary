@@ -311,6 +311,9 @@ struct _Elm_Config
    // TIZEN_ONLY(20160509): add focus looping config
    unsigned char focus_looping_disable;
    // END-ONLY
+   // TIZEN_ONLY(20150810): add config for default progress unit
+   unsigned char progressbar_default_unit_disable;
+   // END-ONLY
 
    /* Not part of the EET file */
    Eina_Bool     is_mirrored : 1;
