@@ -8060,7 +8060,20 @@ _elm_genlist_item_elm_interface_atspi_accessible_state_set_get(Eo *eo_it, Elm_Ge
         STATE_TYPE_SET(ret, ELM_ATSPI_STATE_EXPANDABLE);
         if (elm_genlist_item_expanded_get(eo_it))
            STATE_TYPE_SET(ret, ELM_ATSPI_STATE_EXPANDED);
+        //TIZEN_ONLY(20160606): In order to distinguish group item(TREE/GROUP) added STATE_TYPE_SET
+        else
+           STATE_TYPE_SET(ret, ELM_ATSPI_STATE_COLLAPSED);
+        //
      }
+   //TIZEN_ONLY(20160608): In order to distinguish group item(TREE/GROUP) added STATE_TYPE_SET
+   else if (elm_genlist_item_type_get(eo_it) == ELM_GENLIST_ITEM_GROUP)
+     {
+        if (elm_genlist_item_expanded_get(eo_it))
+            STATE_TYPE_SET(ret, ELM_ATSPI_STATE_EXPANDED);
+         else
+            STATE_TYPE_SET(ret, ELM_ATSPI_STATE_COLLAPSED);
+     }
+   //
 
    return ret;
 }
@@ -8084,7 +8097,6 @@ _elm_genlist_item_elm_interface_atspi_accessible_name_get(Eo *eo_it,
 
         texts =
            elm_widget_stringlist_get(edje_object_data_get(VIEW(it), "texts"));
-        int texts_list_item_index = 0;
 
         EINA_LIST_FREE(texts, key)
           {
@@ -8099,17 +8111,10 @@ _elm_genlist_item_elm_interface_atspi_accessible_name_get(Eo *eo_it,
                   if (eina_strbuf_length_get(buf) > 0) eina_strbuf_append(buf, ", ");
                   eina_strbuf_append(buf, str_utf8);
                   free(str_utf8);
-
-                  if(((genlist_item_type & ELM_GENLIST_ITEM_GROUP) || (genlist_item_type & ELM_GENLIST_ITEM_TREE)) && texts_list_item_index == 0)
-                    {
-                      eina_strbuf_append(buf, ", ");
-                      eina_strbuf_append(buf, E_("group index"));
-                    }
                }
-
-             ++texts_list_item_index;
           }
      }
+
    ret = eina_strbuf_string_steal(buf);
    eina_strbuf_free(buf);
    return ret;
