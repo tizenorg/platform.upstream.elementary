@@ -324,8 +324,6 @@ static Evas_Object *_precreated_win_obj = NULL;
 
 static Eina_Bool _elm_win_auto_throttled = EINA_FALSE;
 
-static Ecore_Timer *_elm_win_state_eval_timer = NULL;
-
 static void
 _elm_win_on_resize_obj_changed_size_hints(void *data,
                                           Evas *e,
@@ -435,8 +433,8 @@ _elm_win_apply_alpha(Eo *obj, Elm_Win_Data *sd)
      }
 }
 
-static Eina_Bool
-_elm_win_state_eval(void *data EINA_UNUSED)
+static void
+_elm_win_state_eval(void)
 {
    Eina_List *l;
    Evas_Object *obj;
@@ -444,8 +442,6 @@ _elm_win_state_eval(void *data EINA_UNUSED)
    int _elm_win_count_iconified = 0;
    int _elm_win_count_withdrawn = 0;
    Eina_Bool throttle = EINA_FALSE;
-
-   _elm_win_state_eval_timer = NULL;
 
    EINA_LIST_FOREACH(_elm_win_list, l, obj)
      {
@@ -530,7 +526,6 @@ _elm_win_state_eval(void *data EINA_UNUSED)
           }
      }
    _win_noblank_eval();
-   return EINA_FALSE;
 }
 
 static Eina_Bool
@@ -566,13 +561,6 @@ _elm_win_flush_cache_and_exit(Eo *obj)
    evas_image_cache_flush(evas_object_evas_get(obj));
    evas_font_cache_flush(evas_object_evas_get(obj));
    elm_exit();
-}
-
-static void
-_elm_win_state_eval_queue(void)
-{
-   if (_elm_win_state_eval_timer) ecore_timer_del(_elm_win_state_eval_timer);
-   _elm_win_state_eval_timer = ecore_timer_add(0.5, _elm_win_state_eval, NULL);
 }
 
 // example shot spec (wait 0.1 sec then save as my-window.png):
@@ -1511,7 +1499,7 @@ _elm_win_state_change(Ecore_Evas *ee)
      }
 #endif
 
-   _elm_win_state_eval_queue();
+   _elm_win_state_eval();
 
    if ((ch_withdrawn) || (ch_iconified))
      {
@@ -1772,14 +1760,7 @@ _elm_win_evas_object_smart_show(Eo *obj, Elm_Win_Data *sd)
      }
 
    if (do_eval)
-     {
-        if (_elm_win_state_eval_timer)
-          {
-             ecore_timer_del(_elm_win_state_eval_timer);
-             _elm_win_state_eval_timer = NULL;
-          }
-        _elm_win_state_eval(NULL);
-     }
+     _elm_win_state_eval();
    if (sd->shot.info) _shot_handle(sd);
 }
 
@@ -1791,7 +1772,7 @@ _elm_win_evas_object_smart_hide(Eo *obj, Elm_Win_Data *sd)
    Evas_Object *current;
 
    if (evas_object_visible_get(obj))
-     _elm_win_state_eval_queue();
+     _elm_win_state_eval();
    eo_do_super(obj, MY_CLASS, evas_obj_smart_hide());
 
    if ((sd->modal) && (evas_object_visible_get(obj)))
@@ -2161,7 +2142,7 @@ _elm_win_evas_object_smart_del(Eo *obj, Elm_Win_Data *sd)
 
    _elm_win_list = eina_list_remove(_elm_win_list, obj);
    _elm_win_count--;
-   _elm_win_state_eval_queue();
+   _elm_win_state_eval();
 
    if (sd->ee)
      {
@@ -2697,7 +2678,6 @@ _elm_win_shutdown(void)
              _elm_win_list = eina_list_remove_list(_elm_win_list, _elm_win_list);
           }
      }
-   ELM_SAFE_FREE(_elm_win_state_eval_timer, ecore_timer_del);
 }
 
 void
@@ -3585,7 +3565,7 @@ _elm_win_cb_hide(void *data EINA_UNUSED,
                  Evas_Object *obj EINA_UNUSED,
                  void *event_info EINA_UNUSED)
 {
-   _elm_win_state_eval_queue();
+   _elm_win_state_eval();
 }
 
 static void
@@ -3594,7 +3574,7 @@ _elm_win_cb_show(void *data EINA_UNUSED,
                  Evas_Object *obj EINA_UNUSED,
                  void *event_info EINA_UNUSED)
 {
-   _elm_win_state_eval_queue();
+   _elm_win_state_eval();
 }
 
 /**
