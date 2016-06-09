@@ -5,6 +5,7 @@
 #define ELM_INTERFACE_ATSPI_ACCESSIBLE_PROTECTED
 #define ELM_INTERFACE_ATSPI_TEXT_PROTECTED
 #define ELM_INTERFACE_ATSPI_EDITABLE_TEXT_PROTECTED
+#define ELM_INTERFACE_ATSPI_COMPONENT_PROTECTED
 
 #include <Elementary.h>
 #include <Elementary_Cursor.h>
@@ -7837,5 +7838,22 @@ _elm_entry_elm_interface_atspi_accessible_name_get(Eo *obj EINA_UNUSED, Elm_Entr
    const char *ret = edje_object_part_text_get(sd->entry_edje, "elm.guide");
    return ret ? strdup(ret) : NULL;
 }
+
+//TIZEN ONLY (20160609): Added atspi focus_grab api
+EOLIAN static Eina_Bool
+_elm_entry_elm_interface_atspi_component_focus_grab(Eo *obj, Elm_Entry_Data *pd EINA_UNUSED)
+{
+   if (elm_object_focus_allow_get(obj))
+     {
+       Ecore_Evas *ee = ecore_evas_ecore_evas_get(evas_object_evas_get(obj));
+       if (!ee) return EINA_FALSE;
+       ecore_evas_activate(ee);
+       elm_object_focus_set(obj, EINA_TRUE);
+       eo_do(obj, elm_obj_widget_activate(ELM_ACTIVATE_DEFAULT));
+       return EINA_TRUE;
+     }
+   return EINA_FALSE;
+}
+//
 
 #include "elm_entry.eo.c"
