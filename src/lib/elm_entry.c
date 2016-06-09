@@ -5,6 +5,7 @@
 #define ELM_INTERFACE_ATSPI_ACCESSIBLE_PROTECTED
 #define ELM_INTERFACE_ATSPI_TEXT_PROTECTED
 #define ELM_INTERFACE_ATSPI_EDITABLE_TEXT_PROTECTED
+#define ELM_INTERFACE_ATSPI_WIDGET_ACTION_PROTECTED
 
 #include <Elementary.h>
 #include <Elementary_Cursor.h>
@@ -120,6 +121,18 @@ static void _cut_cb(void *data, Evas_Object *obj, void *event_info);
 static void _paste_cb(void *data, Evas_Object *obj, void *event_info);
 static Eina_Rectangle *_viewport_region_get(Evas_Object *obj);
 static Evas_Coord_Rectangle _layout_region_get(Evas_Object *obj);
+//TIZEN ONLY (20160609): Added atspi action interface in entry
+static Eina_Bool _key_action_activate(Evas_Object *obj, const char *params);
+//
+
+//TIZEN ONLY (20160609): Added atspi action interface in entry
+static Eina_Bool
+_key_action_activate(Evas_Object *obj, const char *params EINA_UNUSED)
+{
+   eo_do(obj, eo_event_callback_call(EVAS_CLICKABLE_INTERFACE_EVENT_CLICKED, NULL));
+   return EINA_TRUE;
+}
+//
 
 // TIZEN ONLY (20160531): Support tizen 3.0 CNPUI
 static void
@@ -7837,5 +7850,17 @@ _elm_entry_elm_interface_atspi_accessible_name_get(Eo *obj EINA_UNUSED, Elm_Entr
    const char *ret = edje_object_part_text_get(sd->entry_edje, "elm.guide");
    return ret ? strdup(ret) : NULL;
 }
+
+//TIZEN ONLY (20160609): Added atspi action interface in entry
+EOLIAN const Elm_Atspi_Action *
+_elm_entry_elm_interface_atspi_widget_action_elm_actions_get(Eo *obj EINA_UNUSED, Elm_Entry_Data *pd EINA_UNUSED)
+{
+   static Elm_Atspi_Action atspi_actions[] = {
+          { "activate", "activate", NULL, _key_action_activate },
+          { NULL, NULL, NULL, NULL}
+   };
+   return &atspi_actions[0];
+}
+//
 
 #include "elm_entry.eo.c"
