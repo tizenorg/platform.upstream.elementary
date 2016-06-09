@@ -5,6 +5,7 @@
 #define ELM_INTERFACE_ATSPI_ACCESSIBLE_PROTECTED
 #define ELM_INTERFACE_ATSPI_TEXT_PROTECTED
 #define ELM_INTERFACE_ATSPI_EDITABLE_TEXT_PROTECTED
+#define ELM_INTERFACE_ATSPI_WIDGET_ACTION_PROTECTED
 
 #include <Elementary.h>
 #include <Elementary_Cursor.h>
@@ -120,6 +121,9 @@ static void _cut_cb(void *data, Evas_Object *obj, void *event_info);
 static void _paste_cb(void *data, Evas_Object *obj, void *event_info);
 static Eina_Rectangle *_viewport_region_get(Evas_Object *obj);
 static Evas_Coord_Rectangle _layout_region_get(Evas_Object *obj);
+//TIZEN ONLY (20160609): Added atspi action interface in entry
+static Eina_Bool _action_activate(Evas_Object *obj, const char *params);
+//
 
 // TIZEN ONLY (20160531): Support tizen 3.0 CNPUI
 static void
@@ -7213,13 +7217,10 @@ _elm_entry_anchor_hover_end(Eo *obj EINA_UNUSED, Elm_Entry_Data *sd)
 }
 /* END - ANCHOR HOVER */
 
-EOLIAN static Eina_Bool
-_elm_entry_elm_widget_activate(Eo *obj, Elm_Entry_Data *_pd EINA_UNUSED, Elm_Activate act)
+static void
+_activate(Evas_Object *obj)
 {
-   if (act != ELM_ACTIVATE_DEFAULT) return EINA_FALSE;
-
    ELM_ENTRY_DATA_GET(obj, sd);
-
    if (!elm_widget_disabled_get(obj) &&
        !evas_object_freeze_events_get(obj))
      {
@@ -7228,6 +7229,14 @@ _elm_entry_elm_widget_activate(Eo *obj, Elm_Entry_Data *_pd EINA_UNUSED, Elm_Act
         if (sd->editable && sd->input_panel_enable)
           edje_object_part_text_input_panel_show(sd->entry_edje, "elm.text");
      }
+}
+
+EOLIAN static Eina_Bool
+_elm_entry_elm_widget_activate(Eo *obj, Elm_Entry_Data *_pd EINA_UNUSED, Elm_Activate act)
+{
+   if (act != ELM_ACTIVATE_DEFAULT) return EINA_FALSE;
+   _activate(obj);
+
    return EINA_TRUE;
 }
 
@@ -7631,6 +7640,14 @@ _textblock_node_format_to_atspi_text_attr(const Evas_Object_Textblock_Node_Forma
    return ret;
 }
 
+//TIZEN ONLY (20160609): Added atspi action interface in entry
+static Eina_Bool
+_action_activate(Evas_Object *obj, const char *params EINA_UNUSED)
+{
+   _activate(obj);
+   return EINA_TRUE;
+}
+
 EOLIAN static Eina_Bool
 _elm_entry_elm_interface_atspi_text_attribute_get(Eo *obj, Elm_Entry_Data *_pd EINA_UNUSED, const char *attr_name EINA_UNUSED, int *start_offset, int *end_offset, char **value)
 {
@@ -7837,5 +7854,17 @@ _elm_entry_elm_interface_atspi_accessible_name_get(Eo *obj EINA_UNUSED, Elm_Entr
    const char *ret = edje_object_part_text_get(sd->entry_edje, "elm.guide");
    return ret ? strdup(ret) : NULL;
 }
+
+//TIZEN ONLY (20160609): Added atspi action interface in entry
+EOLIAN const Elm_Atspi_Action *
+_elm_entry_elm_interface_atspi_widget_action_elm_actions_get(Eo *obj EINA_UNUSED, Elm_Entry_Data *pd EINA_UNUSED)
+{
+   static Elm_Atspi_Action atspi_actions[] = {
+          { "activate", "activate", NULL, _action_activate },
+          { NULL, NULL, NULL, NULL}
+   };
+   return &atspi_actions[0];
+}
+//
 
 #include "elm_entry.eo.c"
