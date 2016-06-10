@@ -2621,6 +2621,10 @@ _elm_win_wlwin_update(Elm_Win_Data *sd)
         case ELM_WIN_NOTIFICATION:
           ecore_evas_wayland_type_set(sd->ee, ECORE_WL_WINDOW_TYPE_NOTIFICATION);
           break;
+        case ELM_WIN_UTILITY:
+          //ecore_evas_wayland_type_set(sd->ee, ECORE_WL_WINDOW_TYPE_UTILITY);
+          elm_win_aux_hint_add(sd->obj, "wm.policy.win.user.geometry", "1");
+          break;
         default:
           break;
      }
