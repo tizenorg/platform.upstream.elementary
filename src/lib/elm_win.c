@@ -2621,6 +2621,9 @@ _elm_win_wlwin_update(Elm_Win_Data *sd)
         case ELM_WIN_NOTIFICATION:
           ecore_evas_wayland_type_set(sd->ee, ECORE_WL_WINDOW_TYPE_NOTIFICATION);
           break;
+        case ELM_WIN_UTILITY:
+          ecore_evas_wayland_type_set(sd->ee, ECORE_WL_WINDOW_TYPE_UTILITY);
+          break;
         default:
           break;
      }
