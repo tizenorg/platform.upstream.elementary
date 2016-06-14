@@ -364,7 +364,6 @@ _grid_zoom_calc(double zoom)
    int z = zoom;
 
    if (z < 1) z = 1;
-   if (z > 8) z = 8; // TIZEN_ONLY(20150813): need to create 1x1 grid when zoom >= 8 to load high res img
    return _nearest_pow2_get(z);
 }
 
