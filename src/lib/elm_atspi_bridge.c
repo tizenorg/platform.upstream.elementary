@@ -451,6 +451,7 @@ const struct atspi_state_desc elm_states_to_atspi_state[] = {
    { ELM_ATSPI_STATE_READ_ONLY, ATSPI_STATE_READ_ONLY, "read-only" },
    { ELM_ATSPI_STATE_HIGHLIGHTED, ATSPI_STATE_HIGHLIGHTED, "highlighted" },
    { ELM_ATSPI_STATE_HIGHLIGHTABLE, ATSPI_STATE_HIGHLIGHTABLE, "highlightable" },
+   { ELM_ATSPI_STATE_KEYBOARD, ATSPI_STATE_KEYBOARD, "keyboard" },
    //
    { ELM_ATSPI_STATE_LAST_DEFINED, ATSPI_STATE_LAST_DEFINED, "last-defined" }
 };
