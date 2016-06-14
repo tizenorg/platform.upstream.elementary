@@ -1478,10 +1478,19 @@ _elm_win_state_change(Ecore_Evas *ee)
      }
    if (sd->kbdmode != (Elm_Win_Keyboard_Mode)ecore_wl_window_keyboard_state_get(sd->wl.win))
      {
+        Eina_Bool key_mode = EINA_FALSE;
         sd->kbdmode = (Elm_Win_Keyboard_Mode)ecore_wl_window_keyboard_state_get(sd->wl.win);
         ch_conformant = EINA_TRUE;
         property |= CONFORMANT_KEYBOARD_STATE; //TIZEN_ONLY(20160330): add processing properties of window
-
+        //TIZEN_ONLY(20160414): add keyboard state for window
+        if (_elm_config->atspi_mode)
+          {
+             if (sd->kbdmode == ELM_WIN_KEYBOARD_ON)
+               key_mode = EINA_TRUE;
+             else if (sd->kbdmode == ELM_WIN_KEYBOARD_OFF)
+               key_mode = EINA_FALSE;
+             elm_interface_atspi_accessible_state_changed_signal_emit(obj, ELM_ATSPI_STATE_KEYBOARD, key_mode);
+          }
      }
    if (ecore_wl_window_indicator_geometry_get(sd->wl.win, &x, &y, &w, &h))
      {
