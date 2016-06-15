@@ -246,6 +246,10 @@ class Elm.Index (Elm.Layout, Evas.Clickable_Interface, Evas.Selectable_Interface
       //TIZEN_ONLY(20150716) : improve atspi support
       Elm_Interface_Atspi_Accessible.children.get;
       ///
+      //TIZEN ONLY(20160615): index accessibility highlight implementation
+      Elm_Interface_Atspi_Component.highlight_grab;
+      Elm_Interface_Atspi_Component.highlight_clear;
+      //
    }
    events {
       changed;

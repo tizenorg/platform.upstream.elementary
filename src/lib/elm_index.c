@@ -4,6 +4,7 @@
 
 #define ELM_INTERFACE_ATSPI_ACCESSIBLE_PROTECTED
 #define ELM_INTERFACE_ATSPI_WIDGET_ACTION_PROTECTED
+#define ELM_INTERFACE_ATSPI_COMPONENT_PROTECTED
 
 #define ELM_WIDGET_ITEM_PROTECTED
 #include <Elementary.h>
@@ -1728,6 +1729,35 @@ _elm_index_item_elm_interface_atspi_widget_action_elm_actions_get(Eo *eo_it EINA
    };
    return &atspi_actions[0];
 }
+
+//TIZEN ONLY(20160615): index accessibility highlight implementation
+EOLIAN static Eina_Bool
+_elm_index_elm_interface_atspi_component_highlight_grab(Eo *obj EINA_UNUSED, Elm_Index_Data *sd)
+{
+   int level = sd->level;
+
+   if (sd->bx[level])
+     {
+        elm_object_accessibility_highlight_set(sd->bx[level], EINA_TRUE);
+        return EINA_TRUE;
+     }
+   return EINA_FALSE;
+}
+
+EOLIAN static Eina_Bool
+_elm_index_elm_interface_atspi_component_highlight_clear(Eo *obj EINA_UNUSED, Elm_Index_Data *sd)
+{
+   int level = sd->level;
+
+   if (sd->bx[level])
+     {
+        elm_object_accessibility_highlight_set(sd->bx[level], EINA_FALSE);
+        return EINA_TRUE;
+     }
+   return EINA_FALSE;
+}
+//
+
 
 #include "elm_index_item.eo.c"
 #include "elm_index.eo.c"
