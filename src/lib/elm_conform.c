@@ -567,6 +567,17 @@ _indicator_opacity_set(Evas_Object *conformant, Elm_Win_Indicator_Opacity_Mode i
    ELM_CONFORMANT_DATA_GET(conformant, sd);
    sd->ind_o_mode = ind_o_mode;
    //TODO: opacity change
+   //TIZEN_ONLY(20160615): Sending signal to edje with indiecator type
+   DBG("[INDICATOR]The opacity mode of indicator was changed:(%d->%d) rot=%d", sd->ind_o_mode, ind_o_mode, sd->rot);
+   if (ind_o_mode == ELM_WIN_INDICATOR_TRANSLUCENT)
+     elm_object_signal_emit(conformant, "elm,state,indicator,translucent", "elm");
+   else if (ind_o_mode == ELM_WIN_INDICATOR_TRANSPARENT)
+     elm_object_signal_emit(conformant, "elm,state,indicator,transparent", "elm");
+   else if (ind_o_mode == ELM_WIN_INDICATOR_BG_TRANSPARENT)
+     elm_object_signal_emit(conformant, "elm,state,indicator,bg_transparent", "elm");
+   else
+     elm_object_signal_emit(conformant, "elm,state,indicator,opaque", "elm");
+   /////////////////////////////////////////////////////////////////////////////
 }
 
 static Eina_Bool
