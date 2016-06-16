@@ -63,6 +63,9 @@ _delay_change(void *data)
    ELM_SLIDER_DATA_GET(data, sd);
 
    sd->delay = NULL;
+   //TIZEN_ONLY(20160616): Moved atspi value change signal to delay change
+   elm_interface_atspi_accessible_value_changed_signal_emit(data);
+   //
    eo_do(data, eo_event_callback_call(ELM_SLIDER_EVENT_DELAY_CHANGED, NULL));
 
    return ECORE_CALLBACK_CANCEL;
@@ -95,7 +98,9 @@ _val_fetch(Evas_Object *obj, Eina_Bool user_event)
         if (user_event)
           {
              eo_do(obj, eo_event_callback_call(ELM_SLIDER_EVENT_CHANGED, NULL));
-             elm_interface_atspi_accessible_value_changed_signal_emit(obj);
+             //TIZEN_ONLY(20160616): Moved atspi value change signal to delay change
+             //elm_interface_atspi_accessible_value_changed_signal_emit(obj);
+             //
              ecore_timer_del(sd->delay);
              sd->delay = ecore_timer_add(SLIDER_DELAY_CHANGED_INTERVAL, _delay_change, obj);
           }
