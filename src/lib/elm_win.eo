@@ -116,7 +116,8 @@ enum Elm.Win.Indicator_Opacity_Mode
    opacity_unknown, [[Unknown indicator opacity mode]]
    opaque, [[Opacifies the indicator]]
    translucent, [[Be translucent the indicator]]
-   transparent [[Transparentizes the indicator]]
+   transparent, [[Transparentizes the indicator]]
+   bg_transparent, [[Bg Transparentizes the indicator]]
 }
 
 /**
