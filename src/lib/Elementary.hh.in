@@ -115,8 +115,9 @@ extern "C" {
 #include <elm_thumb.eo.hh>
 #include <elm_toolbar.eo.hh>
 #include <elm_video.eo.hh>
-#include <elm_view_list.eo.hh>
-#include <elm_view_form.eo.hh>
+//TIZENONLY(160617)
+//#include <elm_view_list.eo.hh>
+//#include <elm_view_form.eo.hh>
 #include <elm_web.eo.hh>
 #include <elm_widget.eo.hh>
 #include <elm_win.eo.hh>
