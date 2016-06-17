@@ -1,0 +1,83 @@
+import elm_general;
+
+class Elm.Genlist (Elm.Layout, Elm_Interface_Scrollable, Evas.Clickable_Interface,
+                   Elm_Interface_Atspi_Widget_Action, Elm_Interface_Atspi_Selection,
+                   Evas.Selectable_Interface)
+{
+   eo_prefix: elm_obj_genlist;
+   implements {
+      class.constructor;
+      Eo.Base.constructor;
+      Evas.Object_Smart.member_add;
+      Evas.Object_Smart.move;
+      Evas.Object_Smart.add;
+      Evas.Object_Smart.del;
+      Evas.Object_Smart.resize;
+      Elm.Widget.theme_apply;
+      Elm.Widget.focus_next_manager_is;
+      Elm.Widget.sub_object_add;
+      Elm.Widget.access;
+      Elm.Widget.focus_highlight_geometry_get;
+      Elm.Widget.focus_next;
+      Elm.Widget.on_focus;
+      Elm.Widget.focus_direction_manager_is;
+      Elm.Widget.sub_object_del;
+      Elm.Widget.event;
+      Elm.Widget.translate;
+      Elm.Layout.sub_object_add_enable;
+      Elm.Layout.sizing_eval;
+      Elm_Interface_Atspi_Accessible.children.get;
+      Elm_Interface_Atspi_Accessible.state_set.get;
+      Elm_Interface_Atspi_Selection.selected_children_count.get;
+      Elm_Interface_Atspi_Selection.selected_child.get;
+      Elm_Interface_Atspi_Selection.selected_child_deselect;
+      Elm_Interface_Atspi_Selection.child_select;
+      Elm_Interface_Atspi_Selection.child_deselect;
+      Elm_Interface_Atspi_Selection.is_child_selected;
+      Elm_Interface_Atspi_Selection.all_children_select;
+      Elm_Interface_Atspi_Selection.clear;
+// TIZEN only (20150914) : Accessibility: updated highlight change during genlist and list scroll
+      Elm_Interface_Scrollable.content_pos_set;
+// TIZEN only (20150914)
+   }
+   events {
+      language,changed;
+      access,changed;
+      item,focused;
+      item,unfocused;
+      vbar,drag;
+      vbar,press;
+      vbar,unpress;
+      hbar,drag;
+      hbar,press;
+      hbar,unpress;
+      edge,top;
+      edge,bottom;
+      edge,left;
+      edge,right;
+      moved;
+      moved,before;
+      moved,after;
+      swipe;
+      multi,pinch,in;
+      multi,pinch,out;
+      multi,swipe,down;
+      multi,swipe,up;
+      multi,swipe,right;
+      multi,swipe,left;
+      released;
+      activated;
+      highlighted;
+      unhighlighted;
+      realized;
+      unrealized;
+      contract,request;
+      expand,request;
+      contracted;
+      expanded;
+      index,update;
+      tree,effect,finished;
+      filter,done;
+   }
+
+}
