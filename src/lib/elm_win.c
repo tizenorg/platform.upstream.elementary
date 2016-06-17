@@ -6339,4 +6339,10 @@ elm_win_input_rect_subtract(Evas_Object *obj, Eina_Rectangle *input_rect)
    TRAP(sd, input_rect_subtract, input_rect);
 }
 
+EAPI int
+elm_win_active_win_orientation_get(Evas_Object *obj EINA_UNUSED)
+{
+   //TODO
+   return 0;
+}
 //////////////////////////////////////////////////////////////////
