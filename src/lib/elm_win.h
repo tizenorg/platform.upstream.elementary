@@ -254,5 +254,18 @@ EAPI void                  elm_win_input_rect_add(Evas_Object *obj, Eina_Rectang
 EAPI void                  elm_win_input_rect_subtract(Evas_Object *obj, Eina_Rectangle *input_rect);
 
 /**
+ * @internal
+ * @remarks Tizen only feature
+ *
+ * @brief Gets the orientation of current active window on the screen.
+ * @remarks Support for this depends on the underlying windowing system.
+ *
+ * @param obj The window object
+ * @return The rotation of active window, in degrees (0-360) conter-clockwise.
+ *         otherwise @c -1 on failure
+ */
+EAPI int                   elm_win_active_win_orientation_get(Evas_Object *obj);
+
+/**
  * @}
  */
