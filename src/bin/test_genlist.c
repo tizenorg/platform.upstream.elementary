@@ -3689,8 +3689,10 @@ static void
 _multi_select_mode_changed_cb(void *data, Evas_Object *obj,
                               void *event_info EINA_UNUSED)
 {
+/* FIXME(160617): The multi select mode API need to be implemented
    elm_genlist_multi_select_mode_set(data, elm_radio_value_get(obj));
-}
+*/
+   }
 
 static void
 _multi_select_frame_create(Evas_Object *bx, Genlist_Multi_Data *gd)
@@ -3861,7 +3863,7 @@ _gl20_search_item(gl20_Event_Data *event_data, Elm_Object_Item * it)
 
    Elm_Glob_Match_Flags flag = 0;
    if (!elm_check_state_get(event_data->tg_obj)) flag = ELM_GLOB_MATCH_NOCASE;
-
+/* FIXME(160617): search_by_text_item_get API need to be implemented
    printf("Looking for \"%s\". ", str);
    event_data->last_item_found = elm_genlist_search_by_text_item_get
    (event_data->gl_obj, it, NULL, str, flag);
@@ -3875,7 +3877,9 @@ _gl20_search_item(gl20_Event_Data *event_data, Elm_Object_Item * it)
         elm_object_focus_set(event_data->en_obj, EINA_TRUE);
      }
    else
+*/
      printf("Not Found.\n");
+
 }
 
 static void
@@ -4344,7 +4348,9 @@ static void
 _gl_focus_focus_on_selection_set(Evas_Object *gl,
                                  Evas_Object *chk, Eina_Bool focus)
 {
+/* FIXME(160617): focus_on_selection_get/set API need to be implemented.
    elm_genlist_focus_on_selection_set(gl, focus);
+*/
    elm_check_state_set(chk, focus);
    printf("genlist_focus_on_selection = %s\n", (focus) ? "true" : "false");
 }
@@ -4353,8 +4359,10 @@ static void
 _gl_focus_focus_on_selection_changed_cb(void *data, Evas_Object *obj,
                                         void *event_info EINA_UNUSED)
 {
+/* FIXME(160617): focus_on_selection_get/set API need to be implemented.
    Eina_Bool nextstate = !elm_genlist_focus_on_selection_get(data);
    _gl_focus_focus_on_selection_set(data, obj, nextstate);
+*/
 }
 
 static void
@@ -5000,7 +5008,7 @@ _entry_change_cb(void *data, Evas_Object *obj, void *event EINA_UNUSED)
    Eina_Iterator *filter_iter;
    unsigned int count = 0;
    Elm_Object_Item *item;
-
+/* FIXME(160617): filter feature need to be implemented
    if (api->filter_data) free(api->filter_data);
 
    sprintf(buf, "%s", elm_object_text_get(obj));
@@ -5019,7 +5027,7 @@ _entry_change_cb(void *data, Evas_Object *obj, void *event EINA_UNUSED)
    printf("Number of matches for %s is %d\n", buf, count);
    //Iterator needs to be freed by application using eina_iterator_free
    eina_iterator_free(filter_iter);
-
+*/
 }
 
 void

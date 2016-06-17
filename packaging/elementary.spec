@@ -91,6 +91,10 @@ cp %{SOURCE1001} .
 
 %build
 
+%if "%{?tizen_profile_name}" == "mobile"
+	cp %{_builddir}/%{buildsubdir}/src/lib/mobile/* %{_builddir}/%{buildsubdir}/src/lib
+%endif
+
 %autogen --disable-static \
 %if %{with wayland}
          --enable-ecore-wayland \
