@@ -316,6 +316,7 @@ static const Elm_Action key_actions[] = {
 Eina_List *_elm_win_list = NULL;
 int _elm_win_deferred_free = 0;
 
+static Eina_Bool _elm_win_throttle_ok = EINA_FALSE;
 static int _elm_win_count = 0;
 
 // TIZEN_ONLY(20160218): Improve launching performance.
@@ -489,7 +490,7 @@ _elm_win_state_eval(void *data EINA_UNUSED)
      throttle = EINA_TRUE;
    if (_elm_win_count == 0)
      {
-        if (_elm_win_auto_throttled)
+        if ((_elm_win_throttle_ok) && (_elm_win_auto_throttled))
           {
              _elm_process_state = ELM_PROCESS_STATE_FOREGROUND;
              ecore_event_add(ELM_EVENT_PROCESS_FOREGROUND, NULL, NULL, NULL);
@@ -508,7 +509,7 @@ _elm_win_state_eval(void *data EINA_UNUSED)
           }
         if (_elm_win_count_shown <= 0)
           {
-             if (!_elm_win_auto_throttled)
+             if ((_elm_win_throttle_ok) && (!_elm_win_auto_throttled))
                {
                   _elm_process_state = ELM_PROCESS_STATE_BACKGROUND;
                   ecore_event_add(ELM_EVENT_PROCESS_BACKGROUND, NULL, NULL, NULL);
@@ -519,7 +520,7 @@ _elm_win_state_eval(void *data EINA_UNUSED)
           }
         else
           {
-             if (_elm_win_auto_throttled)
+             if ((_elm_win_throttle_ok) && (_elm_win_auto_throttled))
                {
                   _elm_process_state = ELM_PROCESS_STATE_FOREGROUND;
                   ecore_event_add(ELM_EVENT_PROCESS_FOREGROUND, NULL, NULL, NULL);
@@ -896,6 +897,7 @@ _elm_win_mouse_in(Ecore_Evas *ee)
    Elm_Win_Data *sd = _elm_win_associate_get(ee);
    if (!sd) return;
 
+   _elm_win_throttle_ok = EINA_TRUE;
    if (sd->resizing) sd->resizing = EINA_FALSE;
 }
 
@@ -1167,6 +1169,7 @@ _elm_win_focus_in(Ecore_Evas *ee)
 
    if ((!sd) || (sd->modal_count)) return;
 
+   _elm_win_throttle_ok = EINA_TRUE;
    obj = sd->obj;
 
    _elm_widget_top_win_focused_set(obj, EINA_TRUE);
