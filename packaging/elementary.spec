@@ -91,6 +91,19 @@ cp %{SOURCE1001} .
 
 %build
 
+# Patch profile dependency widgets
+%if "%{?tizen_profile_name}" == "mobile"
+	cp %{_builddir}/%{buildsubdir}/src/mobile_lib/* %{_builddir}/%{buildsubdir}/src/lib
+%else
+  %if "%{?tizen_profile_name}" == "wearable"
+	  cp %{_builddir}/%{buildsubdir}/src/mobile_lib/* %{_builddir}/%{buildsubdir}/src/lib
+      export CFLAGS+=" -DELM_FEATURE_WEARABLE"
+      %if "%{?model_build_feature_formfactor}" == "circle"
+          export CFLAGS+=" -DELM_FEATURE_WEARABLE_C1"
+      %endif
+  %endif
+%endif
+
 %autogen --disable-static \
 %if %{with wayland}
          --enable-ecore-wayland \
