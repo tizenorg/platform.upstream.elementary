@@ -3856,16 +3856,16 @@ _mirrored_set(Evas_Object *obj,
      }
 }
 
-EOLIAN static Eina_Bool
+EOLIAN static Theme_Apply
 _elm_gengrid_elm_widget_theme_apply(Eo *obj, Elm_Gengrid_Data *sd EINA_UNUSED)
 {
-   Eina_Bool int_ret = EINA_FALSE;
+   Theme_Apply int_ret = THEME_APPLY_FAILED;
    eo_do_super(obj, MY_CLASS, int_ret = elm_obj_widget_theme_apply());
-   if (!int_ret) return EINA_FALSE;
+   if (!int_ret) return THEME_APPLY_FAILED;
 
    _mirrored_set(obj, elm_widget_mirrored_get(obj));
 
-   return EINA_TRUE;
+   return int_ret;
 }
 
 static void
