@@ -3636,14 +3636,14 @@ _mirrored_set(Evas_Object *obj,
    eo_do(obj, elm_interface_scrollable_mirrored_set(rtl));
 }
 
-EOLIAN static Eina_Bool
+EOLIAN static Elm_Theme_Apply
 _elm_genlist_elm_widget_theme_apply(Eo *obj, Elm_Genlist_Data *sd)
 {
    Item_Block *itb;
-   Eina_Bool int_ret = EINA_FALSE;
+   Elm_Theme_Apply int_ret = ELM_THEME_APPLY_FAILED;
 
    eo_do_super(obj, MY_CLASS, int_ret = elm_obj_widget_theme_apply());
-   if (!int_ret) return EINA_FALSE;
+   if (!int_ret) return ELM_THEME_APPLY_FAILED;
 
 #ifndef ELM_FEATURE_WEARABLE
    _banded_bg_state_check(obj, sd);
@@ -3669,7 +3669,7 @@ _elm_genlist_elm_widget_theme_apply(Eo *obj, Elm_Genlist_Data *sd)
    elm_layout_sizing_eval(obj);
    _changed(sd->pan_obj);
 
-   return EINA_TRUE;
+   return int_ret;
 }
 
 /* FIXME: take off later. maybe this show region coords belong in the

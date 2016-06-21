@@ -671,13 +671,18 @@ struct _Elm_Widget_Item_Data
    ///
 };
 
+typedef void (*region_hook_func_type)(void *data, Evas_Object *obj);
+typedef void * (*list_data_get_func_type)(const Eina_List * l);
+
+#include "elm_widget.eo.h"
+
 #define ELM_NEW(t) calloc(1, sizeof(t))
 
 EAPI Evas_Object     *elm_widget_add(Evas_Smart *, Evas_Object *);
 EAPI void             elm_widget_parent_set(Evas_Object *, Evas_Object *);
 EAPI Eina_Bool        elm_widget_api_check(int ver);
 EAPI Eina_Bool        elm_widget_access(Evas_Object *obj, Eina_Bool is_access);
-EAPI Eina_Bool        elm_widget_theme(Evas_Object *obj);
+EAPI Elm_Theme_Apply  elm_widget_theme(Evas_Object *obj);
 EAPI void             elm_widget_theme_specific(Evas_Object *obj, Elm_Theme *th, Eina_Bool force);
 EAPI void             elm_widget_translate(Evas_Object *obj);
 EAPI void             elm_widget_on_show_region_hook_set(Evas_Object *obj, void (*func)(void *data, Evas_Object *obj), void *data);
@@ -784,7 +789,7 @@ EAPI Eina_Bool        elm_widget_mirrored_automatic_get(const Evas_Object *obj);
 EAPI void             elm_widget_mirrored_automatic_set(Evas_Object *obj, Eina_Bool automatic);
 EAPI void             elm_widget_theme_set(Evas_Object *obj, Elm_Theme *th);
 EAPI Elm_Theme       *elm_widget_theme_get(const Evas_Object *obj);
-EAPI Eina_Bool        elm_widget_style_set(Evas_Object *obj, const char *style);
+EAPI Elm_Theme_Apply  elm_widget_style_set(Evas_Object *obj, const char *style);
 EAPI const char      *elm_widget_style_get(const Evas_Object *obj);
 EAPI void             elm_widget_type_set(Evas_Object *obj, const char *type);
 EAPI const char      *elm_widget_type_get(const Evas_Object *obj);
@@ -800,7 +805,7 @@ EAPI int              elm_widget_drag_child_locked_x_get(const Evas_Object *obj)
 EAPI int              elm_widget_drag_child_locked_y_get(const Evas_Object *obj);
 EAPI void             elm_widget_item_loop_enabled_set(Evas_Object *obj, Eina_Bool enable);
 EAPI Eina_Bool        elm_widget_item_loop_enabled_get(const Evas_Object *obj);
-EAPI Eina_Bool        elm_widget_theme_object_set(Evas_Object *obj, Evas_Object *edj, const char *wname, const char *welement, const char *wstyle);
+EAPI Elm_Theme_Apply  elm_widget_theme_object_set(Evas_Object *obj, Evas_Object *edj, const char *wname, const char *welement, const char *wstyle);
 EAPI Eina_Bool        elm_widget_type_check(const Evas_Object *obj, const char *type, const char *func);
 EAPI Evas_Object     *elm_widget_name_find(const Evas_Object *obj, const char *name, int recurse);
 EAPI Eina_List       *elm_widget_stringlist_get(const char *str);
@@ -915,11 +920,6 @@ _elm_widget_sub_object_redirect_to_top(Evas_Object *obj, Evas_Object *sobj)
 #define ELM_INTERNAL_SMART_SUBCLASS_NEW EVAS_SMART_SUBCLASS_NEW
 
 EAPI Eina_Bool elm_selection_selection_has_owner(Evas_Object *obj);
-
-typedef void (*region_hook_func_type)(void *data, Evas_Object *obj);
-typedef void * (*list_data_get_func_type)(const Eina_List * l);
-
-#include "elm_widget.eo.h"
 
 #define ELM_WIDGET_ITEM_PROTECTED
 #include "elm_widget_item.eo.h"
