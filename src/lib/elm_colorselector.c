@@ -1284,7 +1284,7 @@ _color_bars_add(Evas_Object *obj)
      }
 }
 
-EOLIAN static Eina_Bool
+EOLIAN static Elm_Theme_Apply
 _elm_colorselector_elm_widget_theme_apply(Eo *obj, Elm_Colorselector_Data *sd)
 {
    int i;
@@ -1295,11 +1295,11 @@ _elm_colorselector_elm_widget_theme_apply(Eo *obj, Elm_Colorselector_Data *sd)
    unsigned int h_pad = DEFAULT_HOR_PAD;
    unsigned int v_pad = DEFAULT_VER_PAD;
 
-   ELM_WIDGET_DATA_GET_OR_RETURN(obj, wd, EINA_FALSE);
-   Eina_Bool int_ret = EINA_FALSE;
+   ELM_WIDGET_DATA_GET_OR_RETURN(obj, wd, ELM_THEME_APPLY_FAILED);
+   Elm_Theme_Apply int_ret = ELM_THEME_APPLY_FAILED;
 
    eo_do_super(obj, MY_CLASS, int_ret = elm_obj_widget_theme_apply());
-   if (!int_ret) return EINA_FALSE;
+   if (!int_ret) return ELM_THEME_APPLY_FAILED;
 
    if ((sd->mode == ELM_COLORSELECTOR_PALETTE) ||
        (sd->mode == ELM_COLORSELECTOR_ALL) ||
@@ -1334,7 +1334,7 @@ _elm_colorselector_elm_widget_theme_apply(Eo *obj, Elm_Colorselector_Data *sd)
        (sd->mode == ELM_COLORSELECTOR_ALL) ||
        (sd->mode == ELM_COLORSELECTOR_BOTH))
      {
-        if (!sd->col_bars_area) return EINA_FALSE;
+        if (!sd->col_bars_area) return ELM_THEME_APPLY_FAILED;
 
         if (!elm_layout_theme_set(sd->col_bars_area, "colorselector", "bg",
                                   elm_widget_style_get(obj)))
@@ -1375,7 +1375,7 @@ _elm_colorselector_elm_widget_theme_apply(Eo *obj, Elm_Colorselector_Data *sd)
      }
 
    elm_layout_sizing_eval(obj);
-   return EINA_TRUE;
+   return int_ret;
 }
 
 static void

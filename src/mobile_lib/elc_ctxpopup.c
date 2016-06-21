@@ -1283,7 +1283,7 @@ _elm_ctxpopup_elm_widget_event(Eo *obj, Elm_Ctxpopup_Data *sd, Evas_Object *src 
 }
 
 //FIXME: lost the content size when theme hook is called.
-EOLIAN static Eina_Bool
+EOLIAN static Elm_Theme_Apply
 _elm_ctxpopup_elm_widget_theme_apply(Eo *obj, Elm_Ctxpopup_Data *sd)
 {
    Eina_List *elist;
@@ -1291,12 +1291,12 @@ _elm_ctxpopup_elm_widget_theme_apply(Eo *obj, Elm_Ctxpopup_Data *sd)
    int idx = 0;
    Eina_Bool rtl;
    Eina_Bool tmp;
-   Eina_Bool int_ret = EINA_FALSE;
+   Elm_Theme_Apply int_ret = ELM_THEME_APPLY_FAILED;
 
-   ELM_WIDGET_DATA_GET_OR_RETURN(obj, wd, EINA_FALSE);
+   ELM_WIDGET_DATA_GET_OR_RETURN(obj, wd, ELM_THEME_APPLY_FAILED);
 
    eo_do_super(obj, MY_CLASS, int_ret = elm_obj_widget_theme_apply());
-   if (!int_ret) return EINA_FALSE;
+   if (!int_ret) return ELM_THEME_APPLY_FAILED;
 
    rtl = elm_widget_mirrored_get(obj);
 
@@ -1398,7 +1398,7 @@ _elm_ctxpopup_elm_widget_theme_apply(Eo *obj, Elm_Ctxpopup_Data *sd)
    /* access */
   if (_elm_config->access_mode) _access_obj_process(obj, EINA_TRUE);
 
-   return EINA_TRUE;
+   return int_ret;
 }
 
 /* kind of a big and tricky override here: an internal box will hold
