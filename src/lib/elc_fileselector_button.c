@@ -34,15 +34,15 @@ static const Evas_Smart_Cb_Description _smart_callbacks[] = {
 };
 #undef ELM_PRIV_FILESELECTOR_BUTTON_SIGNALS
 
-EOLIAN static Eina_Bool
+EOLIAN static Theme_Apply
 _elm_fileselector_button_elm_widget_theme_apply(Eo *obj, Elm_Fileselector_Button_Data *sd EINA_UNUSED)
 {
-   Eina_Bool int_ret = EINA_FALSE;
+   Theme_Apply int_ret = THEME_APPLY_FAILED;
 
    char buf[4096];
    const char *style;
 
-   ELM_WIDGET_DATA_GET_OR_RETURN(obj, wd, EINA_FALSE);
+   ELM_WIDGET_DATA_GET_OR_RETURN(obj, wd, THEME_APPLY_FAILED);
 
    style = eina_stringshare_add(elm_widget_style_get(obj));
 
@@ -52,13 +52,13 @@ _elm_fileselector_button_elm_widget_theme_apply(Eo *obj, Elm_Fileselector_Button
    eina_stringshare_replace(&(wd->style), buf);
 
    eo_do_super(obj, MY_CLASS, int_ret = elm_obj_widget_theme_apply());
-   if (!int_ret) return EINA_FALSE;
+   if (!int_ret) return THEME_APPLY_FAILED;
 
    eina_stringshare_replace(&(wd->style), style);
 
    eina_stringshare_del(style);
 
-   return EINA_TRUE;
+   return int_ret;
 }
 
 static Eina_Bool

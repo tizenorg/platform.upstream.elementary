@@ -15,7 +15,7 @@
 #define MY_CLASS_NAME "Elm_Notify"
 #define MY_CLASS_NAME_LEGACY "elm_notify"
 
-static void
+static Theme_Apply
 _notify_theme_apply(Evas_Object *obj)
 {
    const char *style = elm_widget_style_get(obj);
@@ -55,7 +55,7 @@ _notify_theme_apply(Evas_Object *obj)
           position = "center";
      }
 
-   elm_widget_theme_object_set(obj, sd->notify, "notify", position, style);
+   return elm_widget_theme_object_set(obj, sd->notify, "notify", position, style);
 }
 
 /**
@@ -95,16 +95,20 @@ _notify_move_to_orientation(Evas_Object *obj, Evas_Coord x, Evas_Coord y, Evas_C
    evas_object_resize(sd->notify, minw, minh);
 }
 
-static void
+static Theme_Apply
 _block_events_theme_apply(Evas_Object *obj)
 {
+   Theme_Apply ret = THEME_APPLY_FAILED;
+
    ELM_NOTIFY_DATA_GET(obj, sd);
 
    const char *style = elm_widget_style_get(obj);
 
-   if (!elm_layout_theme_set
-       (sd->block_events, "notify", "block_events", style))
+   ret = elm_layout_theme_set(sd->block_events, "notify", "block_events", style);
+   if (!ret)
      CRI("Failed to set layout!");
+
+   return ret;
 }
 
 static void
@@ -136,24 +140,24 @@ _sizing_eval(Evas_Object *obj)
    evas_object_resize(obj, w, h);
 }
 
-EOLIAN static Eina_Bool
+EOLIAN static Theme_Apply
 _elm_notify_elm_widget_theme_apply(Eo *obj, Elm_Notify_Data *sd)
 {
-   Eina_Bool int_ret = EINA_FALSE;
+   Theme_Apply int_ret = THEME_APPLY_FAILED;
    eo_do_super(obj, MY_CLASS, int_ret = elm_obj_widget_theme_apply());
-   if (!int_ret) return EINA_FALSE;
+   if (!int_ret) return THEME_APPLY_FAILED;
 
    _mirrored_set(obj, elm_widget_mirrored_get(obj));
 
-   _notify_theme_apply(obj);
-   if (sd->block_events) _block_events_theme_apply(obj);
+   int_ret = _notify_theme_apply(obj) && int_ret;
+   if (sd->block_events) int_ret = _block_events_theme_apply(obj) && int_ret;
 
    edje_object_scale_set
      (sd->notify, elm_widget_scale_get(obj) * elm_config_scale_get());
 
    _sizing_eval(obj);
 
-   return EINA_TRUE;
+   return int_ret;
 }
 
 EOLIAN static void
