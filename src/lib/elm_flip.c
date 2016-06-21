@@ -93,16 +93,16 @@ _sizing_eval(Evas_Object *obj)
    evas_object_size_hint_max_set(obj, maxw, maxh);
 }
 
-EOLIAN static Eina_Bool
+EOLIAN static Elm_Theme_Apply
 _elm_flip_elm_widget_theme_apply(Eo *obj, Elm_Flip_Data *sd EINA_UNUSED)
 {
-   Eina_Bool int_ret = EINA_FALSE;
+   Elm_Theme_Apply int_ret = ELM_THEME_APPLY_FAILED;
    eo_do_super(obj, MY_CLASS, int_ret = elm_obj_widget_theme_apply());
-   if (!int_ret) return EINA_FALSE;
+   if (!int_ret) return ELM_THEME_APPLY_FAILED;
 
    _sizing_eval(obj);
 
-   return EINA_TRUE;
+   return int_ret;
 }
 
 EOLIAN static Eina_Bool
