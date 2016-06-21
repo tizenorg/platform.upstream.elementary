@@ -165,19 +165,19 @@ _elm_progressbar_elm_container_content_set(Eo *obj, Elm_Progressbar_Data *_pd EI
    return EINA_TRUE;
 }
 
-EOLIAN static Eina_Bool
+EOLIAN static Theme_Apply
 _elm_progressbar_elm_widget_theme_apply(Eo *obj, Elm_Progressbar_Data *sd)
 {
-   Eina_Bool int_ret = EINA_FALSE;
+   Theme_Apply int_ret = THEME_APPLY_FAILED;
    ELM_LAYOUT_DATA_GET(obj, ld);
-   ELM_WIDGET_DATA_GET_OR_RETURN(obj, wd, EINA_FALSE);
+   ELM_WIDGET_DATA_GET_OR_RETURN(obj, wd, THEME_APPLY_FAILED);
 
    if (sd->horizontal)
      eina_stringshare_replace(&ld->group, "horizontal");
    else eina_stringshare_replace(&ld->group, "vertical");
 
    eo_do_super(obj, MY_CLASS, int_ret = elm_obj_widget_theme_apply());
-   if (!int_ret) return EINA_FALSE;
+   if (!int_ret) return THEME_APPLY_FAILED;
 
 #ifdef TIZEN_VECTOR_UX
    tizen_vg_progressbar_set(obj);
@@ -218,7 +218,7 @@ _elm_progressbar_elm_widget_theme_apply(Eo *obj, Elm_Progressbar_Data *sd)
 
    elm_layout_sizing_eval(obj);
 
-   return EINA_TRUE;
+   return int_ret;
 }
 
 static char *

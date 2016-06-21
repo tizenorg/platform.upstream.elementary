@@ -86,18 +86,18 @@ _move_resize_cb(void *data EINA_UNUSED,
    _sizing_eval(obj);
 }
 
-EOLIAN static Eina_Bool
+EOLIAN static Theme_Apply
 _elm_route_elm_widget_theme_apply(Eo *obj, Elm_Route_Data *sd EINA_UNUSED)
 {
-   Eina_Bool int_ret = EINA_FALSE;
+   Theme_Apply int_ret = THEME_APPLY_FAILED;
    eo_do_super(obj, MY_CLASS, int_ret = elm_obj_widget_theme_apply());
-   if (!int_ret) return EINA_FALSE;
+   if (!int_ret) return THEME_APPLY_FAILED;
 
    //TODO
 
    _sizing_eval(obj);
 
-   return EINA_TRUE;
+   return int_ret;
 }
 
 #ifdef ELM_EMAP

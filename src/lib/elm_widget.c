@@ -913,16 +913,16 @@ _elm_widget_access(Eo *obj EINA_UNUSED, Elm_Widget_Smart_Data *_pd EINA_UNUSED, 
 {
 }
 
-EAPI Eina_Bool
+EAPI Theme_Apply
 elm_widget_theme(Evas_Object *obj)
 {
    const Eina_List *l;
    Evas_Object *child;
    Elm_Tooltip *tt;
    Elm_Cursor *cur;
-   Eina_Bool ret = EINA_TRUE;
+   Theme_Apply ret = THEME_APPLY_SUCCESS;
 
-   API_ENTRY return EINA_FALSE;
+   API_ENTRY return THEME_APPLY_FAILED;
 
    EINA_LIST_FOREACH(sd->subobjs, l, child)
      if (_elm_widget_is(child))
@@ -935,7 +935,7 @@ elm_widget_theme(Evas_Object *obj)
    EINA_LIST_FOREACH(sd->cursors, l, cur)
      elm_cursor_theme(cur);
 
-   Eina_Bool ret2 = EINA_FALSE;
+   Theme_Apply ret2 = THEME_APPLY_FAILED;
    eo_do(obj, ret2 = elm_obj_widget_theme_apply());
    ret &= ret2;
 
@@ -987,14 +987,14 @@ elm_widget_theme_specific(Evas_Object *obj,
    eo_do(obj, elm_obj_widget_theme_apply());
 }
 
-EOLIAN static Eina_Bool
+EOLIAN static Theme_Apply
 _elm_widget_theme_apply(Eo *obj, Elm_Widget_Smart_Data *_pd EINA_UNUSED)
 {
    _elm_widget_mirrored_reload(obj);
 
    elm_widget_disabled_set(obj, elm_widget_disabled_get(obj));
 
-   return EINA_TRUE;
+   return THEME_APPLY_SUCCESS;
 }
 
 /**
@@ -3814,13 +3814,13 @@ _elm_widget_theme_get(Eo *obj EINA_UNUSED, Elm_Widget_Smart_Data *sd)
    return sd->theme;
 }
 
-EOLIAN static Eina_Bool
+EOLIAN static Theme_Apply
 _elm_widget_style_set(Eo *obj, Elm_Widget_Smart_Data *sd, const char *style)
 {
    if (eina_stringshare_replace(&sd->style, style))
       return elm_widget_theme(obj);
 
-   return EINA_TRUE;
+   return THEME_APPLY_SUCCESS;
 }
 
 EOLIAN static const char*
@@ -3911,12 +3911,13 @@ _elm_widget_item_loop_enabled_get(Eo *obj EINA_UNUSED, Elm_Widget_Smart_Data *sd
 	return EINA_FALSE;
 }
 
-EOLIAN static Eina_Bool
+EOLIAN static Theme_Apply
 _elm_widget_theme_object_set(Eo *obj, Elm_Widget_Smart_Data *sd, Evas_Object *edj, const char *wname, const char *welement, const char *wstyle)
 {
-   if (!_elm_theme_object_set(obj, edj, wname, welement, wstyle))
+   Theme_Apply ret = _elm_theme_object_set(obj, edj, wname, welement, wstyle);
+   if (!ret)
      {
-        return EINA_FALSE;
+        return THEME_APPLY_FAILED;
      }
 
    if (sd->orient_mode != -1)
@@ -3926,7 +3927,7 @@ _elm_widget_theme_object_set(Eo *obj, Elm_Widget_Smart_Data *sd, Evas_Object *ed
         eo_do(obj, elm_obj_widget_signal_emit(buf, "elm"));
      }
 
-   return EINA_TRUE;
+   return ret;
 }
 
 EOLIAN static void

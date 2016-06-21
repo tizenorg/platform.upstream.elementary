@@ -1583,18 +1583,18 @@ _elm_entry_elm_widget_disable(Eo *obj, Elm_Entry_Data *sd)
 
 /* we can't issue the layout's theming code here, cause it assumes an
  * unique edje object, always */
-EOLIAN static Eina_Bool
+EOLIAN static Theme_Apply
 _elm_entry_elm_widget_theme_apply(Eo *obj, Elm_Entry_Data *sd)
 {
    const char *str;
    const char *t;
    const char *style = elm_widget_style_get(obj);
 
-   ELM_WIDGET_DATA_GET_OR_RETURN(obj, wd, EINA_FALSE);
+   ELM_WIDGET_DATA_GET_OR_RETURN(obj, wd, THEME_APPLY_FAILED);
 
-   Eina_Bool int_ret = EINA_FALSE;
+   Theme_Apply int_ret = THEME_APPLY_FAILED;
    eo_do_super(obj, MY_CLASS, int_ret = elm_obj_widget_theme_apply());
-   if (!int_ret) return EINA_FALSE;
+   if (!int_ret) return THEME_APPLY_FAILED;
 
    evas_event_freeze(evas_object_evas_get(obj));
 
@@ -1680,7 +1680,7 @@ _elm_entry_elm_widget_theme_apply(Eo *obj, Elm_Entry_Data *sd)
 
    if (sd->scroll)
      {
-        Eina_Bool ok = EINA_FALSE;
+        Theme_Apply ok = THEME_APPLY_FAILED;
 
         eo_do(obj, elm_interface_scrollable_mirrored_set(elm_widget_mirrored_get(obj)));
 
@@ -1727,7 +1727,7 @@ _elm_entry_elm_widget_theme_apply(Eo *obj, Elm_Entry_Data *sd)
 
    evas_object_unref(obj);
 
-   return EINA_TRUE;
+   return int_ret;
 }
 
 static void

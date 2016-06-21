@@ -136,12 +136,12 @@ _sizing_eval(Evas_Object *obj)
    evas_object_resize(obj, w, h);
 }
 
-EOLIAN static Eina_Bool
+EOLIAN static Theme_Apply
 _elm_notify_elm_widget_theme_apply(Eo *obj, Elm_Notify_Data *sd)
 {
-   Eina_Bool int_ret = EINA_FALSE;
+   Theme_Apply int_ret = THEME_APPLY_FAILED;
    eo_do_super(obj, MY_CLASS, int_ret = elm_obj_widget_theme_apply());
-   if (!int_ret) return EINA_FALSE;
+   if (!int_ret) return THEME_APPLY_FAILED;
 
    _mirrored_set(obj, elm_widget_mirrored_get(obj));
 
@@ -153,7 +153,7 @@ _elm_notify_elm_widget_theme_apply(Eo *obj, Elm_Notify_Data *sd)
 
    _sizing_eval(obj);
 
-   return EINA_TRUE;
+   return int_ret;
 }
 
 EOLIAN static void

@@ -380,7 +380,7 @@ void                 _elm_win_focus_reconfigure(void);
 
 Ecore_X_Window       _elm_ee_xwin_get(const Ecore_Evas *ee);
 
-Eina_Bool            _elm_theme_object_set(Evas_Object *parent,
+Theme_Apply          _elm_theme_object_set(Evas_Object *parent,
                                            Evas_Object *o,
                                            const char *clas,
                                            const char *group,
@@ -388,7 +388,7 @@ Eina_Bool            _elm_theme_object_set(Evas_Object *parent,
 Eina_Bool            _elm_theme_object_icon_set(Evas_Object *o,
                                                 const char *group,
                                                 const char *style);
-Eina_Bool            _elm_theme_set(Elm_Theme *th,
+Theme_Apply          _elm_theme_set(Elm_Theme *th,
                                     Evas_Object *o,
                                     const char *clas,
                                     const char *group,

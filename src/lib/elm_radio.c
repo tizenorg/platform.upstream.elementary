@@ -214,13 +214,13 @@ _elm_radio_elm_widget_event(Eo *obj, Elm_Radio_Data *_pd EINA_UNUSED, Evas_Objec
    return EINA_TRUE;
 }
 
-EOLIAN static Eina_Bool
+EOLIAN static Theme_Apply
 _elm_radio_elm_widget_theme_apply(Eo *obj, Elm_Radio_Data *sd)
 {
-   ELM_WIDGET_DATA_GET_OR_RETURN(obj, wd, EINA_FALSE);
-   Eina_Bool int_ret = EINA_FALSE;
+   ELM_WIDGET_DATA_GET_OR_RETURN(obj, wd, THEME_APPLY_FAILED);
+   Theme_Apply int_ret = THEME_APPLY_FAILED;
    eo_do_super(obj, MY_CLASS, int_ret = elm_obj_widget_theme_apply());
-   if (!int_ret) return EINA_FALSE;
+   if (!int_ret) return THEME_APPLY_FAILED;
 
    if (sd->state) elm_layout_signal_emit(obj, "elm,state,radio,on", "elm");
    else elm_layout_signal_emit(obj, "elm,state,radio,off", "elm");
@@ -240,7 +240,7 @@ _elm_radio_elm_widget_theme_apply(Eo *obj, Elm_Radio_Data *sd)
    tizen_vg_radio_set(obj);
 #endif
 
-   return EINA_TRUE;
+   return int_ret;
 }
 
 EOLIAN static void
