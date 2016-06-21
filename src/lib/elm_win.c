@@ -6346,9 +6346,19 @@ elm_win_input_rect_subtract(Evas_Object *obj, Eina_Rectangle *input_rect)
 }
 
 EAPI int
-elm_win_active_win_orientation_get(Evas_Object *obj EINA_UNUSED)
+elm_win_active_win_orientation_get(Evas_Object *obj)
 {
-   //TODO
-   return 0;
+   int angle = -1;
+#ifdef HAVE_ELEMENTARY_WAYLAND
+   Ecore_Wl_Window *win = NULL;
+   if (obj)
+     {
+        ELM_WIN_DATA_GET(obj, sd);
+        if (sd)
+          win = sd->wl.win;
+     }
+   angle = ecore_wl_window_active_angle_get(win);
+#endif
+   return angle;
 }
 //////////////////////////////////////////////////////////////////
