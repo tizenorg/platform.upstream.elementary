@@ -535,12 +535,12 @@ _popup_add(Elm_Slider_Data *sd, Eo *obj)
    elm_layout_content_set(obj, "elm.track.slider", sd->track);
 }
 
-EOLIAN static Eina_Bool
+EOLIAN static Theme_Apply
 _elm_slider_elm_widget_theme_apply(Eo *obj, Elm_Slider_Data *sd)
 {
-   Eina_Bool int_ret = EINA_FALSE;
+   Theme_Apply int_ret = THEME_APPLY_FAILED;
    ELM_LAYOUT_DATA_GET(obj, ld);
-   ELM_WIDGET_DATA_GET_OR_RETURN(obj, wd, EINA_FALSE);
+   ELM_WIDGET_DATA_GET_OR_RETURN(obj, wd, THEME_APPLY_FAILED);
 
    if (sd->horizontal)
      {
@@ -560,7 +560,7 @@ _elm_slider_elm_widget_theme_apply(Eo *obj, Elm_Slider_Data *sd)
      }
 
    eo_do_super(obj, MY_CLASS, int_ret = elm_obj_widget_theme_apply());
-   if (!int_ret) return EINA_FALSE;
+   if (!int_ret) return THEME_APPLY_FAILED;
 
 #ifdef TIZEN_VECTOR_UX
    tizen_vg_slider_set(obj, sd->popup);
@@ -604,7 +604,7 @@ _elm_slider_elm_widget_theme_apply(Eo *obj, Elm_Slider_Data *sd)
 
    evas_object_smart_changed(obj);
 
-   return EINA_TRUE;
+   return int_ret;
 }
 
 EOLIAN static void

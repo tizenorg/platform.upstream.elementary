@@ -625,11 +625,11 @@ elm_need_web(void)
 #endif
 }
 
-EOLIAN static Eina_Bool
+EOLIAN static Theme_Apply
 _elm_web_elm_widget_theme_apply(Eo *obj, Elm_Web_Data *sd EINA_UNUSED)
 {
    (void)obj;
-   return EINA_TRUE;
+   return THEME_APPLY_SUCCESS;
 }
 
 EOLIAN static Eina_Bool
