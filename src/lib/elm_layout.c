@@ -351,12 +351,12 @@ _elm_layout_elm_widget_disable(Eo *obj, Elm_Layout_Smart_Data *_pd EINA_UNUSED)
    return EINA_TRUE;
 }
 
-static Eina_Bool
+static Theme_Apply
 _elm_layout_theme_internal(Eo *obj, Elm_Layout_Smart_Data *sd)
 {
-   Eina_Bool ret = EINA_FALSE;
+   Theme_Apply ret = THEME_APPLY_FAILED;
 
-   ELM_WIDGET_DATA_GET_OR_RETURN(obj, wd, EINA_FALSE);
+   ELM_WIDGET_DATA_GET_OR_RETURN(obj, wd, THEME_APPLY_FAILED);
 
    /* function already prints error messages, if any */
    if (!sd->file_set)
@@ -369,25 +369,28 @@ _elm_layout_theme_internal(Eo *obj, Elm_Layout_Smart_Data *sd)
    if (ret)
      eo_do(obj, eo_event_callback_call(ELM_LAYOUT_EVENT_THEME_CHANGED, NULL));
 
-   ret = _visuals_refresh(obj, sd) && ret;
+   if (!_visuals_refresh(obj, sd))
+     ret = THEME_APPLY_FAILED;
 
    return ret;
 }
 
-EOLIAN static Eina_Bool
+EOLIAN static Theme_Apply
 _elm_layout_elm_widget_theme_apply(Eo *obj, Elm_Layout_Smart_Data *sd)
 {
-   Eina_Bool int_ret = EINA_FALSE;
+   Theme_Apply int_ret = THEME_APPLY_FAILED;
 
    eo_do_super(obj, MY_CLASS, int_ret = elm_obj_widget_theme_apply());
-   if (!int_ret) return EINA_FALSE;
+   if (!int_ret) return THEME_APPLY_FAILED;
    /* The following lines are here to support entry design; the _theme function
     * of entry needs to call directly the widget _theme function */
    Eina_Bool enable = EINA_TRUE;
    eo_do(obj, enable = elm_obj_layout_theme_enable());
-   if (!enable) return EINA_TRUE;
+   if (!enable) return int_ret;
 
-   return _elm_layout_theme_internal(obj, sd);
+   int_ret = _elm_layout_theme_internal(obj, sd) & int_ret;
+
+   return int_ret;
 }
 
 static void *

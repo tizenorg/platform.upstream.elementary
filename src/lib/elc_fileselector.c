@@ -96,18 +96,18 @@ _mirrored_set(Evas_Object *obj, Eina_Bool rtl)
    elm_widget_mirrored_set(sd->home_button, rtl);
 }
 
-EOLIAN static Eina_Bool
+EOLIAN static Theme_Apply
 _elm_fileselector_elm_widget_theme_apply(Eo *obj, Elm_Fileselector_Data *sd)
 {
    const char *style;
    const char *data;
    char buf[1024];
 
-   ELM_WIDGET_DATA_GET_OR_RETURN(obj, wd, EINA_FALSE);
+   ELM_WIDGET_DATA_GET_OR_RETURN(obj, wd, THEME_APPLY_FAILED);
 
-   Eina_Bool int_ret = EINA_FALSE;
+   Theme_Apply int_ret = THEME_APPLY_FAILED;
    eo_do_super(obj, MY_CLASS, int_ret = elm_obj_widget_theme_apply());
-   if (!int_ret) return EINA_FALSE;
+   if (!int_ret) return THEME_APPLY_FAILED;
 
    style = elm_widget_style_get(obj);
    _mirrored_set(obj, elm_widget_mirrored_get(obj));
@@ -150,7 +150,7 @@ _elm_fileselector_elm_widget_theme_apply(Eo *obj, Elm_Fileselector_Data *sd)
 
    elm_layout_sizing_eval(obj);
 
-   return EINA_TRUE;
+   return int_ret;
 }
 
 static Eina_Bool
