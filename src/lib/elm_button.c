@@ -116,20 +116,20 @@ _icon_signal_emit(Evas_Object *obj)
 /* FIXME: replicated from elm_layout just because button's icon spot
  * is elm.swallow.content, not elm.swallow.icon. Fix that whenever we
  * can changed the theme API */
-EOLIAN static Eina_Bool
+EOLIAN static Theme_Apply
 _elm_button_elm_widget_theme_apply(Eo *obj, Elm_Button_Data *_pd EINA_UNUSED)
 {
-   Eina_Bool int_ret = EINA_FALSE;
+   Theme_Apply int_ret = THEME_APPLY_FAILED;
 
    eo_do_super(obj, MY_CLASS, int_ret = elm_obj_widget_theme_apply());
-   if (!int_ret) return EINA_FALSE;
+   if (!int_ret) return THEME_APPLY_FAILED;
    _icon_signal_emit(obj);
 
 #ifdef TIZEN_VECTOR_UX
    tizen_vg_button_set(obj);
 #endif
 
-   return EINA_TRUE;
+   return int_ret;
 }
 
 /* FIXME: replicated from elm_layout just because button's icon spot
