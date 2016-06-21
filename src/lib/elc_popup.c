@@ -446,7 +446,7 @@ _notify_orient_name_get(Evas_Object *obj)
 }
 //
 
-EOLIAN static Eina_Bool
+EOLIAN static Theme_Apply
 _elm_popup_elm_widget_theme_apply(Eo *obj, Elm_Popup_Data *sd)
 {
    Elm_Popup_Item_Data *it;
@@ -548,7 +548,7 @@ _elm_popup_elm_widget_theme_apply(Eo *obj, Elm_Popup_Data *sd)
    /* access */
    if (_elm_config->access_mode) _access_obj_process(obj, EINA_TRUE);
 
-   return EINA_TRUE;
+   return THEME_APPLY_SUCCESS;
 }
 
 static void
