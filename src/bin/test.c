@@ -70,6 +70,7 @@ void test_multibuttonentry(void *data, Evas_Object *obj, void *event_info);
 void test_entry_anchor2(void *data, Evas_Object *obj, void *event_info);
 void test_entry_anchor(void *data, Evas_Object *obj, void *event_info);
 void test_entry_emoticon(void *data, Evas_Object *obj, void *event_info);
+void test_entry_password(void *data, Evas_Object *obj, void *event_info);
 void test_toolbar(void *data, Evas_Object *obj, void *event_info);
 void test_toolbar2(void *data, Evas_Object *obj, void *event_info);
 void test_toolbar3(void *data, Evas_Object *obj, void *event_info);
@@ -607,6 +608,7 @@ add_tests:
    ADD_TEST(NULL, "Entries", "Entry Anchor", test_entry_anchor);
    ADD_TEST(NULL, "Entries", "Entry Anchor2", test_entry_anchor2);
    ADD_TEST(NULL, "Entries", "Entry Emoticon", test_entry_emoticon);
+   ADD_TEST(NULL, "Entries", "Entry Password", test_entry_password);
 
    //------------------------------//
    ADD_TEST(NULL, "Buttons", "Button", test_button);

@@ -1589,6 +1589,8 @@ _elm_entry_elm_widget_theme_apply(Eo *obj, Elm_Entry_Data *sd)
    edje_object_part_text_freeze(sd->entry_edje, "elm.text");
    //
 
+   edje_object_part_text_hide_visible_password(sd->entry_edje, "elm.text");
+
    edje_object_mirrored_set
      (wd->resize_obj, elm_widget_mirrored_get(obj));
 
