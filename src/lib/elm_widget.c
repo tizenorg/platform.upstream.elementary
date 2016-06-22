@@ -61,6 +61,11 @@ struct _Elm_Translate_String_Data
    Eina_Bool   preset : 1;
 };
 
+/* TIZEN_ONLY(20160622): Override Paragraph Direction APIs */
+static void
+_elm_widget_evas_object_paragraph_direction_set_internal(Eo *obj EINA_UNUSED, Elm_Widget_Smart_Data *sd, Evas_BiDi_Direction dir);
+/* END */
+
 /* local subsystem globals */
 static unsigned int focus_order = 0;
 
@@ -1222,6 +1227,15 @@ _elm_widget_sub_object_add(Eo *obj, Elm_Widget_Smart_Data *sd, Evas_Object *sobj
              if (obj == aparent)
                 elm_interface_atspi_accessible_children_changed_added_signal_emit(obj, sobj);
           }
+
+        /* TIZEN_ONLY(20160622): Override Paragraph Direction APIs */
+        if (sdc->inherit_paragraph_direction &&
+            (sdc->paragraph_direction != evas_object_paragraph_direction_get(obj)))
+          {
+             sdc->paragraph_direction = evas_object_paragraph_direction_get(obj);
+             _elm_widget_evas_object_paragraph_direction_set_internal(sobj, sdc, sdc->paragraph_direction);
+          }
+        /* END */
      }
 
 end:
@@ -1303,6 +1317,15 @@ _elm_widget_sub_object_del(Eo *obj, Elm_Widget_Smart_Data *sd, Evas_Object *sobj
 
         ELM_WIDGET_DATA_GET(sobj, sdc);
         sdc->parent_obj = NULL;
+
+        /* TIZEN_ONLY(20160622): Override Paragraph Direction APIs */
+        if (sdc->inherit_paragraph_direction &&
+            (sdc->paragraph_direction != EVAS_BIDI_DIRECTION_NEUTRAL))
+          {
+             sdc->paragraph_direction = EVAS_BIDI_DIRECTION_NEUTRAL;
+             _elm_widget_evas_object_paragraph_direction_set_internal(sobj, sdc, sdc->paragraph_direction);
+          }
+        /* END */
      }
 
    if (sd->resize_obj == sobj) sd->resize_obj = NULL;
@@ -5848,6 +5871,9 @@ _elm_widget_eo_base_constructor(Eo *obj, Elm_Widget_Smart_Data *sd EINA_UNUSED)
 ///TIZEN_ONLY(20170717) : expose highlight information on atspi
    sd->can_highlight = EINA_TRUE;
 ///
+   /* TIZEN_ONLY(20160622): Override Paragraph Direction APIs */
+   sd->inherit_paragraph_direction = EINA_TRUE;
+   /* END */
 
    eo_do(obj, elm_interface_atspi_accessible_role_set(ELM_ATSPI_ROLE_UNKNOWN));
    return obj;
@@ -6478,6 +6504,68 @@ _elm_widget_item_elm_interface_atspi_accessible_translation_domain_get(Eo *obj E
    return _pd->atspi_translation_domain;
 }
 ///
+
+/* TIZEN_ONLY(20160622): Override Paragraph Direction APIs */
+static void
+_elm_widget_evas_object_paragraph_direction_set_internal(Eo *obj EINA_UNUSED, Elm_Widget_Smart_Data *sd, Evas_BiDi_Direction dir)
+{
+   Evas_Object *child;
+   Eina_List *l;
+
+   if (sd->on_destroy) return;
+
+   EINA_LIST_FOREACH(sd->subobjs, l, child)
+     {
+        if (_elm_widget_is(child))
+          {
+             Elm_Widget_Smart_Data *sdc = eo_data_scope_get(child, MY_CLASS);
+
+             if (sdc->inherit_paragraph_direction &&
+                 (sdc->paragraph_direction != dir))
+               {
+                  sdc->paragraph_direction = dir;
+                  _elm_widget_evas_object_paragraph_direction_set_internal(child, sdc, dir);
+                  eo_do_super(child, MY_CLASS, evas_obj_paragraph_direction_set(dir));
+               }
+          }
+
+        /* FIXME: There is no way to handle non-widget child object.
+         * If a non-widget child object has smart parent, it will get the direction
+         * from the smart parent. */
+     }
+}
+
+EOLIAN static void
+_elm_widget_evas_object_paragraph_direction_set(Eo *obj, Elm_Widget_Smart_Data *sd, Evas_BiDi_Direction dir)
+{
+   if ((!(sd->inherit_paragraph_direction) && (sd->paragraph_direction == dir)) ||
+       (sd->inherit_paragraph_direction && (dir == EVAS_BIDI_DIRECTION_INHERIT)))
+     return;
+
+   if (dir == EVAS_BIDI_DIRECTION_INHERIT)
+     {
+        sd->inherit_paragraph_direction = EINA_TRUE;
+        Evas_BiDi_Direction parent_dir = EVAS_BIDI_DIRECTION_NEUTRAL;
+
+        if (sd->parent_obj)
+          parent_dir = evas_object_paragraph_direction_get(sd->parent_obj);
+
+        if (parent_dir != sd->paragraph_direction)
+          {
+             sd->paragraph_direction = parent_dir;
+             _elm_widget_evas_object_paragraph_direction_set_internal(obj, sd, parent_dir);
+          }
+     }
+   else
+     {
+        sd->inherit_paragraph_direction = EINA_FALSE;
+        sd->paragraph_direction = dir;
+        _elm_widget_evas_object_paragraph_direction_set_internal(obj, sd, dir);
+     }
+
+   eo_do_super(obj, MY_CLASS, evas_obj_paragraph_direction_set(dir));
+}
+/* END */
 
 #include "elm_widget_item.eo.c"
 #include "elm_widget.eo.c"
