@@ -6225,6 +6225,16 @@ elm_win_window_id_get(const Evas_Object *obj)
    return ret;
 }
 
+/* TIZEN_ONLY(20160622): Override Paragraph Direction APIs */
+EOLIAN static void
+_elm_win_evas_object_paragraph_direction_set(Eo *obj, Elm_Win_Data *sd, Evas_BiDi_Direction dir)
+{
+   evas_object_paragraph_direction_set(sd->edje, dir);
+
+   eo_do_super(obj, MY_CLASS, evas_obj_paragraph_direction_set(dir));
+}
+/* END */
+
 EOLIAN static void
 _elm_win_class_constructor(Eo_Class *klass)
 {

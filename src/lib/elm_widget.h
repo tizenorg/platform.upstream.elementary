@@ -434,6 +434,10 @@ typedef struct _Elm_Widget_Smart_Data
    int                           orient_mode; /* -1 is disabled */
    Elm_Focus_Move_Policy         focus_move_policy;
    Elm_Focus_Region_Show_Mode    focus_region_show_mode;
+   /* TIZEN_ONLY(20160622): Override Paragraph Direction APIs */
+   Evas_BiDi_Direction           paragraph_direction : 2;
+   Eina_Bool                     inherit_paragraph_direction : 1;
+   /* END */
 
    Eina_Bool                     drag_x_locked : 1;
    Eina_Bool                     drag_y_locked : 1;
