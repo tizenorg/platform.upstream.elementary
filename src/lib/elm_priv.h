@@ -306,6 +306,10 @@ struct _Elm_Config
    int           gl_stencil;
    int           gl_msaa;
 
+   // TIZEN_ONLY(20160622): add config for popup initial focus to button
+   unsigned char popup_initial_focus_btn;
+   // END-ONLY
+
    /* Not part of the EET file */
    Eina_Bool     is_mirrored : 1;
    Eina_Bool     translate : 1;

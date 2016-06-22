@@ -157,6 +157,22 @@ _on_show(void *data EINA_UNUSED,
          Evas_Object *obj,
          void *event_info EINA_UNUSED)
 {
+   // TIZEN_ONLY(20160622): add config for popup initial focus to button
+   if (elm_widget_focus_get(obj))
+     return;
+
+   if (_elm_config->popup_initial_focus_btn)
+     {
+        ELM_POPUP_DATA_GET(obj, sd);
+        if (sd->action_area)
+          {
+             evas_object_show(sd->action_area);
+             elm_object_focus_set(sd->action_area, EINA_TRUE);
+             return;
+          }
+     }
+   // END-ONLY
+
    elm_object_focus_set(obj, EINA_TRUE);
 }
 
