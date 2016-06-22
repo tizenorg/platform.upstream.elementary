@@ -4287,6 +4287,8 @@ buf_free:
    return ret;
 }
 
+//TIZEN_ONLY(20150806): Selection is enabled for password mode
+/*
 static void
 _entry_selection_callbacks_unregister(Evas_Object *obj)
 {
@@ -4317,6 +4319,8 @@ _entry_selection_callbacks_unregister(Evas_Object *obj)
      (sd->entry_edje, "entry,cut,notify", "elm.text",
      _entry_cut_notify_signal_cb, obj);
 }
+*/
+//
 
 static void
 _entry_selection_callbacks_register(Evas_Object *obj)
@@ -5318,7 +5322,9 @@ _elm_entry_password_set(Eo *obj, Elm_Entry_Data *sd, Eina_Bool password)
         sd->single_line = EINA_TRUE;
         sd->line_wrap = ELM_WRAP_NONE;
         elm_entry_input_hint_set(obj, ((sd->input_hints & ~ELM_INPUT_HINT_AUTO_COMPLETE) | ELM_INPUT_HINT_SENSITIVE_DATA));
-        _entry_selection_callbacks_unregister(obj);
+        //TIZEN_ONLY(20150806): Selection is enabled for password mode
+        //_entry_selection_callbacks_unregister(obj);
+        //
         elm_interface_atspi_accessible_role_set(ELM_ATSPI_ROLE_PASSWORD_TEXT);
      }
    else
@@ -5339,7 +5345,9 @@ _elm_entry_password_set(Eo *obj, Elm_Entry_Data *sd, Eina_Bool password)
         /////////////////////////////////////////////////////////////////
 
         elm_entry_input_hint_set(obj, ((sd->input_hints | ELM_INPUT_HINT_AUTO_COMPLETE) & ~ELM_INPUT_HINT_SENSITIVE_DATA));
-        _entry_selection_callbacks_register(obj);
+        //TIZEN_ONLY(20150806): Selection is enabled for password mode
+        //_entry_selection_callbacks_register(obj);
+        //
         elm_interface_atspi_accessible_role_set(ELM_ATSPI_ROLE_ENTRY);
      }
 
@@ -5511,7 +5519,9 @@ _elm_entry_editable_get(Eo *obj EINA_UNUSED, Elm_Entry_Data *sd)
 EOLIAN static void
 _elm_entry_select_none(Eo *obj EINA_UNUSED, Elm_Entry_Data *sd)
 {
-   if ((sd->password)) return;
+   //TIZEN_ONLY(20150806): Selection is enabled for password mode
+   //if ((sd->password)) return;
+   //
    if (sd->sel_mode)
      {
         sd->sel_mode = EINA_FALSE;
@@ -5533,7 +5543,9 @@ _elm_entry_select_none(Eo *obj EINA_UNUSED, Elm_Entry_Data *sd)
 EOLIAN static void
 _elm_entry_select_all(Eo *obj EINA_UNUSED, Elm_Entry_Data *sd)
 {
-   if ((sd->password)) return;
+   //TIZEN_ONLY(20150806): Selection is enabled for password mode
+   //if ((sd->password)) return;
+   //
    if (sd->sel_mode)
      {
         sd->sel_mode = EINA_FALSE;
@@ -5548,7 +5560,9 @@ _elm_entry_select_all(Eo *obj EINA_UNUSED, Elm_Entry_Data *sd)
 EOLIAN static void
 _elm_entry_select_region_set(Eo *obj EINA_UNUSED, Elm_Entry_Data *sd, int start, int end)
 {
-   if ((sd->password)) return;
+   //TIZEN_ONLY(20150806): Selection is enabled for password mode
+   //if ((sd->password)) return;
+   //
    if (sd->sel_mode)
      {
         sd->sel_mode = EINA_FALSE;
