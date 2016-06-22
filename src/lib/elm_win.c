@@ -2772,8 +2772,20 @@ _elm_win_translate(void)
    const Eina_List *l;
    Evas_Object *obj;
 
+   /* TIZEN_ONLY(20160622): Apply paragraph direction when language is changed
    EINA_LIST_FOREACH(_elm_win_list, l, obj)
      elm_widget_translate(obj);
+    */
+   EINA_LIST_FOREACH(_elm_win_list, l, obj)
+     {
+        if (!strcmp(E_("default:LTR"), "default:RTL"))
+          evas_object_paragraph_direction_set(obj, EVAS_BIDI_DIRECTION_RTL);
+        else
+          evas_object_paragraph_direction_set(obj, EVAS_BIDI_DIRECTION_LTR);
+
+        elm_widget_translate(obj);
+     }
+   /* END */
 }
 
 void
@@ -4393,6 +4405,14 @@ _elm_win_finalize_internal(Eo *obj, Elm_Win_Data *sd, const char *name, Elm_Win_
         _elm_win_resize_job(obj);
         _elm_win_move(sd->ee);
      }
+
+   /* TIZEN_ONLY(20160622): Apply paragraph direction when language is changed */
+   if (!strcmp(E_("default:LTR"), "default:RTL"))
+     evas_object_paragraph_direction_set(obj, EVAS_BIDI_DIRECTION_RTL);
+   else
+     evas_object_paragraph_direction_set(obj, EVAS_BIDI_DIRECTION_LTR);
+   /* END */
+
    return obj;
 }
 
