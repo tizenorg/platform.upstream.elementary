@@ -1282,6 +1282,9 @@ class Elm.Win (Elm.Widget, Elm_Interface_Atspi_Window,
       class.constructor;
       Eo.Base.constructor;
       Eo.Base.finalize;
+      /* TIZEN_ONLY(20160622): Override Paragraph Direction APIs */
+      Evas.Object.paragraph_direction.set;
+      /* END */
       Evas.Object_Smart.hide;
       Evas.Object_Smart.show;
       Evas.Object_Smart.move;
