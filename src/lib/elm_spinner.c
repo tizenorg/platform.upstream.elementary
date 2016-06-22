@@ -5,6 +5,7 @@
 #define ELM_INTERFACE_ATSPI_ACCESSIBLE_PROTECTED
 #define ELM_INTERFACE_ATSPI_VALUE_PROTECTED
 #define ELM_INTERFACE_ATSPI_WIDGET_ACTION_PROTECTED
+#define ELM_INTERFACE_ATSPI_COMPONENT_PROTECTED
 
 #include <Elementary.h>
 #include <ctype.h>
@@ -82,6 +83,15 @@ typedef enum _Elm_Spinner_Format_Type
    SPINNER_FORMAT_INT,
    SPINNER_FORMAT_INVALID
 } Elm_Spinner_Format_Type;
+
+static Eina_Bool _atspi_enabled()
+{
+    Eo *bridge = NULL;
+    Eina_Bool ret = EINA_FALSE;
+    if (_elm_config->atspi_mode && (bridge = _elm_atspi_bridge_get()))
+      eo_do(bridge, ret = elm_obj_atspi_bridge_connected_get());
+    return ret;
+}
 
 static Eina_Bool
 _is_valid_digit(char x)
@@ -397,7 +407,7 @@ _entry_hide(Evas_Object *obj)
      elm_layout_signal_emit(obj, "elm,state,inactive", "elm");
 
    //TIZEN_ONLY(20160606): Forcefully setting highlight frame on spinner entry as on entry activation frame goes to window again.
-   eo_do(obj, elm_interface_atspi_component_highlight_clear());
+   if (_atspi_enabled()) eo_do(obj, elm_interface_atspi_component_highlight_clear());
    //
    sd->entry_visible = EINA_FALSE;
 }
@@ -628,7 +638,7 @@ _entry_show_cb(void *data,
    sd->entry_visible = EINA_TRUE;
    elm_layout_signal_emit(data, "elm,state,button,inactive", "elm");
    //TIZEN_ONLY(20160606): Forcefully setting highlight frame on spinner entry as on entry activation frame goes to window again.
-   eo_do(obj, elm_interface_atspi_component_highlight_grab());
+   if (_atspi_enabled()) eo_do(obj, elm_interface_atspi_component_highlight_grab());
    //
 }
 
