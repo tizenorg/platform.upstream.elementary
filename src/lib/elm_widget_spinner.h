@@ -43,6 +43,8 @@ struct _Elm_Spinner_Data
    Eina_List            *special_values;
 
    Eina_Bool             entry_visible : 1;
+   //TIZEN_ONLY(20160623): Add entry visible, focus check flag for reactivating entry.
+   Eina_Bool             entry_reactivate : 1;
    Eina_Bool             dragging : 1;
    Eina_Bool             editable : 1;
    Eina_Bool             wrap : 1;

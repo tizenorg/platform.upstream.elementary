@@ -1023,8 +1023,23 @@ _elm_spinner_elm_widget_on_focus(Eo *obj, Elm_Spinner_Data *sd, Elm_Object_Item 
         ELM_SAFE_FREE(sd->delay_change_timer, ecore_timer_del);
         ELM_SAFE_FREE(sd->spin_timer, ecore_timer_del);
 
+        //TIZEN_ONLY(20160623): Add entry visible, focus check flag for reactivating entry.
+        if (sd->entry_visible && !evas_focus_state_get(evas_object_evas_get(obj)))
+          sd->entry_reactivate = EINA_TRUE;
+        //
+
         _entry_value_apply(obj);
      }
+   //TIZEN_ONLY(20160623): Add entry visible, focus check flag for reactivating entry.
+   else
+     {
+        if (sd->entry_reactivate)
+          {
+             _toggle_entry(obj);
+             sd->entry_reactivate = EINA_FALSE;
+          }
+     }
+   //
 
    return EINA_TRUE;
 }
