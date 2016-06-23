@@ -4144,8 +4144,6 @@ _elm_entry_elm_layout_text_set(Eo *obj, Elm_Entry_Data *sd, const char *part, co
         sd->append_text_left = NULL;
      }
 
-   /* Need to clear the entry first */
-   edje_object_part_text_set(sd->entry_edje, "elm.text", "");
    _entry_text_append(obj, entry, EINA_TRUE);
 
    /* TIZEN_ONLY(20160502): Show/Hide guide text immediately.
