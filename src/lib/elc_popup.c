@@ -1819,9 +1819,14 @@ _elm_popup_evas_object_smart_add(Eo *obj, Elm_Popup_Data *priv)
          elm_layout_theme_set(priv->content_area, "popup", "content", style)))
      CRI("Failed to set layout!");
    else
+   //TIZEN_ONLY(2016-06-23): fix popup align and size problem
+   //  evas_object_event_callback_add
+   //     (priv->content_area, EVAS_CALLBACK_CHANGED_SIZE_HINTS,
+   //      _size_hints_changed_cb, priv->main_layout);
      evas_object_event_callback_add
         (priv->content_area, EVAS_CALLBACK_CHANGED_SIZE_HINTS,
-         _size_hints_changed_cb, priv->main_layout);
+         _size_hints_changed_cb, obj);
+   //
    /* END */
 
    priv->content_text_wrap_type = ELM_WRAP_MIXED;
