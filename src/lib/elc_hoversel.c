@@ -184,7 +184,14 @@ _create_scroller(Evas_Object *obj, Elm_Hoversel_Data *sd)
 
    //Scroller
    sd->scr = elm_scroller_add(sd->tbl);
+   /* TIZEN_ONLY(20160624): Support legacy scroller styles
    elm_object_style_set(sd->scr, "popup/no_inset_shadow");
+   */
+   if (!elm_layout_theme_set(sd->scr, "scroller", "base", "effect"))
+     {
+        elm_object_style_set(sd->scr, "popup/no_inset_shadow");
+     }
+   /* END*/
    evas_object_size_hint_weight_set(sd->scr, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    evas_object_size_hint_align_set(sd->scr, EVAS_HINT_FILL, EVAS_HINT_FILL);
    if (sd->horizontal)
