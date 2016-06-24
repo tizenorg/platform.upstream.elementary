@@ -167,6 +167,10 @@ _scroller_size_calc(Evas_Object *obj)
    Evas_Coord h_title = 0;
    Evas_Coord h_action_area = 0;
    const char *action_area_height;
+   //TIZEN_ONLY(20160624): add outside padding
+   const char *outside_pad;
+   Evas_Coord h_pad = 0;
+   //
 
    ELM_POPUP_DATA_GET(obj, sd);
    //TIZEN_ONLY(20160623):Apply popup compress mode UX
@@ -192,13 +196,22 @@ _scroller_size_calc(Evas_Object *obj)
                   / edje_object_base_scale_get(elm_layout_edje_get(sd->action_area));
      }
 
+   //TIZEN_ONLY(20160624): add out side padding
+   outside_pad = edje_object_data_get(elm_layout_edje_get(sd->main_layout), "popup_outside_pad");
+
+   if (outside_pad) h_pad = (int)(atoi(outside_pad)
+                            * elm_config_scale_get()
+                            * elm_object_scale_get(obj)
+                            / edje_object_base_scale_get(elm_layout_edje_get(sd->main_layout)));
+   //
+
    //TIZEN_ONLY(20160623):Apply popup compress mode UX
    //sd->max_sc_h = h - (h_title + h_action_area);
    if ((sd->dispmode == EVAS_DISPLAY_MODE_COMPRESS) &&
        ((wd->orient_mode == 90) || (wd->orient_mode == 270)))
       sd->max_sc_h = h - h_action_area;
    else
-      sd->max_sc_h = h - (h_title + h_action_area);
+      sd->max_sc_h = h - (h_title + h_action_area + h_pad);
    //
 }
 
