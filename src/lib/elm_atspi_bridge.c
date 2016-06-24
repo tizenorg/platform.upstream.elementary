@@ -123,6 +123,7 @@ static const char *_a11y_socket_address;
 // Object Event handlers
 static Eina_Bool _state_changed_signal_send(void *data, Eo *obj, const Eo_Event_Description *desc, void *event_info);
 static Eina_Bool _property_changed_signal_send(void *data, Eo *obj, const Eo_Event_Description *desc EINA_UNUSED, void *event_info);
+static Eina_Bool _bounds_changed_signal_send(void *data, Eo *obj, const Eo_Event_Description *desc EINA_UNUSED, void *event_info);
 static Eina_Bool _children_changed_signal_send(void *data, Eo *obj, const Eo_Event_Description *desc EINA_UNUSED, void *event_info);
 static Eina_Bool _window_signal_send(void *data, Eo *obj, const Eo_Event_Description *desc, void *event_info);
 static Eina_Bool _visible_data_changed_signal_send(void *data, Eo *obj, const Eo_Event_Description *desc, void *event_info);
@@ -159,6 +160,7 @@ typedef struct {
 static const Elm_Atspi_Bridge_Event_Handler event_handlers[] = {
    { ELM_INTERFACE_ATSPI_ACCESSIBLE_EVENT_CHILDREN_CHANGED, _children_changed_signal_send},
    { ELM_INTERFACE_ATSPI_ACCESSIBLE_EVENT_PROPERTY_CHANGED, _property_changed_signal_send},
+   { ELM_INTERFACE_ATSPI_ACCESSIBLE_EVENT_BOUNDS_CHANGED, _bounds_changed_signal_send},
    { ELM_INTERFACE_ATSPI_ACCESSIBLE_EVENT_STATE_CHANGED, _state_changed_signal_send},
    { ELM_INTERFACE_ATSPI_ACCESSIBLE_EVENT_VISIBLE_DATA_CHANGED, _visible_data_changed_signal_send},
    { ELM_INTERFACE_ATSPI_ACCESSIBLE_EVENT_ACTIVE_DESCENDANT_CHANGED, _active_descendant_changed_signal_send},
@@ -243,7 +245,7 @@ enum _Atspi_Window_Signals
 
 static const Eldbus_Signal _event_obj_signals[] = {
    [ATSPI_OBJECT_EVENT_PROPERTY_CHANGED] = {"PropertyChange", ELDBUS_ARGS({"siiv(so)", NULL}), 0},
-   [ATSPI_OBJECT_EVENT_BOUNDS_CHANGED] = {"BoundsChange", ELDBUS_ARGS({"siiv(so)", NULL}), 0},
+   [ATSPI_OBJECT_EVENT_BOUNDS_CHANGED] = {"BoundsChanged", ELDBUS_ARGS({"siiv(iiii)", NULL}), 0},
    [ATSPI_OBJECT_EVENT_LINK_SELECTED] = {"LinkSelected", ELDBUS_ARGS({"siiv(so)", NULL}), 0},
    [ATSPI_OBJECT_EVENT_STATE_CHANGED] = {"StateChanged", ELDBUS_ARGS({"siiv(so)", NULL}), 0},
    [ATSPI_OBJECT_EVENT_CHILDREN_CHANGED] = {"ChildrenChanged", ELDBUS_ARGS({"siiv(so)", NULL}), 0},
@@ -3850,6 +3852,8 @@ _set_broadcast_flag(const char *event, Eo *bridge)
           STATE_TYPE_SET(pd->object_broadcast_mask, ATSPI_OBJECT_EVENT_VISIBLE_DATA_CHANGED);
         else if (!strcmp(tokens[1], "ActiveDescendantChanged"))
           STATE_TYPE_SET(pd->object_broadcast_mask, ATSPI_OBJECT_EVENT_ACTIVE_DESCENDANT_CHANGED);
+        else if (!strcmp(tokens[1], "BoundsChanged"))
+          STATE_TYPE_SET(pd->object_broadcast_mask, ATSPI_OBJECT_EVENT_BOUNDS_CHANGED);
      }
    else if (!strcmp(tokens[0], "Window"))
      {
@@ -3965,6 +3969,17 @@ _state_changed_signal_send(void *data, Eo *obj EINA_UNUSED, const Eo_Event_Descr
 
    _bridge_signal_send(data, obj, ATSPI_DBUS_INTERFACE_EVENT_OBJECT,
                        &_event_obj_signals[ATSPI_OBJECT_EVENT_STATE_CHANGED], type_desc, state_data->new_value, 0, NULL);
+   return EINA_TRUE;
+}
+
+static Eina_Bool
+_bounds_changed_signal_send(void *data, Eo *obj EINA_UNUSED, const Eo_Event_Description *desc EINA_UNUSED, void *event_info)
+{
+   Elm_Atspi_Event_Geometry_Changed_Data *geo_data = event_info;
+
+   _bridge_signal_send(data, obj, ATSPI_DBUS_INTERFACE_EVENT_OBJECT,
+                       &_event_obj_signals[ATSPI_OBJECT_EVENT_BOUNDS_CHANGED], "", 0, 0, "(iiii)",
+                       geo_data->x, geo_data->y, geo_data->width, geo_data->height);
    return EINA_TRUE;
 }
 
