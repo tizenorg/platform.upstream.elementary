@@ -92,9 +92,9 @@ cp %{SOURCE1001} .
 %build
 
 # Patch profile dependency widgets
-%if "%{?tizen_profile_name}" == "mobile"
+%if "%{profile}" == "mobile"
     cp %{_builddir}/%{buildsubdir}/src/mobile_lib/* %{_builddir}/%{buildsubdir}/src/lib
-%else if "%{?tizen_profile_name}" == "wearable"
+%else if "%{profile}" == "wearable"
     cp %{_builddir}/%{buildsubdir}/src/mobile_lib/* %{_builddir}/%{buildsubdir}/src/lib
     export CFLAGS+=" -DELM_FEATURE_WEARABLE"
     %if "%{?model_build_feature_formfactor}" == "circle"
