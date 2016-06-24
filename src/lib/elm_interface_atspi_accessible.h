@@ -243,6 +243,16 @@ struct _Elm_Atspi_Event_Children_Changed_Data
    Eo *child;
 };
 
+typedef struct _Elm_Atspi_Event_Geometry_Changed_Data Elm_Atspi_Event_Geometry_Changed_Data;
+
+struct _Elm_Atspi_Event_Geometry_Changed_Data
+{
+   int x;
+   int y;
+   int width;
+   int height;
+};
+
 typedef struct _Elm_Atspi_Event_Children_Changed_Data Elm_Atspi_Event_Children_Changed_Data;
 
 struct _Elm_Atspi_Attribute
@@ -305,6 +315,14 @@ EAPI Elm_Atspi_Relation_Set elm_atspi_relation_set_clone(const Elm_Atspi_Relatio
 
 #ifdef EFL_EO_API_SUPPORT
 
+/**
+ * Emits ATSPI 'Bounds_Changes' dbus signal.
+ */
+#define elm_interface_atspi_accessible_bounds_changed_signal_emit(obj, x, y, width, height) \
+   do { \
+         Elm_Atspi_Event_Geometry_Changed_Data evinfo = { x, y, width, height }; \
+         eo_do(ELM_INTERFACE_ATSPI_ACCESSIBLE_MIXIN, elm_interface_atspi_accessible_event_emit(obj, ELM_INTERFACE_ATSPI_ACCESSIBLE_EVENT_BOUNDS_CHANGED, (void*)&evinfo)); \
+   } while(0);
 /**
  * Emits ATSPI 'StateChanged' dbus signal.
  */

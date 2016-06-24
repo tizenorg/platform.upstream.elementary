@@ -223,6 +223,13 @@ _conformant_part_sizing_eval(Evas_Object *obj,
 #endif
 //
         DBG("[KEYPAD]: size(%d,%d, %dx%d).", sx, sy, sw, sh);
+        if (_elm_config->atspi_mode)
+          {
+             Evas_Object *access;
+             access = evas_object_data_get(sd->virtualkeypad, "_part_access_obj");
+             elm_interface_atspi_accessible_bounds_changed_signal_emit
+                                                      (access, sx, sy, sw, sh);
+          }
         if (sd->virtualkeypad)
           _conformant_part_size_hints_set
              (obj, sd->virtualkeypad, sx, sy, sw, sh);
@@ -262,6 +269,57 @@ _conformant_part_sizing_eval(Evas_Object *obj,
      }
 }
 
+//TIZEN ONLY(20160628): expose virtual keypad rect as at-spi object
+static Eina_Bool
+_conformant_atspi_bridge_on_connect_cb(void *data, Eo *obj EINA_UNUSED, const Eo_Event_Description *desc EINA_UNUSED, void *event_info EINA_UNUSED)
+{
+   ELM_CONFORMANT_DATA_GET(data, sd);
+   Evas_Object *access;
+
+   if (sd->virtualkeypad)
+     {
+        access = elm_access_object_register(sd->virtualkeypad, data);
+        elm_atspi_accessible_role_set(access, ELM_ATSPI_ROLE_INPUT_METHOD_WINDOW);
+     }
+   return EINA_TRUE;
+}
+
+static Eina_Bool
+_conformant_atspi_bridge_on_disconnect_cb(void *data, Eo *obj EINA_UNUSED, const Eo_Event_Description *desc EINA_UNUSED, void *event_info EINA_UNUSED)
+{
+   ELM_CONFORMANT_DATA_GET(data, sd);
+   elm_access_object_unregister(sd->virtualkeypad);
+   return EINA_TRUE;
+}
+
+static void
+_unregister_conformant_atspi_bridge_callbacks(Evas_Object *obj)
+{
+   if (!_elm_config->atspi_mode) return;
+   eo_do(_elm_atspi_bridge_get(),
+         eo_event_callback_del(ELM_ATSPI_BRIDGE_EVENT_CONNECTED, _conformant_atspi_bridge_on_connect_cb, obj));
+   eo_do(_elm_atspi_bridge_get(),
+         eo_event_callback_del(ELM_ATSPI_BRIDGE_EVENT_DISCONNECTED, _conformant_atspi_bridge_on_disconnect_cb, obj));
+}
+
+static void
+_atspi_expose_keypad_area(Evas_Object *obj)
+{
+   Eina_Bool connected = EINA_FALSE;
+   // If bridge is connected expose it now
+   eo_do(_elm_atspi_bridge_get(), connected = elm_obj_atspi_bridge_connected_get());
+   if (connected)
+     _conformant_atspi_bridge_on_connect_cb(obj, NULL, NULL, NULL);
+
+   // Register for bridge connect/disconnect
+   _unregister_conformant_atspi_bridge_callbacks(obj);
+   eo_do(_elm_atspi_bridge_get(),
+        eo_event_callback_add(ELM_ATSPI_BRIDGE_EVENT_CONNECTED, _conformant_atspi_bridge_on_connect_cb, obj));
+   eo_do(_elm_atspi_bridge_get(),
+         eo_event_callback_add(ELM_ATSPI_BRIDGE_EVENT_DISCONNECTED, _conformant_atspi_bridge_on_disconnect_cb, obj));
+}
+//
+
 static void
 _conformant_parts_swallow(Evas_Object *obj)
 {
@@ -286,6 +344,10 @@ _conformant_parts_swallow(Evas_Object *obj)
              sd->virtualkeypad = evas_object_rectangle_add(e);
              elm_widget_sub_object_add(obj, sd->virtualkeypad);
              evas_object_size_hint_max_set(sd->virtualkeypad, -1, 0);
+             //TIZEN ONLY(20160628): expose virtual keypad rect as at-spi object
+             if (_elm_config->atspi_mode)
+               _atspi_expose_keypad_area(obj);
+             //
           }
         // TIZEN_ONLY(20160509): support different thing in Tizen 3.0
         else if (mode == ELM_WIN_KEYBOARD_ON)
@@ -989,6 +1051,15 @@ _on_conformant_changed(void *data,
              elm_widget_display_mode_set(data, EVAS_DISPLAY_MODE_NONE);
              eo_do(data, eo_event_callback_call(
                    ELM_CONFORMANT_EVENT_VIRTUALKEYPAD_STATE_OFF, NULL));
+             //TIZEN ONLY(20160628): update geometry of keyboard to screen-reader
+             if (_elm_config->atspi_mode)
+               {
+                  Evas_Object *access;
+                  access = evas_object_data_get(sd->virtualkeypad, "_part_access_obj");
+                  elm_interface_atspi_accessible_bounds_changed_signal_emit
+                                                           (access, 0, 0, 0, 0);
+               }
+             //
           }
      }
    if ((property & CONFORMANT_KEYBOARD_GEOMETRY) &&
@@ -1047,7 +1118,9 @@ _elm_conformant_evas_object_smart_del(Eo *obj, Elm_Conformant_Data *sd)
      (sd->win, "conformant,changed", _on_conformant_changed, obj);
 #endif
    //
-
+   // TIZEN_ONLY(20160628): Unregister callbacks for ATSPI bridge enable/disable
+   _unregister_conformant_atspi_bridge_callbacks(obj);
+   //
    eo_do_super(obj, MY_CLASS, evas_obj_smart_del());
 }
 
