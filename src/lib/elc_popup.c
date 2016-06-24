@@ -575,12 +575,6 @@ _elm_popup_elm_layout_sizing_eval(Eo *obj, Elm_Popup_Data *sd)
    Evas_Coord h_box = 0, minh_box = 0;
    Evas_Coord minw = -1, minh = -1;
 
-   //TIZEN_ONLY(20160624): add a allow eval flag not to call another sizing eval during sizing eval
-   if (!sd->allow_eval) return;
-
-   sd->allow_eval = EINA_FALSE;
-   //
-
    if (sd->items)
      {
         EINA_LIST_FOREACH(sd->items, elist, it)
@@ -637,15 +631,18 @@ _elm_popup_elm_layout_sizing_eval(Eo *obj, Elm_Popup_Data *sd)
           {
              if (minw < sd->max_sc_w) minw = sd->max_sc_w;
           }
-        evas_object_size_hint_min_set(sd->content_area, minw, minh);
+
+        //TIZEN_ONLY(20160624): ordering min set for label size problem
+        //evas_object_size_hint_min_set(sd->content_area, minw, minh);
+        //
 
         if (minh > sd->max_sc_h)
           evas_object_size_hint_min_set(sd->spacer, minw, sd->max_sc_h);
         else
           evas_object_size_hint_min_set(sd->spacer, minw, minh);
 
-        //TIZEN_ONLY(20160624): add a allow eval flag not to call another sizing eval during sizing eval
-        sd->allow_eval = EINA_TRUE;
+        //TIZEN_ONLY(20160624): ordering min set for label size problem
+        evas_object_size_hint_min_set(sd->content_area, minw, minh);
         //
 
         return;
@@ -655,10 +652,6 @@ _elm_popup_elm_layout_sizing_eval(Eo *obj, Elm_Popup_Data *sd)
 
    evas_object_size_hint_min_set(obj, minw, minh);
    evas_object_size_hint_max_set(obj, -1, -1);
-
-   //TIZEN_ONLY(20160624): add a allow eval flag not to call another sizing eval during sizing eval
-   sd->allow_eval = EINA_TRUE;
-   //
 }
 
 EOLIAN static void
@@ -1757,10 +1750,6 @@ _elm_popup_evas_object_smart_add(Eo *obj, Elm_Popup_Data *priv)
 
    eo_do_super(obj, MY_CLASS, evas_obj_smart_add());
    elm_widget_sub_object_parent_add(obj);
-
-   //TIZEN_ONLY(20160624): add a allow eval flag not to call another sizing eval during sizing eval
-   priv->allow_eval = EINA_TRUE;
-   //
 
    snprintf(style, sizeof(style), "popup/%s", elm_widget_style_get(obj));
 
