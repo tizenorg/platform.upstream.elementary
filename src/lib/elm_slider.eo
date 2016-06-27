@@ -274,6 +274,9 @@ class Elm.Slider (Elm.Layout, Elm_Interface_Atspi_Value,
       Elm.Widget.activate;
       Elm.Widget.focus_next_manager_is;
       Elm.Widget.focus_direction_manager_is;
+      // TIZEN_ONLY(20160627): add focus AUI code for user input
+      Elm.Widget.value_changed;
+      // END-ONLY
       Elm.Widget.on_focus;
       Elm.Widget.event;
       Elm.Layout.text_aliases.get;
