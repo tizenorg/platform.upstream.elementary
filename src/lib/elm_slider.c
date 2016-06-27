@@ -95,6 +95,10 @@ _val_fetch(Evas_Object *obj, Eina_Bool user_event)
    if (fabs(val - sd->val) > DBL_EPSILON)
      {
         sd->val = val;
+        // TIZEN_ONLY(20160627): add focus AUI code for user input
+        sd->val_changed = EINA_TRUE;
+        // END-ONLY
+
         if (user_event)
           {
              eo_do(obj, eo_event_callback_call(ELM_SLIDER_EVENT_CHANGED, NULL));
@@ -381,6 +385,10 @@ _key_action_drag(Evas_Object *obj, const char *params)
 {
    ELM_SLIDER_DATA_GET(obj, sd);
    const char *dir = params;
+
+   // TIZEN_ONLY(20160627): add focus AUI code for user input
+   sd->val_changed = EINA_FALSE;
+   // END-ONLY
 
    if (!strcmp(dir, "left"))
      {
@@ -1062,6 +1070,10 @@ _elm_slider_min_max_get(Eo *obj EINA_UNUSED, Elm_Slider_Data *sd, double *min, d
 EOLIAN static void
 _elm_slider_value_set(Eo *obj, Elm_Slider_Data *sd, double val)
 {
+   // TIZEN_ONLY(20160627): add focus AUI code for user input
+   sd->val_changed = EINA_TRUE;
+   // END-ONLY
+
    if (sd->val == val) return;
    sd->val = val;
 
@@ -1170,6 +1182,20 @@ _elm_slider_step_get(Eo *obj EINA_UNUSED, Elm_Slider_Data *sd)
 {
    return sd->step;
 }
+
+// TIZEN_ONLY(20160627): add focus AUI code for user input
+EOLIAN static Eina_Bool
+_elm_slider_elm_widget_value_changed(Eo *obj EINA_UNUSED, Elm_Slider_Data *sd)
+{
+   if (sd->val_changed)
+     {
+        sd->val_changed = EINA_FALSE;
+        return EINA_TRUE;
+     }
+
+   return EINA_FALSE;
+}
+// END-ONLY
 
 EOLIAN static void
 _elm_slider_indicator_show_on_focus_set(Eo *obj EINA_UNUSED, Elm_Slider_Data *sd, Eina_Bool flag)

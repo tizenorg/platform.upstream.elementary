@@ -53,6 +53,9 @@ struct _Elm_Slider_Data
    Eina_Bool             frozen : 1;
    Eina_Bool             units_show : 1;
    Eina_Bool             popup_visible : 1;
+   // TIZEN_ONLY(20160627): add focus AUI code for user input
+   Eina_Bool             val_changed : 1;
+   // END-ONLY
 };
 
 /**
