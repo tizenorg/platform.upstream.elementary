@@ -285,6 +285,9 @@ _value_set(Evas_Object *obj,
 
    if (new_val == sd->val) return EINA_FALSE;
    sd->val = new_val;
+   // TIZEN_ONLY(20160627): add focus AUI code for user input
+   sd->val_changed = EINA_TRUE;
+   // END-ONLY
 
    eo_do(obj, eo_event_callback_call(ELM_SPINNER_EVENT_CHANGED, NULL));
    elm_interface_atspi_accessible_value_changed_signal_emit(obj);
@@ -804,6 +807,20 @@ _key_action_toggle(Evas_Object *obj, const char *params EINA_UNUSED)
 
    return EINA_FALSE;
 }
+
+// TIZEN_ONLY(20160627): add focus AUI code for user input
+EOLIAN static Eina_Bool
+_elm_spinner_elm_widget_value_changed(Eo *obj EINA_UNUSED, Elm_Spinner_Data *sd)
+{
+   if (sd->val_changed)
+     {
+        sd->val_changed = EINA_FALSE;
+        return EINA_TRUE;
+     }
+
+   return EINA_FALSE;
+}
+// END-ONLY
 
 EOLIAN static Eina_Bool
 _elm_spinner_elm_widget_event(Eo *obj, Elm_Spinner_Data *sd EINA_UNUSED, Evas_Object *src EINA_UNUSED, Evas_Callback_Type type, void *event_info)

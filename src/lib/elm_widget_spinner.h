@@ -46,6 +46,9 @@ struct _Elm_Spinner_Data
    Eina_Bool             dragging : 1;
    Eina_Bool             editable : 1;
    Eina_Bool             wrap : 1;
+   // TIZEN_ONLY(20160627): add focus AUI code for user input
+   Eina_Bool             val_changed : 1;
+   // END-ONLY
    Eina_Bool             val_updated : 1;
    Eina_Bool             button_layout : 1;
    Eina_Bool             inc_clicked: 1;

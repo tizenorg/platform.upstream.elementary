@@ -757,6 +757,11 @@ abstract Elm.Widget (Evas.Object_Smart, Elm_Interface_Atspi_Accessible, Elm_Inte
       }
       focus_reconfigure {
       }
+      // TIZEN_ONLY(20160627): add focus AUI code for user input
+      value_changed {
+         return: bool;
+      }
+      // END-ONLY
    }
    implements {
       class.constructor;

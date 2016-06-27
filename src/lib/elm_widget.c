@@ -716,6 +716,59 @@ _propagate_y_drag_lock(Evas_Object *obj,
      }
 }
 
+// TIZEN_ONLY(20160627): add focus AUI code for user input
+static inline Eina_Bool
+_elm_widget_value_changed(Eo *obj EINA_UNUSED,
+                          Elm_Widget_Smart_Data *sd EINA_UNUSED)
+{
+   return EINA_FALSE;
+}
+
+static Evas_Object *last_focused_obj;
+static Elm_Object_Item *last_focused_it;
+static Eina_Bool feedback_done;
+
+static void _sound_feedback(Evas_Object *obj, Evas_Callback_Type type)
+{
+   Evas_Object *focused_obj;
+   Elm_Object_Item *focused_it;
+   Eina_Bool ret;
+
+   if (type == EVAS_CALLBACK_KEY_DOWN && obj == last_focused_obj)
+     feedback_done = EINA_FALSE;
+
+   if (feedback_done)
+     return;
+
+   focused_obj = elm_widget_focused_object_get(obj);
+
+   /* focus moves to other object */
+   if (focused_obj != last_focused_obj)
+     elm_object_signal_emit(obj, "elm,action,focus,sound", "elm");
+   else
+     {
+        focused_it = elm_widget_focused_item_get(obj);
+
+        /* focus moves to other item in the same object (genlist, ...) */
+        if (focused_it && focused_it != last_focused_it)
+             elm_object_signal_emit(obj, "elm,action,focus,sound", "elm");
+        else
+          {
+             /* focus does not move but value in the object is changed
+              * (for slider, spinner)
+              */
+             eo_do(obj, ret = elm_obj_widget_value_changed());
+             if (ret)
+               elm_object_signal_emit(obj, "elm,action,focus,sound", "elm");
+             else
+               return;
+          }
+     }
+
+   feedback_done = EINA_TRUE;
+}
+// END-ONLY
+
 static Eina_Bool
 _propagate_event(void *data EINA_UNUSED,
                  Eo *obj,
@@ -725,18 +778,47 @@ _propagate_event(void *data EINA_UNUSED,
    INTERNAL_ENTRY EO_CALLBACK_CONTINUE;
    Evas_Callback_Type type;
    Evas_Event_Flags *event_flags = NULL;
+   // TIZEN_ONLY(20160627): add focus AUI code for user input
+   Eina_Bool focus_feedback_key = EINA_FALSE;
+   // END-ONLY
 
    if (desc == EVAS_OBJECT_EVENT_KEY_DOWN)
      {
         Evas_Event_Key_Down *ev = event_info;
         event_flags = &(ev->event_flags);
         type = EVAS_CALLBACK_KEY_DOWN;
+
+        // TIZEN_ONLY(20160627): add focus AUI code for user input
+        if (!strcmp(ev->keyname, "Up") ||
+            !strcmp(ev->keyname, "Down") ||
+            !strcmp(ev->keyname, "Left") ||
+            !strcmp(ev->keyname, "Right"))
+           {
+             if (obj == elm_widget_focused_object_get(obj))
+               {
+                  last_focused_obj = obj;
+                  last_focused_it = elm_widget_focused_item_get(obj);
+               }
+
+             focus_feedback_key = EINA_TRUE;
+          }
+	// END-ONLY
      }
    else if (desc == EVAS_OBJECT_EVENT_KEY_UP)
      {
         Evas_Event_Key_Up *ev = event_info;
         event_flags = &(ev->event_flags);
         type = EVAS_CALLBACK_KEY_UP;
+
+        // TIZEN_ONLY(20160627): add focus AUI code for user input
+        if (!strcmp(ev->keyname, "Up") ||
+            !strcmp(ev->keyname, "Down") ||
+            !strcmp(ev->keyname, "Left") ||
+            !strcmp(ev->keyname, "Right"))
+          {
+             focus_feedback_key = EINA_TRUE;
+          }
+	// END-ONLY  
      }
    else if (desc == EVAS_OBJECT_EVENT_MOUSE_WHEEL)
      {
@@ -748,6 +830,11 @@ _propagate_event(void *data EINA_UNUSED,
      return EO_CALLBACK_CONTINUE;
 
    elm_widget_event_propagate(obj, type, event_info, event_flags);
+
+   // TIZEN_ONLY(20160627): add focus AUI code for user input
+   if (focus_feedback_key)
+     _sound_feedback(obj, type);
+   // END-ONLY
 
    return EO_CALLBACK_CONTINUE;
 }
