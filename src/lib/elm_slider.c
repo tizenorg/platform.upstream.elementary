@@ -95,6 +95,8 @@ _val_fetch(Evas_Object *obj, Eina_Bool user_event)
    if (fabs(val - sd->val) > DBL_EPSILON)
      {
         sd->val = val;
+        sd->val_changed = EINA_TRUE;
+
         if (user_event)
           {
              eo_do(obj, eo_event_callback_call(ELM_SLIDER_EVENT_CHANGED, NULL));
@@ -381,6 +383,8 @@ _key_action_drag(Evas_Object *obj, const char *params)
 {
    ELM_SLIDER_DATA_GET(obj, sd);
    const char *dir = params;
+
+   sd->val_changed = EINA_FALSE;
 
    if (!strcmp(dir, "left"))
      {
@@ -1062,6 +1066,8 @@ _elm_slider_min_max_get(Eo *obj EINA_UNUSED, Elm_Slider_Data *sd, double *min, d
 EOLIAN static void
 _elm_slider_value_set(Eo *obj, Elm_Slider_Data *sd, double val)
 {
+   sd->val_changed = EINA_TRUE;
+
    if (sd->val == val) return;
    sd->val = val;
 
@@ -1169,6 +1175,18 @@ EOLIAN static double
 _elm_slider_step_get(Eo *obj EINA_UNUSED, Elm_Slider_Data *sd)
 {
    return sd->step;
+}
+
+EOLIAN static Eina_Bool
+_elm_slider_elm_widget_value_changed(Eo *obj EINA_UNUSED, Elm_Slider_Data *sd)
+{
+   if (sd->val_changed)
+     {
+        sd->val_changed = EINA_FALSE;
+        return EINA_TRUE;
+     }
+
+   return EINA_FALSE;
 }
 
 EOLIAN static void

@@ -46,6 +46,7 @@ struct _Elm_Spinner_Data
    Eina_Bool             dragging : 1;
    Eina_Bool             editable : 1;
    Eina_Bool             wrap : 1;
+   Eina_Bool             val_changed : 1;
    Eina_Bool             val_updated : 1;
    Eina_Bool             button_layout : 1;
    Eina_Bool             inc_clicked: 1;

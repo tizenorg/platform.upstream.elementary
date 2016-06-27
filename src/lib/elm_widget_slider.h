@@ -53,6 +53,7 @@ struct _Elm_Slider_Data
    Eina_Bool             frozen : 1;
    Eina_Bool             units_show : 1;
    Eina_Bool             popup_visible : 1;
+   Eina_Bool             val_changed : 1;
 };
 
 /**

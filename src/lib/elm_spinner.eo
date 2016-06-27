@@ -230,6 +230,7 @@ class Elm.Spinner (Elm.Layout, Elm_Interface_Atspi_Value, Elm_Interface_Atspi_Wi
       Elm.Widget.focus_next;
       Elm.Widget.focus_direction;
       Elm.Widget.on_focus;
+      Elm.Widget.value_changed;
       Elm.Widget.event;
       Elm.Layout.sizing_eval;
       Elm_Interface_Atspi_Accessible.name.get;

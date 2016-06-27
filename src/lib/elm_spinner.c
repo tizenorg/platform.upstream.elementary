@@ -284,7 +284,9 @@ _value_set(Evas_Object *obj,
      }
 
    if (new_val == sd->val) return EINA_FALSE;
+
    sd->val = new_val;
+   sd->val_changed = EINA_TRUE;
 
    eo_do(obj, eo_event_callback_call(ELM_SPINNER_EVENT_CHANGED, NULL));
    elm_interface_atspi_accessible_value_changed_signal_emit(obj);
@@ -801,6 +803,18 @@ _key_action_toggle(Evas_Object *obj, const char *params EINA_UNUSED)
 
    if (sd->spin_timer) _spin_stop(obj);
    else if (sd->entry_visible) _entry_toggle_cb(NULL, obj, NULL, NULL);
+
+   return EINA_FALSE;
+}
+
+EOLIAN static Eina_Bool
+_elm_spinner_elm_widget_value_changed(Eo *obj EINA_UNUSED, Elm_Spinner_Data *sd)
+{
+   if (sd->val_changed)
+     {
+        sd->val_changed = EINA_FALSE;
+        return EINA_TRUE;
+     }
 
    return EINA_FALSE;
 }
