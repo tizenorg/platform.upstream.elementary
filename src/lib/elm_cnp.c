@@ -2314,6 +2314,7 @@ typedef struct _Wl_Cnp_Selection Wl_Cnp_Selection;
 
 struct _Wl_Cnp_Selection
 {
+   const char *debug;// TIZEN ONLY(20160627)
    char *selbuf;
    int buflen;
 
@@ -2335,14 +2336,31 @@ struct _Wl_Cnp_Selection
    Eina_Bool active : 1;
 };
 
+// TIZEN ONLY(20160627): support multiple selection types' buffer
+static Wl_Cnp_Selection wl_cnp_selections[ELM_SEL_TYPE_CLIPBOARD + 1] = {
+     ARRAYINIT(ELM_SEL_TYPE_PRIMARY) {
+          .debug = "Primary",
+     },
+     ARRAYINIT(ELM_SEL_TYPE_SECONDARY) {
+          .debug = "Secondary",
+     },
+     ARRAYINIT(ELM_SEL_TYPE_XDND) { //FIXME: should be TYPE_DND
+          .debug = "DnD",
+     },
+     ARRAYINIT(ELM_SEL_TYPE_CLIPBOARD) {
+          .debug = "Clipboard",
+     },
+};
+
 static Eina_Bool _wl_elm_cnp_init(void);
 
-static Wl_Cnp_Selection wl_cnp_selection =
+/*static Wl_Cnp_Selection wl_cnp_selection =
 {
    0, 0, NULL, NULL,
    NULL, 0, 0, NULL, NULL, NULL,
    0, NULL, 0, EINA_FALSE
-};
+};*/
+//
 
 static void _wl_sel_obj_del2(void *data, Evas *e EINA_UNUSED, Evas_Object *obj, void *event_info EINA_UNUSED);
 static Eina_Bool _wl_elm_cnp_selection_set(Evas_Object *obj EINA_UNUSED, Elm_Sel_Type selection, Elm_Sel_Format format EINA_UNUSED, const void *selbuf, size_t buflen);
@@ -2398,7 +2416,10 @@ static Eina_Bool
 _wl_elm_cnp_selection_set(Evas_Object *obj, Elm_Sel_Type selection, Elm_Sel_Format format, const void *selbuf, size_t buflen)
 {
    Ecore_Wl_Window *win;
-   Wl_Cnp_Selection *sel = &wl_cnp_selection;
+   // TIZEN ONLY(20160627): support multiple selection types' buffer
+   //Wl_Cnp_Selection *sel = &wl_cnp_selection;
+   Wl_Cnp_Selection *sel = wl_cnp_selections + selection;
+   //
 
    if ((!selbuf) && (format != ELM_SEL_FORMAT_IMAGE))
      return elm_object_cnp_selection_clear(obj, selection);
@@ -2418,7 +2439,8 @@ _wl_elm_cnp_selection_set(Evas_Object *obj, Elm_Sel_Type selection, Elm_Sel_Form
    if (sel->widget)
      evas_object_event_callback_del_full(sel->widget,
                                          EVAS_CALLBACK_DEL,
-                                         _wl_sel_obj_del, &wl_cnp_selection);
+                                         //_wl_sel_obj_del, &wl_cnp_selection); // TIZEN ONLY (20160627)
+                                         _wl_sel_obj_del, sel); // TIZEN ONLY (20160627)
    sel->active = EINA_TRUE;
    sel->seltype = selection;
    sel->widget = obj;
@@ -2430,7 +2452,8 @@ _wl_elm_cnp_selection_set(Evas_Object *obj, Elm_Sel_Type selection, Elm_Sel_Form
 
    evas_object_event_callback_add
      (sel->widget, EVAS_CALLBACK_DEL, _wl_sel_obj_del,
-         &wl_cnp_selection);
+         //&wl_cnp_selection); // TIZEN ONLY (20160627)
+         &sel); // TIZEN ONLY (20160627)
 
    if (selbuf)
      {
@@ -2487,7 +2510,11 @@ static Eina_Bool
 _wl_elm_cnp_selection_get(const Evas_Object *obj, Elm_Sel_Type selection, Elm_Sel_Format format, Elm_Drop_Cb datacb, void *udata)
 {
    Ecore_Wl_Window *win;
-   Wl_Cnp_Selection *sel = &wl_cnp_selection;
+   // TIZEN ONLY(20160627): support multiple selection types' buffer
+   //Wl_Cnp_Selection *sel = &wl_cnp_selection;
+   Wl_Cnp_Selection *sel = wl_cnp_selections + selection;
+   if (!sel) return EINA_FALSE;
+   //
 
    _wl_elm_cnp_init();
 
@@ -2496,7 +2523,8 @@ _wl_elm_cnp_selection_get(const Evas_Object *obj, Elm_Sel_Type selection, Elm_Se
    if (sel->requestwidget)
      evas_object_event_callback_del_full(sel->requestwidget,
                                          EVAS_CALLBACK_DEL,
-                                         _wl_sel_obj_del2, &wl_cnp_selection);
+                                         //_wl_sel_obj_del2, &wl_cnp_selection);// TIZEN ONLY(20160627)
+                                         _wl_sel_obj_del2, sel);// TIZEN ONLY(20160627)
    sel->requestformat = format;
    sel->requestwidget = (Evas_Object *) obj;
    sel->win = win;
@@ -2506,7 +2534,8 @@ _wl_elm_cnp_selection_get(const Evas_Object *obj, Elm_Sel_Type selection, Elm_Se
 
    evas_object_event_callback_add(sel->requestwidget,
                                   EVAS_CALLBACK_DEL, _wl_sel_obj_del2,
-                                  &wl_cnp_selection);
+                                  //&wl_selection_send);// TIZEN ONLY(20160627)
+                                  sel);// TIZEN ONLY(20160627)
 
    if ((selection == ELM_SEL_TYPE_CLIPBOARD) ||
        (selection == ELM_SEL_TYPE_PRIMARY) ||
@@ -2540,7 +2569,10 @@ _wl_elm_cnp_selection_get(const Evas_Object *obj, Elm_Sel_Type selection, Elm_Se
 static void
 _wl_elm_cnp_selection_loss_callback_set(Evas_Object *obj EINA_UNUSED, Elm_Sel_Type selection EINA_UNUSED, Elm_Selection_Loss_Cb func, const void *data)
 {
-   Wl_Cnp_Selection *sel = &wl_cnp_selection;
+   // TIZEN ONLY(20160627): support multiple selection types' buffer
+   //Wl_Cnp_Selection *sel = &wl_cnp_selection;
+   Wl_Cnp_Selection *sel = wl_cnp_selections + selection;
+   //
 
    _wl_elm_cnp_init();
 
@@ -2551,7 +2583,10 @@ _wl_elm_cnp_selection_loss_callback_set(Evas_Object *obj EINA_UNUSED, Elm_Sel_Ty
 static Eina_Bool
 _wl_elm_cnp_selection_clear(Evas_Object *obj, Elm_Sel_Type selection EINA_UNUSED)
 {
-   Wl_Cnp_Selection *sel = &wl_cnp_selection;
+   // TIZEN ONLY(20160627): support multiple selection types' buffer
+   //Wl_Cnp_Selection *sel = &wl_cnp_selection;
+   Wl_Cnp_Selection *sel = wl_cnp_selections + selection;
+   //
 
    _wl_elm_cnp_init();
 
@@ -2561,11 +2596,13 @@ _wl_elm_cnp_selection_clear(Evas_Object *obj, Elm_Sel_Type selection EINA_UNUSED
    if (sel->widget)
      evas_object_event_callback_del_full(sel->widget,
                                          EVAS_CALLBACK_DEL,
-                                         _wl_sel_obj_del, &wl_cnp_selection);
+                                         //_wl_sel_obj_del, &wl_cnp_selection);// TIZEN ONLY(20160627)
+                                         _wl_sel_obj_del, sel);// TIZEN ONLY(20160627)
    if (sel->requestwidget)
      evas_object_event_callback_del_full(sel->requestwidget,
                                          EVAS_CALLBACK_DEL,
-                                         _wl_sel_obj_del2, &wl_cnp_selection);
+                                         //_wl_sel_obj_del, &wl_cnp_selection);// TIZEN ONLY(20160627)
+                                         _wl_sel_obj_del2, sel);// TIZEN ONLY(20160627)
 
    sel->widget = NULL;
    sel->requestwidget = NULL;
@@ -2589,6 +2626,32 @@ _wl_selection_send(void *udata, int type EINA_UNUSED, void *event)
    int len_written = 0;
    Wl_Cnp_Selection *sel = udata;
    Ecore_Wl_Event_Data_Source_Send *ev = event;
+   // TIZEN ONLY(20160627): support multiple selection types' buffer
+   // use priority: dnd->clipboard->primary->secondary
+   sel = NULL;
+   Wl_Cnp_Selection *sels = udata;
+   if (sels[ELM_SEL_TYPE_XDND].active)
+     {
+        sel = sels + ELM_SEL_TYPE_XDND;
+        cnp_debug("dnd type\n");
+     }
+   else if (sels[ELM_SEL_TYPE_CLIPBOARD].active)
+     {
+        sel = sels + ELM_SEL_TYPE_CLIPBOARD;
+        cnp_debug("Clipboard type\n");
+     }
+   else if (sels[ELM_SEL_TYPE_SECONDARY].active)
+     {
+        sel = sels + ELM_SEL_TYPE_SECONDARY;
+        cnp_debug("Secondary type\n");
+     }
+   else
+     {
+        sel = sels + ELM_SEL_TYPE_PRIMARY;
+        cnp_debug("Primary type\n");
+     }
+   if (!sel) return EINA_FALSE;
+   //
 
    _wl_elm_cnp_init();
 
@@ -2613,6 +2676,22 @@ _wl_selection_receive(void *udata, int type EINA_UNUSED, void *event)
 {
    Wl_Cnp_Selection *sel = udata;
    Ecore_Wl_Event_Selection_Data_Ready *ev = event;
+
+   // TIZEN ONLY(20160627): support multiple selection types' buffer
+   sel = NULL;
+   Wl_Cnp_Selection *sels = udata;
+   int i = 0;
+   for (i = 0; i < ELM_SEL_TYPE_CLIPBOARD + 1; i++)
+     {
+        if (sels[i].requestwidget && (i != ELM_SEL_TYPE_XDND))
+          {
+             sel = sels + i;
+             cnp_debug("requested type: %s\n", sel->debug);
+             break;
+          }
+     }
+   if (!sel) return ECORE_CALLBACK_PASS_ON;
+   //
 
    _wl_elm_cnp_init();
 
@@ -2706,9 +2785,11 @@ _wl_elm_cnp_init(void)
    _init_count++;
 
    ecore_event_handler_add(ECORE_WL_EVENT_DATA_SOURCE_SEND,
-                           _wl_selection_send, &wl_cnp_selection);
+                           //_wl_selection_send, &wl_cnp_selection);// TIZEN ONLY(20160627)
+                           _wl_selection_send, &wl_cnp_selections);// TIZEN ONLY(20160627)
    ecore_event_handler_add(ECORE_WL_EVENT_SELECTION_DATA_READY,
-                           _wl_selection_receive, &wl_cnp_selection);
+                           //_wl_selection_receive, &wl_cnp_selection);// TIZEN ONLY(20160627)
+                           _wl_selection_receive, &wl_cnp_selections);// TIZEN ONLY(20160627)
 
    return EINA_TRUE;
 }
@@ -2724,12 +2805,15 @@ _wl_elm_dnd_init(void)
    text_uri = eina_stringshare_add("text/uri-list");
 
    ecore_event_handler_add(ECORE_WL_EVENT_DATA_SOURCE_SEND,
-                           _wl_dnd_send, &wl_cnp_selection);
+                           //_wl_dnd_send, &wl_cnp_selection);// TIZEN ONLY(20160627)
+                           _wl_dnd_send, &wl_cnp_selections);// TIZEN ONLY(20160627)
    ecore_event_handler_add(ECORE_WL_EVENT_SELECTION_DATA_READY,
-                           _wl_dnd_receive, &wl_cnp_selection);
+                           //_wl_dnd_receive, &wl_cnp_selection);// TIZEN ONLY(20160627)
+                           _wl_dnd_receive, &wl_cnp_selections);// TIZEN ONLY(20160627)
 
    ecore_event_handler_add(ECORE_WL_EVENT_DND_END,
-                           _wl_dnd_end, &wl_cnp_selection);
+                           //_wl_dnd_end, &wl_cnp_selection);// TIZEN ONLY(20160627)
+                           _wl_dnd_end, &wl_cnp_selections);// TIZEN ONLY(20160627)
 
    return EINA_TRUE;
 }
@@ -2862,9 +2946,15 @@ _wl_elm_drag_start(Evas_Object *obj, Elm_Sel_Format format, const char *data,
    ecore_wl_dnd_drag_types_set(ecore_wl_input_get(), types);
 
    /* set the drag data used when a drop occurs */
-   free(wl_cnp_selection.selbuf);
-   wl_cnp_selection.selbuf = strdup((char*)data);
-   wl_cnp_selection.buflen = strlen(wl_cnp_selection.selbuf);
+   // TIZEN ONLY(20160627): support multiple selection types' buffer
+   //free(wl_cnp_selections.selbuf);
+   //wl_cnp_selections.selbuf = strdup((char*)data);
+   //wl_cnp_selections.buflen = strlen(wl_cnp_selections.selbuf);
+   free(wl_cnp_selections[ELM_SEL_TYPE_XDND].selbuf);
+   wl_cnp_selections[ELM_SEL_TYPE_XDND].selbuf = strdup((char*)data);
+   wl_cnp_selections[ELM_SEL_TYPE_XDND].buflen = strlen(wl_cnp_selections[ELM_SEL_TYPE_XDND].selbuf);
+   wl_cnp_selections[ELM_SEL_TYPE_XDND].active = EINA_TRUE;
+   //
 
    /* setup callback to notify if this object gets deleted */
    evas_object_event_callback_add(obj, EVAS_CALLBACK_DEL,
@@ -3093,7 +3183,10 @@ _wl_dnd_position(void *data EINA_UNUSED, int type EINA_UNUSED, void *event)
                   cnp_debug("Candidate %p (%s)\n",
                         dropable->obj, eo_class_name_get(eo_class_get(dropable->obj)));
                   _wl_dropable_handle(dropable, x - ox, y - oy);
-                  wl_cnp_selection.requestwidget = dropable->obj;
+                  // TIZEN ONLY(20160627): support multiple selection types' buffer
+                  //wl_cnp_selection.requestwidget = dropable->obj;
+                  wl_cnp_selections[ELM_SEL_TYPE_XDND].requestwidget = dropable->obj;
+                  //
                   will_accept = EINA_TRUE;
                }
              else
@@ -3105,12 +3198,21 @@ _wl_dnd_position(void *data EINA_UNUSED, int type EINA_UNUSED, void *event)
                }
              eina_list_free(dropable_list);
           }
+        else // TIZEN ONLY(20160627): remove last dropable
+          {
+             cnp_debug("dnd position (%d %d) has no drop\n", x, y);
+             _wl_dropable_handle(NULL, 0, 0);
+          }
+        //
      }
 
    doaccept = will_accept;
 
+   // TIZEN ONLY(20160627): support multiple selection types' buffer
    if (dragacceptcb)
-     dragacceptcb(dragacceptdata, wl_cnp_selection.requestwidget, will_accept);
+     //dragacceptcb(dragacceptdata, wl_cnp_selection.requestwidget, will_accept);
+     dragacceptcb(dragacceptdata, wl_cnp_selections[ELM_SEL_TYPE_XDND].requestwidget, will_accept);
+   //
 
    return ECORE_CALLBACK_PASS_ON;
 }
@@ -3132,11 +3234,18 @@ _wl_dnd_drop(void *data EINA_UNUSED, int type EINA_UNUSED, void *event)
         if (drop->last.in)
           {
              cnp_debug("Request data of type %s\n", drop->last.type);
-             wl_cnp_selection.requestwidget = drop->obj;
-             evas_object_event_callback_add(wl_cnp_selection.requestwidget,
+             // TIZEN ONLY(20160627): support multiple selection types' buffer
+             //wl_cnp_selection.requestwidget = drop->obj;
+             //evas_object_event_callback_add(wl_cnp_selection.requestwidget,
+             //      EVAS_CALLBACK_DEL,
+             //      _wl_sel_obj_del2,
+             //      &wl_cnp_selection);
+             wl_cnp_selections[ELM_SEL_TYPE_XDND].requestwidget = drop->obj;
+             evas_object_event_callback_add(wl_cnp_selections[ELM_SEL_TYPE_XDND].requestwidget,
                    EVAS_CALLBACK_DEL,
                    _wl_sel_obj_del2,
-                   &wl_cnp_selection);
+                   &wl_cnp_selections[ELM_SEL_TYPE_XDND]);
+             //
              ecore_wl_dnd_drag_get(ecore_wl_input_get(), drop->last.type);
              return ECORE_CALLBACK_PASS_ON;
           }
@@ -3157,7 +3266,33 @@ _wl_dnd_send(void *data, int type EINA_UNUSED, void *event)
 
    cnp_debug("In\n");
    ev = event;
-   sel = data;
+   // TIZEN ONLY(20160627): support multiple selection types' buffer
+   Wl_Cnp_Selection *sels = data;
+   sel = NULL;
+   //use priority: dnd->clipboard->primary->secondary
+   if (sels[ELM_SEL_TYPE_XDND].active)
+     {
+        sel = sels + ELM_SEL_TYPE_XDND;
+        cnp_debug("dnd type\n");
+     }
+   else if (sels[ELM_SEL_TYPE_CLIPBOARD].active)
+     {
+        sel = sels + ELM_SEL_TYPE_CLIPBOARD;
+        cnp_debug("Clipboard type\n");
+     }
+   else if (sels[ELM_SEL_TYPE_SECONDARY].active)
+     {
+        sel = sels + ELM_SEL_TYPE_SECONDARY;
+        cnp_debug("Secondary type\n");
+     }
+   else
+     {
+        sel = sels + ELM_SEL_TYPE_PRIMARY;
+        cnp_debug("Primary type\n");
+     }
+   if (!sel) return EINA_FALSE;
+   //sel = data;
+   //
 
    len_remained = sel->buflen;
    buf = sel->selbuf;
@@ -3183,7 +3318,17 @@ _wl_dnd_receive(void *data, int type EINA_UNUSED, void *event)
    cnp_debug("In\n");
 
    ev = event;
-   sel = data;
+
+   // TIZEN ONLY(20160627): support multiple selection types' buffer
+   Wl_Cnp_Selection *sels = data;
+   sel = sels + ELM_SEL_TYPE_XDND;
+   if (!sel)
+     {
+        cnp_debug("Sel does not exist\n");
+        return ECORE_CALLBACK_PASS_ON;
+     }
+   //sel = data;
+   //
 
    if (sel->requestwidget)
      {
@@ -3235,6 +3380,18 @@ _wl_dnd_end(void *data EINA_UNUSED, int type EINA_UNUSED, void *event EINA_UNUSE
    doaccept = EINA_FALSE;
 
    ecore_wl_input_ungrab(ecore_wl_input_get());
+   // TIZEN ONLY(20160627): support multiple selection types' buffer
+   Wl_Cnp_Selection *sels = data;
+   Wl_Cnp_Selection *sel = sels + ELM_SEL_TYPE_XDND;
+   if (sel)
+     {
+        sel->active = EINA_FALSE;
+        evas_object_event_callback_del_full(sel->requestwidget,
+                                            EVAS_CALLBACK_DEL,
+                                            _wl_sel_obj_del2, sel);
+        sel->requestwidget = NULL;
+     }
+   //
 
    return ECORE_CALLBACK_PASS_ON;
 }
@@ -3397,7 +3554,10 @@ _wl_drops_accept(const char *type)
                 case ELM_SEL_FORMAT_IMAGE:
                    if (!strncmp(type, "image/", 6))
                      {
-                        wl_cnp_selection.requestwidget = drop->obj;
+                         // TIZEN ONLY(20160627): support multiple selection types' buffer
+                        //wl_cnp_selection.requestwidget = drop->obj;
+                        wl_cnp_selections[ELM_SEL_TYPE_XDND].requestwidget = drop->obj;
+                        //
                         return EINA_TRUE;
                      }
                    break;
