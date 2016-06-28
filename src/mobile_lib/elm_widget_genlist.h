@@ -208,6 +208,7 @@ struct _Elm_Genlist_Data
    Elm_Gen_Item                         *highlighted_item;
    Evas_Coord                            viewport_w, viewport_h;
    Elm_Gen_Item                         *atspi_item_to_highlight;
+   Elm_Gen_Item                         *aligned_item;
 };
 
 typedef struct _Item_Block Item_Block;

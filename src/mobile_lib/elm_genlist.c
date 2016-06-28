@@ -148,6 +148,10 @@ static const char SIGNAL_DEFAULT[] = "elm,state,default";
 static const char SIGNAL_FOCUSED[] = "elm,action,focus_highlight,show";
 static const char SIGNAL_UNFOCUSED[] = "elm,action,focus_highlight,hide";
 static const char SIGNAL_BG_CHANGE[] = "bg_color_change";
+static const char SIGNAL_ITEM_HIGHLIGHTED[] = "elm,state,highlighted";
+static const char SIGNAL_ITEM_UNHIGHLIGHTED[] = "elm,state,unhighlighted";
+static const char SIGNAL_FOCUS_BG_SHOW[] = "elm,state,focus_bg,show";
+static const char SIGNAL_FOCUS_BG_HIDE[] = "elm,state,focus_bg,hide";
 
 typedef enum
 {
@@ -441,7 +445,7 @@ _elm_genlist_pan_elm_pan_pos_get(Eo *obj EINA_UNUSED, Elm_Genlist_Pan_Data *psd,
 }
 
 // TIZEN_ONLY(20150705): genlist item align feature
-static Elm_Object_Item *
+static Elm_Gen_Item *
 _elm_genlist_pos_adjust_xy_item_get(const Evas_Object *obj,
                                     Evas_Coord x,
                                     Evas_Coord y)
@@ -470,13 +474,13 @@ _elm_genlist_pos_adjust_xy_item_get(const Evas_Object *obj,
              ith = GL_IT(it)->minh;
 
              if (ELM_RECTS_INTERSECT(itx, ity, itw, ith, x, y, 1, 1))
-               return (Elm_Object_Item *)it;
+               return it;
           }
      }
 
    return NULL;
 }
-#if 0
+
 EOLIAN static void
 _elm_genlist_pan_elm_pan_pos_adjust(Eo *obj EINA_UNUSED, Elm_Genlist_Pan_Data *psd, Evas_Coord *x EINA_UNUSED, Evas_Coord *y)
 {
@@ -500,8 +504,7 @@ _elm_genlist_pan_elm_pan_pos_adjust(Eo *obj EINA_UNUSED, Elm_Genlist_Pan_Data *p
         vh = (vh / 2) - yy;
      }
 
-   it = (Elm_Gen_Item*)_elm_genlist_pos_adjust_xy_item_get(
-                            sd->obj, vw, vh);
+   it = _elm_genlist_pos_adjust_xy_item_get(sd->obj, vw, vh);
 
    vh += psd->wsd->pan_y;
 
@@ -513,7 +516,6 @@ _elm_genlist_pan_elm_pan_pos_adjust(Eo *obj EINA_UNUSED, Elm_Genlist_Pan_Data *p
    *y += (vh - it_h);
 }
 //
-#endif
 
 EOLIAN static void
 _elm_genlist_pan_elm_pan_pos_max_get(Eo *obj, Elm_Genlist_Pan_Data *psd, Evas_Coord *x, Evas_Coord *y)
@@ -1284,6 +1286,51 @@ _elm_genlist_content_min_limit_cb(Evas_Object *obj,
 }
 
 static void
+_elm_genlist_scroll_item_align_highlight_cb(Evas_Object *obj,
+                                            void *data)
+{
+   ELM_GENLIST_DATA_GET(obj, sd);
+   ELM_WIDGET_DATA_GET_OR_RETURN(obj, wd);
+   Evas_Coord vw, vh;
+
+   if (!(wd->scroll_item_align_enable)) return;
+
+   eo_do(obj, elm_interface_scrollable_content_viewport_geometry_get
+		   (NULL, NULL, &vw, &vh));
+
+   if (!strcmp(wd->scroll_item_valign, "center"))
+     {
+        vw = (vw / 2);
+        vh = (vh / 2);
+     }
+
+   sd->aligned_item = _elm_genlist_pos_adjust_xy_item_get(obj, vw, vh);
+
+   if (sd->aligned_item && sd->aligned_item->realized)
+      edje_object_signal_emit(VIEW(sd->aligned_item),
+                              SIGNAL_ITEM_HIGHLIGHTED, "elm");
+}
+
+static void
+_elm_genlist_scroll_item_align_unhighlight_cb(Evas_Object *obj,
+                                              void *data)
+{
+   Evas_Object *wobj = data;
+   ELM_GENLIST_DATA_GET(wobj, sd);
+   ELM_WIDGET_DATA_GET_OR_RETURN(wobj, wd);
+
+   if (!(wd->scroll_item_align_enable)) return;
+
+   if (sd->aligned_item)
+     {
+        if (sd->aligned_item->realized)
+          edje_object_signal_emit(VIEW(sd->aligned_item),
+                                  SIGNAL_ITEM_UNHIGHLIGHTED, "elm");
+        sd->aligned_item = NULL;
+     }
+}
+
+static void
 _item_position(Elm_Gen_Item *it,
                Evas_Object *view,
                Evas_Coord it_x,
@@ -1464,6 +1511,7 @@ _item_realize(Elm_Gen_Item *it,
               Eina_Bool calc)
 {
    const char *treesize;
+   Evas_Coord vw, vh;
    Eina_Bool ret;
 
    if (it->realized) return;
@@ -1537,7 +1585,23 @@ _item_realize(Elm_Gen_Item *it,
      {
         _decorate_item_realize(it);
      }
+   if (!sd->aligned_item)
+     {
+		 eo_do(sd->obj, elm_interface_scrollable_content_viewport_geometry_get
+				 (NULL, NULL, &vw, &vh));
+        vw = (vw / 2);
+        vh = (vh / 2);
 
+		if (ELM_RECTS_INTERSECT(it->x - sd->pan_x, it->y - sd->pan_y, GL_IT(it)->w,
+				GL_IT(it)->minh, vw, vh, 1, 1))
+          {
+             sd->aligned_item = it;
+             edje_object_signal_emit(VIEW(sd->aligned_item),
+                                     SIGNAL_ITEM_HIGHLIGHTED, "elm");
+          }
+     }
+
+   it->realized = EINA_TRUE;
    if (!calc)
      {
         _elm_genlist_item_index_update(it);
@@ -3397,6 +3461,7 @@ _elm_genlist_elm_widget_focus_highlight_geometry_get(const Eo *obj EINA_UNUSED, 
 EOLIAN static Eina_Bool
 _elm_genlist_elm_widget_on_focus(Eo *obj, Elm_Genlist_Data *sd, Elm_Object_Item *item)
 {
+   ELM_WIDGET_DATA_GET_OR_RETURN(obj, wd);
    Eina_Bool int_ret = EINA_FALSE;
 
    eo_do_super(obj, MY_CLASS, int_ret = elm_obj_widget_on_focus(NULL));
@@ -3404,6 +3469,34 @@ _elm_genlist_elm_widget_on_focus(Eo *obj, Elm_Genlist_Data *sd, Elm_Object_Item 
 
    if ((sd->items) && (sd->selected) && (!sd->last_selected_item))
      sd->last_selected_item = eina_list_data_get(sd->selected);
+   if (wd->scroll_item_align_enable)
+     {
+        Evas_Coord vw, vh;
+
+        evas_object_smart_callback_add(obj, "scroll,drag,start", _elm_genlist_scroll_item_align_unhighlight_cb, obj);
+        evas_object_smart_callback_add(obj, "scroll,anim,start", _elm_genlist_scroll_item_align_unhighlight_cb, obj);
+        evas_object_smart_callback_add(obj, "scroll,anim,stop", _elm_genlist_scroll_item_align_highlight_cb, obj);
+
+		eo_do(sd->obj, elm_interface_scrollable_content_viewport_geometry_get
+				(NULL, NULL, &vw, &vh));
+
+        if (vw != 0 || vh != 0)
+          {
+             if (!strcmp(wd->scroll_item_valign, "center"))
+               {
+                  vw = (vw / 2);
+                  vh = (vh / 2);
+               }
+
+			 sd->aligned_item = _elm_genlist_pos_adjust_xy_item_get(obj, vw, vh);
+             if (sd->aligned_item)
+               {
+                  if (sd->aligned_item->realized)
+                    edje_object_signal_emit(VIEW(sd->aligned_item),
+                           SIGNAL_ITEM_HIGHLIGHTED, "elm");
+               }
+          }
+     }
 
    if (sd->select_on_focus_enabled) return EINA_TRUE;
    if (elm_widget_focus_get(obj))
@@ -5424,12 +5517,11 @@ _elm_genlist_evas_object_smart_add(Eo *obj, Elm_Genlist_Data *priv)
        _gesture_n_flicks_cb, priv);
 
    elm_layout_sizing_eval(obj);
-#if 0
+
 // TIZEN_ONLY(20150705): Genlist item align feature
    wd->scroll_item_align_enable = _elm_config->scroll_item_align_enable;
    wd->scroll_item_valign = _elm_config->scroll_item_valign;
 //
-#endif
    eo_do(obj, elm_interface_scrollable_content_viewport_geometry_get
                (NULL, NULL, &priv->viewport_w, &priv->viewport_h));
 }

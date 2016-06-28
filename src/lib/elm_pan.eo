@@ -47,6 +47,12 @@ class Elm_Pan (Evas.Smart_Clipped)
             y: Evas.Coord;
          }
       }
+      pos_adjust {
+         params {
+            @out x: Evas.Coord;
+            @out y: Evas.Coord;
+         }
+      }
    }
    implements {
       Eo.Base.constructor;
