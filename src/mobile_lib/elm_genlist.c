@@ -226,6 +226,7 @@ _banded_item_bg_add(Elm_Gen_Item *it, Evas_Object *target)
        elm_widget_sub_object_add(sd->obj, sd->banded_bg_rect);
        evas_object_move(sd->banded_bg_rect, -9999, -9999);
        evas_object_resize(sd->banded_bg_rect, 0, 0);
+       evas_object_repeat_events_set(sd->banded_bg_rect, EINA_TRUE);
     }
 }
 
