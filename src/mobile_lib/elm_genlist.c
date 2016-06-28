@@ -821,8 +821,16 @@ _view_theme_update(Elm_Gen_Item *it, Evas_Object *view, const char *style)
    Eina_List *l;
 
    snprintf(buf, sizeof(buf), "item/%s", style ? : "default");
-   elm_widget_theme_object_set(WIDGET(it), view, "genlist", buf,
-                               elm_widget_style_get(WIDGET(it)));
+   if (elm_widget_theme_object_set(WIDGET(it), view, "genlist", buf,
+                                   elm_widget_style_get(WIDGET(it))))
+     {
+        ERR("%s is not a valid genlist item style. "
+            "Automatically falls back into default style.",
+            style);
+        elm_widget_theme_object_set
+          (WIDGET(it), view, "genlist", "item/default", "default");
+     }
+
    edje_object_mirrored_set(view, elm_widget_mirrored_get(WIDGET(it)));
    edje_object_scale_set(view, elm_widget_scale_get(WIDGET(it))
                          * elm_config_scale_get());
