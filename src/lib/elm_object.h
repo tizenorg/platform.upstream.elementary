@@ -528,3 +528,87 @@ EAPI Eina_Bool   elm_object_orientation_mode_disabled_get(const Evas_Object *obj
  */
 EAPI void elm_object_accessibility_highlight_set(Evas_Object *obj, Eina_Bool val);
 //
+
+// TIZEN_ONLY(20150705): Genlist item align feature
+/**
+ * @brief Sets the scroll item align enable.
+ * @remarks Tizen only feature.
+ *
+ *
+ * @remarks If the object's scroll item align is enabled, the nearest
+ *          item to the end of the scroll will be located according to
+ *          its vertical align.
+ *
+ * @remarks Currently implemented only Genlist.
+ *
+ * @since_tizen 2.3.1
+ *
+ * @param[in] obj The object handle
+ * @param[in] enabled The scroll item align state
+ *
+ * @see elm_object_scroll_item_align_enabled_get()
+ */
+EAPI void elm_object_scroll_item_align_enabled_set(Evas_Object *obj, Eina_Bool scroll_item_align_enable);
+
+/**
+ * @brief Sets the scroll item align enable.
+ * @remarks Tizen only feature.
+ *
+ *
+ * @remarks If @c EINA_TRUE, the nearest item to the end of the scroll will be
+ *          aligned according to its vertical align. If @c EINA_FALSE, the scroll
+ *          item align is disabled.
+ *
+ * @remarks Currently implemented only Genlist.
+ *
+ * @since_tizen 2.3.1
+ *
+ * @param[in] obj The object handle
+ * @return The scroll item align state.
+ *
+ * @see elm_object_scroll_item_align_enabled_set()
+ */
+EAPI Eina_Bool elm_object_scroll_item_align_enabled_get(const Evas_Object *obj);
+
+/**
+ * @brief Sets the scroll item vertical align.
+ * @remarks Tizen only feature.
+ *
+ *
+ * @remarks This API sets the scroll item vertical align. The scroll item
+ *          vertical align is referred when the object's scroll item align
+ *          is enabled. When the widget is scrolled, the nearest item to the
+ *          end of the scroll will be located according to the given alignment.
+ *
+ * @remarks Currently implemented only Genlist.
+ *
+ * @since_tizen 2.3.1
+ *
+ * @param[in] obj The object handle
+ * @param[in] vertical align The position name.
+ *
+ * @see elm_object_scroll_item_valign_get()
+ */
+EAPI void elm_object_scroll_item_valign_set(Evas_Object *obj, char *scroll_item_valign);
+
+/**
+ * @brief Sets the scroll item vertical align.
+ * @remarks Tizen only feature.
+ *
+ *
+ * @remarks This API gets the scroll item vertical align. The scroll item
+ *          vertical align is referred when the object's scroll item align
+ *          is enabled. When the widget is scrolled, the nearest item to the
+ *          end of the scroll will be located according to the given alignment.
+ *
+ * @remarks Currently implemented only Genlist.
+ *
+ * @since_tizen 2.3.1
+ *
+ * @param[in] obj The object handle
+ * @return The scroll item vertical align name.
+ *
+ * @see elm_object_scroll_item_valign_set()
+ */
+EAPI const char* elm_object_scroll_item_valign_get(const Evas_Object *obj);
+//

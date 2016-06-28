@@ -1626,6 +1626,38 @@ elm_object_scroll_item_loop_enabled_get(const Evas_Object *obj)
    return elm_widget_item_loop_enabled_get(obj);
 }
 
+// TIZEN_ONLY(20150705): Genlist item align feature
+EAPI void
+elm_object_scroll_item_align_enabled_set(Evas_Object *obj,
+                                         Eina_Bool scroll_item_align_enable)
+{
+   EINA_SAFETY_ON_NULL_RETURN(obj);
+   elm_widget_scroll_item_align_enabled_set(obj, scroll_item_align_enable);
+}
+
+EAPI Eina_Bool
+elm_object_scroll_item_align_enabled_get(const Evas_Object *obj)
+{
+   EINA_SAFETY_ON_NULL_RETURN_VAL(obj, EINA_FALSE);
+   return elm_widget_scroll_item_align_enabled_get(obj);
+}
+
+EAPI void
+elm_object_scroll_item_valign_set(Evas_Object *obj,
+                                  char *scroll_item_valign)
+{
+   EINA_SAFETY_ON_NULL_RETURN(obj);
+   elm_widget_scroll_item_valign_set(obj, scroll_item_valign);
+}
+
+EAPI const char*
+elm_object_scroll_item_valign_get(const Evas_Object *obj)
+{
+   EINA_SAFETY_ON_NULL_RETURN_VAL(obj, NULL);
+   return  elm_widget_scroll_item_valign_get(obj);
+}
+//
+
 EAPI Eina_Bool
 elm_object_widget_check(const Evas_Object *obj)
 {

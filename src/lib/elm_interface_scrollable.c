@@ -180,6 +180,14 @@ _elm_pan_pos_min_get(Eo *obj EINA_UNUSED, Elm_Pan_Smart_Data *_pd EINA_UNUSED, E
      *y = 0;
 }
 
+// TIZEN_ONLY(20150705): Genlist item align feature
+EOLIAN static void
+_elm_pan_pos_adjust(Eo *obj EINA_UNUSED, Elm_Pan_Smart_Data *psd EINA_UNUSED, Evas_Coord *x EINA_UNUSED, Evas_Coord *y EINA_UNUSED)
+{
+
+}
+//
+
 EOLIAN static void
 _elm_pan_content_size_get(Eo *obj EINA_UNUSED, Elm_Pan_Smart_Data *psd, Evas_Coord *w, Evas_Coord *h)
 {
@@ -2125,10 +2133,23 @@ _elm_scroll_momentum_animator(void *data)
         dt = dt / at;
         if (dt > 1.0) dt = 1.0;
         p = 1.0 - ((1.0 - dt) * (1.0 - dt));
-        dx = (sid->down.dx * (_elm_config->thumbscroll_friction +
-                              sid->down.extra_time) * p);
-        dy = (sid->down.dy * (_elm_config->thumbscroll_friction +
-                              sid->down.extra_time) * p);
+
+        // TIZEN_ONLY(20150705): Genlist item align feature
+        if (_elm_config->scroll_item_align_enable)
+          {
+             dx = sid->down.dx * p;
+             dy = sid->down.dy * p;
+          }
+        else
+          {
+        //
+             dx = (sid->down.dx * (_elm_config->thumbscroll_friction +
+                                   sid->down.extra_time) * p);
+             dy = (sid->down.dy * (_elm_config->thumbscroll_friction +
+                                   sid->down.extra_time) * p);
+        // TIZEN_ONLY(20150705): Genlist item align feature
+          }
+        //
         sid->down.ax = dx;
         sid->down.ay = dy;
         x = sid->down.sx - dx;
@@ -2595,6 +2616,28 @@ _elm_scroll_mouse_up_event_cb(void *data,
                               {
                                 sid->down.dy += (double)sid->down.pdy * _elm_config->thumbscroll_acceleration_weight;
                               }
+
+                            // TIZEN_ONLY(20150705): Genlist item align feature
+                            if (_elm_config->scroll_item_align_enable)
+                              {
+                                 Evas_Coord pos_x, pos_y;
+
+                                 pos_x = sid->down.dx;
+                                 pos_y = sid->down.dy;
+
+                                 pos_x = _round(pos_x * (_elm_config->thumbscroll_friction +
+                                                         sid->down.extra_time), 0);
+                                 pos_y = _round(pos_y * (_elm_config->thumbscroll_friction +
+                                                         sid->down.extra_time), 0);
+
+                                 eo_do(sid->pan_obj, elm_obj_pan_pos_adjust(&pos_x, &pos_y));
+
+                                 // adjusted position using to _elm_scroll_momentum_animator()
+                                 sid->down.dx = pos_x;
+                                 sid->down.dy = pos_y;
+                              }
+                            //
+
                             sid->down.pdx = sid->down.dx;
                             sid->down.pdy = sid->down.dy;
                             ox = -sid->down.dx;
@@ -2623,7 +2666,41 @@ _elm_scroll_mouse_up_event_cb(void *data,
                                  sid->down.b0y = 0;
                               }
                          }
+// TIZEN_ONLY(20150705): Genlist item align feature
+                       else
+                         {
+                            if (_elm_config->scroll_item_align_enable)
+                              {
+                                 Evas_Coord pos_x = 0, pos_y = 0;
+                                 Evas_Coord adjust_x, adjust_y;
+
+                                 eo_do(sid->pan_obj, elm_obj_pan_pos_adjust(&pos_x, &pos_y));
+
+                                 eo_do(sid->obj, elm_interface_scrollable_content_pos_get(&adjust_x, &adjust_y));
+                                 pos_y = -pos_y;
+                                 adjust_y += pos_y;
+
+                                 _elm_scroll_scroll_to_y(sid, _elm_config->bring_in_scroll_friction, adjust_y);
+                              }
+                         }
                     }
+                  else
+                    {
+                       if (_elm_config->scroll_item_align_enable)
+                         {
+                            Evas_Coord pos_x = 0, pos_y = 0;
+                            Evas_Coord adjust_x, adjust_y;
+
+                            eo_do(sid->pan_obj, elm_obj_pan_pos_adjust(&pos_x, &pos_y));
+
+                            eo_do(sid->obj, elm_interface_scrollable_content_pos_get(&adjust_x, &adjust_y));
+                            pos_y = -pos_y;
+                            adjust_y += pos_y;
+
+                            _elm_scroll_scroll_to_y(sid, _elm_config->bring_in_scroll_friction, adjust_y);
+                         }
+                    }
+//
                }
              else
                {

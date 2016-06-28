@@ -465,7 +465,10 @@ typedef struct _Elm_Widget_Smart_Data
    ///TIZEN_ONLY(20170717) : expose highlight information on atspi
    Eina_Bool                     can_highlight : 1; /**< true if widget have at-spi HIGHLIGHTABLE state */
    ///
-
+// TIZEN_ONLY(20150705): Genlist item align feature
+   Eina_Bool                     scroll_item_align_enable;
+   char                          *scroll_item_valign;
+//
 } Elm_Widget_Smart_Data;
 
 /**
@@ -767,6 +770,12 @@ EAPI int              elm_widget_scroll_hold_get(const Evas_Object *obj);
 EAPI void             elm_widget_scroll_freeze_push(Evas_Object *obj);
 EAPI void             elm_widget_scroll_freeze_pop(Evas_Object *obj);
 EAPI int              elm_widget_scroll_freeze_get(const Evas_Object *obj);
+// TIZEN_ONLY(20150705): Genlist item align feature
+EAPI void             elm_widget_scroll_item_align_enabled_set(Evas_Object *obj, Eina_Bool scroll_item_align_enable);
+EAPI Eina_Bool        elm_widget_scroll_item_align_enabled_get(const Evas_Object *obj);
+EAPI void             elm_widget_scroll_item_valign_set(Evas_Object *obj, char *scroll_item_valign);
+EAPI const char*      elm_widget_scroll_item_valign_get(const Evas_Object *obj);
+//
 EAPI void             elm_widget_scale_set(Evas_Object *obj, double scale);
 EAPI double           elm_widget_scale_get(const Evas_Object *obj);
 EAPI Eina_Bool        elm_widget_mirrored_get(const Evas_Object *obj);

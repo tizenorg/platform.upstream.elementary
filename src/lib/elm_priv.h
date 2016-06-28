@@ -305,6 +305,10 @@ struct _Elm_Config
    int           gl_depth;
    int           gl_stencil;
    int           gl_msaa;
+// TIZEN_ONLY(20150705): Genlist item align feature
+   Eina_Bool     scroll_item_align_enable;
+   const char   *scroll_item_valign;
+//
 
    /* Not part of the EET file */
    Eina_Bool     is_mirrored : 1;
