@@ -426,6 +426,17 @@ _elm_notify_elm_container_content_unset(Eo *obj, Elm_Notify_Data *sd, const char
    return content;
 }
 
+//TIZEN_ONLY(20160629) : add "show,finished" internal callback
+static void
+_show_finished_cb(void *data,
+                  Evas_Object *obj EINA_UNUSED,
+                  const char *emission EINA_UNUSED,
+                  const char *source EINA_UNUSED)
+{
+   eo_do(data, eo_event_callback_call(ELM_NOTIFY_EVENT_SHOW_FINISHED, NULL));
+}
+//
+
 static void
 _hide_finished_cb(void *data,
                   Evas_Object *obj EINA_UNUSED,
@@ -451,6 +462,10 @@ _elm_notify_evas_object_smart_add(Eo *obj, Elm_Notify_Data *priv)
    priv->notify = edje_object_add(evas_object_evas_get(obj));
    evas_object_smart_member_add(priv->notify, obj);
 
+   //TIZEN_ONLY(20160629) : add "show,finished" internal callback
+   edje_object_signal_callback_add
+      (priv->notify, "elm,action,show,finished", "", _show_finished_cb, obj);
+   //
    edje_object_signal_callback_add
       (priv->notify, "elm,action,hide,finished", "elm", _hide_finished_cb, obj);
 

@@ -195,6 +195,9 @@ class Elm.Popup (Elm.Layout, Elm_Interface_Atspi_Widget_Action)
       language,changed;
       access,changed;
       dismissed;
+      //TIZEN_ONLY(20160629) : add "show,finished" internal callback
+      show,finished;
+      //
    }
 
 }
