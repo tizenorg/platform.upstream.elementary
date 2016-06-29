@@ -98,6 +98,9 @@ class Elm.Notify (Elm.Container)
       block,clicked;
       timeout;
       dismissed;
+      //TIZEN_ONLY(20160629) : add "show,finished" internal callback
+      show,finished;
+      //
    }
 
 }

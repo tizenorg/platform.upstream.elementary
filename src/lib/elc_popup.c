@@ -52,6 +52,11 @@ static Eina_Bool
 _timeout_cb(void *data, Eo *obj EINA_UNUSED,
             const Eo_Event_Description *desc EINA_UNUSED, void *event_info EINA_UNUSED);
 
+//TIZEN_ONLY(20160629) : add "show,finished" internal callback
+static Eina_Bool
+_show_finished_cb(void *data, Eo *obj EINA_UNUSED,
+            const Eo_Event_Description *desc EINA_UNUSED, void *event_info EINA_UNUSED);
+//
 static Eina_Bool
 _hide_effect_finished_cb(void *data, Eo *obj EINA_UNUSED,
             const Eo_Event_Description *desc EINA_UNUSED, void *event_info EINA_UNUSED);
@@ -71,7 +76,10 @@ static const Elm_Action key_actions[] = {
 EO_CALLBACKS_ARRAY_DEFINE(_notify_cb,
    { ELM_NOTIFY_EVENT_BLOCK_CLICKED, _block_clicked_cb },
    { ELM_NOTIFY_EVENT_TIMEOUT, _timeout_cb },
-   { ELM_NOTIFY_EVENT_DISMISSED, _hide_effect_finished_cb }
+   { ELM_NOTIFY_EVENT_DISMISSED, _hide_effect_finished_cb },
+//TIZEN_ONLY(20160629) : add "show,finished" internal callback
+   { ELM_NOTIFY_EVENT_SHOW_FINISHED, _show_finished_cb }
+//
 );
 
 static void  _on_content_del(void *data, Evas *e, Evas_Object *obj, void *event_info);
@@ -127,6 +135,17 @@ _timeout_cb(void *data,
 
    return EINA_TRUE;
 }
+
+//TIZEN_ONLY(20160629) : add "show,finished" internal callback
+static Eina_Bool
+_show_finished_cb(void *data,
+      Eo *obj EINA_UNUSED, const Eo_Event_Description *desc EINA_UNUSED, void *event_info EINA_UNUSED)
+{
+   eo_do(data, eo_event_callback_call(ELM_POPUP_EVENT_SHOW_FINISHED, NULL));
+
+   return EINA_TRUE;
+}
+//
 
 static Eina_Bool
 _hide_effect_finished_cb(void *data,
