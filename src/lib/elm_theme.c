@@ -310,7 +310,6 @@ _elm_theme_set(Elm_Theme *th, Evas_Object *o, const char *clas, const char *grou
         //style not found, add to the not found list
         eina_hash_add(th->cache_style_load_failed, buf2, (void *)1);
      }
-
    //Use the elementary default theme.
    snprintf(buf2, sizeof(buf2), "elm/%s/%s/default", clas, group);
    if (!eina_hash_find(th->cache_style_load_failed, buf2))
