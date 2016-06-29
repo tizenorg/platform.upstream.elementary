@@ -345,7 +345,7 @@ class Elm.Genlist_Item(Elm.Widget_Item)
                       ]]
                 }
                 values {
-                     type: Elm_Genlist_Item_Type(ELM_GENLIST_ITEM_MAX); [[Item type.]]
+                     type: Elm_Genlist_Item_Type(4); [[Item type.]]
                 }
            }
            /*      init { FIXME
