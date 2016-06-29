@@ -2914,6 +2914,19 @@ _wl_elm_drag_action_set(Evas_Object *obj, Elm_Xdnd_Action action)
    return EINA_TRUE;
 }
 
+//TIZEN ONLY (20160629): support window rotation
+static Eina_Bool
+_wl_win_rotation_changed_cb(void *data,
+      Eo *obj, const Eo_Event_Description *desc EINA_UNUSED,
+      void *event_info EINA_UNUSED)
+{
+   Evas_Object *win = data;
+   int rot = elm_win_rotation_get(obj);
+   elm_win_rotation_set(win, rot);
+   return EINA_TRUE;
+}
+//
+
 static Eina_Bool
 _wl_elm_drag_start(Evas_Object *obj, Elm_Sel_Format format, const char *data,
                    Elm_Xdnd_Action action,
@@ -3007,6 +3020,13 @@ _wl_elm_drag_start(Evas_Object *obj, Elm_Sel_Format format, const char *data,
    dragwin_x_start = dragwin_x_end = x;
    dragwin_y_start = dragwin_y_end = y;
 
+   //TIZEN ONLY (20160629): support window rotation
+   if (elm_win_wm_rotation_supported_get(dragwin))
+     {
+        int rots[3] = {0, 90, 270};
+        elm_win_wm_rotation_available_rotations_set(dragwin, rots, 3);
+     }
+   //
    evas_object_move(dragwin, x, y);
    evas_object_resize(dragwin, w, h);
    evas_object_show(dragwin);
@@ -3022,7 +3042,16 @@ _wl_elm_drag_start(Evas_Object *obj, Elm_Sel_Format format, const char *data,
         top = elm_widget_top_get(obj);
         if (!top) top = elm_widget_top_get(elm_widget_parent_widget_get(obj));
         if (top && (eo_isa(top, ELM_WIN_CLASS)))
-          parent = elm_win_wl_window_get(top);
+          {
+             parent = elm_win_wl_window_get(top);
+             //TIZEN ONLY (20160629): support window rotation
+             int rot = elm_win_rotation_get(top);
+             elm_win_rotation_set(dragwin, rot);
+             eo_do(top, eo_event_callback_add(
+                   ELM_WIN_EVENT_ROTATION_CHANGED,
+                   _wl_win_rotation_changed_cb, dragwin));
+             //
+          }
      }
    if (!parent)
      {
