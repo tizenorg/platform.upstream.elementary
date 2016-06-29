@@ -403,49 +403,6 @@ _populate_theme_scroll(Elm_Popup_Data *sd)
    sd->theme_scroll = EINA_FALSE;
 }
 
-//TIZEN_ONLY(20160405): fix style apply problem
-static const char*
-_notify_orient_name_get(Evas_Object *obj)
-{
-   const char *position;
-   double ax, ay;
-   ax = _elm_config->popup_horizontal_align;
-   ay = _elm_config->popup_vertical_align;
-
-   if ((elm_widget_mirrored_get(obj)) && (ax != ELM_NOTIFY_ALIGN_FILL)) ax = 1.0 - ax;
-
-   if (ay == 0.0)
-     {
-        if (ax == 0.0)
-          position = "top_left";
-        else if (ax == 1.0)
-          position = "top_right";
-        else
-          position = "top";
-     }
-   else if (ay == 1.0)
-     {
-        if (ax == 0.0)
-          position = "bottom_left";
-        else if (ax == 1.0)
-          position = "bottom_right";
-        else
-          position = "bottom";
-     }
-   else
-     {
-        if (ax == 0.0)
-          position = "left";
-        else if (ax == 1.0)
-          position = "right";
-        else
-          position = "center";
-     }
-
-   return position;
-}
-//
-
 EOLIAN static Theme_Apply
 _elm_popup_elm_widget_theme_apply(Eo *obj, Elm_Popup_Data *sd)
 {
@@ -460,15 +417,15 @@ _elm_popup_elm_widget_theme_apply(Eo *obj, Elm_Popup_Data *sd)
    elm_widget_style_set(sd->notify, style);
     */
      {
-        Eina_Bool ret;
+        Theme_Apply ret;
         const char *obj_style = elm_widget_style_get(obj);
 
         if (obj_style && !strcmp(obj_style, "default"))
-          ret = elm_layout_theme_set(sd->notify, "notify", _notify_orient_name_get(obj), "popup");
+          ret = elm_widget_style_set(sd->notify, "popup");
         else
-          ret = elm_layout_theme_set(sd->notify, "notify", _notify_orient_name_get(obj), obj_style);
+          ret = elm_widget_style_set(sd->notify, obj_style);
 
-        if (!ret)
+        if (ret != THEME_APPLY_SUCCESS)
           elm_widget_style_set(sd->notify, style);
      }
    /* END */
@@ -484,8 +441,9 @@ _elm_popup_elm_widget_theme_apply(Eo *obj, Elm_Popup_Data *sd)
         if (!elm_layout_theme_set(sd->action_area, "popup", buf, style))
           CRI("Failed to set layout!");
          */
-        if (!(elm_layout_theme_set(sd->action_area, "popup", buf, elm_widget_style_get(obj)) ||
-              elm_layout_theme_set(sd->action_area, "popup", buf, style)))
+        if (!(elm_layout_theme_set(sd->action_area, "popup", buf, elm_widget_style_get(obj)) == THEME_APPLY_SUCCESS ||
+              elm_layout_theme_set(sd->action_area, "popup", buf, style) == THEME_APPLY_SUCCESS ||
+              elm_layout_theme_set(sd->action_area, "popup", buf, "popup/default")))
           CRI("Failed to set layout!");
         /* END */
      }
@@ -493,8 +451,9 @@ _elm_popup_elm_widget_theme_apply(Eo *obj, Elm_Popup_Data *sd)
    if (!elm_layout_theme_set(sd->content_area, "popup", "content", style))
      CRI("Failed to set layout!");
     */
-   if (!(elm_layout_theme_set(sd->content_area, "popup", "content", elm_widget_style_get(obj)) ||
-         elm_layout_theme_set(sd->content_area, "popup", "content", style)))
+   if (!(elm_layout_theme_set(sd->content_area, "popup", "content", elm_widget_style_get(obj)) == THEME_APPLY_SUCCESS ||
+         elm_layout_theme_set(sd->content_area, "popup", "content", style) == THEME_APPLY_SUCCESS ||
+         elm_layout_theme_set(sd->content_area, "popup", "content", "popup/default")))
      CRI("Failed to set layout!");
    /* END */
    if (sd->text_content_obj)
@@ -812,8 +771,9 @@ _button_remove(Evas_Object *obj,
         if (!elm_layout_theme_set(sd->action_area, "popup", buf, style))
           CRI("Failed to set layout!");
          */
-        if (!(elm_layout_theme_set(sd->action_area, "popup", buf, elm_widget_style_get(obj)) ||
-              elm_layout_theme_set(sd->action_area, "popup", buf, style)))
+        if (!(elm_layout_theme_set(sd->action_area, "popup", buf, elm_widget_style_get(obj)) == THEME_APPLY_SUCCESS ||
+              elm_layout_theme_set(sd->action_area, "popup", buf, style) == THEME_APPLY_SUCCESS ||
+              elm_layout_theme_set(sd->action_area, "popup", buf, "popup/default")))
           CRI("Failed to set layout!");
         /* END */
      }
@@ -1437,8 +1397,9 @@ _action_button_set(Evas_Object *obj,
    if (!elm_layout_theme_set(sd->action_area, "popup", buf, style))
      CRI("Failed to set layout!");
     */
-   if (!(elm_layout_theme_set(sd->action_area, "popup", buf, elm_widget_style_get(obj)) ||
-         elm_layout_theme_set(sd->action_area, "popup", buf, style)))
+   if (!(elm_layout_theme_set(sd->action_area, "popup", buf, elm_widget_style_get(obj)) == THEME_APPLY_SUCCESS ||
+         elm_layout_theme_set(sd->action_area, "popup", buf, style) == THEME_APPLY_SUCCESS ||
+         elm_layout_theme_set(sd->action_area, "popup", buf, "popup/default")))
      CRI("Failed to set layout!");
    /* END */
 
@@ -1757,19 +1718,26 @@ _elm_popup_evas_object_smart_add(Eo *obj, Elm_Popup_Data *priv)
    snprintf(style, sizeof(style), "popup/%s", elm_widget_style_get(obj));
 
    priv->notify = elm_notify_add(obj);
+
+   //TIZEN_ONLY(20160629): reorder notify align set
+   elm_notify_align_set(priv->notify,
+                        _elm_config->popup_horizontal_align,
+                        _elm_config->popup_vertical_align);
+   //
+
    /* TIZEN_ONLY(20160328): Support legacy groups
    elm_object_style_set(priv->notify, style);
     */
      {
-        Eina_Bool ret;
+        Theme_Apply ret;
         const char *obj_style = elm_widget_style_get(obj);
 
         if (obj_style && !strcmp(obj_style, "default"))
-          ret = elm_layout_theme_set(priv->notify, "notify", _notify_orient_name_get(obj), "popup");
+          ret = elm_widget_style_set(priv->notify, "popup");
         else
-          ret = elm_layout_theme_set(priv->notify, "notify", _notify_orient_name_get(obj), obj_style);
+          ret = elm_widget_style_set(priv->notify, obj_style);
 
-        if (!ret)
+        if (ret != THEME_APPLY_SUCCESS)
           elm_widget_style_set(priv->notify, style);
      }
    /* END */
@@ -1781,9 +1749,12 @@ _elm_popup_evas_object_smart_add(Eo *obj, Elm_Popup_Data *priv)
                                   _on_obj_size_hints_changed, NULL);
    //
 
-   elm_notify_align_set(priv->notify,
-                        _elm_config->popup_horizontal_align,
-                        _elm_config->popup_vertical_align);
+   //TIZEN_ONLY(20160629): reorder notify align set
+   //elm_notify_align_set(priv->notify,
+   //                     _elm_config->popup_horizontal_align,
+   //                     _elm_config->popup_vertical_align);
+   //
+
    elm_notify_allow_events_set(priv->notify, EINA_FALSE);
    evas_object_size_hint_weight_set
      (priv->notify, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
@@ -1820,8 +1791,9 @@ _elm_popup_evas_object_smart_add(Eo *obj, Elm_Popup_Data *priv)
         (priv->content_area, EVAS_CALLBACK_CHANGED_SIZE_HINTS,
          _size_hints_changed_cb, priv->main_layout);
     */
-   if (!(elm_layout_theme_set(priv->content_area, "popup", "content", elm_widget_style_get(obj)) ||
-         elm_layout_theme_set(priv->content_area, "popup", "content", style)))
+   if (!(elm_layout_theme_set(priv->content_area, "popup", "content", elm_widget_style_get(obj)) == THEME_APPLY_SUCCESS ||
+         elm_layout_theme_set(priv->content_area, "popup", "content", style) == THEME_APPLY_SUCCESS ||
+         elm_layout_theme_set(priv->content_area, "popup", "content", "popup/default")))
      CRI("Failed to set layout!");
    else
    //TIZEN_ONLY(2016-06-23): fix popup align and size problem
