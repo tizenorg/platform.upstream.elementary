@@ -612,3 +612,87 @@ EAPI void elm_object_scroll_item_valign_set(Evas_Object *obj, char *scroll_item_
  */
 EAPI const char* elm_object_scroll_item_valign_get(const Evas_Object *obj);
 //
+
+//TIZEN_ONLY(20160629): add elm color interface
+/**
+ * @internal
+ *
+ * Set the common color of the Elementary widgets.
+ *
+ * @note These color values are expected to be premultiplied by @p a.
+ *
+ * @param[in] klass The class of a widget.
+ * @param[in] style The style of a widget.
+ * @param[in] part The part to change its color.
+ * @param[in] r The red intensity of the red color.
+ * @param[in] g The green intensity of the green color.
+ * @param[in] b The blue intensity of the blue color.
+ * @param[in] a The alpha value.
+ *
+ * @since 1.18
+ *
+ * @ingroup General
+ */
+EAPI void        elm_color_set(const char *klass, const char *style, const char *part, int r, int g, int b, int a);
+
+/**
+ * @internal
+ *
+ * Get the common color of the Elementary widgets.
+ *
+ * @note These color values are expected to be premultiplied by @p a.
+ *
+ * @param[in] klass The class of a widget.
+ * @param[in] style The style of a widget.
+ * @param[in] part The part to change its color.
+ * @param[in] r The red intensity of the red color.
+ * @param[in] g The green intensity of the green color.
+ * @param[in] b The blue intensity of the blue color.
+ * @param[in] a The alpha value.
+ *
+ * @since 1.18
+ *
+ * @ingroup General
+ */
+EAPI void        elm_color_get(const char *klass, const char *style, const char *part, int *r, int *g, int *b, int *a);
+
+/**
+ * @internal
+ *
+ * Set the color of a given widget.
+ *
+ * @note These color values are expected to be premultiplied by @p a.
+ *
+ * @param[in] obj The Elementary widget.
+ * @param[in] part The part to change its color.
+ * @param[in] r The red intensity of the red color.
+ * @param[in] g The green intensity of the green color.
+ * @param[in] b The blue intensity of the blue color.
+ * @param[in] a The alpha value.
+ *
+ * @since 1.18
+ *
+ * @ingroup General
+ */
+EAPI void        elm_object_color_set(Evas_Object *obj, const char *group, int r, int g, int b, int a);
+
+/**
+ * @internal
+ *
+ * Get the color of a given widget.
+ *
+ * @note These color values are expected to be premultiplied by @p a.
+ *
+ * @param[in] obj The Elementary widget.
+ * @param[in] part The part to change its color.
+ * @param[in] r The red intensity of the red color.
+ * @param[in] g The green intensity of the green color.
+ * @param[in] b The blue intensity of the blue color.
+ * @param[in] a The alpha value.
+ *
+ * @since 1.18
+ *
+ * @ingroup General
+ */
+EAPI void        elm_object_color_get(Evas_Object *obj, const char *group, int *r, int *g, int *b, int *a);
+//

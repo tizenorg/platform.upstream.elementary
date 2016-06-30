@@ -6602,5 +6602,87 @@ _elm_widget_evas_object_paragraph_direction_set(Eo *obj, Elm_Widget_Smart_Data *
 }
 /* END */
 
+//TIZEN_ONLY(20160629): add elm color interface
+Eina_Stringshare *
+_elm_widget_edje_class(const Eo_Class *klass, const char *style, const char *part)
+{
+   Eina_Strbuf *buf;
+   Eina_Stringshare *str;
+
+   buf = eina_strbuf_new();
+
+   eina_strbuf_append(buf, eo_class_name_get(klass));
+   eina_strbuf_tolower(buf);
+
+   eina_strbuf_replace_first(buf, "_", "/widget/");
+
+   if (style)
+     {
+        eina_strbuf_append_printf(buf, "/%s/%s", style, part);
+     }
+   else
+     {
+        eina_strbuf_append_printf(buf, "/%s", part);
+     }
+
+   str = eina_stringshare_add(eina_strbuf_string_get(buf));
+
+   eina_strbuf_free(buf);
+   return str;
+}
+
+EOAPI Eina_Bool
+_elm_widget_efl_gfx_base_color_part_set(Eo *obj, Elm_Widget_Smart_Data *sd, const char *part, int r, int g, int b, int a)
+{
+   Eina_Stringshare *buf;
+   Eina_Bool int_ret;
+
+   if (eo_isa(obj, ELM_LAYOUT_CLASS))
+     {
+        int r2 = 0, g2 = 0, b2 = 0, a2 = 0, r3 = 0, g3 = 0, b3 = 0, a3 = 0;
+
+        buf = _elm_widget_edje_class(eo_class_get(obj), "default", part);
+        _elm_color_unpremul(a, &r, &g, &b);
+
+        edje_object_color_class_get(sd->resize_obj, buf, NULL, NULL, NULL, NULL, &r2, &g2, &b2, &a2, &r3, &g3, &b3, &a3);
+        int_ret = edje_object_color_class_set(sd->resize_obj, buf, r, g, b, a, r2, g2, b2, a2, r3, g3, b3, a3);
+
+        eina_stringshare_del(buf);
+
+        return int_ret;
+     }
+   else
+     {
+        ERR("%s does not support %s API.", elm_widget_type_get(obj), "elm_object_color_set()");
+        return EINA_FALSE;
+     }
+}
+
+EOAPI Eina_Bool
+_elm_widget_efl_gfx_base_color_part_get(Eo *obj, Elm_Widget_Smart_Data *sd, const char *part, int *r, int *g, int *b, int *a)
+{
+   Eina_Stringshare *buf;
+   Eina_Bool int_ret;
+
+   if (eo_isa(obj, ELM_LAYOUT_CLASS))
+     {
+        buf = _elm_widget_edje_class(eo_class_get(obj), "default", part);
+
+        int_ret = edje_object_color_class_get(sd->resize_obj, buf, r, g, b, a, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+
+        _elm_color_premul(*a, r, g, b);
+
+        eina_stringshare_del(buf);
+
+        return int_ret;
+     }
+   else
+     {
+        ERR("%s does not support %s API.", elm_widget_type_get(obj), "elm_object_color_get()");
+        return EINA_FALSE;
+     }
+}
+//
+
 #include "elm_widget_item.eo.c"
 #include "elm_widget.eo.c"

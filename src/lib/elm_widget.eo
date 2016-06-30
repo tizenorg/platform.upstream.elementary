@@ -763,6 +763,8 @@ abstract Elm.Widget (Evas.Object_Smart, Elm_Interface_Atspi_Accessible, Elm_Inte
       Eo.Base.constructor;
       Eo.Base.destructor;
       Eo.Base.dbg_info_get;
+      Efl.Gfx.Base.color_part.set;
+      Efl.Gfx.Base.color_part.get;
 	  /* TIZEN_ONLY(20160622): Override Paragraph Direction APIs */
       Evas.Object.paragraph_direction.set;
 	  /* END */

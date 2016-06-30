@@ -1880,3 +1880,61 @@ elm_object_accessibility_highlight_set(Evas_Object *obj, Eina_Bool visible)
 
 }
 //
+
+//TIZEN_ONLY(20160629): add elm color interface
+EAPI void
+elm_color_set(const char *klass, const char *style, const char *part, int r, int g, int b, int a)
+{
+   char buf[1024];
+   int r2 = 0, g2 = 0, b2 = 0, a2 = 0, r3 = 0, g3 = 0, b3 = 0, a3 = 0;
+
+   if ((!klass) || (!part)) return;
+
+   if (style)
+     {
+        snprintf(buf, sizeof(buf), "elm/widget/%s/%s/%s", klass, style, part);
+     }
+   else
+     {
+        snprintf(buf, sizeof(buf), "elm/widget/%s/%s", klass, part);
+     }
+
+   _elm_color_unpremul(a, &r, &g, &b);
+
+   edje_color_class_get(buf, NULL, NULL, NULL, NULL, &r2, &g2, &b2, &a2, &r3, &g3, &b3, &a3);
+   edje_color_class_set(buf, r, g, b, a, r2, g2, b2, a2, r3, g3, b3, a3);
+}
+
+EAPI void
+elm_color_get(const char *klass, const char *style, const char *part, int *r, int *g, int *b, int *a)
+{
+   char buf[1024];
+
+   if ((!klass) || (!part)) return;
+
+   if (style)
+     {
+        snprintf(buf, sizeof(buf), "elm/widget/%s/%s/%s", klass, style, part);
+     }
+   else
+     {
+        snprintf(buf, sizeof(buf), "elm/widget/%s/%s", klass, part);
+     }
+
+   edje_color_class_get(buf, r, g, b, a, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+
+   _elm_color_premul(*a, r, g, b);
+}
+
+EAPI void
+elm_object_color_set(Evas_Object *obj, const char *part, int r, int g, int b, int a)
+{
+   eo_do(obj, efl_gfx_color_part_set(part, r, g, b, a));
+}
+
+EAPI void
+elm_object_color_get(Evas_Object *obj, const char *part, int *r, int *g, int *b, int *a)
+{
+   eo_do(obj, efl_gfx_color_part_get(part, r, g, b, a));
+}
+//
