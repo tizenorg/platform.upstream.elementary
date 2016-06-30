@@ -63,6 +63,9 @@ struct _Elm_Index_Item_Data
    Elm_Index_Item_Data  *head;
 
    int              priority;
+   // TIZEN_ONLY(20160630): implement elm_index_item_elm_widget_item_style_set
+   Eina_Stringshare *style;
+   /* END */
    Eina_Bool        selected : 1; /**< a flag that remembers an item is selected. this is set true when mouse down/move occur above an item and when elm_index_item_selected_set() API is called. */
 };
 
