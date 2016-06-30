@@ -1864,7 +1864,8 @@ _item_realize(Elm_Gen_Item *it,
 
    size = eina_hash_find(sd->size_caches, &(it->itc));
    /* homogeneous genlist shortcut */
-   if ((calc) && (sd->homogeneous) && (!it->item->mincalcd) && size)
+   // TIZEN ONLY(20160630): Support homogeneous mode in item class.
+   if ((calc) && (sd->homogeneous || it->itc->homogeneous) && (!it->item->mincalcd) && size)
      {
         GL_IT(it)->w = GL_IT(it)->minw = size->minw;
         GL_IT(it)->h = GL_IT(it)->minh = size->minh;
@@ -1893,7 +1894,8 @@ _item_realize(Elm_Gen_Item *it,
 
         if (!it->item->mincalcd)
           {
-             if (sd->homogeneous && size)
+             // TIZEN ONLY(20160630): Support homogeneous mode in item class.
+             if ((sd->homogeneous || it->itc->homogeneous) && size)
                {
                   GL_IT(it)->w = GL_IT(it)->minw = size->minw;
                   GL_IT(it)->h = GL_IT(it)->minh = size->minh;
@@ -1913,7 +1915,8 @@ _item_realize(Elm_Gen_Item *it,
                   it->item->h = it->item->minh = mh;
                   it->item->mincalcd = EINA_TRUE;
 
-                  if (sd->homogeneous)
+                  // TIZEN ONLY(20160630): Support homogeneous mode in item class.
+                  if (sd->homogeneous || it->itc->homogeneous)
                     {
                        if (size)
                          eina_hash_del_by_key(sd->size_caches, &(it->itc));
@@ -4691,8 +4694,9 @@ _item_queue(Elm_Genlist_Data *sd,
         ELM_SAFE_FREE(sd->queue_idle_enterer, ecore_idle_enterer_del);
         _queue_process(sd);
      }
+   // TIZEN ONLY(20160630): Support homogeneous mode in item class.
    while ((sd->queue) && (sd->blocks) &&
-          (sd->homogeneous) && (sd->mode == ELM_LIST_COMPRESS))
+          ((sd->homogeneous) || it->itc->homogeneous) && (sd->mode == ELM_LIST_COMPRESS))
      {
         ELM_SAFE_FREE(sd->queue_idle_enterer, ecore_idle_enterer_del);
         _queue_process(sd);
@@ -5139,10 +5143,12 @@ _item_block_recalc(Item_Block *itb,
           }
         if (!itb->realized)
           {
-             if (itb->sd->homogeneous &&
+             // TIZEN ONLY(20160630): Support homogeneous mode in item class.
+             if ((itb->sd->homogeneous || it->itc->homogeneous) &&
                  ((!size) || it->itc != size->itc))
                size = eina_hash_find(itb->sd->size_caches, &(it->itc));
-             if (qadd || (itb->sd->homogeneous && !size))
+             // TIZEN ONLY(20160630): Support homogeneous mode in item class.
+             if (qadd || ((itb->sd->homogeneous || it->itc->homogeneous) && !size))
                {
                   if (!it->item->mincalcd) changed = EINA_TRUE;
                   if (changed)
@@ -5162,7 +5168,8 @@ _item_block_recalc(Item_Block *itb,
                }
              else
                {
-                  if ((itb->sd->homogeneous) && size &&
+                  // TIZEN ONLY(20160630): Support homogeneous mode in item class.
+                  if ((itb->sd->homogeneous || it->itc->homogeneous) && size &&
                       (itb->sd->mode == ELM_LIST_COMPRESS))
                     {
                        it->item->w = it->item->minw = size->minw;
@@ -6839,8 +6846,9 @@ _elm_genlist_item_coordinates_calc(Elm_Gen_Item *it,
    Evas_Coord gith = 0;
    ELM_GENLIST_DATA_GET_FROM_ITEM(it, sd);
 
+   // TIZEN ONLY(20160630): Support homogeneous mode in item class.
    if ((sd->queue) ||
-       (!((sd->homogeneous) &&
+       (!((sd->homogeneous || it->itc->homogeneous) &&
           (sd->mode == ELM_LIST_COMPRESS))))
      {
         if ((it->item->queued) || (!it->item->mincalcd) || (sd->queue))
@@ -8022,7 +8030,8 @@ _elm_genlist_item_select_mode_set(Eo *eo_it EINA_UNUSED, Elm_Gen_Item *it,
         sd->update_job = ecore_job_add(_update_job, sd->obj);
 
         // reset homogeneous item size
-        if (sd->homogeneous)
+        // TIZEN ONLY(20160630): Support homogeneous mode in item class.
+        if (sd->homogeneous || it->itc->homogeneous)
           {
              Item_Size *size =
                 eina_hash_find(sd->size_caches, &(it->itc));
