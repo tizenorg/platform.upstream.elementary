@@ -46,5 +46,9 @@ class Elm.Index_Item(Elm.Widget_Item, Elm_Interface_Atspi_Widget_Action)
         Elm_Interface_Atspi_Accessible.name.get;
         Elm_Interface_Atspi_Widget_Action.elm_actions.get;
         ///
+        // TIZEN_ONLY(20160630) : implement elm_index_item_elm_widget_item_style_set
+        Elm.Widget_Item.style.get;
+        Elm.Widget_Item.style.set;
+        /* END */
    }
 }
