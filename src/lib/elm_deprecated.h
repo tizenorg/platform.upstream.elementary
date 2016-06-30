@@ -1686,3 +1686,18 @@ EINA_DEPRECATED EAPI Eina_Bool elm_ctxpopup_direction_available_get(Evas_Object 
  * @ingroup Elm_Index
  */
 EINA_DEPRECATED EAPI void elm_index_priority_set(Evas_Object *obj, int priority);
+
+/**
+ * @brief Control standard_priority group of index. Priority group will be
+ * shown as many items as it can, and other group will be shown one character
+ * only.
+ *
+ * @return @c priority target priority value in index
+ *
+ * @see Use elm_index_standard_priority_get()
+ *
+ * @since 1.16
+ *
+ * @ingroup Elm_Index
+ */
+EINA_DEPRECATED EAPI int elm_index_priority_get(const Evas_Object *obj);

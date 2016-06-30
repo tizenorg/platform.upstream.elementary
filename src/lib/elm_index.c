@@ -1671,6 +1671,14 @@ _elm_index_item_priority_set(Eo *eo_it EINA_UNUSED, Elm_Index_Item_Data *it, int
    it->priority = priority;
 }
 
+EINA_DEPRECATED EAPI int
+elm_index_priority_get(const Eo *obj)
+{
+   int ret = 0;
+   eo_do(obj, ret = elm_obj_index_standard_priority_get());
+   return ret;
+}
+
 EINA_DEPRECATED EAPI void
 elm_index_priority_set(Eo *obj, int priority)
 {
