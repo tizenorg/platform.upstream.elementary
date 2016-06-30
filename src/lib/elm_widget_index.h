@@ -63,6 +63,7 @@ struct _Elm_Index_Item_Data
    Elm_Index_Item_Data  *head;
 
    int              priority;
+   Eina_Stringshare *style;
    Eina_Bool        selected : 1; /**< a flag that remembers an item is selected. this is set true when mouse down/move occur above an item and when elm_index_item_selected_set() API is called. */
 };
 
