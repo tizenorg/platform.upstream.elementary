@@ -4427,7 +4427,7 @@ _item_min_calc(Elm_Gen_Item *it)
    if ((sd->mode != ELM_LIST_LIMIT) && vw && mw < vw)
      mw = vw;
 
-   if (sd->homogeneous)
+   if (sd->homogeneous || it->itc->homogeneous)
      {
         Size_Cache *size, *tmp;
         tmp = eina_hash_find(sd->size_caches, it->itc->item_style);
@@ -4469,7 +4469,7 @@ _item_calc(Elm_Gen_Item *it)
    p_minw = GL_IT(it)->minw;
    p_minh = GL_IT(it)->minh;
 
-   if (sd->homogeneous)
+   if (sd->homogeneous || it->itc->homogeneous)
      size = eina_hash_find(sd->size_caches, it->itc->item_style);
    if (size)
      {
@@ -7405,6 +7405,7 @@ elm_genlist_item_class_new(void)
    itc->version = CLASS_ALLOCATED;
    itc->refcount = 1;
    itc->delete_me = EINA_FALSE;
+   itc->homogeneous = EINA_FALSE;
 
    return itc;
 }
