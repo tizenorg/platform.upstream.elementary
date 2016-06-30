@@ -183,7 +183,7 @@ class Elm.Widget_Item(Eo.Base, Elm_Interface_Atspi_Accessible,
                      disable: bool; [[$true, if the widget item is disabled, $false if it's enabled (or on errors)]]
                 }
            }
-           access_order_get {
+           access_order_get @const {
                   [[Get highlight order
 
                     @since 1.8]]

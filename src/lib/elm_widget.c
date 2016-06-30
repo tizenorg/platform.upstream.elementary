@@ -5678,7 +5678,7 @@ _elm_widget_item_access_order_set(Eo *eo_item EINA_UNUSED,
 }
 
 EOLIAN static const Eina_List *
-_elm_widget_item_access_order_get(Eo *eo_item EINA_UNUSED, Elm_Widget_Item_Data *item)
+_elm_widget_item_access_order_get(const Eo *eo_item EINA_UNUSED, Elm_Widget_Item_Data *item)
 {
    return _elm_access_widget_item_access_order_get(item);
 }
