@@ -1671,6 +1671,12 @@ _elm_index_item_priority_set(Eo *eo_it EINA_UNUSED, Elm_Index_Item_Data *it, int
    it->priority = priority;
 }
 
+EINA_DEPRECATED EAPI void
+elm_index_priority_set(Eo *obj, int priority)
+{
+   eo_do(obj, elm_obj_index_standard_priority_set(priority));
+}
+
 EOLIAN static void
 _elm_index_standard_priority_set(Eo *obj, Elm_Index_Data *sd, int priority)
 {

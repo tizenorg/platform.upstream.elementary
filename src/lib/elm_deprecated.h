@@ -1671,3 +1671,18 @@ EINA_DEPRECATED EAPI void elm_access_external_info_set(Evas_Object *obj, const c
 EINA_DEPRECATED EAPI char *elm_access_external_info_get(const Evas_Object *obj);
 
 EINA_DEPRECATED EAPI Eina_Bool elm_ctxpopup_direction_available_get(Evas_Object *obj, Elm_Ctxpopup_Direction direction);
+
+/**
+ * @brief Control standard_priority group of index. Priority group will be
+ * shown as many items as it can, and other group will be shown one character
+ * only.
+ *
+ * @param[in] priority @c priority target priority value in index
+ *
+ * @since 1.16
+ *
+ * @see Use elm_index_standard_priority_set() instead.
+ *
+ * @ingroup Elm_Index
+ */
+EINA_DEPRECATED EAPI void elm_index_priority_set(Evas_Object *obj, int priority);
