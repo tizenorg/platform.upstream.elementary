@@ -142,6 +142,24 @@ _elm_index_item_elm_widget_item_access_register(Eo *eo_item, Elm_Index_Item_Data
    return ret;
 }
 
+// TIZEN_ONLY(20160630) : implement elm_index_item_elm_widget_item_style_set
+EOLIAN static void
+_elm_index_item_elm_widget_item_style_set(Eo *eo_it EINA_UNUSED,
+                                          Elm_Index_Item_Data *it,
+                                          const char *style)
+{
+   if (eina_stringshare_replace(&it->style, style))
+     elm_widget_theme_object_set(WIDGET(it), VIEW(it), "index", style, elm_widget_style_get(WIDGET(it)));
+}
+
+EOLIAN static const char *
+_elm_index_item_elm_widget_item_style_get(Eo *eo_it EINA_UNUSED,
+                                          Elm_Index_Item_Data *it)
+{
+   return (char *)it->style;
+}
+/* END */
+
 static void
 _omit_calc(void *data, int num_of_items, int max_num_of_items)
 {
@@ -234,7 +252,6 @@ _index_box_auto_fill(Evas_Object *obj,
    const char *style = elm_widget_style_get(obj);
 
    ELM_INDEX_DATA_GET(obj, sd);
-
    if (sd->level_active[level]) return;
 
    ELM_WIDGET_DATA_GET_OR_RETURN(obj, wd);
@@ -347,8 +364,13 @@ _index_box_auto_fill(Evas_Object *obj,
 
         edje_object_mirrored_set(VIEW(it), rtl);
         o = VIEW(it);
-
+        /* TIZEN_ONLY(20160630) : implement elm_index_item_elm_widget_item_style_set
         if (sd->horizontal)
+        */
+        if (it->style)
+          elm_widget_theme_object_set(obj, o, "index", it->style, elm_widget_style_get(obj));
+        else if (sd->horizontal)
+        /* END */
           {
              if (i & 0x1)
                elm_widget_theme_object_set
