@@ -519,7 +519,12 @@ _on_item_clicked(void *data,
    ELM_MULTIBUTTONENTRY_DATA_GET_OR_RETURN(WIDGET(it), sd);
 
    _item_select(WIDGET(it), it);
-
+   //TIZEN_ONLY(20160701): send selected signal
+   if (_elm_config->atspi_mode)
+     elm_interface_atspi_accessible_state_changed_signal_emit(eo_it,
+                                                              ELM_ATSPI_STATE_CHECKED,
+                                                              EINA_TRUE);
+   //
    if (sd->selected_it)
      eo_do(WIDGET(it), eo_event_callback_call
        (ELM_MULTIBUTTONENTRY_EVENT_ITEM_CLICKED, eo_it));
