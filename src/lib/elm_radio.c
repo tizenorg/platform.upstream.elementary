@@ -80,8 +80,9 @@ _state_set(Evas_Object *obj, Eina_Bool state, Eina_Bool activate)
                {
                   elm_interface_atspi_accessible_state_changed_signal_emit(obj, ELM_ATSPI_STATE_CHECKED, EINA_TRUE);
                }
-             else
-               elm_interface_atspi_accessible_state_changed_signal_emit(obj, ELM_ATSPI_STATE_CHECKED, EINA_FALSE);
+               //TIZEN_ONLY(20160701): As radio gets selected by unselecting other radio, sending selected info is sufficient
+//             else
+//               elm_interface_atspi_accessible_state_changed_signal_emit(obj, ELM_ATSPI_STATE_CHECKED, EINA_FALSE);
           }
         //TIZEN_ONLY(20150925): Fix for the state change visual change skips one frame.
         //                      as edje signal emit is asyn force one more message_signal
