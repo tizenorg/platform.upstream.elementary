@@ -1614,6 +1614,10 @@ _elm_win_state_change(Ecore_Evas *ee)
    if (ch_visibility)
      {
         evas_object_smart_callback_call(obj, SIG_VISIBILITY_CHANGED, (void*)!sd->obscured);
+        //TIZEN_ONLY(20160701): add atspi window state visible change signal
+        if (_elm_config->atspi_mode)
+          elm_interface_atspi_accessible_state_changed_signal_emit(obj, ELM_ATSPI_STATE_VISIBLE, !sd->obscured);
+        //
      }
 }
 
