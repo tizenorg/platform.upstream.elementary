@@ -3561,8 +3561,11 @@ elm_win_add(Evas_Object *parent,
             const char *name,
             Elm_Win_Type type)
 {
-// TIZEN_ONLY(20160520):  Add Performance Clock log level
-   eina_evlog("+ elm_win_add", NULL, 0.0, NULL);
+//TIZEN_ONLY(20160628):  Add Performance log for cold booting
+#ifdef ENABLE_TTRACE
+   traceBegin(TTRACE_TAG_EFL, "elm_win_add");
+#endif
+//
 
 // TIZEN_ONLY(20160218): Improve launching performance.
    if (_precreated_win_obj)
@@ -3578,9 +3581,11 @@ elm_win_add(Evas_Object *parent,
                   _precreated_win_obj = NULL;
                   INF("Return precreated obj(%p).", tmp);
 
-// TIZEN_ONLY(20160520):  Add Performance Clock log level
-                  eina_evlog("- elm_win_add", NULL, 0.0, NULL);
-
+//TIZEN_ONLY(20160628):  Add Performance log for cold booting
+#ifdef ENABLE_TTRACE
+                  traceEnd(TTRACE_TAG_EFL);
+#endif
+//
                   return tmp;
                }
           }
@@ -3590,8 +3595,11 @@ elm_win_add(Evas_Object *parent,
    Evas_Object *obj = eo_add(MY_CLASS, parent,
                              elm_obj_win_name_set(name),
                              elm_obj_win_type_set(type));
-// TIZEN_ONLY(20160520):  Add Performance Clock log level
-   eina_evlog("- elm_win_add", NULL, 0.0, NULL);
+//TIZEN_ONLY(20160628):  Add Performance log for cold booting
+#ifdef ENABLE_TTRACE
+   traceEnd(TTRACE_TAG_EFL);
+#endif
+//
 
 
    return obj;
