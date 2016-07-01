@@ -1245,6 +1245,10 @@ elm_genlist_filter_set(Evas_Object *obj, void * key);
  * @}
  */
 
+EAPI Eina_Iterator *
+elm_genlist_filter_iterator_new(Evas_Object *obj);
+
+
 
 #include "elm_genlist_item.eo.legacy.h"
 #include "elm_genlist.eo.legacy.h"
