@@ -209,10 +209,19 @@ struct _Elm_Genlist_Data
    Evas_Coord                            viewport_w, viewport_h;
    Elm_Gen_Item                         *atspi_item_to_highlight;
    Elm_Gen_Item                         *aligned_item;
+
+   Eina_List                            *filter_queue;
+   Eina_List                            *filtered_list;
+   void                                 *filter_data;
+   unsigned int                          processed_count;
+   unsigned int                          filtered_count;
+   Ecore_Idle_Enterer                   *queue_filter_enterer;
+   Eina_Bool                             filter;
 };
 
 typedef struct _Item_Block Item_Block;
 typedef struct _Item_Cache Item_Cache;
+typedef struct _Elm_Genlist_Filter Elm_Genlist_Filter;
 
 struct Elm_Gen_Item_Type
 {
@@ -319,6 +328,18 @@ struct _Elm_Genlist_Pan_Data
 };
 
 /**
+ * Structure added to genlist for internal filter iterator implementation
+ * Can be extended to genlist as a whole in future if needed.
+ */
+struct _Elm_Genlist_Filter
+{
+   Eina_Iterator iterator;
+   const Eina_Inlist *head;
+   const Eina_Inlist *current;
+};
+
+
+/**
  * @}
  */
 
@@ -370,5 +391,9 @@ struct _Elm_Genlist_Pan_Data
 
 #define ELM_GENLIST_ITEM_DATA_GET(o, sd) \
   Elm_Gen_Item* sd = eo_data_scope_get(o, ELM_GENLIST_ITEM_CLASS)
+
+#define ELM_GENLIST_FILTER_ITERATOR_ITEM_GET(ptr,                 \
+                                  type) ((type *)((char *)ptr - \
+                                                  offsetof(type, __in_list)))
 
 #endif
