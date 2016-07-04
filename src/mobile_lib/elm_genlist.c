@@ -2372,6 +2372,8 @@ _elm_genlist_pan_evas_object_smart_calculate(Eo *obj, Elm_Genlist_Pan_Data *psd)
           }
      }
 #endif
+   eo_do(psd->wobj, eo_event_callback_call
+         (ELM_INTERFACE_SCROLLABLE_EVENT_CHANGED, NULL));
 }
 
 EOLIAN static void
