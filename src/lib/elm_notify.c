@@ -15,7 +15,7 @@
 #define MY_CLASS_NAME "Elm_Notify"
 #define MY_CLASS_NAME_LEGACY "elm_notify"
 
-static void
+static Elm_Theme_Apply
 _notify_theme_apply(Evas_Object *obj)
 {
    const char *style = elm_widget_style_get(obj);
@@ -55,7 +55,7 @@ _notify_theme_apply(Evas_Object *obj)
           position = "center";
      }
 
-   elm_widget_theme_object_set(obj, sd->notify, "notify", position, style);
+   return elm_widget_theme_object_set(obj, sd->notify, "notify", position, style);
 }
 
 /**
@@ -145,7 +145,7 @@ _elm_notify_elm_widget_theme_apply(Eo *obj, Elm_Notify_Data *sd)
 
    _mirrored_set(obj, elm_widget_mirrored_get(obj));
 
-   _notify_theme_apply(obj);
+   int_ret = _notify_theme_apply(obj) & int_ret;
    if (sd->block_events) _block_events_theme_apply(obj);
 
    edje_object_scale_set
