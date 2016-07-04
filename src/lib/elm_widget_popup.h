@@ -58,10 +58,6 @@ struct _Elm_Popup_Data
    Eina_Bool             scr_size_recalc : 1;
    Eina_Bool             scroll : 1;
    Eina_Bool             theme_scroll : 1;
-
-   //TIZEN_ONLY(20160624): add a allow eval flag not to call another sizing eval during sizing eval
-   Eina_Bool             allow_eval : 1;
-   //
 };
 
 typedef struct _Elm_Popup_Item_Data Elm_Popup_Item_Data;
