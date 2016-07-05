@@ -2401,7 +2401,15 @@ static void
 _wl_sel_obj_del(void *data, Evas *e EINA_UNUSED, Evas_Object *obj, void *event_info EINA_UNUSED)
 {
    Wl_Cnp_Selection *sel = data;
-   if (sel->widget == obj) sel->widget = NULL;
+   // TIZEN ONLY (20160705): remove loss_cb when previous sel owner deleted
+   //if (sel->widget == obj) sel->widget = NULL;
+   if (sel->widget == obj)
+     {
+        sel->loss_cb = NULL;
+        sel->loss_data = NULL;
+        sel->widget = NULL;
+     }
+   //
    if (dragwidget == obj) dragwidget = NULL;
 }
 
@@ -2453,7 +2461,7 @@ _wl_elm_cnp_selection_set(Evas_Object *obj, Elm_Sel_Type selection, Elm_Sel_Form
    evas_object_event_callback_add
      (sel->widget, EVAS_CALLBACK_DEL, _wl_sel_obj_del,
          //&wl_cnp_selection); // TIZEN ONLY (20160627)
-         &sel); // TIZEN ONLY (20160627)
+         sel); // TIZEN ONLY (20160627)
 
    if (selbuf)
      {
