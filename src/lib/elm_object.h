@@ -674,7 +674,7 @@ EAPI void        elm_color_get(const char *klass, const char *style, const char 
  *
  * @ingroup General
  */
-EAPI void        elm_object_color_set(Evas_Object *obj, const char *group, int r, int g, int b, int a);
+EAPI void        elm_object_part_color_set(Evas_Object *obj, const char *part, int r, int g, int b, int a);
 
 /**
  * @internal
@@ -694,5 +694,5 @@ EAPI void        elm_object_color_set(Evas_Object *obj, const char *group, int r
  *
  * @ingroup General
  */
-EAPI void        elm_object_color_get(Evas_Object *obj, const char *group, int *r, int *g, int *b, int *a);
+EAPI void        elm_object_part_color_get(Evas_Object *obj, const char *part, int *r, int *g, int *b, int *a);
 //
