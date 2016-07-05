@@ -6173,11 +6173,38 @@ _ewk_view_load_finished(Eo *plug,
      }
 }
 
+static void
+_proxy_widget_move_cb(void *data, Evas *e EINA_UNUSED, Evas_Object *obj, void *event_info EINA_UNUSED)
+{
+   Evas_Coord x, y;
+   Eo *proxy = data;
+
+   evas_object_geometry_get(obj, &x, &y, NULL, NULL);
+   elm_atspi_bridge_utils_proxy_offset_set(proxy, x, y);
+}
+
+
+
 static Eina_Bool
 _on_ewk_del(void *data, Eo *obj EINA_UNUSED, const Eo_Event_Description *desc EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Eo *plug = data;
+   evas_object_event_callback_del_full(obj, EVAS_CALLBACK_MOVE,
+                                       _proxy_widget_move_cb, plug);
    eo_del(plug);
+   return EINA_TRUE;
+}
+
+static Eina_Bool
+_on_proxy_connected_cb(void *data, Eo *obj, const Eo_Event_Description *desc EINA_UNUSED, void *event_info EINA_UNUSED)
+{
+   Evas_Coord x, y;
+   Evas_Object *widget = data;
+
+   evas_object_geometry_get(widget, &x, &y, NULL, NULL);
+   elm_atspi_bridge_utils_proxy_offset_set(obj, x, y);
+
+   evas_object_event_callback_add(widget, EVAS_CALLBACK_MOVE, _proxy_widget_move_cb, obj);
    return EINA_TRUE;
 }
 // TIZEN ONLY - END
@@ -6213,6 +6240,33 @@ _elm_widget_elm_interface_atspi_accessible_children_get(Eo *obj, Elm_Widget_Smar
                }
              if (plug && evas_object_data_get(widget, "__plug_connected"))
                 accs = eina_list_append(accs, plug);
+             continue;
+          }
+
+        const char *plug_id_2;
+        if ((plug_id_2 = evas_object_data_get(widget, "___PLUGID")) != NULL)
+          {
+             Eo *proxy;
+             char *svcname, *svcnum;
+
+             proxy = evas_object_data_get(widget, "__ewk_proxy");
+             if (proxy)
+               {
+                  accs = eina_list_append(accs, proxy);
+                  continue;
+               }
+
+             if (_elm_atspi_bridge_plug_id_split(plug_id_2, &svcname, &svcnum))
+               {
+                  proxy = _elm_atspi_bridge_utils_proxy_create(obj, svcname, atoi(svcnum), ELM_ATSPI_PROXY_TYPE_PLUG);
+                  evas_object_data_set(widget, "__ewk_proxy", proxy);
+                  eo_do(widget, eo_event_callback_add(EO_EV_DEL, _on_ewk_del, proxy));
+                  eo_do(proxy, eo_event_callback_add(ELM_ATSPI_PROXY_EVENT_CONNECTED,  _on_proxy_connected_cb, widget));
+                  elm_atspi_bridge_utils_proxy_connect(proxy);
+                  accs = eina_list_append(accs, proxy);
+                  free(svcname);
+                  free(svcnum);
+               }
              continue;
           }
         // TIZEN ONLY - END
@@ -6428,6 +6482,8 @@ _elm_widget_elm_interface_atspi_component_accessible_at_point_get(Eo *obj, Elm_W
    Eo *child;
    Evas_Object *stack_item;
    Eo *compare_obj;
+   Eo *proxy;
+   Evas_Coord px, py, pw, ph;
    int ee_x, ee_y;
 
    if (screen_coords)
@@ -6443,7 +6499,6 @@ _elm_widget_elm_interface_atspi_component_accessible_at_point_get(Eo *obj, Elm_W
 
    /* Get evas_object stacked at given x,y coordinates starting from top */
    Eina_List *stack = evas_tree_objects_at_xy_get(evas_object_evas_get(obj), NULL, x, y);
-
    /* Foreach stacked object starting from top */
    EINA_LIST_FOREACH(stack, l, stack_item)
      {
@@ -6477,6 +6532,19 @@ _elm_widget_elm_interface_atspi_component_accessible_at_point_get(Eo *obj, Elm_W
                         eina_list_free(stack);
                         return child;
                      }
+
+                   proxy = evas_object_data_get(smart_parent, "__ewk_proxy");
+                   if (proxy)
+                     {
+                        evas_object_geometry_get(smart_parent, &px, &py, &pw, &ph);
+                        if (x >= px && x <= px + pw && y >= py && y <= py +ph)
+                          {
+                             eina_list_free(children);
+                             eina_list_free(stack);
+                             return proxy;
+                          }
+                     }
+
                    smart_parent = evas_object_smart_parent_get(smart_parent);
                }
           }

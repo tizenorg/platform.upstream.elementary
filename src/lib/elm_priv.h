@@ -543,6 +543,7 @@ void                *_elm_icon_signal_callback_del(Evas_Object *obj,
 Eo*                  _elm_atspi_bridge_utils_proxy_create(Eo *parent, const char *svcname, int svcnum, Elm_Atspi_Proxy_Type type);
 void                 elm_atspi_bridge_utils_proxy_listen(Eo *proxy);
 void                 elm_atspi_bridge_utils_proxy_connect(Eo *proxy);
+void                 elm_atspi_bridge_utils_proxy_offset_set(Eo *proxy, int x, int y);
 Eina_Bool            _elm_atspi_bridge_plug_id_split(const char *plug_id, char **bus, char **path);
 /* end of DEPRECATED */
 

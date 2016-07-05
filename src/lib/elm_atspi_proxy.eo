@@ -1,4 +1,4 @@
-class Elm_Atspi_Proxy (Eo.Base, Elm_Interface_Atspi_Accessible)
+class Elm_Atspi_Proxy (Elm.Widget)
 {
    eo_prefix: elm_obj_atspi_proxy;
    data: Elm_Atspi_Proxy_Data;

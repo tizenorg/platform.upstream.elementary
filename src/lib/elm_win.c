@@ -1772,6 +1772,19 @@ _elm_win_evas_object_smart_show(Eo *obj, Elm_Win_Data *sd)
         elm_interface_atspi_window_created_signal_emit(obj);
         if (bridge)
            elm_interface_atspi_accessible_children_changed_added_signal_emit(elm_atspi_bridge_root_get(bridge), obj);
+
+        const char *plug_id_2;
+        if ((plug_id_2 = evas_object_data_get(obj, "___PLUGID")) != NULL)
+          {
+             char *svcname, *svcnum;
+             if (!sd->socket_proxy && _elm_atspi_bridge_plug_id_split(plug_id_2, &svcname, &svcnum))
+               {
+                  sd->socket_proxy = _elm_atspi_bridge_utils_proxy_create(obj, svcname, atoi(svcnum), ELM_ATSPI_PROXY_TYPE_SOCKET);
+                  elm_atspi_bridge_utils_proxy_listen(sd->socket_proxy);
+                  free(svcname);
+                  free(svcnum);
+               }
+          }
      }
 
    if (do_eval)
@@ -6267,8 +6280,10 @@ _elm_win_class_constructor(Eo_Class *klass)
 }
 
 EOLIAN static Eo*
-_elm_win_elm_interface_atspi_accessible_parent_get(Eo *obj EINA_UNUSED, Elm_Win_Data *sd EINA_UNUSED)
+_elm_win_elm_interface_atspi_accessible_parent_get(Eo *obj EINA_UNUSED, Elm_Win_Data *sd)
 {
+   if (sd->socket_proxy) return sd->socket_proxy;
+
    // attach all kinds of windows directly to ATSPI application root object
    Eo *bridge = _elm_atspi_bridge_get();
    return elm_atspi_bridge_root_get(bridge);
