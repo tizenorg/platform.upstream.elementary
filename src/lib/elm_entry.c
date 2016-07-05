@@ -5548,11 +5548,13 @@ _elm_entry_select_none(Eo *obj EINA_UNUSED, Elm_Entry_Data *sd)
             (sd->entry_edje, "elm.text", EINA_FALSE);
         edje_object_signal_emit(sd->entry_edje, "elm,state,select,off", "elm");
      }
-   if (sd->have_selection)
+   // TIZEN ONLY (20150714) obj_hidemenu() is getting called from _entry_selection_cleared_signal_cb()
+   /*if (sd->have_selection)
      eo_do(obj, eo_event_callback_call
        (EVAS_SELECTABLE_INTERFACE_EVENT_SELECTION_CLEARED, NULL));
 
-   sd->have_selection = EINA_FALSE;
+   sd->have_selection = EINA_FALSE;*/
+   //
    edje_object_part_text_select_none(sd->entry_edje, "elm.text");
 
    _hide_selection_handler(obj);
