@@ -9,6 +9,8 @@ enum Elm.Colorselector.Mode
    components, [[Only color selector is displayed.]]
    both, [[Both Palette and selector is displayed, default.]]
    picker, [[Only color picker is displayed.]]
+   plane, [[Deprecated since Tizen 3.0. This mode is not supported. If you use this, nothing will be shown.]]
+   palette_plane, [[Deprecated since Tizen 3.0. This mode is not supported. If you use this, it will be shown same with ELM_COLORSELECTOR_PALETTE mode]]
    all [[All possible color selector is displayed.]]
 }
 
