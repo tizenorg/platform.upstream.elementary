@@ -2360,7 +2360,7 @@ _elm_colorselector_mode_set(Eo *obj, Elm_Colorselector_Data *sd, Elm_Colorselect
           elm_layout_content_set(obj, "palette", sd->palette_box);
         elm_layout_signal_emit(obj, "elm,state,palette", "elm");
         sd->focused = ELM_COLORSELECTOR_PALETTE;
-        sd->selected = sd->items;
+        sd->selected = NULL;
         break;
 
       case ELM_COLORSELECTOR_COMPONENTS:
@@ -2378,7 +2378,7 @@ _elm_colorselector_mode_set(Eo *obj, Elm_Colorselector_Data *sd, Elm_Colorselect
           elm_layout_content_set(obj, "selector", sd->col_bars_area);
         elm_layout_signal_emit(obj, "elm,state,both", "elm");
         sd->focused = ELM_COLORSELECTOR_PALETTE;
-        sd->selected = sd->items;
+        sd->selected = NULL;
         break;
 
       case ELM_COLORSELECTOR_PICKER:
@@ -2399,7 +2399,7 @@ _elm_colorselector_mode_set(Eo *obj, Elm_Colorselector_Data *sd, Elm_Colorselect
           elm_layout_content_set(obj, "picker", sd->picker);
         elm_layout_signal_emit(obj, "elm,state,all", "elm");
         sd->focused = ELM_COLORSELECTOR_PALETTE;
-        sd->selected = sd->items;
+        sd->selected = NULL;
         break;
 
       default:
