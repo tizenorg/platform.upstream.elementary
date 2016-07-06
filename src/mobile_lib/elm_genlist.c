@@ -581,7 +581,10 @@ _elm_genlist_pan_evas_object_smart_resize(Eo *obj, Elm_Genlist_Pan_Data *psd, Ev
              Elm_Gen_Item *it;
              EINA_LIST_FOREACH(itb->items, l, it)
                {
-                  if (!GL_IT(it)->multiline) continue;
+                  // FIXME: to prevent preformance issue, restrict item re-calc
+                  // only about multiline and non-homogeneousc case.
+                  if (!GL_IT(it)->multiline &&
+                      (psd->wsd->homogeneous || it->itc->homogeneous)) continue;
                   if (GL_IT(it)->wsd->realization_mode)
                     {
                        GL_IT(it)->calc_done = EINA_FALSE;
