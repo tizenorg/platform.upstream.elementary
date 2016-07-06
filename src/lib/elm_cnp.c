@@ -2934,6 +2934,19 @@ _wl_win_rotation_changed_cb(void *data,
    return EINA_TRUE;
 }
 //
+//TIZEN ONLY (20160706): Remove drag win when drop on non-dropable app
+static void
+_wl_drag_parent_del_hide_cb(void *data EINA_UNUSED, Evas *e EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event EINA_UNUSED)
+{
+   if (!dragwin) return;
+   evas_object_event_callback_del_full(obj, EVAS_CALLBACK_DEL,
+                                       _wl_drag_parent_del_hide_cb, dragwin);
+   evas_object_event_callback_del_full(obj, EVAS_CALLBACK_HIDE,
+                                       _wl_drag_parent_del_hide_cb, dragwin);
+   doaccept = EINA_TRUE;
+   ecore_wl_dnd_drag_end(ecore_wl_input_get());
+}
+//
 
 static Eina_Bool
 _wl_elm_drag_start(Evas_Object *obj, Elm_Sel_Format format, const char *data,
@@ -3034,6 +3047,18 @@ _wl_elm_drag_start(Evas_Object *obj, Elm_Sel_Format format, const char *data,
         int rots[3] = {0, 90, 270};
         elm_win_wm_rotation_available_rotations_set(dragwin, rots, 3);
      }
+   //
+   //TIZEN ONLY (20160706): Remove drag win when drop on non-dropable app
+   //Issue: when we do dnd between two applications and drag win is dropped
+   //on non-dropable area (e.g. isf), then drag window is not removed.
+   //Reason: the dnd_end callback is not fired for drag app.
+   //FIXME: This is a workaround since the current wayland protocol does not
+   //supported this feature. It should be removed after the protocol is
+   //changed and reflected.
+   evas_object_event_callback_add(obj, EVAS_CALLBACK_DEL,
+                                  _wl_drag_parent_del_hide_cb, dragwin);
+   evas_object_event_callback_add(obj, EVAS_CALLBACK_HIDE,
+                                  _wl_drag_parent_del_hide_cb, dragwin);
    //
    evas_object_move(dragwin, x, y);
    evas_object_resize(dragwin, w, h);
@@ -3393,6 +3418,12 @@ _wl_dnd_end(void *data EINA_UNUSED, int type EINA_UNUSED, void *event EINA_UNUSE
 
    if (dragdonecb) dragdonecb(dragdonedata, dragwidget);
 
+   //TIZEN ONLY (20160706): Remove drag win when drop on non-dropable app
+   evas_object_event_callback_del_full(dragwidget, EVAS_CALLBACK_DEL,
+                                       _wl_drag_parent_del_hide_cb, dragwin);
+   evas_object_event_callback_del_full(dragwidget, EVAS_CALLBACK_HIDE,
+                                       _wl_drag_parent_del_hide_cb, dragwin);
+   //
    if (dragwin)
      {
         if (!doaccept)
@@ -3419,7 +3450,8 @@ _wl_dnd_end(void *data EINA_UNUSED, int type EINA_UNUSED, void *event EINA_UNUSE
    ecore_wl_input_ungrab(ecore_wl_input_get());
    // TIZEN ONLY(20160627): support multiple selection types' buffer
    Wl_Cnp_Selection *sels = data;
-   Wl_Cnp_Selection *sel = sels + ELM_SEL_TYPE_XDND;
+   Wl_Cnp_Selection *sel = NULL;
+   if (sels) sel = sels + ELM_SEL_TYPE_XDND;
    if (sel)
      {
         sel->active = EINA_FALSE;
