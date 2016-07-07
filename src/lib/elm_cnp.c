@@ -2983,8 +2983,8 @@ _wl_elm_drag_start(Evas_Object *obj, Elm_Sel_Format format, const char *data,
    //wl_cnp_selections.selbuf = strdup((char*)data);
    //wl_cnp_selections.buflen = strlen(wl_cnp_selections.selbuf);
    free(wl_cnp_selections[ELM_SEL_TYPE_XDND].selbuf);
-   wl_cnp_selections[ELM_SEL_TYPE_XDND].selbuf = strdup((char*)data);
-   wl_cnp_selections[ELM_SEL_TYPE_XDND].buflen = strlen(wl_cnp_selections[ELM_SEL_TYPE_XDND].selbuf);
+   wl_cnp_selections[ELM_SEL_TYPE_XDND].selbuf = data ? strdup((char*)data) : NULL;
+   wl_cnp_selections[ELM_SEL_TYPE_XDND].buflen = data ? strlen(wl_cnp_selections[ELM_SEL_TYPE_XDND].selbuf) : 0;
    wl_cnp_selections[ELM_SEL_TYPE_XDND].active = EINA_TRUE;
    //
 
