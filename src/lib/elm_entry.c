@@ -4096,6 +4096,22 @@ _entry_text_append(Evas_Object* obj, const char* entry, Eina_Bool set)
              memcpy(sd->append_text_left, entry, len + 1);
              sd->append_text_position = 0;
              sd->append_text_len = len;
+             /* Set text directly as amount of chunk size
+              * and append remain text to idler */
+             if (set)
+               {
+                  char tmp;
+                  tmp = sd->append_text_left[ELM_ENTRY_CHUNK_SIZE];
+                  sd->append_text_left[ELM_ENTRY_CHUNK_SIZE] = '\0';
+
+                  if (edje_object_part_text_set(sd->entry_edje, "elm.text",
+                        sd->append_text_left))
+                     sd->append_text_position = ELM_ENTRY_CHUNK_SIZE;
+                  else
+                     edje_object_part_text_set(sd->entry_edje, "elm.text", "");
+
+                  sd->append_text_left[ELM_ENTRY_CHUNK_SIZE] = tmp;
+               }
              sd->append_text_idler = ecore_idler_add(_text_append_idler, obj);
           }
         else
