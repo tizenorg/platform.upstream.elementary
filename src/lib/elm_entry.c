@@ -3200,16 +3200,8 @@ _entry_preedit_changed_signal_cb(void *data,
              atspi_info.content = text;
              atspi_info.pos = edje_info->change.insert.pos;
              atspi_info.len = edje_info->change.insert.plain_length;
-             eo_do(ELM_INTERFACE_ATSPI_ACCESSIBLE_MIXIN, elm_interface_atspi_accessible_event_emit(data, ELM_INTERFACE_ATSPI_TEXT_EVENT_ACCESS_TEXT_INSERTED, &atspi_info));
-             free(text);
-          }
-        else if (edje_info && !edje_info->insert)
-          {
-             text = elm_entry_markup_to_utf8(edje_info->change.del.content);
-             atspi_info.content = text;
-             atspi_info.pos = MIN(edje_info->change.del.start, edje_info->change.del.end);
-             atspi_info.len = MAX(edje_info->change.del.start, edje_info->change.del.end) - atspi_info.pos;
-             eo_do(ELM_INTERFACE_ATSPI_ACCESSIBLE_MIXIN, elm_interface_atspi_accessible_event_emit(data, ELM_INTERFACE_ATSPI_TEXT_EVENT_ACCESS_TEXT_REMOVED, &atspi_info));
+             eo_do(ELM_INTERFACE_ATSPI_ACCESSIBLE_MIXIN, elm_interface_atspi_accessible_event_emit(data,
+                   ELM_INTERFACE_ATSPI_TEXT_EVENT_ACCESS_TEXT_INSERTED, &atspi_info));
              free(text);
           }
      }
