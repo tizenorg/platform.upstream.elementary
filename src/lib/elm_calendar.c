@@ -90,6 +90,7 @@ static char *
 _current_region_date_string_get(const char *format, struct tm *tm)
 {
 #ifndef HAVE_ELEMENTARY_WIN32
+#ifndef HAVE_ELEMENTARY_COCOA
    char *p, *locale;
    char buf[128] = {0, };
    UDateFormat *dt_formatter = NULL;
@@ -182,6 +183,9 @@ _current_region_date_string_get(const char *format, struct tm *tm)
    udat_close(dt_formatter);
 
    return strdup(buf);
+#else
+   return NULL;
+#endif
 #else
    return NULL;
 #endif
