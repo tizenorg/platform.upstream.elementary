@@ -1,4 +1,4 @@
-class Elm.Access (Elm.Widget, Elm_Interface_Atspi_Action)
+class Elm.Access (Elm.Widget, Elm_Interface_Atspi_Widget_Action)
 {
 eo_prefix: elm_obj_access;
    data: null;
@@ -12,8 +12,6 @@ eo_prefix: elm_obj_access;
       Elm_Interface_Atspi_Accessible.description.get;
       Elm_Interface_Atspi_Component.highlight_grab;
       Elm_Interface_Atspi_Component.highlight_clear;
-      Elm_Interface_Atspi_Action.action_do;
-      Elm_Interface_Atspi_Action.name.get;
-      Elm_Interface_Atspi_Action.actions.get;
+      Elm_Interface_Atspi_Widget_Action.elm_actions.get;
    }
 }
