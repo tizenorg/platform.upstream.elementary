@@ -1286,8 +1286,7 @@ _elm_genlist_content_min_limit_cb(Evas_Object *obj,
 }
 
 static void
-_elm_genlist_scroll_item_align_highlight_cb(Evas_Object *obj,
-                                            void *data)
+_elm_genlist_scroll_item_align_highlight_cb(Evas_Object *obj)
 {
    ELM_GENLIST_DATA_GET(obj, sd);
    ELM_WIDGET_DATA_GET_OR_RETURN(obj, wd);
@@ -1296,7 +1295,7 @@ _elm_genlist_scroll_item_align_highlight_cb(Evas_Object *obj,
    if (!(wd->scroll_item_align_enable)) return;
 
    eo_do(obj, elm_interface_scrollable_content_viewport_geometry_get
-		   (NULL, NULL, &vw, &vh));
+         (NULL, NULL, &vw, &vh));
 
    if (!strcmp(wd->scroll_item_valign, "center"))
      {
@@ -1312,12 +1311,10 @@ _elm_genlist_scroll_item_align_highlight_cb(Evas_Object *obj,
 }
 
 static void
-_elm_genlist_scroll_item_align_unhighlight_cb(Evas_Object *obj,
-                                              void *data)
+_elm_genlist_scroll_item_align_unhighlight_cb(Evas_Object *obj)
 {
-   Evas_Object *wobj = data;
-   ELM_GENLIST_DATA_GET(wobj, sd);
-   ELM_WIDGET_DATA_GET_OR_RETURN(wobj, wd);
+   ELM_GENLIST_DATA_GET(obj, sd);
+   ELM_WIDGET_DATA_GET_OR_RETURN(obj, wd);
 
    if (!(wd->scroll_item_align_enable)) return;
 
@@ -3475,12 +3472,8 @@ _elm_genlist_elm_widget_on_focus(Eo *obj, Elm_Genlist_Data *sd, Elm_Object_Item 
      {
         Evas_Coord vw, vh;
 
-        evas_object_smart_callback_add(obj, "scroll,drag,start", _elm_genlist_scroll_item_align_unhighlight_cb, obj);
-        evas_object_smart_callback_add(obj, "scroll,anim,start", _elm_genlist_scroll_item_align_unhighlight_cb, obj);
-        evas_object_smart_callback_add(obj, "scroll,anim,stop", _elm_genlist_scroll_item_align_highlight_cb, obj);
-
-		eo_do(sd->obj, elm_interface_scrollable_content_viewport_geometry_get
-				(NULL, NULL, &vw, &vh));
+        eo_do(sd->obj, elm_interface_scrollable_content_viewport_geometry_get
+              (NULL, NULL, &vw, &vh));
 
         if (vw != 0 || vh != 0)
           {
@@ -3490,7 +3483,7 @@ _elm_genlist_elm_widget_on_focus(Eo *obj, Elm_Genlist_Data *sd, Elm_Object_Item 
                   vh = (vh / 2);
                }
 
-			 sd->aligned_item = _elm_genlist_pos_adjust_xy_item_get(obj, vw, vh);
+             sd->aligned_item = _elm_genlist_pos_adjust_xy_item_get(obj, vw, vh);
              if (sd->aligned_item)
                {
                   if (sd->aligned_item->realized)
@@ -4978,6 +4971,11 @@ static void
 _scroll_animate_start_cb(Evas_Object *obj,
                          void *data EINA_UNUSED)
 {
+   ELM_WIDGET_DATA_GET_OR_RETURN(obj, wd);
+
+   if (wd->scroll_item_align_enable)
+     _elm_genlist_scroll_item_align_unhighlight_cb(obj);
+
    evas_object_smart_callback_call(obj, SIG_SCROLL_ANIM_START, NULL);
 }
 
@@ -4985,6 +4983,11 @@ static void
 _scroll_animate_stop_cb(Evas_Object *obj,
                         void *data EINA_UNUSED)
 {
+   ELM_WIDGET_DATA_GET_OR_RETURN(obj, wd);
+
+   if (wd->scroll_item_align_enable)
+     _elm_genlist_scroll_item_align_highlight_cb(obj);
+
    evas_object_smart_callback_call(obj, SIG_SCROLL_ANIM_STOP, NULL);
 }
 
@@ -4992,6 +4995,11 @@ static void
 _scroll_drag_start_cb(Evas_Object *obj,
                       void *data EINA_UNUSED)
 {
+   ELM_WIDGET_DATA_GET_OR_RETURN(obj, wd);
+
+   if (wd->scroll_item_align_enable)
+     _elm_genlist_scroll_item_align_unhighlight_cb(obj);
+
    evas_object_smart_callback_call(obj, SIG_SCROLL_DRAG_START, NULL);
 }
 
