@@ -2475,6 +2475,13 @@ _wl_elm_cnp_selection_set(Evas_Object *obj, Elm_Sel_Type selection, Elm_Sel_Form
              const char *types[10] = {0, };
              int i = -1;
 
+             // TIZEN_ONLY(20160706): To distinguish clipboard selection in cbhm
+             if (selection == ELM_SEL_TYPE_CLIPBOARD)
+               {
+                   types[++i] = "CLIPBOARD_BEGIN";
+               }
+             //
+
              if ((format & ELM_SEL_FORMAT_MARKUP) ||
                  (format & ELM_SEL_FORMAT_TEXT))
                {
@@ -2488,6 +2495,14 @@ _wl_elm_cnp_selection_set(Evas_Object *obj, Elm_Sel_Type selection, Elm_Sel_Form
                   types[++i] = "text/html";
                   types[++i] = "text/html;charset=utf-8";
                }
+
+             // TIZEN_ONLY(20160706): To distinguish clipboard selection in cbhm
+             if (selection == ELM_SEL_TYPE_CLIPBOARD)
+               {
+                  types[++i] = "CLIPBOARD_END";
+               }
+             //
+
 
              if (i < 0) return EINA_FALSE;
 
