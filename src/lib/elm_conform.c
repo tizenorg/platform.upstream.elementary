@@ -227,7 +227,8 @@ _conformant_part_sizing_eval(Evas_Object *obj,
           {
              Evas_Object *access;
              access = evas_object_data_get(sd->virtualkeypad, "_part_access_obj");
-             elm_interface_atspi_accessible_bounds_changed_signal_emit
+             if (access)
+               elm_interface_atspi_accessible_bounds_changed_signal_emit
                                                       (access, sx, sy, sw, sh);
           }
         if (sd->virtualkeypad)
@@ -1056,7 +1057,8 @@ _on_conformant_changed(void *data,
                {
                   Evas_Object *access;
                   access = evas_object_data_get(sd->virtualkeypad, "_part_access_obj");
-                  elm_interface_atspi_accessible_bounds_changed_signal_emit
+                  if (access)
+                    elm_interface_atspi_accessible_bounds_changed_signal_emit
                                                            (access, 0, 0, 0, 0);
                }
              //
