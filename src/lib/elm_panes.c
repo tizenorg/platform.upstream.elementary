@@ -420,11 +420,13 @@ _elm_panes_content_right_size_set(Eo *obj, Elm_Panes_Data *_pd EINA_UNUSED, doub
 EOLIAN static void
 _elm_panes_horizontal_set(Eo *obj, Elm_Panes_Data *sd, Eina_Bool horizontal)
 {
+   double size = elm_panes_content_left_size_get(obj);
+
    sd->horizontal = horizontal;
    eo_do(obj, elm_obj_widget_theme_apply());
    _update_fixed_sides(obj);
 
-   elm_panes_content_left_size_set(obj, 0.5);
+   elm_panes_content_left_size_set(obj, size);
 }
 
 EOLIAN static Eina_Bool
