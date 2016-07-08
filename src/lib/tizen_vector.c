@@ -831,7 +831,8 @@ typedef struct check_default_s
    double left_line_to[2];
    double right_move_to[2];
    double right_line_to[2];
-   Eina_Bool init : 1;
+   Eina_Bool init  : 1;
+   Eina_Bool state : 1;
 } check_default;
 
 static const char *check_default_fill = "M7.279,2h35.442C45.637,2,48,4.359,48,7.271v35.455\
@@ -926,7 +927,7 @@ check_default_vg_bg_resize_cb(void *data, Evas *e EINA_UNUSED,
 {
    check_default *vd = data;
    check_default_init(vd);
-   _update_default_check_shape(vd, vd->shape[4], elm_check_state_get(vd->obj), vd->vg[2]);
+   _update_default_check_shape(vd, vd->shape[4], vd->state, vd->vg[2]);
 }
 
 static void
@@ -949,13 +950,13 @@ check_default_vg_resize_cb(void *data, Evas *e EINA_UNUSED,
    //Update BG Shape
    _update_default_check_shape(vd, vd->shape[1], EINA_FALSE, vd->vg[0]);
 
-   if (elm_check_state_get(vd->obj))
+   if (vd->state)
      evas_vg_node_color_set(vd->shape[1], 255, 255, 255, 255);
    else
      evas_vg_node_color_set(vd->shape[1], 0, 0, 0, 0);
 
    //Update Line Shape
-   if (elm_check_state_get(vd->obj))
+   if (vd->state)
      {
         //Left
         evas_vg_shape_shape_reset(vd->shape[2]);
@@ -994,7 +995,7 @@ _check_default_bg_color(check_default *vd, double progress)
 {
    int color;
 
-   if (elm_check_state_get(vd->obj)) color = 255 * progress;
+   if (vd->state) color = 255 * progress;
    else color = 255 * (1 - progress);
 
    evas_vg_node_color_set(vd->shape[1], color, color, color, color);
@@ -1070,7 +1071,7 @@ _check_default_line(check_default *vd, double progress)
    double center_y = ((double)h / 2);
 
    //Update Line Shape
-   if (!elm_check_state_get(vd->obj)) progress = 1 - progress;
+   if (!(vd->state)) progress = 1 - progress;
 
    //Left
    evas_vg_shape_shape_reset(vd->shape[2]);
@@ -1104,17 +1105,16 @@ transit_check_default_line_op(Elm_Transit_Effect *effect,
 }
 
 static void
-check_default_action_toggle_cb(void *data, Evas_Object *obj EINA_UNUSED,
-                               const char *emission EINA_UNUSED,
-                               const char *source EINA_UNUSED)
+check_default_action_on_cb(void *data, Evas_Object *obj EINA_UNUSED,
+                           const char *emission EINA_UNUSED,
+                           const char *source EINA_UNUSED)
 {
    check_default *vd = data;
    if (!source) return;
    if (strcmp(source, "tizen_vg")) return;
 
+   vd->state = EINA_TRUE;
    check_default_init(vd);
-
-   Eina_Bool check = elm_check_state_get(obj);
 
    //BG Color Effect
    elm_transit_del(vd->transit[0]);
@@ -1126,32 +1126,21 @@ check_default_action_toggle_cb(void *data, Evas_Object *obj EINA_UNUSED,
    elm_transit_tween_mode_set(vd->transit[0],
                               ELM_TRANSIT_TWEEN_MODE_DECELERATE);
 
-   if (check)
-     {
-        elm_transit_duration_set(vd->transit[0], 0.3);
-        elm_transit_go(vd->transit[0]);
-     }
-   else
-     {
-        elm_transit_duration_set(vd->transit[0], 0.2);
-        elm_transit_go_in(vd->transit[0], 0.15);
-     }
+   elm_transit_duration_set(vd->transit[0], 0.3);
+   elm_transit_go(vd->transit[0]);
 
    //BG Size Effect
    elm_transit_del(vd->transit[1]);
 
-   if (check)
-     {
-        vd->transit[1] = elm_transit_add();
-        elm_transit_effect_add(vd->transit[1],
-                               transit_check_default_bg_scale_op, vd, NULL);
-        elm_transit_del_cb_set(vd->transit[1],
-                               transit_check_default_bg_scale_del_cb, vd);
-        elm_transit_tween_mode_set(vd->transit[1],
-                                   ELM_TRANSIT_TWEEN_MODE_DECELERATE);
-        elm_transit_duration_set(vd->transit[1], 0.15);
-        elm_transit_go(vd->transit[1]);
-     }
+   vd->transit[1] = elm_transit_add();
+   elm_transit_effect_add(vd->transit[1],
+                          transit_check_default_bg_scale_op, vd, NULL);
+   elm_transit_del_cb_set(vd->transit[1],
+                          transit_check_default_bg_scale_del_cb, vd);
+   elm_transit_tween_mode_set(vd->transit[1],
+                              ELM_TRANSIT_TWEEN_MODE_DECELERATE);
+   elm_transit_duration_set(vd->transit[1], 0.15);
+   elm_transit_go(vd->transit[1]);
 
    //Draw Line
    elm_transit_del(vd->transit[2]);
@@ -1165,16 +1154,69 @@ check_default_action_toggle_cb(void *data, Evas_Object *obj EINA_UNUSED,
                               ELM_TRANSIT_TWEEN_MODE_SINUSOIDAL);
    elm_transit_duration_set(vd->transit[2], 0.15);
 
-   if (check)
-     elm_transit_go_in(vd->transit[2], 0.15);
-   else
-     elm_transit_go(vd->transit[2]);
+   elm_transit_go_in(vd->transit[2], 0.15);
 
-   _update_default_check_shape(vd, vd->shape[4], elm_check_state_get(vd->obj), vd->vg[2]);
+   _update_default_check_shape(vd, vd->shape[4], EINA_TRUE, vd->vg[2]);
 }
 
 static void
-check_default_state_toggle_cb(void *data, Evas_Object *obj EINA_UNUSED,
+check_default_action_off_cb(void *data, Evas_Object *obj EINA_UNUSED,
+                               const char *emission EINA_UNUSED,
+                               const char *source EINA_UNUSED)
+{
+   check_default *vd = data;
+   if (!source) return;
+   if (strcmp(source, "tizen_vg")) return;
+
+   vd->state = EINA_FALSE;
+   check_default_init(vd);
+
+   //BG Color Effect
+   elm_transit_del(vd->transit[0]);
+   vd->transit[0] = elm_transit_add();
+   elm_transit_effect_add(vd->transit[0], transit_check_default_bg_color_op, vd,
+                          _transit_check_default_animation_finished);
+   elm_transit_del_cb_set(vd->transit[0], transit_check_default_bg_color_del_cb,
+                          vd);
+   elm_transit_tween_mode_set(vd->transit[0],
+                              ELM_TRANSIT_TWEEN_MODE_DECELERATE);
+
+   elm_transit_duration_set(vd->transit[0], 0.2);
+   elm_transit_go_in(vd->transit[0], 0.15);
+
+   //BG Size Effect
+   elm_transit_del(vd->transit[1]);
+
+   //Draw Line
+   elm_transit_del(vd->transit[2]);
+
+   vd->transit[2] = elm_transit_add();
+   elm_transit_effect_add(vd->transit[2], transit_check_default_line_op, vd,
+                          NULL);
+   elm_transit_del_cb_set(vd->transit[2], transit_check_default_line_del_cb,
+                          vd);
+   elm_transit_tween_mode_set(vd->transit[2],
+                              ELM_TRANSIT_TWEEN_MODE_SINUSOIDAL);
+   elm_transit_duration_set(vd->transit[2], 0.15);
+
+   elm_transit_go(vd->transit[2]);
+
+   _update_default_check_shape(vd, vd->shape[4], EINA_FALSE, vd->vg[2]);
+}
+
+static void
+check_default_action_toggle_cb(void *data, Evas_Object *obj,
+                               const char *emission,
+                               const char *source)
+{
+   if (elm_check_state_get(obj))
+     check_default_action_on_cb(data, obj, emission, source);
+   else
+     check_default_action_off_cb(data, obj, emission, source);
+}
+
+static void
+check_default_state_on_cb(void *data, Evas_Object *obj EINA_UNUSED,
                               const char *emission EINA_UNUSED,
                               const char *source EINA_UNUSED)
 {
@@ -1182,18 +1224,49 @@ check_default_state_toggle_cb(void *data, Evas_Object *obj EINA_UNUSED,
    if (!source) return;
    if (strcmp(source, "tizen_vg")) return;
 
+   vd->state = EINA_TRUE;
    check_default_init(vd);
 
    _check_default_bg_color(vd, 1.0);
    _check_default_bg_scale(vd, 1.0);
    _check_default_line(vd, 1.0);
-   _update_default_check_shape(vd, vd->shape[4], elm_check_state_get(vd->obj), vd->vg[2]);
+   _update_default_check_shape(vd, vd->shape[4], EINA_TRUE, vd->vg[2]);
 
    // update outline color
-   if (elm_check_state_get(vd->obj))
-     evas_vg_shape_stroke_color_set(vd->shape[0], 0, 0, 0, 0);
+   evas_vg_shape_stroke_color_set(vd->shape[0], 0, 0, 0, 0);
+}
+
+static void
+check_default_state_off_cb(void *data, Evas_Object *obj EINA_UNUSED,
+                              const char *emission EINA_UNUSED,
+                              const char *source EINA_UNUSED)
+{
+   check_default *vd = data;
+   if (!source) return;
+   if (strcmp(source, "tizen_vg")) return;
+
+   vd->state = EINA_FALSE;
+   check_default_init(vd);
+
+   _check_default_bg_color(vd, 1.0);
+   _check_default_bg_scale(vd, 1.0);
+   _check_default_line(vd, 1.0);
+   _update_default_check_shape(vd, vd->shape[4], EINA_FALSE, vd->vg[2]);
+
+   // update outline color
+   evas_vg_shape_stroke_color_set(vd->shape[0], 255, 255, 255, 255);
+}
+
+static void
+check_default_state_toggle_cb(void *data, Evas_Object *obj,
+                              const char *emission,
+                              const char *source)
+{
+   // update outline color
+   if (elm_check_state_get(obj))
+     check_default_state_on_cb(data, obj, emission, source);
    else
-     evas_vg_shape_stroke_color_set(vd->shape[0], 255, 255, 255, 255);
+     check_default_state_off_cb(data, obj, emission, source);
 }
 
 static void
@@ -1204,6 +1277,10 @@ check_default_del_cb(void *data, Evas *e EINA_UNUSED,
    evas_object_data_set(vd->obj, vg_key, NULL);
    elm_object_signal_callback_del(vd->obj, "elm,check,state,toggle", "tizen_vg", check_default_state_toggle_cb);
    elm_object_signal_callback_del(vd->obj, "elm,check,action,toggle", "tizen_vg", check_default_action_toggle_cb);
+   elm_object_signal_callback_del(vd->obj, "elm,check,state,on", "tizen_vg", check_default_state_on_cb);
+   elm_object_signal_callback_del(vd->obj, "elm,check,state,off", "tizen_vg", check_default_state_off_cb);
+   elm_object_signal_callback_del(vd->obj, "elm,check,action,on", "tizen_vg", check_default_action_on_cb);
+   elm_object_signal_callback_del(vd->obj, "elm,check,action,off", "tizen_vg", check_default_action_off_cb);
    elm_transit_del(vd->transit[0]);
    elm_transit_del(vd->transit[1]);
    elm_transit_del(vd->transit[2]);
@@ -1225,6 +1302,10 @@ tizen_vg_check_default_set(Elm_Check *obj)
 
    elm_object_signal_callback_add(obj, "elm,check,state,toggle", "tizen_vg", check_default_state_toggle_cb, vd);
    elm_object_signal_callback_add(obj, "elm,check,action,toggle", "tizen_vg", check_default_action_toggle_cb, vd);
+   elm_object_signal_callback_add(obj, "elm,check,state,on", "tizen_vg", check_default_state_on_cb, vd);
+   elm_object_signal_callback_add(obj, "elm,check,state,off", "tizen_vg", check_default_state_off_cb, vd);
+   elm_object_signal_callback_add(obj, "elm,check,action,on", "tizen_vg", check_default_action_on_cb, vd);
+   elm_object_signal_callback_add(obj, "elm,check,action,off", "tizen_vg", check_default_action_off_cb, vd);
 
    vd->obj = obj;
 
