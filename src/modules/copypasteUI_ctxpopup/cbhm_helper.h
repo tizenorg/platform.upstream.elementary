@@ -1,3 +1,6 @@
+#ifndef _CBHM_HELPER_H
+#define _CBHM_HELPER_H
+
 #ifdef HAVE_CONFIG_H
 #include "elementary_config.h"
 #endif
@@ -25,6 +28,17 @@ enum ATOM_INDEX_CBHM_COUNT {
 	ATOM_INDEX_CBHM_COUNT_MAX = 3
 };
 
+#ifdef HAVE_ELEMENTARY_WAYLAND
+#define CBHM_DBUS_OBJPATH "/org/tizen/cbhm/dbus"
+#ifndef CBHM_DBUS_INTERFACE
+#define CBHM_DBUS_INTERFACE "org.tizen.cbhm.dbus"
+#endif /* CBHM_DBUS_INTERFACE */
+
+Eldbus_Proxy* cbhm_proxy_get();
+void cbhm_eldbus_init();
+void cbhm_eldbus_deinit();
+#endif /* HAVE_ELEMENTARY_WAYLAND */
+
 Eina_Bool _cbhm_msg_send(Evas_Object* obj, char *msg);
 int _cbhm_item_count_get(Evas_Object *obj EINA_UNUSED, int atom_index);
 #ifdef HAVE_ELEMENTARY_X
@@ -36,3 +50,5 @@ Eina_Bool _cbhm_item_get(Evas_Object *obj, int index, void *data_type, char **bu
 #ifdef HAVE_ELEMENTARY_X
 Eina_Bool _cbhm_item_set(Evas_Object *obj, Ecore_X_Atom data_type, char *item_data);
 #endif
+
+#endif /* _CBHM_HELPER_H */

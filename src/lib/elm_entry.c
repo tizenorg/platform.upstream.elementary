@@ -759,32 +759,45 @@ EAPI void elm_entry_extension_module_data_get(Evas_Object *obj, Elm_Entry_Extens
 static Mod_Api *
 _module_find(Evas_Object *obj EINA_UNUSED)
 {
+   int i = 0;
+   ERR("IN: %d", ++i);
    static Elm_Module *m = NULL;
 
+   ERR("IN: %d", ++i);
    if (m) goto ok;  // already found - just use
+   ERR("IN: %d", ++i);
    if (!(m = _elm_module_find_as("entry/api"))) return NULL;
+   ERR("IN: %d", ++i);
    // get module api
    m->api = malloc(sizeof(Mod_Api));
+   ERR("IN: %d", ++i);
    if (!m->api) return NULL;
-
+   ERR("IN: %d", ++i);
    ((Mod_Api *)(m->api))->obj_hook = // called on creation
      _elm_module_symbol_get(m, "obj_hook");
+     ERR("IN: %d", ++i);
    ((Mod_Api *)(m->api))->obj_unhook = // called on deletion
      _elm_module_symbol_get(m, "obj_unhook");
+     ERR("IN: %d", ++i);
    ((Mod_Api *)(m->api))->obj_longpress = // called on long press menu
      _elm_module_symbol_get(m, "obj_longpress");
+     ERR("IN: %d", ++i);
    // TIZEN ONLY (20150205): Support CopyPasteUI
    ((Mod_Api *)(m->api))->obj_hidemenu = // called on hide menu
      _elm_module_symbol_get(m, "obj_hidemenu");
+     ERR("IN: %d", ++i);
    ((Mod_Api *)(m->api))->obj_mouseup = // called on mouseup
      _elm_module_symbol_get(m, "obj_mouseup");
+     ERR("IN: %d", ++i);
    ((Mod_Api *)(m->api))->obj_update_popup_pos = //in update selection handler
       _elm_module_symbol_get(m, "obj_update_popup_pos");
    ((Mod_Api *)(m->api))->obj_popup_showing_get = // check cnp popup showing status
       _elm_module_symbol_get(m, "obj_popup_showing_get");
    //
 
+   ERR("IN: %d", ++i);
 ok: // ok - return api
+ERR("IN: %d", ++i);
    return m->api;
 }
 
