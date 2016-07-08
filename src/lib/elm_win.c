@@ -4643,7 +4643,7 @@ _elm_win_icon_object_set(Eo *obj, Elm_Win_Data *sd, Evas_Object *icon)
 #elif HAVE_ELEMENTARY_WIN32
    const char *path;
    elm_image_file_get(icon, &path, NULL);
-   ecore_win32_window_icon_set(sd->win32.win, path);
+   ecore_win32_window_icon_set(ecore_evas_win32_window_get(sd->ee), path);
 #endif
 }
 
