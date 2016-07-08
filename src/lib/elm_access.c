@@ -77,17 +77,6 @@ _access_action_callback_call(Evas_Object *obj,
    return ret;
 }
 
-static Eina_Bool
-_access_action_callback_have(Evas_Object *obj, Elm_Access_Action_Type type)
-{
-   Action_Info *a;
-   a = evas_object_data_get(obj, "_elm_access_action_info");
-
-   if (!a) return EINA_FALSE;
-
-   return a->fn[type].cb ? EINA_TRUE : EINA_FALSE;
-}
-
 EOLIAN static Eina_Bool
 _elm_access_elm_widget_activate(Eo *obj, void *_pd EINA_UNUSED, Elm_Activate act)
 {
@@ -1484,6 +1473,10 @@ _elm_access_elm_interface_atspi_component_highlight_grab(Eo *obj, void *pd EINA_
    if (!_access_action_callback_call(obj, ELM_ACCESS_ACTION_HIGHLIGHT, NULL))
      eo_do_super(obj, ELM_ACCESS_CLASS, elm_interface_atspi_component_highlight_grab());
 
+   // TIZEN_ONLY(20160708) - support elm_access used for embedded toolkit
+   action_by = ELM_ACCESS_ACTION_FIRST;
+   //
+
 ///TIZEN_ONLY(20170717) : expose highlight information on atspi
    elm_interface_atspi_accessible_state_changed_signal_emit(obj, ELM_ATSPI_STATE_HIGHLIGHTED, EINA_TRUE);
 ///
@@ -1495,6 +1488,10 @@ _elm_access_elm_interface_atspi_component_highlight_clear(Eo *obj, void *pd EINA
 {
    if (!_access_action_callback_call(obj, ELM_ACCESS_ACTION_UNHIGHLIGHT, NULL))
      eo_do_super(obj, ELM_ACCESS_CLASS, elm_interface_atspi_component_highlight_clear());
+
+   // TIZEN_ONLY(20160708) - support elm_access used for embedded toolkit
+   action_by = ELM_ACCESS_ACTION_FIRST;
+   //
 
 ///TIZEN_ONLY(20170717) : expose highlight information on atspi
    elm_interface_atspi_accessible_state_changed_signal_emit(obj, ELM_ATSPI_STATE_HIGHLIGHTED, EINA_FALSE);
@@ -1509,21 +1506,27 @@ _access_atspi_action_do(Evas_Object *obj, const char *params)
 
    ret = EINA_FALSE;
    if (!strcmp(params, "highlight"))
-      ret = _access_action_callback_call(obj, ELM_ACCESS_ACTION_HIGHLIGHT, NULL);
+     ret = _access_action_callback_call(obj, ELM_ACCESS_ACTION_HIGHLIGHT, NULL);
    else if (!strcmp(params, "unhighlight"))
-      ret = _access_action_callback_call(obj, ELM_ACCESS_ACTION_UNHIGHLIGHT, NULL);
+     ret = _access_action_callback_call(obj, ELM_ACCESS_ACTION_UNHIGHLIGHT, NULL);
+   // TIZEN_ONLY(20160708) - support elm_access used for embedded toolkit
+   else if (!strcmp(params, "highlight,first"))
+     action_by = ELM_ACCESS_ACTION_HIGHLIGHT_NEXT;
+   else if (!strcmp(params, "highlight,last"))
+     action_by = ELM_ACCESS_ACTION_HIGHLIGHT_PREV;
+   //
    else if (!strcmp(params, "highlight,next"))
-      ret = _access_action_callback_call(obj, ELM_ACCESS_ACTION_HIGHLIGHT_NEXT, NULL);
+     ret = _access_action_callback_call(obj, ELM_ACCESS_ACTION_HIGHLIGHT_NEXT, NULL);
    else if (!strcmp(params, "highlight,prev"))
-      ret = _access_action_callback_call(obj, ELM_ACCESS_ACTION_HIGHLIGHT_PREV, NULL);
+     ret = _access_action_callback_call(obj, ELM_ACCESS_ACTION_HIGHLIGHT_PREV, NULL);
    else if (!strcmp(params, "activate"))
-      ret = _access_action_callback_call(obj, ELM_ACCESS_ACTION_ACTIVATE, NULL);
+     ret = _access_action_callback_call(obj, ELM_ACCESS_ACTION_ACTIVATE, NULL);
    else if (!strcmp(params, "value,up"))
-      ret = _access_action_callback_call(obj, ELM_ACCESS_ACTION_UP, NULL);
+     ret = _access_action_callback_call(obj, ELM_ACCESS_ACTION_UP, NULL);
    else if (!strcmp(params, "value,down"))
-      ret = _access_action_callback_call(obj, ELM_ACCESS_ACTION_DOWN, NULL);
+     ret = _access_action_callback_call(obj, ELM_ACCESS_ACTION_DOWN, NULL);
    else if (!strcmp(params, "read"))
-      ret = _access_action_callback_call(obj, ELM_ACCESS_ACTION_READ, NULL);
+     ret = _access_action_callback_call(obj, ELM_ACCESS_ACTION_READ, NULL);
 
    return ret;
 }
@@ -1534,8 +1537,12 @@ _elm_access_elm_interface_atspi_widget_action_elm_actions_get(Eo *obj EINA_UNUSE
    static Elm_Atspi_Action atspi_actions[] = {
           { "highlight", NULL, "highlight", _access_atspi_action_do},
           { "unhighlight", NULL, "unhighlight", _access_atspi_action_do},
+          // TIZEN_ONLY(20160708) - support elm_access used for embedded toolkit
+          { "highlight,first", NULL, "highlight,first", _access_atspi_action_do},
+          { "highlight,last", NULL, "highlight,last", _access_atspi_action_do},
+          //
           { "highlight,next", NULL, "highlight,next", _access_atspi_action_do},
-          { "highlight,next", NULL, "highlight,prev", _access_atspi_action_do},
+          { "highlight,prev", NULL, "highlight,prev", _access_atspi_action_do},
           { "activate", NULL, "activate", _access_atspi_action_do},
           { "value,up", NULL, "value,up", _access_atspi_action_do},
           { "value,down", NULL, "value,down", _access_atspi_action_do},
