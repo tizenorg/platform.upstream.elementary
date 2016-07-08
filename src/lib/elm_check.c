@@ -48,6 +48,7 @@ static const Elm_Action key_actions[] = {
    {NULL, NULL}
 };
 
+/* TIZEN_ONLY(20160708): delay callback after processing animation.
 static void
 _activate(Evas_Object *obj)
 {
@@ -85,6 +86,53 @@ _activate(Evas_Object *obj)
                                                                 ELM_ATSPI_STATE_CHECKED,
                                                                 sd->state);
 }
+ */
+static void
+_activate_internal(Evas_Object *obj, Eina_Bool state)
+{
+   ELM_CHECK_DATA_GET(obj, sd);
+
+   sd->state = state;
+   if (sd->statep) *sd->statep = sd->state;
+   if (sd->state)
+     {
+        // FIXME: to do animation during state change , we need different signal
+        // so that we can distinguish between state change by user or state change
+        // by calling state_change() api. Keep both the signal for backward compatibility
+        // and remove "elm,state,check,on" signal emission when we can break ABI.
+        elm_layout_signal_emit(obj, "elm,activate,check,on", "elm");
+        elm_layout_signal_emit(obj, "elm,state,check,on", "elm");
+        if (_elm_config->access_mode != ELM_ACCESS_MODE_OFF)
+             _elm_access_say(E_("State: On"));
+     }
+   else
+     {
+        // FIXME: to do animation during state change , we need different signal
+        // so that we can distinguish between state change by user or state change
+        // by calling state_change() api. Keep both the signal for backward compatibility
+        // and remove "elm,state,check,off" signal emission when we can break ABI.
+        elm_layout_signal_emit(obj, "elm,activate,check,off", "elm");
+        elm_layout_signal_emit(obj, "elm,state,check,off", "elm");
+        if (_elm_config->access_mode != ELM_ACCESS_MODE_OFF)
+             _elm_access_say(E_("State: Off"));
+     }
+
+   eo_do(obj, eo_event_callback_call(ELM_CHECK_EVENT_CHANGED, NULL));
+
+   if (_elm_config->atspi_mode)
+       elm_interface_atspi_accessible_state_changed_signal_emit(obj,
+                                                                ELM_ATSPI_STATE_CHECKED,
+                                                                sd->state);
+}
+
+static void
+_activate(Evas_Object *obj)
+{
+   ELM_CHECK_DATA_GET(obj, sd);
+
+   _activate_internal(obj, !sd->state);
+}
+/* END */
 
 /* FIXME: replicated from elm_layout just because check's icon spot
  * is elm.swallow.content, not elm.swallow.icon. Fix that whenever we
@@ -316,6 +364,26 @@ _on_check_on(void *data,
                                                                 sd->state);
 }
 
+/* TIZEN_ONLY(20160708): delay callback after processing animation. */
+static void
+_on_check_toggle_on(void *data,
+                 Evas_Object *o EINA_UNUSED,
+                 const char *emission EINA_UNUSED,
+                 const char *source EINA_UNUSED)
+{
+   _activate_internal(data, EINA_TRUE);
+}
+
+static void
+_on_check_toggle_off(void *data,
+                 Evas_Object *o EINA_UNUSED,
+                 const char *emission EINA_UNUSED,
+                 const char *source EINA_UNUSED)
+{
+   _activate_internal(data, EINA_FALSE);
+}
+/* END */
+
 static void
 _on_check_toggle(void *data,
                  Evas_Object *o EINA_UNUSED,
@@ -342,6 +410,14 @@ _elm_check_evas_object_smart_add(Eo *obj, Elm_Check_Data *_pd EINA_UNUSED)
    edje_object_signal_callback_add
      (wd->resize_obj, "elm,action,check,toggle", "*",
      _on_check_toggle, obj);
+/* TIZEN_ONLY(20160708): delay callback after processing animation. */
+   edje_object_signal_callback_add
+     (wd->resize_obj, "elm,action,check,toggle,on", "*",
+     _on_check_toggle_on, obj);
+   edje_object_signal_callback_add
+     (wd->resize_obj, "elm,action,check,toggle,off", "*",
+     _on_check_toggle_off, obj);
+/* END */
 
    _elm_access_object_register(obj, wd->resize_obj);
    _elm_access_text_set
@@ -401,6 +477,7 @@ _elm_check_state_set(Eo *obj, Elm_Check_Data *sd, Eina_Bool state)
 {
    ELM_WIDGET_DATA_GET_OR_RETURN(obj, wd);
 
+/* TIZEN_ONLY(20160708): delay callback after processing animation.
    if (state != sd->state)
      {
         sd->state = state;
@@ -410,6 +487,20 @@ _elm_check_state_set(Eo *obj, Elm_Check_Data *sd, Eina_Bool state)
         else
           elm_layout_signal_emit(obj, "elm,state,check,off", "elm");
      }
+ */
+   sd->state = state;
+   if (sd->statep) *sd->statep = sd->state;
+   if (sd->state)
+     {
+        elm_layout_signal_emit(obj, "elm,state,tizen,on", "elm");
+        elm_layout_signal_emit(obj, "elm,state,check,on", "elm");
+     }
+   else
+     {
+        elm_layout_signal_emit(obj, "elm,state,tizen,off", "elm");
+        elm_layout_signal_emit(obj, "elm,state,check,off", "elm");
+     }
+/* END */
 
    edje_object_message_signal_process(wd->resize_obj);
 #ifdef TIZEN_VECTOR_UX
