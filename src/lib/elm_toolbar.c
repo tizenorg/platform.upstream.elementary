@@ -4156,7 +4156,10 @@ _elm_toolbar_elm_interface_atspi_selection_is_child_selected(Eo *obj EINA_UNUSED
      {
         if (child_index-- == 0)
           {
-             return elm_toolbar_item_selected_get(EO_OBJ(item));
+             /* TIZEN_ONLY(20160708): if auto selected item feature is enabled for navigation style. */
+             if ((pd->auto_selected_last_item == EO_OBJ(item)) && (pd->select_mode == ELM_OBJECT_SELECT_MODE_NONE))
+               return EINA_TRUE;
+             else return elm_toolbar_item_selected_get(EO_OBJ(item));
           }
      }
    return EINA_FALSE;
