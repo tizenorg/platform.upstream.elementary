@@ -1012,6 +1012,7 @@ _translate_menu(void *data EINA_UNUSED, Evas_Object *obj, void *event_info EINA_
 static void
 _clipboard_menu(void *data, Evas_Object *obj, void *event_info EINA_UNUSED)
 {
+   EINA_LOG_ERR("IN");
    if(!ext_mod) return;
 
    // start for cbhm
@@ -1022,10 +1023,32 @@ _clipboard_menu(void *data, Evas_Object *obj, void *event_info EINA_UNUSED)
    xwin = elm_win_xwindow_get(top);
    ecore_x_selection_secondary_set(xwin, NULL, 0);
 #endif
+#ifdef HAVE_ELEMENTARY_WAYLAND
+   const char *types[10] = {0, };
+
+   int i = -1;
+   types[++i] = "application/x-elementary-markup";
+   ecore_wl_dnd_selection_set(ecore_wl_input_get(), types);
+#endif
+
    if (ext_mod->cnp_mode != ELM_CNP_MODE_MARKUP)
-     _cbhm_msg_send(data, "show0");
+     {
+        EINA_LOG_ERR("eldbus_proxy_call CbhmShow 0");
+#ifdef HAVE_ELEMENTARY_WAYLAND
+         eldbus_proxy_call(cbhm_proxy_get(), "CbhmShow", NULL, NULL, -1, "s", "0");
+#else
+         _cbhm_msg_send(data, "show0");
+#endif
+     }
    else
-     _cbhm_msg_send(data, "show1");
+     {
+         EINA_LOG_ERR("eldbus_proxy_call CbhmShow 1");
+#ifdef HAVE_ELEMENTARY_WAYLAND
+         eldbus_proxy_call(cbhm_proxy_get(), "CbhmShow", NULL, NULL, -1, "s", "1");
+#else
+        _cbhm_msg_send(data, "show1");
+#endif
+     }
    _ctxpopup_hide(obj);
    // end for cbhm
    elm_entry_select_none(data);
@@ -1117,6 +1140,9 @@ obj_hook(Evas_Object *obj)
    elm_entry_context_menu_item_add(obj, "Translate", NULL,
                                    ELM_ICON_STANDARD, NULL, NULL);
 #endif
+#ifdef HAVE_ELEMENTARY_WAYLAND
+   cbhm_eldbus_init();
+#endif
 }
 
 EAPI void
@@ -1156,7 +1182,27 @@ obj_unhook(Evas_Object *obj EINA_UNUSED)
         free(ext_mod);
         ext_mod = NULL;
      }
+
+#ifdef HAVE_ELEMENTARY_WAYLAND
+   EINA_LOG_ERR("call cbhm_eldbus_deinit");
+   cbhm_eldbus_deinit();
+#endif
 }
+
+#if 0 /* for asynchronized proxy_call function */
+static void
+__cbhm_get_count(void *data EINA_UNUSED, const Eldbus_Message *msg, Eldbus_Pending *pending EINA_UNUSED)
+{
+   EINA_LOG_ERR("IN");
+   int count = -1;
+
+   if (eldbus_message_error_get(msg, NULL, NULL) ||
+       !eldbus_message_arguments_get(msg, "i", &count)) return;
+
+   if (count == -1)
+      return;
+}
+#endif
 
 EAPI void
 obj_longpress(Evas_Object *obj)
@@ -1164,6 +1210,7 @@ obj_longpress(Evas_Object *obj)
    if(!ext_mod) return;
    LOG("IN\n\n");
 
+   int cbhm_count = 0;
    Evas_Object *ctxparent;
    Evas_Object *parent, *child;
    const Eina_List *l;
@@ -1187,13 +1234,12 @@ obj_longpress(Evas_Object *obj)
      {
         Eina_List *lao = NULL;
         Evas_Object *ao = NULL;
-#ifdef HAVE_ELEMENTARY_X
-        int cbhm_count = 0;
+
         if (elm_entry_cnp_mode_get(obj) != ELM_CNP_MODE_MARKUP)
           cbhm_count = _cbhm_item_count_get(obj, ATOM_INDEX_CBHM_COUNT_TEXT);
         else
           cbhm_count = _cbhm_item_count_get(obj, ATOM_INDEX_CBHM_COUNT_ALL);
-#endif
+
         if (ext_mod->popup)
           {
              evas_object_event_callback_del(obj, EVAS_CALLBACK_DEL, _entry_del_cb);
@@ -1300,8 +1346,9 @@ obj_longpress(Evas_Object *obj)
 
 #ifdef HAVE_ELEMENTARY_X
              if (cbhm_count)
-#else
-             if (1) // need way to detect if someone has a selection
+#endif
+#ifdef HAVE_ELEMENTARY_WAYLAND
+             if (cbhm_count)
 #endif
                {
                   if (elm_entry_cnp_mode_get(obj) == ELM_CNP_MODE_PLAINTEXT)
@@ -1343,8 +1390,9 @@ obj_longpress(Evas_Object *obj)
              // start for cbhm
 #ifdef HAVE_ELEMENTARY_X
              if ((ext_mod->editable) && (cbhm_count) && (has_clipboard))
-#else
-             if ((ext_mod->editable) && (has_clipboard))
+#endif
+#ifdef HAVE_ELEMENTARY_WAYLAND
+             if ((ext_mod->editable) && (cbhm_count) && (has_clipboard))
 #endif
                {
                   CP_ICON_ADD(icon, "clipboard");
@@ -1416,8 +1464,9 @@ obj_longpress(Evas_Object *obj)
 
 #ifdef HAVE_ELEMENTARY_X
                    if (ext_mod->editable && cbhm_count)
-#else
-                   if (ext_mod->editable)
+#endif
+#ifdef HAVE_ELEMENTARY_WAYLAND
+                   if (ext_mod->editable && cbhm_count)
 #endif
                      {
                         if (elm_entry_cnp_mode_get(obj) == ELM_CNP_MODE_PLAINTEXT)
@@ -1480,8 +1529,9 @@ obj_longpress(Evas_Object *obj)
                      }
 #ifdef HAVE_ELEMENTARY_X
                    if (cbhm_count)
-#else
-                   if (1) // need way to detect if someone has a selection
+#endif
+#ifdef HAVE_ELEMENTARY_WAYLAND
+                   if (cbhm_count)
 #endif
                      {
                         if (ext_mod->editable)
@@ -1523,8 +1573,9 @@ obj_longpress(Evas_Object *obj)
                   // start for cbhm
 #ifdef HAVE_ELEMENTARY_X
                   if ((ext_mod->editable) && (cbhm_count) && (has_clipboard))
-#else
-                  if ((ext_mod->editable) && (has_clipboard))
+#endif
+#ifdef HAVE_ELEMENTARY_WAYLAND
+                  if ((ext_mod->editable) && (cbhm_count) && (has_clipboard))
 #endif
                     {
                        CP_ICON_ADD(icon, "clipboard");
