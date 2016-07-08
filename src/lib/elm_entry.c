@@ -766,7 +766,6 @@ _module_find(Evas_Object *obj EINA_UNUSED)
    // get module api
    m->api = malloc(sizeof(Mod_Api));
    if (!m->api) return NULL;
-
    ((Mod_Api *)(m->api))->obj_hook = // called on creation
      _elm_module_symbol_get(m, "obj_hook");
    ((Mod_Api *)(m->api))->obj_unhook = // called on deletion
