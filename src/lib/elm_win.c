@@ -4038,10 +4038,9 @@ _elm_win_finalize_internal(Eo *obj, Elm_Win_Data *sd, const char *name, Elm_Win_
 #endif
                }
           }
-        enginelist[p++] = NULL;
-        for (i = 0; i < 30; i++)
+        for (i = 0; i < p; i++)
           {
-             if ((i > 0) && (!enginelist[i])) break;
+             if (!enginelist[i]) break;
              if (!strcmp(enginelist[i], ELM_SOFTWARE_X11))
                tmp_sd.ee = ecore_evas_software_x11_new(NULL, 0, 0, 0, 1, 1);
              else if (!strcmp(enginelist[i], ELM_OPENGL_X11))
