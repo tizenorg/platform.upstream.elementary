@@ -73,6 +73,52 @@ _cbhm_window_get()
 }
 #endif
 
+#ifdef HAVE_ELEMENTARY_WAYLAND
+static Eldbus_Proxy *eldbus_proxy;
+Eldbus_Connection *cbhm_conn;
+
+Eldbus_Proxy* cbhm_proxy_get()
+{
+   return eldbus_proxy;
+}
+
+Eldbus_Connection* cbhm_connection_get()
+{
+   return cbhm_conn;
+}
+
+static void
+_cbhm_on_name_owner_changed(void *data EINA_UNUSED,
+      const char *bus EINA_UNUSED, const char *old_id EINA_UNUSED,
+      const char *new_id EINA_UNUSED)
+{
+   /* FIXME : If entry should know the time cbhm service is started or stoped,
+    * use this function. */
+}
+
+void
+cbhm_eldbus_init()
+{
+   EINA_LOG_ERR("IN");
+   Eldbus_Object *eldbus_obj;
+
+   cbhm_conn = eldbus_connection_get(ELDBUS_CONNECTION_TYPE_SESSION);
+   eldbus_obj = eldbus_object_get(cbhm_conn, CBHM_DBUS_INTERFACE,
+         CBHM_DBUS_OBJPATH);
+   eldbus_proxy = eldbus_proxy_get(eldbus_obj, CBHM_DBUS_INTERFACE);
+   eldbus_name_owner_changed_callback_add(cbhm_conn, CBHM_DBUS_INTERFACE,
+         _cbhm_on_name_owner_changed, cbhm_conn, EINA_TRUE);
+}
+
+void
+cbhm_eldbus_deinit()
+{
+   EINA_LOG_ERR("IN");
+   if (cbhm_conn)
+      eldbus_connection_unref(cbhm_conn);
+}
+#endif /* HAVE_ELEMENTARY_WAYLAND */
+
 Eina_Bool
 _cbhm_msg_send(Evas_Object *obj, char *msg)
 {
@@ -199,8 +245,52 @@ _cbhm_item_count_get(Evas_Object *obj EINA_UNUSED, int atom_index)
         return count;
      }
    DMSG("ret: 0x%x\n", ret);
-#else
-   (void)atom_index;
+#endif
+#ifdef HAVE_ELEMENTARY_WAYLAND
+   Eldbus_Message *reply, *req;
+   const char *errname = NULL, *errmsg = NULL;
+   int count = -1;
+
+   EINA_LOG_ERR("eldbus_proxy_call CbhmGetCount");
+
+   /* FIXME : should support get count for TEXT and ALL. That is,
+    * it needs some parameter */
+   if (atom_index == ATOM_INDEX_CBHM_COUNT_TEXT)
+      EINA_LOG_ERR("ATOM_INDEX_CBHM_COUNT_TEXT");
+   else
+      EINA_LOG_ERR("ATOM_INDEX_CBHM_COUNT_ALL");
+
+   if (!(req = eldbus_proxy_method_call_new(eldbus_proxy, "CbhmGetCount")))
+     {
+        EINA_LOG_ERR(
+              "Failed to create method call on org.freedesktop.DBus.Properties.Get");
+        return -1;
+     }
+
+   eldbus_message_ref(req);
+
+   reply = eldbus_proxy_send_and_block(eldbus_proxy, req, 100);
+
+   if (!reply || eldbus_message_error_get(reply, &errname, &errmsg))
+     {
+        EINA_LOG_ERR(
+              "Unable to call method org.freedesktop.DBus.Properties.Get: %s %s",
+              errname, errmsg);
+        eldbus_message_unref(req);
+        return -1;
+     }
+
+   if (!eldbus_message_arguments_get(reply, "i", &count))
+     {
+        EINA_LOG_ERR("Cannot get arguments from eldbus");
+        eldbus_message_unref(req);
+        return -1;
+     }
+
+   eldbus_message_unref(req);
+   EINA_LOG_DBG("cbhm item count(%d)", count);
+
+   return count;
 #endif
    return -1;
 }
