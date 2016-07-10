@@ -1599,6 +1599,8 @@ _item_realize(Elm_Gen_Item *it,
                                      SIGNAL_ITEM_HIGHLIGHTED, "elm");
           }
      }
+   else if (sd->aligned_item == it)
+	   edje_object_signal_emit(VIEW(it), SIGNAL_ITEM_HIGHLIGHTED, "elm");
 
    it->realized = EINA_TRUE;
    if (!calc)
@@ -4929,6 +4931,9 @@ _item_update(Elm_Gen_Item *it)
 
    if (it->selected)
       evas_object_smart_callback_call(WIDGET(it), SIG_HIGHLIGHTED, EO_OBJ(it));
+
+   if (GL_IT(it)->wsd->aligned_item == it)
+	   edje_object_signal_emit(VIEW(it), SIGNAL_ITEM_HIGHLIGHTED, "elm");
 }
 
 static void
