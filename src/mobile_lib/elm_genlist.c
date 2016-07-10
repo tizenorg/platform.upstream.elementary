@@ -1586,19 +1586,21 @@ _item_realize(Elm_Gen_Item *it,
      }
    if (!sd->aligned_item)
      {
-		 eo_do(sd->obj, elm_interface_scrollable_content_viewport_geometry_get
-				 (NULL, NULL, &vw, &vh));
+        eo_do(sd->obj, elm_interface_scrollable_content_viewport_geometry_get
+              (NULL, NULL, &vw, &vh));
         vw = (vw / 2);
         vh = (vh / 2);
 
-		if (ELM_RECTS_INTERSECT(it->x - sd->pan_x, it->y - sd->pan_y, GL_IT(it)->w,
-				GL_IT(it)->minh, vw, vh, 1, 1))
+        if (ELM_RECTS_INTERSECT(it->x - sd->pan_x, it->y - sd->pan_y, GL_IT(it)->w,
+                                GL_IT(it)->minh, vw, vh, 1, 1))
           {
              sd->aligned_item = it;
              edje_object_signal_emit(VIEW(sd->aligned_item),
                                      SIGNAL_ITEM_HIGHLIGHTED, "elm");
           }
      }
+   else if (sd->aligned_item == it)
+     edje_object_signal_emit(VIEW(it), SIGNAL_ITEM_HIGHLIGHTED, "elm");
 
    it->realized = EINA_TRUE;
    if (!calc)
@@ -4929,6 +4931,9 @@ _item_update(Elm_Gen_Item *it)
 
    if (it->selected)
       evas_object_smart_callback_call(WIDGET(it), SIG_HIGHLIGHTED, EO_OBJ(it));
+
+   if (GL_IT(it)->wsd->aligned_item == it)
+     edje_object_signal_emit(VIEW(it), SIGNAL_ITEM_HIGHLIGHTED, "elm");
 }
 
 static void
