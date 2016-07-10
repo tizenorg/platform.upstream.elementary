@@ -6804,15 +6804,26 @@ _elm_genlist_item_item_class_update(Eo *eo_it, Elm_Gen_Item *it,
                                    const Elm_Genlist_Item_Class *itc)
 {
    ELM_GENLIST_ITEM_CHECK_OR_RETURN(it);
-
    EINA_SAFETY_ON_NULL_RETURN(itc);
+   Elm_Genlist_Data *sd = GL_IT(it)->wsd;
    it->itc = itc;
 
    if (!GL_IT(it)->block) return;
 
-   if (VIEW(it))
-     _view_theme_update(it, VIEW(it), it->itc->item_style);
-   elm_genlist_item_update(eo_it);
+   // FIXME(160711): orignal edje object updated by _view_theme_update
+   // cannot recieve signal emit properly. This edje bug must be fixed.
+   _item_cache_all_free(sd);
+
+   sd->no_cache = EINA_TRUE;
+   _item_unrealize(it, EINA_FALSE);
+   sd->no_cache = EINA_FALSE;
+   _item_realize(it, EINA_FALSE);
+
+   GL_IT(it)->calc_done = EINA_FALSE;
+   GL_IT(it)->block->calc_done = EINA_FALSE;
+   sd->calc_done = EINA_FALSE;
+
+   _changed(sd->pan_obj);
 }
 
 EOLIAN static const Elm_Genlist_Item_Class *
