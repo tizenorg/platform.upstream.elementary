@@ -178,6 +178,7 @@ _conformant_part_sizing_eval(Evas_Object *obj,
 
    if (part_type & ELM_CONFORMANT_VIRTUAL_KEYPAD_PART)
      {
+        sx = sy = sw = sh = -1;
 #ifdef HAVE_ELEMENTARY_X
         if ((!_conformant_part_geometry_get_from_env
                ("ILLUME_KBD", &sx, &sy, &sw, &sh)) && (xwin))
@@ -238,6 +239,7 @@ _conformant_part_sizing_eval(Evas_Object *obj,
 
    if (part_type & ELM_CONFORMANT_SOFTKEY_PART)
      {
+        sx = sy = sw = sh = -1;
 #ifdef HAVE_ELEMENTARY_X
         if ((!_conformant_part_geometry_get_from_env
                ("ILLUME_STK", &sx, &sy, &sw, &sh)) && (xwin))
@@ -254,6 +256,7 @@ _conformant_part_sizing_eval(Evas_Object *obj,
      }
    if (part_type & ELM_CONFORMANT_CLIPBOARD_PART)
      {
+        sx = sy = sw = sh = -1;
 #ifdef HAVE_ELEMENTARY_X
         if ((!_conformant_part_geometry_get_from_env
                ("ILLUME_CB", &sx, &sy, &sw, &sh)) && (xwin))
