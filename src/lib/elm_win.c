@@ -3582,6 +3582,7 @@ elm_win_add(Evas_Object *parent,
                {
                   Evas_Object *tmp = _precreated_win_obj;
                   TRAP(sd, name_class_set, name, _elm_appname);
+                  TRAP(sd, title_set, sd->title ? sd->title : name);
                   _precreated_win_obj = NULL;
                   INF("Return precreated obj(%p).", tmp);
 
