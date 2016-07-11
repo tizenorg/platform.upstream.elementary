@@ -96,8 +96,23 @@ _cbhm_on_name_owner_changed(void *data EINA_UNUSED,
     * use this function. */
 }
 
+static void
+_on_item_clicked(void *data, const Eldbus_Message *msg EINA_UNUSED)
+{
+   Evas_Object *obj = data;
+   if (!data)
+     {
+        return;
+     }
+   const char *txt;
+   //FIXME: because of focus issue: focus is moved to cbhm, not stayed in entry
+   //we cannot check focus object
+   //FIXME: request for focused obj only when focus issue is fixed
+   _check_and_paste(obj);
+}
+
 void
-cbhm_eldbus_init()
+cbhm_eldbus_init(Evas_Object *obj)
 {
    EINA_LOG_ERR("IN");
    Eldbus_Object *eldbus_obj;
@@ -108,6 +123,7 @@ cbhm_eldbus_init()
    eldbus_proxy = eldbus_proxy_get(eldbus_obj, CBHM_DBUS_INTERFACE);
    eldbus_name_owner_changed_callback_add(cbhm_conn, CBHM_DBUS_INTERFACE,
          _cbhm_on_name_owner_changed, cbhm_conn, EINA_TRUE);
+   eldbus_proxy_signal_handler_add(eldbus_proxy, "ItemClicked", _on_item_clicked, obj);
 }
 
 void

@@ -845,6 +845,16 @@ _select(void *data, Evas_Object *obj, void *event_info)
    ext_mod->select(data, obj, event_info);
 }
 
+void
+_check_and_paste(Evas_Object *obj)
+{
+   if ((!ext_mod) || (!obj)) return;
+   if (ext_mod->cbhm_caller == obj)
+     {
+        ext_mod->paste(obj, NULL, NULL);
+     }
+}
+
 static void
 _paste(void *data, Evas_Object *obj, void *event_info)
 {
@@ -1052,6 +1062,9 @@ _clipboard_menu(void *data, Evas_Object *obj, void *event_info EINA_UNUSED)
    _ctxpopup_hide(obj);
    // end for cbhm
    elm_entry_select_none(data);
+#ifdef HAVE_ELEMENTARY_WAYLAND
+   ext_mod->cbhm_caller = data; //FIXME: remove when focus issue is removed
+#endif
 }
 
 static void
@@ -1141,7 +1154,7 @@ obj_hook(Evas_Object *obj)
                                    ELM_ICON_STANDARD, NULL, NULL);
 #endif
 #ifdef HAVE_ELEMENTARY_WAYLAND
-   cbhm_eldbus_init();
+   cbhm_eldbus_init(obj);
 #endif
 }
 

@@ -10,6 +10,9 @@ struct _Elm_Entry_Extension_data
    Evas_Object *popup;
    Evas_Object *ent;
    Evas_Object *caller;
+#ifdef HAVE_ELEMENTARY_WAYLAND
+   Evas_Object *cbhm_caller; //FIXME: remove when focus issue is resolved
+#endif
    Eina_Rectangle *viewport_rect;
    Evas_Coord_Rectangle selection_rect;
    Eina_List *items;
