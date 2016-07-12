@@ -3230,7 +3230,7 @@ _elm_list_elm_interface_atspi_widget_action_elm_actions_get(Eo *obj EINA_UNUSED,
           { "move,first", "move", "first", _key_action_move},
           { "move,last", "move", "last", _key_action_move},
           { "select", "select", NULL, _key_action_select},
-          { "escape", "escape", NULL, _key_action_escape},
+          { "activate", "escape", NULL, _key_action_escape},
           { NULL, NULL, NULL, NULL }
    };
    return &atspi_actions[0];

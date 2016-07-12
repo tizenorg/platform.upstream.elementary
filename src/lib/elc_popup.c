@@ -2181,7 +2181,7 @@ _elm_popup_elm_interface_atspi_widget_action_elm_actions_get(Eo *obj EINA_UNUSED
 {
    static Elm_Atspi_Action atspi_actions[] = {
 //TIZEN_ONLY(20150709) : add keybinding for elm_popup "block,clicked" action
-          { "escape", "escape", NULL, _key_action_escape},
+          { "activate", "escape", NULL, _key_action_escape},
           { NULL, NULL, NULL, NULL }
    };
    if (pd->action_area)

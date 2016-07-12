@@ -2533,7 +2533,7 @@ _elm_fileselector_elm_interface_atspi_widget_action_elm_actions_get(Eo *obj EINA
 {
    static Elm_Atspi_Action atspi_actions[] = {
           { "select", "select", NULL, _key_action_select },
-          { "escape", "escape", NULL, _key_action_escape},
+          { "activate", "escape", NULL, _key_action_escape},
           { NULL, NULL, NULL, NULL}
    };
    return &atspi_actions[0];

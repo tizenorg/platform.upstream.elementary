@@ -2229,7 +2229,7 @@ EOLIAN static const Elm_Atspi_Action*
 _elm_ctxpopup_elm_interface_atspi_widget_action_elm_actions_get(Eo *obj EINA_UNUSED, Elm_Ctxpopup_Data *sd EINA_UNUSED)
 {
    static Elm_Atspi_Action atspi_actions[] = {
-          { "escape", "escape", NULL, _key_action_escape},
+          { "activate", "escape", NULL, _key_action_escape},
           { "move,previous", "move", "previous", _key_action_move},
           { "move,next", "move", "next", _key_action_move},
           { "move,left", "move", "left", _key_action_move},

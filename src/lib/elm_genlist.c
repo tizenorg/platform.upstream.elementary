@@ -8385,7 +8385,7 @@ _elm_genlist_elm_interface_atspi_widget_action_elm_actions_get(Eo *obj EINA_UNUS
           { "move,last", "move", "last", _key_action_move},
           { "select", "select", NULL, _key_action_select},
           { "select,multi", "select", "multi", _key_action_select},
-          { "escape", "escape", NULL, _key_action_escape},
+          { "activate", "escape", NULL, _key_action_escape},
           { NULL, NULL, NULL, NULL }
    };
    return &atspi_actions[0];
