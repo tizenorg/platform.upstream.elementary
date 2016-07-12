@@ -497,8 +497,9 @@ _grid_create(Evas_Object *obj)
    g->w = g->iw / g->zoom;
    g->h = g->ih / g->zoom;
 
+   // TIZEN_ONLY(20160712): create 1x1 grid default
    // TIZEN_ONLY(20150813): need to create 1x1 grid when zoom >= 8 to load high res img
-   if ((sd->do_region) && (g->zoom < 8))
+   /*if ((sd->do_region) && (g->zoom < 8))
      {
         g->gw = (g->w + g->tsize - 1) / g->tsize;
         g->gh = (g->h + g->tsize - 1) / g->tsize;
@@ -507,7 +508,10 @@ _grid_create(Evas_Object *obj)
      {
         g->gw = 1;
         g->gh = 1;
-     }
+     }*/
+   g->gw = 1;
+   g->gh = 1;
+   //
 
    g->grid = calloc(1, sizeof(Elm_Photocam_Grid_Item) * g->gw * g->gh);
    if (!g->grid)
