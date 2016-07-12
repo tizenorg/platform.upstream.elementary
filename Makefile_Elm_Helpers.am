@@ -1,5 +1,7 @@
+#Tizen Only
+#wrong path of ELM_PREFS_CC causes the build break.
 if HAVE_ELM_PREFS_CC
-ELM_PREFS_CC = @elm_prefs_cc@
+ELM_PREFS_CC = ${PREFIX}/bin/
 else
 ELM_PREFS_CC = $(top_builddir)/src/bin/elm_prefs_cc
 endif
