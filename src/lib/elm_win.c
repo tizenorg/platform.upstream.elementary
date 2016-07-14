@@ -272,6 +272,7 @@ static const char SIG_AUX_HINT_ALLOWED[] = "aux,hint,allowed";
 static const char SIG_VISIBILITY_CHANGED[] = "visibility,changed";
 static const char SIG_EFFECT_STARTED[] = "effect,started";
 static const char SIG_EFFECT_DONE[] = "effect,done";
+static const char SIG_LAUNCH_DONE[] = "launch,done";
 
 static const Evas_Smart_Cb_Description _smart_callbacks[] = {
    {SIG_DELETE_REQUEST, ""},
@@ -301,6 +302,7 @@ static const Evas_Smart_Cb_Description _smart_callbacks[] = {
    {SIG_VISIBILITY_CHANGED, ""},
    {SIG_EFFECT_STARTED, ""},
    {SIG_EFFECT_DONE, ""},
+   {SIG_LAUNCH_DONE, ""},
    {NULL, NULL}
 };
 
@@ -2447,13 +2449,18 @@ _elm_win_wl_effect_end(void *data, int type EINA_UNUSED, void *event)
 {
    ELM_WIN_DATA_GET(data, sd);
    Ecore_Wl_Event_Effect_End *e = event;
+   unsigned int eff_type;
 
    if (!sd->wl.win) return ECORE_CALLBACK_PASS_ON;
 
    if ((ecore_wl_window_id_get(sd->wl.win) != e->win))
      return ECORE_CALLBACK_PASS_ON;
 
-   evas_object_smart_callback_call(data, SIG_EFFECT_DONE, (void*)e->type);
+   eff_type = e->type;
+   if (eff_type == 4)
+     evas_object_smart_callback_call(data, SIG_LAUNCH_DONE, (void*)e->type);
+   else
+     evas_object_smart_callback_call(data, SIG_EFFECT_DONE, (void*)e->type);
 
    return ECORE_CALLBACK_PASS_ON;
 }
