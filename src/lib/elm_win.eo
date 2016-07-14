@@ -55,7 +55,7 @@ enum Elm.Win.Type
                    contents will be rendered to an image buffer and can be
                    shown other process's plug image object.
                  ]]
-   fake [[This window was created using a pre-existing canvas. The window
+   fake = 18 [[This window was created using a pre-existing canvas. The window
           widget can be deleted, but the canvas must be managed externally.
 
           @since 1.13
