@@ -432,7 +432,7 @@ _desc_init(void)
    ELM_CONFIG_VAL(D, T, audio_mute_alert, T_UCHAR);
    ELM_CONFIG_VAL(D, T, audio_mute_all, T_UCHAR);
    ELM_CONFIG_LIST(D, T, bindings, _config_bindings_widget_edd);
-   ELM_CONFIG_VAL(D, T, atspi_mode, T_UCHAR);
+//   ELM_CONFIG_VAL(D, T, atspi_mode, T_UCHAR);
    ELM_CONFIG_VAL(D, T, win_auto_focus_enable, T_UCHAR);
    ELM_CONFIG_VAL(D, T, win_auto_focus_animate, T_UCHAR);
    ELM_CONFIG_VAL(D, T, transition_duration_factor, T_DOUBLE);
@@ -675,7 +675,7 @@ void _elm_config_atspi_mode_set(Eina_Bool is_enabled)
 {
    is_enabled = !!is_enabled;
    if (_elm_config->atspi_mode == is_enabled) return;
-   _elm_config->atspi_mode = is_enabled;
+//   _elm_config->atspi_mode = is_enabled;
 
    if (!is_enabled) _elm_atspi_bridge_shutdown();
    else _elm_atspi_bridge_init();
@@ -2175,8 +2175,8 @@ _env_get(void)
    if (s) _elm_config->magnifier_enable = !!atoi(s);
    s = getenv("ELM_MAGNIFIER_SCALE");
    if (s) _elm_config->magnifier_scale = _elm_atof(s);
-   s = getenv("ELM_ATSPI_MODE");
-   if (s) _elm_config->atspi_mode = ELM_ATSPI_MODE_ON;
+//   s = getenv("ELM_ATSPI_MODE");
+//   if (s) _elm_config->atspi_mode = ELM_ATSPI_MODE_ON;
    s = getenv("ELM_SPINNER_MIN_MAX_FILTER_ENABLE");
    if (s) _elm_config->spinner_min_max_filter_enable = !!atoi(s);
 
@@ -2443,7 +2443,7 @@ elm_config_atspi_mode_get(void)
 EAPI void
 elm_config_atspi_mode_set(Eina_Bool is_enable)
 {
-   _elm_config_atspi_mode_set(is_enable);
+//   _elm_config_atspi_mode_set(is_enable);
 }
 
 EAPI Eina_Bool
