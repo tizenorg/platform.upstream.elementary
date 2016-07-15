@@ -1167,7 +1167,6 @@ _elm_win_focus_in(Ecore_Evas *ee)
 {
    Elm_Win_Data *sd = _elm_win_associate_get(ee);
    Evas_Object *obj;
-   unsigned int order = 0;
 
    if ((!sd) || (sd->modal_count)) return;
 
@@ -1177,8 +1176,7 @@ _elm_win_focus_in(Ecore_Evas *ee)
    _elm_widget_top_win_focused_set(obj, EINA_TRUE);
    if (sd->type != ELM_WIN_FAKE)
      {
-        if (!elm_widget_focus_order_get(obj)
-            || (obj == elm_widget_newest_focus_order_get(obj, &order, EINA_TRUE)))
+        if (!elm_widget_focus_order_get(obj))
           {
              elm_widget_focus_steal(obj, NULL);
           }
@@ -1190,15 +1188,8 @@ _elm_win_focus_in(Ecore_Evas *ee)
              newest = elm_widget_newest_focus_order_get
                (obj, &newest_focus_order, EINA_TRUE);
              if ((newest) &&
-                 _elm_widget_onscreen_is(newest))
-               {
-                  if (_elm_win_focus_highlight_object_get(obj))
-                    elm_widget_focus_restore(obj);
-                  else if (!elm_object_focus_get(newest))
-                    elm_widget_focus_restore(obj);
-                  else
-                    evas_object_focus_set(obj, EINA_TRUE);
-               }
+                 (_elm_widget_onscreen_is(newest) || (newest == obj)))
+               elm_widget_focus_restore(obj);
              else
                evas_object_focus_set(obj, EINA_TRUE);
           }
@@ -1236,7 +1227,6 @@ _elm_win_focus_out(Ecore_Evas *ee)
 
    obj = sd->obj;
 
-   elm_object_focus_set(obj, EINA_FALSE);
    _elm_widget_top_win_focused_set(obj, EINA_FALSE);
    // FIXME: the event is deprecated but still in use.
    // Has to be removed in EFL2.0
