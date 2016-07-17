@@ -836,6 +836,7 @@ _select_all(void *data, Evas_Object *obj, void *event_info)
    ext_mod->selectall(data, obj, event_info);
 }
 
+#ifndef ELM_FEATURE_WEARABLE
 static void
 _select(void *data, Evas_Object *obj, void *event_info)
 {
@@ -844,6 +845,7 @@ _select(void *data, Evas_Object *obj, void *event_info)
    _ctxpopup_hide(obj);
    ext_mod->select(data, obj, event_info);
 }
+#endif
 
 void
 _check_and_paste(Evas_Object *obj)

@@ -114,7 +114,9 @@ static void _magnifier_create(void *data);
 static void _magnifier_show(void *data);
 static void _magnifier_hide(void *data);
 static void _magnifier_move(void *data, Evas_Coord x, Evas_Coord y);
+#ifndef ELM_FEATURE_WEARABLE
 static void _menu_call(Evas_Object *obj);
+#endif
 static void _hover_cancel_cb(void *data, Evas_Object *obj, void *event_info);
 static void _copy_cb(void *data, Evas_Object *obj, void *event_info);
 static void _cut_cb(void *data, Evas_Object *obj, void *event_info);
@@ -380,9 +382,11 @@ _cursor_handler_mouse_up_cb(void *data, Evas *e EINA_UNUSED, Evas_Object *obj EI
    sd->cursor_handler_down = EINA_FALSE;
    if (_elm_config->magnifier_enable)
      _magnifier_hide(data);
+#ifndef ELM_FEATURE_WEARABLE
    if ((!_elm_config->context_menu_disabled) &&
        (!_elm_config->desktop_entry))
      _menu_call(data);
+#endif
 }
 
 static void
@@ -542,9 +546,12 @@ _select_all(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUS
         edje_object_part_text_select_extend(sd->entry_edje, "elm.text");
      }
    sd->have_selection = EINA_TRUE;
+#ifndef ELM_FEATURE_WEARABLE
    _menu_call(data);
+#endif
 }
 
+#ifndef ELM_FEATURE_WEARABLE
 static void
 _adjust_eol_cursor(Evas_Object *obj)
 {
@@ -572,6 +579,7 @@ _adjust_eol_cursor(Evas_Object *obj)
         evas_textblock_cursor_free(cp);
      }
 }
+#endif
 
 static Eina_Bool
 _cursor_coordinate_check(Evas_Object *obj, Evas_Coord canvasx)
@@ -612,8 +620,11 @@ _cursor_down_pos_set(Evas_Object *obj)
 }
 
 static void
-_select_word(void *data, Evas_Object *obj EINA_UNUSED, void *event_info)
+_select_word(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
+#ifdef ELM_FEATURE_WEARABLE
+   return;
+#else
    ELM_ENTRY_DATA_GET(data, sd);
 
    const Evas_Object *tb = NULL;
@@ -657,6 +668,7 @@ _select_word(void *data, Evas_Object *obj EINA_UNUSED, void *event_info)
    if (!_elm_config->desktop_entry)
         edje_object_part_text_select_allow_set(sd->entry_edje, "elm.text",
                                                EINA_FALSE);
+#endif
 }
 
 static void
@@ -756,6 +768,7 @@ EAPI void elm_entry_extension_module_data_get(Evas_Object *obj, Elm_Entry_Extens
 /////////////////////////////////////////////////////////////////
 
 
+#ifndef ELM_FEATURE_WEARABLE
 static Mod_Api *
 _module_find(Evas_Object *obj EINA_UNUSED)
 {
@@ -787,6 +800,7 @@ _module_find(Evas_Object *obj EINA_UNUSED)
 ok: // ok - return api
    return m->api;
 }
+#endif
 
 static char *
 _file_load(const char *file)
@@ -2141,6 +2155,7 @@ _hoversel_position(Evas_Object *obj)
    evas_object_resize(sd->hoversel, cw, ch);
 }
 
+#ifndef ELM_FEATURE_WEARABLE
 static void
 _hover_del_job(void *data)
 {
@@ -2198,6 +2213,7 @@ _hover_selected_cb(void *data,
    if (!_elm_config->desktop_entry)
      elm_widget_scroll_hold_push(data);
 }
+#endif
 
 static char *
 _item_tags_remove(const char *str)
@@ -2387,6 +2403,7 @@ _hover_cancel_cb(void *data,
    edje_object_part_text_select_none(sd->entry_edje, "elm.text");
 }
 
+#ifndef ELM_FEATURE_WEARABLE
 static void
 _hover_item_clicked_cb(void *data,
                        Evas_Object *obj EINA_UNUSED,
@@ -2516,6 +2533,7 @@ _menu_call(Evas_Object *obj)
           }
      }
 }
+#endif
 
 static void _magnifier_move(void *data, Evas_Coord cx, Evas_Coord cy);
 
@@ -2735,18 +2753,22 @@ _long_press_cb(void *data)
                   _select_word(data, NULL, NULL);
                   elm_widget_scroll_freeze_push(data);
                }
+#ifndef ELM_FEATURE_WEARABLE
              if (!_elm_config->context_menu_disabled &&
                  !_elm_config->desktop_entry)
                {
                   _menu_call(data);
                }
+#endif
           }
         //
+#ifndef ELM_FEATURE_WEARABLE
         /* Context menu will not appear if context menu disabled is set
          * as false on a long press callback */
         else if (!_elm_config->context_menu_disabled &&
                  !_elm_config->desktop_entry)
           _menu_call(data);
+#endif
      }
 
    //sd->long_pressed = EINA_TRUE;
@@ -2762,9 +2784,11 @@ static void
 _key_down_cb(void *data,
                Evas *evas EINA_UNUSED,
                Evas_Object *obj EINA_UNUSED,
-               void *event_info)
+               void *event_info EINA_UNUSED)
 {
+#ifndef ELM_FEATURE_WEARABLE
    Evas_Event_Key_Down *ev = event_info;
+#endif
 
    // TIZEN ONLY (20150205): Support CopyPasteUI
    ELM_ENTRY_DATA_GET(data, sd);
@@ -2773,8 +2797,10 @@ _key_down_cb(void *data,
    //
    /* First check if context menu disabled is false or not, and
     * then check for key id */
+#ifndef ELM_FEATURE_WEARABLE
    if ((!_elm_config->context_menu_disabled) && !strcmp(ev->key, "Menu"))
      _menu_call(data);
+#endif
 }
 
 static void
@@ -2806,7 +2832,9 @@ _mouse_down_cb(void *data,
         if (_elm_config->desktop_entry)
           {
              sd->use_down = 1;
+#ifndef ELM_FEATURE_WEARABLE
              _menu_call(data);
+#endif
           }
      }
 }
@@ -2853,7 +2881,9 @@ _mouse_up_cb(void *data,
                _magnifier_hide(data);
         //
              // TIZEN ONLY (20150603): CopyPasteUI 2.4
+#ifndef ELM_FEATURE_WEARABLE
              Eina_Bool popup_showing = EINA_FALSE;
+#endif
              if (elm_widget_scroll_freeze_get(data))
                elm_widget_scroll_freeze_pop(data);
              if (sd->have_selection)
@@ -2863,6 +2893,7 @@ _mouse_up_cb(void *data,
                   else
                     elm_entry_select_none(data);
                }
+#ifndef ELM_FEATURE_WEARABLE
              if ((sd->api) && (sd->api->obj_popup_showing_get))
                popup_showing = sd->api->obj_popup_showing_get(data);
              if ((!_elm_config->context_menu_disabled) &&
@@ -2870,6 +2901,7 @@ _mouse_up_cb(void *data,
                {
                   _menu_call(data);
                }
+#endif
              //
           }
         else
@@ -2925,7 +2957,9 @@ _mouse_up_cb(void *data,
             (!_elm_config->desktop_entry))
      {
          sd->use_down = 1;
+#ifndef ELM_FEATURE_WEARABLE
          _menu_call(data);
+#endif
      }
 }
 
@@ -4536,9 +4570,11 @@ _start_handler_mouse_up_cb(void *data,
    if ((!_elm_config->context_menu_disabled) &&
        (!_elm_config->desktop_entry) && (sd->long_pressed))
      */
+#ifndef ELM_FEATURE_WEARABLE
    if ((!_elm_config->context_menu_disabled) &&
        (!_elm_config->desktop_entry))
      _menu_call(data);
+#endif
    if (!_elm_config->desktop_entry)
         edje_object_part_text_select_allow_set(sd->entry_edje, "elm.text",
                                                EINA_FALSE);
@@ -4738,9 +4774,11 @@ _end_handler_mouse_up_cb(void *data,
        (!_elm_config->desktop_entry) && (sd->long_pressed))
      _menu_call(data);
     */
+#ifndef ELM_FEATURE_WEARABLE
    if ((!_elm_config->context_menu_disabled) &&
        (!_elm_config->desktop_entry))
      _menu_call(data);
+#endif
    if (!_elm_config->desktop_entry)
         edje_object_part_text_select_allow_set(sd->entry_edje, "elm.text",
                                                EINA_FALSE);
@@ -4834,7 +4872,11 @@ _elm_entry_evas_object_smart_add(Eo *obj, Elm_Entry_Data *priv)
    priv->context_menu = EINA_TRUE;
    priv->auto_save = EINA_TRUE;
    priv->editable = EINA_TRUE;
+#ifdef ELM_FEATURE_WEARABLE
+   priv->sel_allow = EINA_FALSE;
+#else
    priv->sel_allow = EINA_TRUE;
+#endif
 
    priv->drop_format = ELM_SEL_FORMAT_MARKUP | ELM_SEL_FORMAT_IMAGE;
    /////////////////////////////////////////////////////////////////
@@ -4969,10 +5011,12 @@ _elm_entry_evas_object_smart_add(Eo *obj, Elm_Entry_Data *priv)
 
    entries = eina_list_prepend(entries, obj);
 
+#ifndef ELM_FEATURE_WEARABLE
    // module - find module for entry
    priv->api = _module_find(obj);
    // if found - hook in
    if ((priv->api) && (priv->api->obj_hook)) priv->api->obj_hook(obj);
+#endif
 
    _mirrored_set(obj, elm_widget_mirrored_get(obj));
 
