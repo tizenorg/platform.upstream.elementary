@@ -847,6 +847,7 @@ _select(void *data, Evas_Object *obj, void *event_info)
 }
 #endif
 
+#ifdef HAVE_ELEMENTARY_WAYLAND
 void
 _check_and_paste(Evas_Object *obj)
 {
@@ -856,6 +857,7 @@ _check_and_paste(Evas_Object *obj)
         ext_mod->paste(obj, NULL, NULL);
      }
 }
+#endif
 
 static void
 _paste(void *data, Evas_Object *obj, void *event_info)

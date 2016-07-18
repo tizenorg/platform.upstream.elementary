@@ -104,7 +104,6 @@ _on_item_clicked(void *data, const Eldbus_Message *msg EINA_UNUSED)
      {
         return;
      }
-   const char *txt;
    //FIXME: because of focus issue: focus is moved to cbhm, not stayed in entry
    //we cannot check focus object
    //FIXME: request for focused obj only when focus issue is fixed
