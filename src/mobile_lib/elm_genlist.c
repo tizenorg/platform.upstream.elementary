@@ -7238,7 +7238,7 @@ _item_filtered_get(Elm_Gen_Item *it)
      {
         l = eina_list_data_find_list(sd->filter_queue, it);
         if (l)
-          sd->filter_queue = eina_list_remove_list(sd->queue, l);
+          sd->filter_queue = eina_list_remove_list(sd->filter_queue, l);
         l = eina_list_data_find_list(sd->queue, it);
         if (l)
           {
@@ -7260,30 +7260,32 @@ _item_filtered_get(Elm_Gen_Item *it)
 static int
 _filter_queue_process(Elm_Genlist_Data *sd)
 {
-   int n;
+   int n = 0, m = 0;
+   int max = eina_list_count(sd->filter_queue);
    Elm_Gen_Item *it;
    double t0;
 
-   t0 = ecore_loop_time_get();
-   for (n = 0; (sd->filter_queue) && (sd->processed_count < sd->item_count); n++)
+   t0 = ecore_time_get();
+   for (n = 0; (((sd->filter_queue) && (sd->processed_count < max)) && (n < 127)); n++)
      {
         it = eina_list_data_get(sd->filter_queue);
         //FIXME: This is added as a fail safe code for items not yet processed.
-        while (it->item->queued)
+        while (it && it->item->queued)
           {
-             if ((ecore_loop_time_get() - t0) > (ecore_animator_frametime_get()))
+             if (((ecore_time_get() - t0) > (ecore_animator_frametime_get())) || (m >= max))
                return n;
              sd->filter_queue = eina_list_remove_list
                               (sd->filter_queue, sd->filter_queue);
              sd->filter_queue = eina_list_append(sd->filter_queue, it);
              it = eina_list_data_get(sd->filter_queue);
+             m++;
           }
         sd->filter_queue = eina_list_remove_list(sd->filter_queue, sd->filter_queue);
         _filter_item_internal(it);
         GL_IT(it)->block->calc_done = EINA_FALSE;
         sd->calc_done = EINA_FALSE;
         _changed(sd->pan_obj);
-        if ((ecore_loop_time_get() - t0) > (ecore_animator_frametime_get()))
+        if ((ecore_time_get() - t0) > (ecore_animator_frametime_get()))
           {
              //At least 1 item is filtered by this time, so return n+1 for first loop
              n++;
