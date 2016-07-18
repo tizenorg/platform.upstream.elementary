@@ -42,6 +42,7 @@
 #define ANIM_CNT_MAX (_elm_config->genlist_animation_duration / 1000 * _elm_config->fps) // frame time
 #define HIGHLIGHT_ALPHA_MAX 0.74
 #define ELM_ITEM_HIGHLIGHT_TIMER 0.1
+#define ITEM_QUEUE_MAX 128
 
 #define ERR_ABORT(_msg)                         \
    do {                                         \
@@ -4549,7 +4550,7 @@ _queue_idle_enter(void *data)
 
    ft = ecore_animator_frametime_get()/2;
    t0 = ecore_time_get();
-   for (n = 0; (sd->queue) && (n < 128); n++)
+   for (n = 0; (sd->queue) && (n < ITEM_QUEUE_MAX); n++)
      {
         Elm_Gen_Item *it;
         double t;
@@ -7238,7 +7239,7 @@ _item_filtered_get(Elm_Gen_Item *it)
      {
         l = eina_list_data_find_list(sd->filter_queue, it);
         if (l)
-          sd->filter_queue = eina_list_remove_list(sd->queue, l);
+          sd->filter_queue = eina_list_remove_list(sd->filter_queue, l);
         l = eina_list_data_find_list(sd->queue, it);
         if (l)
           {
@@ -7260,30 +7261,34 @@ _item_filtered_get(Elm_Gen_Item *it)
 static int
 _filter_queue_process(Elm_Genlist_Data *sd)
 {
-   int n;
-   Elm_Gen_Item *it;
+   int n = 0;
+   Elm_Gen_Item *it, *first;
    double t0;
 
-   t0 = ecore_loop_time_get();
-   for (n = 0; (sd->filter_queue) && (sd->processed_count < sd->item_count); n++)
+   t0 = ecore_time_get();
+   for (n = 0; ((sd->filter_queue) && (sd->processed_count < ITEM_QUEUE_MAX)); n++)
      {
-        it = eina_list_data_get(sd->filter_queue);
+        first = it = eina_list_data_get(sd->filter_queue);
         //FIXME: This is added as a fail safe code for items not yet processed.
-        while (it->item->queued)
+        while (it && it->item->queued)
           {
-             if ((ecore_loop_time_get() - t0) > (ecore_animator_frametime_get()))
+             if ((ecore_time_get() - t0) > (ecore_animator_frametime_get()))
                return n;
+             if (!first) first = it; //Set first item for checking loop end
              sd->filter_queue = eina_list_remove_list
                               (sd->filter_queue, sd->filter_queue);
              sd->filter_queue = eina_list_append(sd->filter_queue, it);
              it = eina_list_data_get(sd->filter_queue);
+
+             //Do not iterate more than one loop
+             if (it == first) return n;
           }
         sd->filter_queue = eina_list_remove_list(sd->filter_queue, sd->filter_queue);
         _filter_item_internal(it);
         GL_IT(it)->block->calc_done = EINA_FALSE;
         sd->calc_done = EINA_FALSE;
         _changed(sd->pan_obj);
-        if ((ecore_loop_time_get() - t0) > (ecore_animator_frametime_get()))
+        if ((ecore_time_get() - t0) > (ecore_animator_frametime_get()))
           {
              //At least 1 item is filtered by this time, so return n+1 for first loop
              n++;
