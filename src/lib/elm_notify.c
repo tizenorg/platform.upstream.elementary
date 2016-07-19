@@ -307,7 +307,6 @@ _elm_notify_evas_object_smart_hide(Eo *obj, Elm_Notify_Data *sd)
 
    if (sd->had_hidden && !sd->in_timeout)
      return;
-   eo_do_super(obj, MY_CLASS, evas_obj_smart_hide());
 
    hide_signal = edje_object_data_get(sd->notify, "hide_finished_signal");
    if ((hide_signal) && (!strcmp(hide_signal, "on")))
@@ -317,6 +316,7 @@ _elm_notify_evas_object_smart_hide(Eo *obj, Elm_Notify_Data *sd)
      }
    else //for backport supporting: edc without emitting hide finished signal
      {
+        eo_do_super(obj, MY_CLASS, evas_obj_smart_hide());
         evas_object_hide(sd->notify);
         if (sd->allow_events) evas_object_hide(sd->block_events);
      }
