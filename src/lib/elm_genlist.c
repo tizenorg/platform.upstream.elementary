@@ -7428,7 +7428,7 @@ _filter_item_internal(Elm_Gen_Item *it)
             (it->itc->func.filter_get &&
              !it->itc->func.filter_get(
                (void *)WIDGET_ITEM_DATA_GET(EO_OBJ(it)),
-                WIDGET(it), sd->filter_data))
+                WIDGET(it), sd->filter_data)))
           {
              it->hide = EINA_TRUE;
              it->item->block->changed = EINA_TRUE;
