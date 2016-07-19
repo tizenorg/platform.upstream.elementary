@@ -345,7 +345,12 @@ _item_cache_push(Elm_Gen_Item *it)
    Elm_Genlist_Data *sd = GL_IT(it)->wsd;
    Item_Cache *ic = NULL;
 
-   if (sd->no_cache) return;
+   if (sd->no_cache)
+     {
+        if (VIEW(it)) evas_object_del(VIEW(it));
+        VIEW(it) = NULL;
+        return;
+     }
 
    if (sd->item_cache_count >= sd->item_cache_max)
     {
