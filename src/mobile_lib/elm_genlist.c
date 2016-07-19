@@ -5698,7 +5698,7 @@ _item_free(Elm_Gen_Item *it)
 
    if ((sd->g_item) && (sd->g_item == it)) sd->g_item = NULL;
    if (sd->expanded_item == it) sd->expanded_item = NULL;
-   if (sd->state) eina_inlist_sorted_state_free(sd->state);
+   if (sd->state) ELM_SAFE_FREE(sd->state, eina_inlist_sorted_state_free);
 
    if (sd->last_selected_item == EO_OBJ(it))
      sd->last_selected_item = NULL;
