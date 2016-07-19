@@ -1178,6 +1178,18 @@ elm_policy_get(unsigned int policy)
 EAPI void
 elm_language_set(const char *lang)
 {
+   /* TIZEN_ONLY(20160719): Update language environment variables for dgettext() */
+   const char *lang_env;
+
+   lang_env = (const char *)getenv("LANG");
+   if (lang_env && strcmp(lang_env, lang))
+     setenv("LANG", lang, 1);
+
+   lang_env = (const char *)getenv("LANGUAGE");
+   if (lang_env && strcmp(lang_env, lang))
+     setenv("LANGUAGE", lang, 1);
+   /* END */
+
    setlocale(LC_ALL, lang);
    evas_language_reinit();
    _elm_win_translate();
