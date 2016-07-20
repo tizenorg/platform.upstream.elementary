@@ -4477,6 +4477,12 @@ _elm_win_type_set(Eo *obj, Elm_Win_Data *sd, Elm_Win_Type type)
    Eina_Bool finalized;
    if (eo_do_ret(obj, finalized, eo_finalized_get()))
      {
+// TIZEN_ONLY(20160720): Allowed changing type after initializing
+#ifdef HAVE_ELEMENTARY_WAYLAND
+        sd->type = type;
+        _elm_win_wlwin_update(sd);
+#endif
+//
         ERR("This function is only allowed during construction.");
         return;
      }
