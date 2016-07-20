@@ -28,6 +28,11 @@
 static const char SIG_CHANGED[] = "changed";
 static const char SIG_DISPLAY_CHANGED[] = "display,changed";
 
+//TIZEN_ONLY(20160720): Exposing calendar's month name in accessibility tree.
+static const char MONTH_TEXT_PART[] = "month_text";
+static const char MONTH_ACCESS_PART[] = "month_text.access";
+//
+
 static const Evas_Smart_Cb_Description _smart_callbacks[] = {
    {SIG_CHANGED, ""},
    {SIG_DISPLAY_CHANGED, ""},
@@ -609,6 +614,23 @@ _localized_access_info_cb(void *data, Evas_Object *obj EINA_UNUSED)
    return NULL;
 }
 
+//TIZEN_ONLY(20160720): Exposing calendar's month name in accessibility tree.
+static char *
+_month_access_info_cb(void *data, Evas_Object *obj EINA_UNUSED)
+{
+   char *ret;
+   Eina_Strbuf *buf;
+   Evas_Object *o = (Evas_Object*)data;
+   buf = eina_strbuf_new();
+
+   eina_strbuf_append_printf(buf, "%s", edje_object_part_text_get(elm_layout_edje_get(o), MONTH_TEXT_PART));
+
+   ret = eina_strbuf_string_steal(buf);
+   eina_strbuf_free(buf);
+   return ret;
+}
+//
+
 static Eina_Bool
 _calendar_atspi_bridge_on_connect_cb(void *data, Eo *_obj EINA_UNUSED, const Eo_Event_Description *desc EINA_UNUSED, void *event_info EINA_UNUSED)
 {
@@ -621,6 +643,18 @@ _calendar_atspi_bridge_on_connect_cb(void *data, Eo *_obj EINA_UNUSED, const Eo_
    Evas_Object *ao, *ac;
 
    ELM_CALENDAR_DATA_GET(obj, sd);
+   //TIZEN_ONLY(20160720): Exposing calendar's month name in accessibility tree.
+   Evas_Object *part, *access;
+   part = (Evas_Object*)edje_object_part_object_get(elm_layout_edje_get(obj), MONTH_ACCESS_PART);
+   elm_access_object_unregister(part);
+   if (part)
+     {
+        access = elm_access_object_register(part, obj);
+        _elm_access_callback_set(_elm_access_info_get(access),
+                                 ELM_ACCESS_INFO, _month_access_info_cb, obj);
+        elm_atspi_accessible_role_set(access, ELM_ATSPI_ROLE_HEADING);
+     }
+   //
    day = 0;
    maxdays = _maxdays_get(&sd->shown_time, 0);
    for (ii = 0; ii < 42; ii++)
@@ -649,6 +683,12 @@ _calendar_atspi_bridge_on_disconnect_cb(void *data, Eo *_obj EINA_UNUSED, const 
    int ii;
    char pname[14];
    Evas_Object *ac;
+
+   //TIZEN_ONLY(20160720): Exposing calendar's month name in accessibility tree.
+   Evas_Object *access;
+   access = (Evas_Object*)edje_object_part_object_get(elm_layout_edje_get(obj), MONTH_ACCESS_PART);
+   elm_access_object_unregister(access);
+   //
 
    for (ii = 0; ii < 42; ii++)
      {
