@@ -102,11 +102,17 @@ mixin Elm_Interface_Atspi_Component ()
       highlight_grab @protected {
          [[ Highlights accessible widget.
          returns true if highlight grab has successed, false otherwise. ]]
+         //TIZEN_ONLY(20160721): atspi: provide highlight legacy API
+         legacy: elm_atspi_component_highlight_grab;
+         //
          return: bool;
       }
       highlight_clear @protected {
          [[ Clears highlight of accessible widget.
          returns true if clear has successed, false otherwise. ]]
+         //TIZEN_ONLY(20160721): atspi: provide highlight legacy API
+         legacy: elm_atspi_component_highlight_clear;
+         //
          return: bool;
       }
       //
