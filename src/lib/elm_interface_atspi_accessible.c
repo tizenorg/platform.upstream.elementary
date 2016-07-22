@@ -88,7 +88,7 @@ const char* Atspi_Name[] = {
     "autocomplete",
     "editbar",
     "embedded",
-    "entry",
+    "edit field",
     "chart",
     "caption",
     "document frame",
