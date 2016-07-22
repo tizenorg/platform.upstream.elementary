@@ -3277,8 +3277,10 @@ _entry_selection_start_signal_cb(void *data,
    top = elm_widget_top_get(data);
    if (txt && top && (elm_win_window_id_get(top)))
      {
-        elm_cnp_selection_set(data, ELM_SEL_TYPE_PRIMARY,
-              ELM_SEL_FORMAT_MARKUP, txt, strlen(txt));
+        //TIZEN ONLY (20160722): Disable Primary type
+        //elm_cnp_selection_set(data, ELM_SEL_TYPE_PRIMARY,
+        //      ELM_SEL_FORMAT_MARKUP, txt, strlen(txt));
+        //
         elm_cnp_selection_loss_callback_set(data, ELM_SEL_TYPE_PRIMARY, _selection_clear, data);
      }
    elm_object_focus_set(data, EINA_TRUE);
@@ -3319,7 +3321,9 @@ _entry_selection_changed_signal_cb(void *data,
    sd->have_selection = EINA_TRUE;
    eo_do(data, eo_event_callback_call
      (EVAS_SELECTABLE_INTERFACE_EVENT_SELECTION_CHANGED, NULL));
-   _selection_store(ELM_SEL_TYPE_PRIMARY, data);
+   //TIZEN ONLY (20160722): Disable Primary type
+   //_selection_store(ELM_SEL_TYPE_PRIMARY, data);
+   //
    _update_selection_handler(data);
    if (_elm_config->atspi_mode)
      eo_do(ELM_INTERFACE_ATSPI_ACCESSIBLE_MIXIN, elm_interface_atspi_accessible_event_emit(data, ELM_INTERFACE_ATSPI_TEXT_EVENT_ACCESS_TEXT_SELECTION_CHANGED, NULL));
@@ -3347,9 +3351,11 @@ _entry_selection_cleared_signal_cb(void *data,
      (EVAS_SELECTABLE_INTERFACE_EVENT_SELECTION_CLEARED, NULL));
    if (sd->cut_sel)
      {
-        elm_cnp_selection_set
-           (data, ELM_SEL_TYPE_PRIMARY, ELM_SEL_FORMAT_MARKUP,
-            sd->cut_sel, eina_stringshare_strlen(sd->cut_sel));
+        //TIZEN ONLY (20160722): Disable Primary type
+        //elm_cnp_selection_set
+        //   (data, ELM_SEL_TYPE_PRIMARY, ELM_SEL_FORMAT_MARKUP,
+        //    sd->cut_sel, eina_stringshare_strlen(sd->cut_sel));
+        //
         elm_cnp_selection_loss_callback_set(data, ELM_SEL_TYPE_PRIMARY, _selection_clear, data);
 
         ELM_SAFE_FREE(sd->cut_sel, eina_stringshare_del);
