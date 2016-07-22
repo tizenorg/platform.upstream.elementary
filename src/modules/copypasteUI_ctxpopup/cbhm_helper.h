@@ -36,7 +36,7 @@ enum ATOM_INDEX_CBHM_COUNT {
 #endif /* CBHM_DBUS_INTERFACE */
 
 Eldbus_Proxy* cbhm_proxy_get();
-void cbhm_eldbus_init(Evas_Object *obj);
+void cbhm_eldbus_init();
 void cbhm_eldbus_deinit();
 void _check_and_paste(Evas_Object *obj);
 #endif /* HAVE_ELEMENTARY_WAYLAND */

@@ -1130,6 +1130,20 @@ elm_modapi_shutdown(void *m EINA_UNUSED)
    return 1; // succeed always
 }
 
+#ifdef HAVE_ELEMENTARY_WAYLAND
+static void
+_init_eldbus_job(Elm_Entry_Extension_data *ext_mod)
+{
+   if (!ext_mod)
+     {
+        EINA_LOG_ERR("ext_mod is NULL");
+        return;
+     }
+   cbhm_eldbus_init();
+   ext_mod->cbhm_init_done = EINA_TRUE;
+}
+#endif
+
 // module funcs for the specific module type
 EAPI void
 obj_hook(Evas_Object *obj)
@@ -1147,6 +1161,7 @@ obj_hook(Evas_Object *obj)
         ext_mod->mouse_up = EINA_FALSE;
         ext_mod->mouse_down = EINA_FALSE;
         ext_mod->entry_move = EINA_FALSE;
+        ext_mod->cbhm_init_done = EINA_FALSE;
      }
    // Clipboard item: can be removed by application
    elm_entry_context_menu_item_add(obj, "Clipboard", NULL,
@@ -1158,7 +1173,15 @@ obj_hook(Evas_Object *obj)
                                    ELM_ICON_STANDARD, NULL, NULL);
 #endif
 #ifdef HAVE_ELEMENTARY_WAYLAND
-   cbhm_eldbus_init(obj);
+   if (ext_mod && !_mod_hook_count)
+     {
+        if (ext_mod->cbhm_init_job)
+          {
+             ecore_job_del(ext_mod->cbhm_init_job);
+             ext_mod->cbhm_init_job = NULL;
+          }
+        ext_mod->cbhm_init_job = ecore_job_add((Ecore_Cb)_init_eldbus_job, ext_mod);
+     }
 #endif
 }
 
@@ -1202,6 +1225,16 @@ obj_unhook(Evas_Object *obj EINA_UNUSED)
 
 #ifdef HAVE_ELEMENTARY_WAYLAND
    EINA_LOG_ERR("call cbhm_eldbus_deinit");
+   if (ext_mod)
+     {
+        if (ext_mod->cbhm_init_job)
+          {
+             ecore_job_del(ext_mod->cbhm_init_job);
+             ext_mod->cbhm_init_job = NULL;
+          }
+       ext_mod->cbhm_init_done = EINA_FALSE;
+     }
+
    cbhm_eldbus_deinit();
 #endif
 }
@@ -1241,6 +1274,19 @@ obj_longpress(Evas_Object *obj)
 #endif
    Ecore_X_Atom first_cbhm_item_type = 0;
    Eina_Bool has_focused = EINA_FALSE;
+
+   if (!ext_mod->cbhm_init_done)
+     {
+        if (ext_mod->cbhm_init_job)
+          {
+             ecore_job_del(ext_mod->cbhm_init_job);
+             ext_mod->cbhm_init_job = NULL;
+          }
+
+        cbhm_eldbus_init();
+     }
+
+   cbhm_eldbus_signal_handler_add(obj);
 
    /*update*/
    if (ext_mod->viewport_rect)

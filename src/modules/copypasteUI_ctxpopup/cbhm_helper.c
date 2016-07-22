@@ -111,7 +111,13 @@ _on_item_clicked(void *data, const Eldbus_Message *msg EINA_UNUSED)
 }
 
 void
-cbhm_eldbus_init(Evas_Object *obj)
+cbhm_eldbus_signal_handler_add(Evas_Object *obj)
+{
+   eldbus_proxy_signal_handler_add(eldbus_proxy, "ItemClicked", _on_item_clicked, obj);
+}
+
+void
+cbhm_eldbus_init()
 {
    EINA_LOG_ERR("IN");
    Eldbus_Object *eldbus_obj;
@@ -122,7 +128,6 @@ cbhm_eldbus_init(Evas_Object *obj)
    eldbus_proxy = eldbus_proxy_get(eldbus_obj, CBHM_DBUS_INTERFACE);
    eldbus_name_owner_changed_callback_add(cbhm_conn, CBHM_DBUS_INTERFACE,
          _cbhm_on_name_owner_changed, cbhm_conn, EINA_TRUE);
-   eldbus_proxy_signal_handler_add(eldbus_proxy, "ItemClicked", _on_item_clicked, obj);
 }
 
 void

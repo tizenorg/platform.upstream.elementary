@@ -12,6 +12,7 @@ struct _Elm_Entry_Extension_data
    Evas_Object *caller;
 #ifdef HAVE_ELEMENTARY_WAYLAND
    Evas_Object *cbhm_caller; //FIXME: remove when focus issue is resolved
+   Ecore_Job *cbhm_init_job;
 #endif
    Eina_Rectangle *viewport_rect;
    Evas_Coord_Rectangle selection_rect;
@@ -41,6 +42,9 @@ struct _Elm_Entry_Extension_data
    Eina_Bool popup_clicked : 1;
    Eina_Bool cursor_handler_shown : 1;
    Eina_Bool ent_scroll : 1;
+#ifdef HAVE_ELEMENTARY_WAYLAND
+   Eina_Bool cbhm_init_done : 1;
+#endif
    Evas_Object *ctx_par;
    Evas_Object *start_handler;
    Evas_Object *end_handler;
