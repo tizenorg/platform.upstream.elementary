@@ -1976,7 +1976,7 @@ _elm_colorselector_evas_object_smart_add(Eo *obj, Elm_Colorselector_Data *priv)
 
    elm_layout_signal_emit(obj, "elm,state,both", "elm");
 
-   priv->mode = ELM_COLORSELECTOR_BOTH;
+   priv->mode = ELM_COLORSELECTOR_PALETTE;
    priv->focused = ELM_COLORSELECTOR_PALETTE;
    priv->sel_color_type = HUE;
    priv->selected = NULL;
