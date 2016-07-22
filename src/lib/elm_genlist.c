@@ -8175,11 +8175,11 @@ _elm_genlist_item_elm_interface_atspi_accessible_name_get(Eo *eo_it,
                     {
                        if(flag_group_title && !flag_sub_title)
                          {
-                            eina_strbuf_append(buf,", group index");
+                            eina_strbuf_append(buf,", header");
                          }
                        else if(flag_group_title)
                          {
-                            eina_strbuf_append(buf,", group index title");
+                            eina_strbuf_append(buf,", header title");
                             flag_group_title = EINA_FALSE;
                          }
                        else if(flag_sub_title)
