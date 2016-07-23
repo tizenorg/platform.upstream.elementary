@@ -1125,8 +1125,7 @@ _access_info_cb(void *data, Evas_Object *obj EINA_UNUSED)
    if (priv->title_text)
      {
         buf = eina_strbuf_new();
-        eina_strbuf_append(buf, priv->title_text);
-        eina_strbuf_append_printf(buf, ", %s", N_("Title"));
+        eina_strbuf_append_printf(buf, "%s, %s, %s", N_("Alert"), priv->title_text, N_("Title"));
         ret = eina_strbuf_string_steal(buf);
         eina_strbuf_free(buf);
         return strdup(ret);
