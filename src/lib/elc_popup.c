@@ -1119,8 +1119,19 @@ _item_new(Elm_Popup_Item_Data *it)
 static char *
 _access_info_cb(void *data, Evas_Object *obj EINA_UNUSED)
 {
+   Eina_Strbuf *buf;
    Elm_Popup_Data *priv = data;
-   return priv->title_text ? strdup(priv->title_text) : NULL;
+   char *ret = NULL;
+   if (priv->title_text)
+     {
+        buf = eina_strbuf_new();
+        eina_strbuf_append(buf, priv->title_text);
+        eina_strbuf_append_printf(buf, ", %s", N_("Title"));
+        ret = eina_strbuf_string_steal(buf);
+        eina_strbuf_free(buf);
+        return strdup(ret);
+     }
+   return NULL;
 }
 //
 
