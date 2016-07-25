@@ -19,9 +19,11 @@
 
 static const char ACCESS_OUTLINE_PART[] = "access.outline";
 
+static const char SIG_TOGGLED[] = "toggled";
 static const char SIG_SCROLL[] = "scroll";
 
 static const Evas_Smart_Cb_Description _smart_callbacks[] = {
+   {SIG_TOGGLED, ""},
    {SIG_SCROLL, ""},
    {SIG_LAYOUT_FOCUSED, ""}, /**< handled by elm_layout */
    {SIG_LAYOUT_UNFOCUSED, ""}, /**< handled by elm_layout */
@@ -494,6 +496,8 @@ _panel_toggle(void *data EINA_UNUSED,
 
         edje_object_message_signal_process(wd->resize_obj);
      }
+
+   eo_do(obj, eo_event_callback_call(ELM_PANEL_EVENT_TOGGLED, NULL));
 }
 
 static Eina_Bool
@@ -566,7 +570,11 @@ _state_sync(Evas_Object *obj)
 
    if (open)
      {
-        if (sd->hidden) sd->hidden = EINA_FALSE;
+        if (sd->hidden)
+          {
+              sd->hidden = EINA_FALSE;
+              eo_do(obj, eo_event_callback_call(ELM_PANEL_EVENT_TOGGLED, NULL));
+          }
         eo_do(obj, elm_interface_scrollable_single_direction_set
               (ELM_SCROLLER_SINGLE_DIRECTION_HARD));
 
@@ -583,7 +591,11 @@ _state_sync(Evas_Object *obj)
      }
    else
      {
-        if (!sd->hidden) sd->hidden = EINA_TRUE;
+        if (!sd->hidden)
+          {
+             sd->hidden = EINA_TRUE;
+             eo_do(obj, eo_event_callback_call(ELM_PANEL_EVENT_TOGGLED, NULL));
+          }
 
         if (horizontal)
           eo_do(obj, elm_interface_scrollable_movement_block_set
