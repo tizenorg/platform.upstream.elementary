@@ -4580,9 +4580,9 @@ _elm_widget_item_eo_base_constructor(Eo *eo_item, Elm_Widget_Item_Data *item)
 
    item->widget = widget;
    item->eo_obj = eo_item;
-///TIZEN_ONLY(20170717) : expose highlight information on atspi
+   //TIZEN_ONLY(20170717) : expose highlight information on atspi
    item->can_highlight = EINA_TRUE;
-///
+   //
 
    eo_do(eo_item, eo_event_callback_add(EO_BASE_EVENT_DEL, _eo_del_cb, NULL));
 
@@ -4637,7 +4637,7 @@ _elm_widget_item_eo_base_destructor(Eo *eo_item, Elm_Widget_Item_Data *item)
    //TIZEN_ONLY(20150731) : add i18n support for name and description
    if (item->atspi_translation_domain)
      eina_stringshare_del(item->atspi_translation_domain);
-   ///
+   //
 
    EINA_MAGIC_SET(item, EINA_MAGIC_NONE);
 
@@ -4835,13 +4835,13 @@ _elm_widget_item_elm_interface_atspi_accessible_state_set_get(Eo *eo_item,
    if (_elm_widget_item_onscreen_is(eo_item))
      STATE_TYPE_SET(states, ELM_ATSPI_STATE_SHOWING);
 
-///TIZEN_ONLY(20170717) : expose highlight information on atspi
+   //TIZEN_ONLY(20170717) : expose highlight information on atspi
    if (item->can_highlight)
      STATE_TYPE_SET(states, ELM_ATSPI_STATE_HIGHLIGHTABLE);
 
    if (_elm_object_accessibility_currently_highlighted_get() == (void*)item->view)
      STATE_TYPE_SET(states, ELM_ATSPI_STATE_HIGHLIGHTED);
-///
+   //
    return states;
 }
 
@@ -5904,9 +5904,9 @@ _elm_widget_eo_base_constructor(Eo *obj, Elm_Widget_Smart_Data *sd EINA_UNUSED)
          parent = eo_parent_get());
    eo_do(obj, elm_obj_widget_parent_set(parent));
    sd->on_create = EINA_FALSE;
-///TIZEN_ONLY(20170717) : expose highlight information on atspi
+   //TIZEN_ONLY(20170717) : expose highlight information on atspi
    sd->can_highlight = EINA_TRUE;
-///
+   //
    /* TIZEN_ONLY(20160622): Override Paragraph Direction APIs */
    sd->inherit_paragraph_direction = EINA_TRUE;
    /* END */
@@ -5932,12 +5932,12 @@ _elm_widget_eo_base_destructor(Eo *obj, Elm_Widget_Smart_Data *sd EINA_UNUSED)
    //TIZEN_ONLY(20150717) add widget name setter
    if (sd->name)
      eina_stringshare_del(sd->name);
-   ///
+   //
 
    //TIZEN_ONLY(20150731) : add i18n support for name and description
    if (sd->atspi_translation_domain)
      eina_stringshare_del(sd->atspi_translation_domain);
-   ///
+   //
 
    eo_do_super(obj, ELM_WIDGET_CLASS, eo_destructor());
    sd->on_destroy = EINA_FALSE;
@@ -6065,7 +6065,7 @@ _elm_widget_elm_interface_atspi_accessible_name_get(Eo *obj EINA_UNUSED, Elm_Wid
         return strdup(_pd->name);
 #endif
      }
-   ///
+   //
 
    ret = elm_object_text_get(obj);
    if (!ret) return NULL;
@@ -6097,12 +6097,12 @@ _elm_widget_item_elm_interface_atspi_accessible_name_get(Eo *obj EINA_UNUSED, El
         return strdup(_pd->name);
 #endif
      }
-   ///
 
    return NULL;
 }
-///
+//
 
+//TIZEN_ONLY(20150709) : spatially sort atspi children
 static int _sort_vertically(const void *data1, const void *data2)
 {
    Evas_Coord y1, y2;
@@ -6124,17 +6124,27 @@ static int _sort_horizontally(const void *data1, const void *data2)
 static Eina_List *_lines_split(Eina_List *children)
 {
    Eo *c;
-   Eina_List *lines, *line;
+   Eina_List *lines, *line, *l;
    Evas_Coord yl, y, hl, h;
    lines = line = NULL;
 
    if (!children) return NULL;
 
-   evas_object_geometry_get(eina_list_data_get(children), NULL, &yl, NULL, &hl);
+   EINA_LIST_FOREACH(children, l, c)
+     {
+        evas_object_geometry_get(c, NULL, &yl, NULL, &hl);
+
+        /* remove child if its height == 0 */
+        if (hl != 0) break;
+     }
 
    EINA_LIST_FREE(children, c)
      {
         evas_object_geometry_get(c, NULL, &y, NULL, &h);
+
+        /* remove child if its height == 0 */
+        if (h == 0) continue;
+
         if ((yl + (int)(0.25 * hl)) >= y)
           {
              //same line
@@ -6228,7 +6238,7 @@ _elm_widget_elm_interface_atspi_accessible_children_get(Eo *obj, Elm_Widget_Smar
    accs = NULL;
    EINA_LIST_FREE(lines, line)
      accs = eina_list_merge(accs, eina_list_sort(line, -1, _sort_horizontally));
-   //////////////////////////////
+   //
    return accs;
 }
 
@@ -6267,13 +6277,13 @@ _elm_widget_elm_interface_atspi_accessible_state_set_get(Eo *obj, Elm_Widget_Sma
         STATE_TYPE_SET(states, ELM_ATSPI_STATE_SENSITIVE);
      }
 
-///TIZEN_ONLY(20170717) : expose highlight information on atspi
+   //TIZEN_ONLY(20170717) : expose highlight information on atspi
    if (pd->can_highlight)
      STATE_TYPE_SET(states, ELM_ATSPI_STATE_HIGHLIGHTABLE);
 
    if (_elm_object_accessibility_currently_highlighted_get() == (void*)pd->obj)
      STATE_TYPE_SET(states, ELM_ATSPI_STATE_HIGHLIGHTED);
-///
+   //
 
    return states;
 }
@@ -6292,7 +6302,7 @@ _elm_widget_elm_interface_atspi_accessible_attributes_get(Eo *obj, Elm_Widget_Sm
    return ret;
 }
 
-// TIZEN_ONLY(20150709) : atspi relations api
+//TIZEN_ONLY(20150709) : atspi relations api
 EOLIAN static Elm_Atspi_Relation_Set
 _elm_widget_elm_interface_atspi_accessible_relation_set_get(Eo *obj EINA_UNUSED, Elm_Widget_Smart_Data *sd)
 {
@@ -6304,7 +6314,7 @@ _elm_widget_item_elm_interface_atspi_accessible_relation_set_get(Eo *obj EINA_UN
 {
    return elm_atspi_relation_set_clone(&sd->atspi_custom_relations);
 }
-//////////////////////////////
+//
 
 EOLIAN static void
 _elm_widget_item_elm_interface_atspi_component_extents_get(Eo *obj EINA_UNUSED, Elm_Widget_Item_Data *sd EINA_UNUSED, Eina_Bool screen_coords, int *x, int *y, int *w, int *h)
@@ -6409,7 +6419,6 @@ _elm_widget_item_elm_interface_atspi_component_alpha_get(Eo *obj EINA_UNUSED, El
    return (double)alpha / 255.0;
 }
 
-///////////////////////////////////
 //TIZEN_ONLY(20150717) add widget name setter
 EOLIAN void
 _elm_widget_elm_interface_atspi_accessible_name_set(Eo *obj EINA_UNUSED, Elm_Widget_Smart_Data* _pd EINA_UNUSED, char *name)
@@ -6419,7 +6428,7 @@ _elm_widget_elm_interface_atspi_accessible_name_set(Eo *obj EINA_UNUSED, Elm_Wid
 
    _pd->name = eina_stringshare_add(name);
 }
-///
+//
 
 //TIZEN_ONLY(20160329): widget: improve accessibile_at_point getter (a8aff0423202b9a55dbb3843205875226678fbd6)
 EOLIAN static Eo *
@@ -6513,7 +6522,7 @@ _elm_widget_item_elm_interface_atspi_accessible_relationship_remove(Eo *obj EINA
 {
    elm_atspi_relation_set_relation_remove(&sd->atspi_custom_relations, type, relation_obj);
 }
-///////////////////////////////////
+//
 
 //TIZEN_ONLY(20150731) : add i18n support for name and description
 EOLIAN static void
@@ -6539,9 +6548,9 @@ _elm_widget_item_elm_interface_atspi_accessible_translation_domain_get(Eo *obj E
 {
    return _pd->atspi_translation_domain;
 }
-///
+//
 
-/* TIZEN_ONLY(20160622): Override Paragraph Direction APIs */
+//TIZEN_ONLY(20160622): Override Paragraph Direction APIs
 static void
 _elm_widget_evas_object_paragraph_direction_set_internal(Eo *obj EINA_UNUSED, Elm_Widget_Smart_Data *sd, Evas_BiDi_Direction dir)
 {
@@ -6601,7 +6610,7 @@ _elm_widget_evas_object_paragraph_direction_set(Eo *obj, Elm_Widget_Smart_Data *
 
    eo_do_super(obj, MY_CLASS, evas_obj_paragraph_direction_set(dir));
 }
-/* END */
+//
 
 //TIZEN_ONLY(20160629): add elm color interface
 Eina_Stringshare *
