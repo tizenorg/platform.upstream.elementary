@@ -764,6 +764,15 @@ abstract Elm.Widget (Evas.Object_Smart, Elm_Interface_Atspi_Accessible, Elm_Inte
       }
       focus_reconfigure {
       }
+      part_access_object_get @const {
+         [[Get the access object of given part of the widget.
+
+           @since 1.18]]
+         return: Evas.Object *;
+         params {
+            @in part: const(char)*; [[The object's part name to get access object]]
+         }
+      }
    }
    implements {
       class.constructor;
