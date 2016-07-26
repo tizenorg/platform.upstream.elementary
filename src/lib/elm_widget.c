@@ -4648,6 +4648,18 @@ _elm_widget_item_eo_base_destructor(Eo *eo_item, Elm_Widget_Item_Data *item)
    if (item->atspi_translation_domain)
      eina_stringshare_del(item->atspi_translation_domain);
    //
+   //Tizen Only(20160728) free attribute list
+   if (item->attr_list)
+   {
+      Elm_Atspi_Attribute *attr;
+      EINA_LIST_FREE(item->attr_list, attr)
+       {
+          eina_stringshare_del(attr->key);
+          eina_stringshare_del(attr->value);
+          free(attr);
+       }
+   }
+   //
 
    EINA_MAGIC_SET(item, EINA_MAGIC_NONE);
 
@@ -5948,7 +5960,18 @@ _elm_widget_eo_base_destructor(Eo *obj, Elm_Widget_Smart_Data *sd EINA_UNUSED)
    if (sd->atspi_translation_domain)
      eina_stringshare_del(sd->atspi_translation_domain);
    //
-
+   //Tizen Only(20160728) free attribute list
+   if (sd->attr_list)
+   {
+      Elm_Atspi_Attribute *attr;
+      EINA_LIST_FREE(sd->attr_list, attr)
+       {
+          eina_stringshare_del(attr->key);
+          eina_stringshare_del(attr->value);
+          free(attr);
+       }
+   }
+   //
    eo_do_super(obj, ELM_WIDGET_CLASS, eo_destructor());
    sd->on_destroy = EINA_FALSE;
 
@@ -6298,19 +6321,58 @@ _elm_widget_elm_interface_atspi_accessible_state_set_get(Eo *obj, Elm_Widget_Sma
    return states;
 }
 
+//TIZEN_ONLY(20160729): attributes_get, append APIs added/updated.
 EOLIAN static Eina_List*
-_elm_widget_elm_interface_atspi_accessible_attributes_get(Eo *obj, Elm_Widget_Smart_Data *pd EINA_UNUSED)
+_elm_widget_elm_interface_atspi_accessible_attributes_get(Eo *obj, Elm_Widget_Smart_Data *pd)
 {
-   Eina_List *ret = NULL;
-   Elm_Atspi_Attribute *attr = calloc(1, sizeof(Elm_Atspi_Attribute));
-   if (!attr) return NULL;
+   Eina_List *attr_list = NULL;
+   Eina_List *l = NULL;
+   //Add type and style information in addition.
+   Elm_Atspi_Attribute *attr = NULL;
+   attr = calloc(1, sizeof(Elm_Atspi_Attribute));
+   if (attr)
+     {
+        attr->key = eina_stringshare_add("type");
+        attr->value = eina_stringshare_add(elm_widget_type_get(obj));
+        attr_list = eina_list_append(attr_list, attr);
+     }
 
-   attr->key = eina_stringshare_add("type");
-   attr->value = eina_stringshare_add(evas_object_type_get(obj));
+   attr = calloc(1, sizeof(Elm_Atspi_Attribute));
+   if (attr)
+     {
+        attr->key = eina_stringshare_add("style");
+        attr->value = eina_stringshare_add(elm_widget_style_get(obj));
+        attr_list = eina_list_append(attr_list, attr);
+     }
 
-   ret = eina_list_append(ret, attr);
-   return ret;
+   if (pd->attr_list)
+     {
+        Elm_Atspi_Attribute *t_attr = NULL;
+        EINA_LIST_FOREACH(pd->attr_list, l, t_attr)
+          {
+             attr = calloc(1, sizeof(Elm_Atspi_Attribute));
+             if (attr)
+               {
+                  attr->key = eina_stringshare_add(t_attr->key);
+                  attr->value = eina_stringshare_add(t_attr->value);
+                  attr_list = eina_list_append(attr_list, attr);
+               }
+          }
+     }
+   return attr_list;
 }
+
+EOLIAN static void
+_elm_widget_elm_interface_atspi_accessible_attribute_append(Eo *obj EINA_UNUSED, Elm_Widget_Smart_Data *pd, char* key, char* value)
+{
+   if (!key || !value) return;
+   Elm_Atspi_Attribute *attr = calloc(1, sizeof(Elm_Atspi_Attribute));
+   if (!attr) return;
+   attr->key = eina_stringshare_add(key);
+   attr->value = eina_stringshare_add(value);
+   pd->attr_list = eina_list_append(pd->attr_list, attr);
+}
+//
 
 //TIZEN_ONLY(20150709) : atspi relations api
 EOLIAN static Elm_Atspi_Relation_Set
@@ -6558,6 +6620,43 @@ _elm_widget_item_elm_interface_atspi_accessible_translation_domain_get(Eo *obj E
 {
    return _pd->atspi_translation_domain;
 }
+
+//TIZEN_ONLY(20160729): attributes_get, append APIs added/updated.
+EOLIAN Eina_List *
+_elm_widget_item_elm_interface_atspi_accessible_attributes_get(Eo *obj EINA_UNUSED, Elm_Widget_Item_Data *pd)
+{
+   Eina_List *attr_list = NULL;
+   Eina_List *l = NULL;
+   if (pd->attr_list)
+     {
+        Elm_Atspi_Attribute *t_attr = NULL;
+        Elm_Atspi_Attribute *attr = NULL;
+        EINA_LIST_FOREACH(pd->attr_list, l, t_attr)
+          {
+             attr = calloc(1, sizeof(Elm_Atspi_Attribute));
+             if (attr)
+               {
+                  attr->key = eina_stringshare_add(t_attr->key);
+                  attr->value = eina_stringshare_add(t_attr->value);
+                  attr_list = eina_list_append(attr_list, attr);
+               }
+          }
+     }
+   return attr_list;
+}
+
+EOLIAN static void
+_elm_widget_item_elm_interface_atspi_accessible_attribute_append(Eo *obj EINA_UNUSED, Elm_Widget_Item_Data *pd, char* key, char* value)
+{
+   if (!key || !value) return;
+   Elm_Atspi_Attribute *attr = calloc(1, sizeof(Elm_Atspi_Attribute));
+   if (!attr) return;
+   attr->key = eina_stringshare_add(key);
+   attr->value = eina_stringshare_add(value);
+   pd->attr_list = eina_list_append(pd->attr_list, attr);
+}
+//
+
 //
 
 //TIZEN_ONLY(20160622): Override Paragraph Direction APIs
