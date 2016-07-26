@@ -129,6 +129,8 @@ struct _Elm_Interface_Atspi_Accessible_Data
    const char    *translation_domain;
    Elm_Atspi_Relation_Set relations;
    Elm_Interface_Atspi_Accessible *parent;
+   Eina_List *attributes;
+   int reading_info;
 };
 
 typedef struct _Elm_Interface_Atspi_Accessible_Data Elm_Interface_Atspi_Accessible_Data;
@@ -181,11 +183,59 @@ _elm_interface_atspi_accessible_parent_set(Eo *obj, Elm_Interface_Atspi_Accessib
 }
 
 EOLIAN Eina_List*
-_elm_interface_atspi_accessible_attributes_get(Eo *obj EINA_UNUSED, Elm_Interface_Atspi_Accessible_Data *pd EINA_UNUSED)
+_elm_interface_atspi_accessible_attributes_get(Eo *obj EINA_UNUSED, Elm_Interface_Atspi_Accessible_Data *pd)
 {
-   WRN("The %s object does not implement the \"accessible_attributes_set\" function.",
-       eo_class_name_get(eo_class_get(obj)));
-   return NULL;
+   if (pd->attributes)
+     return pd->attributes;
+   else return NULL;
+}
+
+EOLIAN static void
+_elm_interface_atspi_accessible_attributes_set(Eo *obj EINA_UNUSED, Elm_Interface_Atspi_Accessible_Data *pd, Eina_List* attributes)
+{
+   pd->attributes = attributes;
+}
+
+EOLIAN static void
+_elm_interface_atspi_accessible_reading_information_set(Eo *obj, Elm_Interface_Atspi_Accessible_Data *pd, int reading_information)
+{
+   Eina_Strbuf *buf = NULL;
+   Eina_List *attr_list = NULL;
+   Elm_Atspi_Attribute *attr = calloc(1, sizeof(Elm_Atspi_Attribute));
+   pd->reading_info = reading_information;
+   if (!attr) return;
+   buf = eina_strbuf_new();
+   eina_strbuf_reset(buf);
+   if ((reading_information & (ELM_ACCESSIBLE_INFO_NAME)) == (ELM_ACCESSIBLE_INFO_NAME))
+     {
+        eina_strbuf_append(buf, "name");
+        eina_strbuf_append_char(buf, '|');
+     }
+   if ((reading_information & (ELM_ACCESSIBLE_INFO_ROLE)) == (ELM_ACCESSIBLE_INFO_ROLE))
+     {
+        eina_strbuf_append(buf, "role");
+        eina_strbuf_append_char(buf, '|');
+     }
+   if ((reading_information & (ELM_ACCESSIBLE_INFO_DESCRIPTION)) == (ELM_ACCESSIBLE_INFO_DESCRIPTION))
+     {
+        eina_strbuf_append(buf, "description");
+        eina_strbuf_append_char(buf, '|');
+     }
+   if ((reading_information & (ELM_ACCESSIBLE_INFO_STATE)) == (ELM_ACCESSIBLE_INFO_STATE))
+     {
+        eina_strbuf_append(buf, "state");
+     }
+   attr->key = eina_stringshare_add("reading_information");
+   attr->value = eina_stringshare_add(eina_strbuf_string_get(buf));
+   eina_strbuf_free(buf);
+   attr_list = eina_list_append(attr_list, attr);
+   eo_do(obj, elm_interface_atspi_accessible_attributes_set(attr_list));
+}
+
+EOLIAN int
+_elm_interface_atspi_accessible_reading_information_get(Eo *obj, Elm_Interface_Atspi_Accessible_Data *pd)
+{
+   return pd->reading_info;
 }
 
 EOLIAN static Elm_Atspi_Role

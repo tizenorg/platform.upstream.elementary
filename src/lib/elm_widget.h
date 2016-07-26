@@ -423,6 +423,9 @@ typedef struct _Elm_Widget_Smart_Data
    //TIZEN_ONLY(20150731) : add i18n support for name and description
    const char                   *atspi_translation_domain;
    ///
+   //TIZEN_ONLY(20160725): Add attributes set function and store the list
+   Eina_List                    *attr_list;
+   //
 
    /* this is a hook to be set on-the-fly on widgets. this is code
     * handling the request of showing a specific region from an inner
