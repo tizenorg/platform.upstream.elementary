@@ -639,7 +639,6 @@ _accessible_attributes_get(const Eldbus_Service_Interface *iface, const Eldbus_M
      }
 
    eldbus_message_iter_container_close(iter, iter_dict);
-   elm_atspi_attributes_list_free(attrs);
 
    return ret;
 }
