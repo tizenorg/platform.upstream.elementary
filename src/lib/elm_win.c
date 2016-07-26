@@ -118,6 +118,7 @@ struct _Elm_Win_Data
       Eina_Bool opaque_dirty : 1;
       Ecore_Event_Handler *effect_start_handler;
       Ecore_Event_Handler *effect_end_handler;
+      Ecore_Event_Handler *aux_msg_handler;
    } wl;
 #endif
 
@@ -269,6 +270,7 @@ static const char SIG_WM_ROTATION_CHANGED[] = "wm,rotation,changed";
 static const char SIG_CONFORMANT_CHANGED[] = "conformant,changed";
 #endif
 static const char SIG_AUX_HINT_ALLOWED[] = "aux,hint,allowed";
+static const char SIG_AUX_MESSAGE_RECEIVED[] = "aux,msg,received";
 static const char SIG_VISIBILITY_CHANGED[] = "visibility,changed";
 static const char SIG_EFFECT_STARTED[] = "effect,started";
 static const char SIG_EFFECT_DONE[] = "effect,done";
@@ -2190,6 +2192,7 @@ _elm_win_evas_object_smart_del(Eo *obj, Elm_Win_Data *sd)
 #ifdef HAVE_ELEMENTARY_WAYLAND
    ecore_event_handler_del(sd->wl.effect_start_handler);
    ecore_event_handler_del(sd->wl.effect_end_handler);
+   ecore_event_handler_del(sd->wl.aux_msg_handler);
 #endif
 
    if (sd->img_obj)
@@ -2430,6 +2433,13 @@ _elm_ee_wlwin_get(const Ecore_Evas *ee)
    return NULL;
 }
 
+struct _Elm_Win_Aux_Message
+{
+   const char *key;
+   const char *val;
+   Eina_List *options;
+};
+
 #ifdef HAVE_ELEMENTARY_WAYLAND
 static void
 _elm_win_wlwindow_get(Elm_Win_Data *sd)
@@ -2474,6 +2484,36 @@ _elm_win_wl_effect_end(void *data, int type EINA_UNUSED, void *event)
    return ECORE_CALLBACK_PASS_ON;
 }
 
+static Eina_Bool
+_elm_win_wl_aux_message(void *data, int type EINA_UNUSED, void *event)
+{
+   ELM_WIN_DATA_GET(data, sd);
+   Ecore_Wl_Event_Aux_Message *ev = event;
+   Elm_Win_Aux_Message *msg = NULL;
+   char *opt = NULL;
+
+   if (!sd->wl.win) return ECORE_CALLBACK_PASS_ON;
+
+   if ((ecore_wl_window_id_get(sd->wl.win) != ev->win))
+     return ECORE_CALLBACK_PASS_ON;
+
+   msg = calloc(1, sizeof(*msg));
+   if (!msg) return ECORE_CALLBACK_PASS_ON;
+
+   msg->key = eina_stringshare_add(ev->key);
+   msg->val = eina_stringshare_add(ev->val);
+   msg->options = eina_list_clone(ev->options);
+
+   evas_object_smart_callback_call(sd->obj, SIG_AUX_MESSAGE_RECEIVED, (void*)msg);
+
+   eina_stringshare_del(msg->key);
+   eina_stringshare_del(msg->val);
+   EINA_LIST_FREE(msg->options, opt)
+      eina_stringshare_del(opt);
+   free(msg);
+
+   return ECORE_CALLBACK_PASS_ON;
+}
 #endif
 
 #ifdef HAVE_ELEMENTARY_X
@@ -4210,6 +4250,8 @@ _elm_win_finalize_internal(Eo *obj, Elm_Win_Data *sd, const char *name, Elm_Win_
            (ECORE_WL_EVENT_EFFECT_START, _elm_win_wl_effect_start, obj);
         sd->wl.effect_end_handler = ecore_event_handler_add
            (ECORE_WL_EVENT_EFFECT_END, _elm_win_wl_effect_end, obj);
+        sd->wl.aux_msg_handler = ecore_event_handler_add
+           (ECORE_WL_EVENT_AUX_MESSAGE, _elm_win_wl_aux_message, obj);
      }
 #endif
    else if ((engine) && (!strncmp(engine, "shot:", 5)))
@@ -6449,5 +6491,38 @@ elm_win_active_win_orientation_get(Evas_Object *obj)
    angle = ecore_wl_window_active_angle_get(win);
 #endif
    return angle;
+}
+
+EAPI const char *
+elm_win_aux_msg_key_get(Evas_Object *obj,
+                        Elm_Win_Aux_Message *msg)
+{
+   ELM_WIN_CHECK(obj) NULL;
+   ELM_WIN_DATA_GET_OR_RETURN_VAL(obj, sd, NULL);
+
+   if (!msg) return NULL;
+   return msg->key;
+}
+
+EAPI const char *
+elm_win_aux_msg_val_get(Evas_Object *obj,
+                        Elm_Win_Aux_Message *msg)
+{
+   ELM_WIN_CHECK(obj) NULL;
+   ELM_WIN_DATA_GET_OR_RETURN_VAL(obj, sd, NULL);
+
+   if (!msg) return NULL;
+   return msg->val;
+}
+
+EAPI const Eina_List *
+elm_win_aux_msg_options_get(Evas_Object *obj,
+                            Elm_Win_Aux_Message *msg)
+{
+   ELM_WIN_CHECK(obj) NULL;
+   ELM_WIN_DATA_GET_OR_RETURN_VAL(obj, sd, NULL);
+
+   if (!msg) return NULL;
+   return msg->options;
 }
 //////////////////////////////////////////////////////////////////
