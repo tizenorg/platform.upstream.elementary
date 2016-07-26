@@ -1,3 +1,14 @@
+enum Elm.Accessible.Info
+{
+   [[The accessible information that can be read.
+   ]]
+
+   name = 1 << 0, [[Name should be read]]
+   role = 1 << 1, [[Role should be read]]
+   description = 1 << 2, [[description should be read.]]
+   state = 1 << 3, [[State should be read.]]
+}
+
 mixin Elm_Interface_Atspi_Accessible ()
 {
    //TIZEN_ONLY(20160329): atspi: mark atspi API as public (b9a544128dfb4d23e06995a233e166b0a166ae86)
@@ -60,10 +71,28 @@ mixin Elm_Interface_Atspi_Accessible ()
       }
       @property attributes @protected {
          get {
-            [[Gets key-value pairs indentifying widget extra attributes. Must be free by a user.]]
+            [[Gets key-value pairs identifying widget extra attributes. Must be free by a user.]]
          }
          values {
             attributes: free(own(list<own(Elm_Atspi_Attribute *)> *), elm_atspi_attributes_list_free);
+         }
+      }
+      attributes_append {
+         [[Add key-value pairs identifying widget extra attributes]]
+         params {
+            @in key: char *;
+            @in value: char *;
+         }
+      }
+      @property reading_information @protected {
+         get {
+            [[Gets reading information of an accessible object.]]
+         }
+         set {
+            [[Gets reading information of an accessible object.]]
+         }
+         values {
+            reading_information: int;
          }
       }
       @property index_in_parent @protected {

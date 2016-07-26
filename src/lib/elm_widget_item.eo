@@ -532,6 +532,8 @@ class Elm.Widget_Item(Eo.Base, Elm_Interface_Atspi_Accessible,
            //TIZEN_ONLY(20150713) : add widget_item name setter
            Elm_Interface_Atspi_Accessible.name.get;
            Elm_Interface_Atspi_Accessible.name.set;
+           Elm_Interface_Atspi_Accessible.attributes.get;
+           Elm_Interface_Atspi_Accessible.attributes_append;
            ///
            Elm_Interface_Atspi_Accessible.state_set.get;
            Elm_Interface_Atspi_Accessible.parent.get;
