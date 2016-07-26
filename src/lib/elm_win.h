@@ -94,6 +94,7 @@
  * @li "visibility,changed" - visibility of the window has been changed.
  * @li "effect,started" - window effect has been started.
  * @li "effect,done" - window effect has been done.
+ * @li "aux,msg,received" - an aux message received
  *
  * Note that calling evas_object_show() after window contents creation is
  * recommended. It will trigger evas_smart_objects_calculate() and some backend
@@ -266,6 +267,54 @@ EAPI void                  elm_win_input_rect_subtract(Evas_Object *obj, Eina_Re
  */
 EAPI int                   elm_win_active_win_orientation_get(Evas_Object *obj);
 
+/**
+ * @internal
+ * @remarks Tizen only feature
+ *
+ * @brief A structure to store aux message information from the window manager.
+ * @remarks Support for this depends on the underlying windowing system.
+ *
+ */
+typedef struct _Elm_Win_Aux_Message Elm_Win_Aux_Message;
+
+/**
+ * @internal
+ * @remarks Tizen only feature
+ *
+ * @brief Gets the key string from an aux message
+ * @remarks Support for this depends on the underlying windowing system.
+ *
+ * @param obj The window object
+ * @return Constant key string of the aux message. otherwise @c NULL on failure.
+ *         Do not use this return value after end of the aux message callback.
+ */
+EAPI const char       *elm_win_aux_msg_key_get(Evas_Object *obj, Elm_Win_Aux_Message *msg);
+
+/**
+ * @internal
+ * @remarks Tizen only feature
+ *
+ * @brief Gets the value string from an aux message
+ * @remarks Support for this depends on the underlying windowing system.
+ *
+ * @param obj The window object
+ * @return Constant value string of the aux message. otherwise @c NULL on failure.
+ *         Do not use this return value after end of the aux message callback.
+ */
+EAPI const char       *elm_win_aux_msg_val_get(Evas_Object *obj, Elm_Win_Aux_Message *msg);
+
+/**
+ * @internal
+ * @remarks Tizen only feature
+ *
+ * @brief Gets the list of option from an aux message
+ * @remarks Support for this depends on the underlying windowing system.
+ *
+ * @param obj The window object
+ * @return Constant list of option of the aux message. otherwise @c NULL on failure.
+ *         Do not use this return value after end of the aux message callback.
+ */
+EAPI const Eina_List  *elm_win_aux_msg_options_get(Evas_Object *obj, Elm_Win_Aux_Message *msg);
 /**
  * @}
  */
