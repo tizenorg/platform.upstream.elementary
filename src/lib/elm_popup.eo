@@ -175,6 +175,9 @@ class Elm.Popup (Elm.Layout, Elm_Interface_Atspi_Widget_Action)
       Elm.Widget.translate;
       Elm.Widget.sub_object_del;
       Elm.Widget.event;
+      //TIZEN_ONLY(20160726): add API elm_object_part_access_object_get
+      Elm.Widget.part_access_object_get;
+      //
       Elm.Container.content_get;
       Elm.Container.content_set;
       Elm.Container.content_unset;

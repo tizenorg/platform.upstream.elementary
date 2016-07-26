@@ -508,6 +508,20 @@ EAPI void        elm_object_orientation_mode_disabled_set(Evas_Object *obj, Eina
  */
 EAPI Eina_Bool   elm_object_orientation_mode_disabled_get(const Evas_Object *obj);
 
+//TIZEN_ONLY(20160726): add API elm_object_part_access_object_get
+/**
+ * Get the access object which is registered to part
+ *
+ * @param obj The Elementary widget
+ * @param part The widget's part name to get access object
+ *
+ * @since 1.18
+ *
+ * @ingroup General
+ */
+EAPI Evas_Object *elm_object_part_access_object_get(const Evas_Object *obj, const char *part);
+//
+
 //TIZEN_ONLY(20160329): win: add accessibility highlight (d4753268ad02d0c25c16f815003c70b158879ca7)
 /**
  * Set accessibility highlight on object.
