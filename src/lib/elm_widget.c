@@ -6299,17 +6299,15 @@ _elm_widget_elm_interface_atspi_accessible_state_set_get(Eo *obj, Elm_Widget_Sma
 }
 
 EOLIAN static Eina_List*
-_elm_widget_elm_interface_atspi_accessible_attributes_get(Eo *obj, Elm_Widget_Smart_Data *pd EINA_UNUSED)
+_elm_widget_elm_interface_atspi_accessible_attributes_get(Eo *obj, Elm_Widget_Smart_Data *pd)
 {
-   Eina_List *ret = NULL;
-   Elm_Atspi_Attribute *attr = calloc(1, sizeof(Elm_Atspi_Attribute));
-   if (!attr) return NULL;
+   return pd->attr_list;
+}
 
-   attr->key = eina_stringshare_add("type");
-   attr->value = eina_stringshare_add(evas_object_type_get(obj));
-
-   ret = eina_list_append(ret, attr);
-   return ret;
+EOLIAN static void
+_elm_widget_elm_interface_atspi_accessible_attributes_set(Eo *obj, Elm_Widget_Smart_Data *pd, Eina_List *attr_list)
+{
+   pd->attr_list = attr_list;
 }
 
 //TIZEN_ONLY(20150709) : atspi relations api
