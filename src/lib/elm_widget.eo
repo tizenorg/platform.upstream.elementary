@@ -809,6 +809,7 @@ abstract Elm.Widget (Evas.Object_Smart, Elm_Interface_Atspi_Accessible, Elm_Inte
       Elm_Interface_Atspi_Accessible.children.get;
       Elm_Interface_Atspi_Accessible.parent.get;
       Elm_Interface_Atspi_Accessible.attributes.get;
+      Elm_Interface_Atspi_Accessible.attributes_append;
       //TIZEN_ONLY(20150709) : atspi relations api
       Elm_Interface_Atspi_Accessible.relation_set.get;
       Elm_Interface_Atspi_Accessible.relationship_append;
