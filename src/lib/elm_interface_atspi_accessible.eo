@@ -104,6 +104,19 @@ mixin Elm_Interface_Atspi_Accessible ()
             states: Elm_Atspi_State_Set;
          }
       }
+      //TIZEN_ONLY(20160726): add API elm_atspi_accessible_can_highlight_set/get
+      @property can_highlight {
+         get {
+            [[Gets highlightable of given widget.]]
+         }
+         set {
+            [[Sets highlightable to given widget.]]
+         }
+         values {
+            can_highlight: bool;
+         }
+      }
+      //
       event_handler_add @class @protected {
          [[Register accessibility event listener]]
          params {

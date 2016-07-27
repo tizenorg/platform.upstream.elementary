@@ -532,7 +532,7 @@ class Elm.Widget_Item(Eo.Base, Elm_Interface_Atspi_Accessible,
            //TIZEN_ONLY(20150713) : add widget_item name setter
            Elm_Interface_Atspi_Accessible.name.get;
            Elm_Interface_Atspi_Accessible.name.set;
-           ///
+           //
            Elm_Interface_Atspi_Accessible.state_set.get;
            Elm_Interface_Atspi_Accessible.parent.get;
            //TIZEN_ONLY(20150709) : atspi relations api
@@ -543,7 +543,11 @@ class Elm.Widget_Item(Eo.Base, Elm_Interface_Atspi_Accessible,
            //TIZEN_ONLY(20150731) : add i18n support for name and description
            Elm_Interface_Atspi_Accessible.translation_domain.set;
            Elm_Interface_Atspi_Accessible.translation_domain.get;
-           ///
+           //
+           //TIZEN_ONLY(20160726): add API elm_atspi_accessible_can_highlight_set/get
+           Elm_Interface_Atspi_Accessible.can_highlight.set;
+           Elm_Interface_Atspi_Accessible.can_highlight.get;
+           //
            Elm_Interface_Atspi_Component.extents.get;
            Elm_Interface_Atspi_Component.extents.set;
            Elm_Interface_Atspi_Component.alpha.get;

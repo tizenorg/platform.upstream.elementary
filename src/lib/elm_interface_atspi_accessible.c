@@ -291,6 +291,23 @@ _elm_interface_atspi_accessible_state_set_get(Eo *obj EINA_UNUSED, Elm_Interface
    return 0;
 }
 
+//TIZEN_ONLY(20160726): add API elm_atspi_accessible_can_highlight_set/get
+EOLIAN static void
+_elm_interface_atspi_accessible_can_highlight_set(Eo *obj EINA_UNUSED, Elm_Interface_Atspi_Accessible_Data *pd EINA_UNUSED, Eina_Bool can_highlight EINA_UNUSED)
+{
+   WRN("The %s object does not implement the \"can_highlight_set\" function.",
+       eo_class_name_get(eo_class_get(obj)));
+}
+
+EOLIAN static Eina_Bool
+_elm_interface_atspi_accessible_can_highlight_get(Eo *obj EINA_UNUSED, Elm_Interface_Atspi_Accessible_Data *pd EINA_UNUSED)
+{
+   WRN("The %s object does not implement the \"can_highlight_get\" function.",
+       eo_class_name_get(eo_class_get(obj)));
+   return EINA_TRUE;
+}
+//
+
 EOLIAN Elm_Atspi_Relation_Set
 _elm_interface_atspi_accessible_relation_set_get(Eo *obj EINA_UNUSED, Elm_Interface_Atspi_Accessible_Data *pd EINA_UNUSED)
 {

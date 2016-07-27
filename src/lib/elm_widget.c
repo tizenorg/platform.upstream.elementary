@@ -4848,6 +4848,8 @@ _elm_widget_item_elm_interface_atspi_accessible_state_set_get(Eo *eo_item,
    //TIZEN_ONLY(20170717) : expose highlight information on atspi
    if (item->can_highlight)
      STATE_TYPE_SET(states, ELM_ATSPI_STATE_HIGHLIGHTABLE);
+   else
+     STATE_TYPE_UNSET(states, ELM_ATSPI_STATE_HIGHLIGHTABLE);
 
    if (_elm_object_accessibility_currently_highlighted_get() == (void*)item->view)
      STATE_TYPE_SET(states, ELM_ATSPI_STATE_HIGHLIGHTED);
@@ -6290,6 +6292,8 @@ _elm_widget_elm_interface_atspi_accessible_state_set_get(Eo *obj, Elm_Widget_Sma
    //TIZEN_ONLY(20170717) : expose highlight information on atspi
    if (pd->can_highlight)
      STATE_TYPE_SET(states, ELM_ATSPI_STATE_HIGHLIGHTABLE);
+   else
+     STATE_TYPE_UNSET(states, ELM_ATSPI_STATE_HIGHLIGHTABLE);
 
    if (_elm_object_accessibility_currently_highlighted_get() == (void*)pd->obj)
      STATE_TYPE_SET(states, ELM_ATSPI_STATE_HIGHLIGHTED);
@@ -6557,6 +6561,32 @@ EOLIAN static const char*
 _elm_widget_item_elm_interface_atspi_accessible_translation_domain_get(Eo *obj EINA_UNUSED, Elm_Widget_Item_Data *_pd)
 {
    return _pd->atspi_translation_domain;
+}
+//
+
+//TIZEN_ONLY(20160726): add API elm_atspi_accessible_can_highlight_set/get
+EOLIAN static void
+_elm_widget_elm_interface_atspi_accessible_can_highlight_set(Eo *obj EINA_UNUSED, Elm_Widget_Smart_Data *_pd, Eina_Bool can_highlight)
+{
+   _pd->can_highlight = !!can_highlight;
+}
+
+EOLIAN static Eina_Bool
+_elm_widget_elm_interface_atspi_accessible_can_highlight_get(Eo *obj EINA_UNUSED, Elm_Widget_Smart_Data *_pd)
+{
+   return _pd->can_highlight;
+}
+
+EOLIAN static void
+_elm_widget_item_elm_interface_atspi_accessible_can_highlight_set(Eo *obj EINA_UNUSED, Elm_Widget_Item_Data *_pd, Eina_Bool can_highlight)
+{
+   _pd->can_highlight = !!can_highlight;
+}
+
+EOLIAN static Eina_Bool
+_elm_widget_item_elm_interface_atspi_accessible_can_highlight_get(Eo *obj EINA_UNUSED, Elm_Widget_Item_Data *_pd)
+{
+   return _pd->can_highlight;
 }
 //
 
