@@ -155,8 +155,9 @@ _label_slide_change(Evas_Object *obj)
         Edje_Message_Float_Set *msg =
           alloca(sizeof(Edje_Message_Float_Set) + (sizeof(double)));
 
-        msg->count = 1;
+        msg->count = 2;
         msg->val[0] = sd->slide_duration;
+        msg->val[1] = tb_w/sd->slide_speed;
 
         edje_object_message_send(wd->resize_obj, EDJE_MESSAGE_FLOAT_SET, 0, msg);
         edje_object_signal_emit(wd->resize_obj, "elm,state,slide,start", "elm");
