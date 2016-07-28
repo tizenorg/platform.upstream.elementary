@@ -584,6 +584,78 @@ _create_landscape_indicator(Evas_Object *obj)
    return land_indicator;
 }
 
+static Eina_Bool
+_indicator_visible_type_set(Evas_Object *obj, Eina_Bool visible)
+{
+   Evas_Object *top = NULL;
+   Ecore_Wl_Window *wlwin = NULL;
+
+   top = elm_widget_top_get(obj);
+   if (!top) return EINA_FALSE;
+
+   wlwin = elm_win_wl_window_get(top);
+   if (!wlwin) return EINA_FALSE;
+
+   if (visible)
+     {
+        ecore_wl_indicator_visible_type_set(wlwin, ECORE_WL_INDICATOR_VISIBLE_TYPE_SHOWN);
+     }
+   else
+     {
+        ecore_wl_indicator_visible_type_set(wlwin, ECORE_WL_INDICATOR_VISIBLE_TYPE_HIDDEN);
+     }
+   return EINA_TRUE;
+}
+// TIZEN_ONLY(20160801): indicator implementation
+static Eina_Bool
+_indicator_hide_effect(void *data)
+{
+   Evas_Object *conformant = data;
+
+   DBG("[INDICATOR]Hide effect ");
+   ELM_CONFORMANT_DATA_GET(conformant, sd);
+   sd->on_indicator_effect = EINA_FALSE;
+
+   if(((sd->rot == 90) || (sd->rot == 270)) ||
+       (sd->ind_o_mode == ELM_WIN_INDICATOR_TRANSPARENT))
+      {
+        elm_object_signal_emit(conformant, "indicator,hide,effect", "elm");
+        sd->indicator_effect_timer = NULL;
+        _indicator_visible_type_set(data, EINA_FALSE);
+      }
+   return ECORE_CALLBACK_CANCEL;
+}
+static void
+_indicator_show_effect(Evas_Object *conformant, double duration)
+{
+   ELM_CONFORMANT_DATA_GET(conformant, sd);
+   DBG("[IND]Show effect ");
+
+   sd->on_indicator_effect = EINA_TRUE;
+   elm_object_signal_emit(conformant, "indicator,show,effect", "elm");
+
+   if (sd->indicator_effect_timer) ecore_timer_del(sd->indicator_effect_timer);
+      sd->indicator_effect_timer = ecore_timer_add(duration, _indicator_hide_effect, conformant);
+}
+static void 
+_indicator_post_appearance_changed(Evas_Object *conformant)
+{
+   ELM_CONFORMANT_DATA_GET(conformant, sd);
+
+   if((sd->indmode != ELM_WIN_INDICATOR_SHOW))
+     {
+        _indicator_visible_type_set(conformant, EINA_TRUE);
+        return;
+     }
+
+   if ((sd->ind_o_mode == ELM_WIN_INDICATOR_OPACITY_UNKNOWN) ||
+       (sd->indmode == ELM_WIN_INDICATOR_UNKNOWN))
+     return;
+
+   _indicator_visible_type_set(conformant, EINA_TRUE);
+   _indicator_show_effect(conformant, 3); 
+}
+// END
 static void
 _indicator_mode_set(Evas_Object *conformant, Elm_Win_Indicator_Mode indmode)
 {
@@ -645,7 +717,6 @@ _indicator_opacity_set(Evas_Object *conformant, Elm_Win_Indicator_Opacity_Mode i
      elm_object_signal_emit(conformant, "elm,state,indicator,opaque", "elm");
    /////////////////////////////////////////////////////////////////////////////
 }
-
 static Eina_Bool
 _on_indicator_mode_changed(void *data,
                            Eo *obj, const Eo_Event_Description *desc EINA_UNUSED,
@@ -661,10 +732,17 @@ _on_indicator_mode_changed(void *data,
 
    indmode = elm_win_indicator_mode_get(win);
    ind_o_mode = elm_win_indicator_opacity_get(win);
+
+   Eina_Bool sc = ((indmode != sd->indmode) | (ind_o_mode != sd->ind_o_mode)) ; // TIZEN_ONLY(20160801):indicator implementation
+
    if (indmode != sd->indmode)
      _indicator_mode_set(conformant, indmode);
    if (ind_o_mode != sd->ind_o_mode)
      _indicator_opacity_set(conformant, ind_o_mode);
+   // TIZEN_ONLY(20160801):indicator implementation
+   if (sc)
+     _indicator_post_appearance_changed(conformant);
+   // END
    return EINA_TRUE;
 }
 
@@ -683,8 +761,8 @@ _on_rotation_changed(void *data,
    rot = elm_win_rotation_get(win);
 
    if (rot == sd->rot) return EINA_TRUE;
-
    sd->rot = rot;
+   _indicator_post_appearance_changed(conformant); // TIZEN_ONLY(20160801):indicator implementation
    old_indi = elm_layout_content_unset(conformant, INDICATOR_PART);
    /* this means ELM_WIN_INDICATOR_SHOW never be set.we don't need to change indicator type*/
    if (!old_indi) return EINA_TRUE;
@@ -714,6 +792,16 @@ _on_rotation_changed(void *data,
      }
    return EINA_TRUE;
 }
+// TIZEN_ONLY(20160801):indicator implementation
+static void
+_on_indicator_flick_done(void *data,
+                         Evas_Object *obj EINA_UNUSED,
+                         void *event_info EINA_UNUSED)
+{
+   Evas_Object *conformant = data;
+   _indicator_post_appearance_changed(conformant);
+}
+// END
 
 EOLIAN static Elm_Theme_Apply
 _elm_conformant_elm_widget_theme_apply(Eo *obj, Elm_Conformant_Data *_pd EINA_UNUSED)
@@ -1121,8 +1209,12 @@ _elm_conformant_evas_object_smart_del(Eo *obj, Elm_Conformant_Data *sd)
 #ifdef HAVE_ELEMENTARY_WAYLAND
    evas_object_smart_callback_del_full
      (sd->win, "conformant,changed", _on_conformant_changed, obj);
+   // END
+   // TIZEN_ONLY(20160801): indicator implementation
+   evas_object_smart_callback_del_full
+     (sd->win, "indicator,flick,done", _on_indicator_flick_done, obj);
+   //END
 #endif
-   //
    // TIZEN_ONLY(20160628): Unregister callbacks for ATSPI bridge enable/disable
    _unregister_conformant_atspi_bridge_callbacks(obj);
    //
@@ -1227,8 +1319,12 @@ _elm_conformant_eo_base_constructor(Eo *obj, Elm_Conformant_Data *sd)
 #ifdef HAVE_ELEMENTARY_WAYLAND
    evas_object_smart_callback_add
      (sd->win, "conformant,changed", _on_conformant_changed, obj);
+   // END
+   // TIZEN_ONLY(20160801): indicator implementation 
+   evas_object_smart_callback_add
+     (sd->win, "indicator,flick,done", _on_indicator_flick_done, obj);
+   // END
 #endif
-   //
 
    return obj;
 }
