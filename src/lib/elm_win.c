@@ -118,6 +118,7 @@ struct _Elm_Win_Data
       Eina_Bool opaque_dirty : 1;
       Ecore_Event_Handler *effect_start_handler;
       Ecore_Event_Handler *effect_end_handler;
+      Ecore_Event_Handler *indicator_flick_handler; // TIZEN_ONLY(20160801): indicator implementation
    } wl;
 #endif
 
@@ -267,6 +268,7 @@ static const char SIG_PROFILE_CHANGED[] = "profile,changed";
 static const char SIG_WM_ROTATION_CHANGED[] = "wm,rotation,changed";
 #ifdef HAVE_ELEMENTARY_WAYLAND
 static const char SIG_CONFORMANT_CHANGED[] = "conformant,changed";
+static const char SIG_INDICATOR_FLICK_DONE[] = "indicator,flick,done"; // TIZEN_ONLY(20160801): indicator implementation
 #endif
 static const char SIG_AUX_HINT_ALLOWED[] = "aux,hint,allowed";
 static const char SIG_VISIBILITY_CHANGED[] = "visibility,changed";
@@ -2190,6 +2192,7 @@ _elm_win_evas_object_smart_del(Eo *obj, Elm_Win_Data *sd)
 #ifdef HAVE_ELEMENTARY_WAYLAND
    ecore_event_handler_del(sd->wl.effect_start_handler);
    ecore_event_handler_del(sd->wl.effect_end_handler);
+   ecore_event_handler_del(sd->wl.indicator_flick_handler); // TIZEN_ONLY(20160801): indicator implementation
 #endif
 
    if (sd->img_obj)
@@ -3576,6 +3579,16 @@ elm_win_precreated_object_get(void)
 }
 //
 
+// TIZEN_ONLY(20160728): Indicator Impelementation
+static Eina_Bool
+_elm_win_wl_indicator_flick(void *data, int type EINA_UNUSED, void *event)
+{
+   ELM_WIN_DATA_GET(data, sd);
+   evas_object_smart_callback_call(sd->obj, SIG_INDICATOR_FLICK_DONE, NULL);
+   return ECORE_CALLBACK_PASS_ON;
+}
+// END
+
 EAPI Evas_Object *
 elm_win_add(Evas_Object *parent,
             const char *name,
@@ -4210,6 +4223,10 @@ _elm_win_finalize_internal(Eo *obj, Elm_Win_Data *sd, const char *name, Elm_Win_
            (ECORE_WL_EVENT_EFFECT_START, _elm_win_wl_effect_start, obj);
         sd->wl.effect_end_handler = ecore_event_handler_add
            (ECORE_WL_EVENT_EFFECT_END, _elm_win_wl_effect_end, obj);
+        // TIZEN_ONLY(20160801): indicator implementation
+        sd->wl.indicator_flick_handler = ecore_event_handler_add
+           (ECORE_WL_EVENT_INDICATOR_FLICK, _elm_win_wl_indicator_flick, obj);
+        // END
      }
 #endif
    else if ((engine) && (!strncmp(engine, "shot:", 5)))
@@ -5606,6 +5623,9 @@ _elm_win_indicator_opacity_set(Eo *obj EINA_UNUSED, Elm_Win_Data *sd, Elm_Win_In
         else if (sd->ind_o_mode == ELM_WIN_INDICATOR_TRANSPARENT)
           ecore_wl_window_indicator_opacity_set
             (sd->wl.win, ECORE_WL_INDICATOR_TRANSPARENT);
+        else if (sd->ind_o_mode == ELM_WIN_INDICATOR_BG_TRANSPARENT)
+          ecore_wl_window_indicator_opacity_set
+            (sd->wl.win, ECORE_WL_INDICATOR_BG_TRANSPARENT);
      }
 #endif
    eo_do(obj, eo_event_callback_call
