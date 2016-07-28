@@ -270,7 +270,7 @@ _elm_list_item_content_focus_set(Elm_List_Item_Data *it, Elm_Focus_Direction dir
    Evas_Object *focus_chain[2];
    Evas_Object *focused = NULL;
    int idx;
-   
+
    if (it->icon && elm_object_widget_check(it->icon) && elm_object_focus_allow_get(it->icon))
      focus_chain[focus_objs++] = it->icon;
    if (it->end && elm_object_widget_check(it->end) && elm_object_focus_allow_get(it->end))
@@ -3378,6 +3378,11 @@ _elm_list_elm_interface_scrollable_content_pos_set(Eo *obj EINA_UNUSED, Elm_List
         while ((parent = evas_object_smart_parent_get(parent)))
           if (parent == obj)
             break;
+     }
+   else
+     {
+        WRN("Improper highlighted object: %p", highlighted_obj);
+        return;
      }
 
    if (parent)

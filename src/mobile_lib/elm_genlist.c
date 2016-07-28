@@ -8338,82 +8338,88 @@ _elm_genlist_elm_interface_atspi_selection_child_deselect(Eo *obj EINA_UNUSED, E
 // TIZEN only (20150914) : Accessibility: updated highlight change during genlist and list scroll
 static int _is_item_in_viewport(int viewport_y, int viewport_h, int obj_y, int obj_h)
 {
-    if ((obj_y + obj_h/2) < viewport_y)
-      return 1;
-    else if ((obj_y + obj_h/2) > viewport_y + viewport_h)
-      return -1;
-    return 0;
+   if ((obj_y + obj_h/2) < viewport_y)
+     return 1;
+   else if ((obj_y + obj_h/2) > viewport_y + viewport_h)
+     return -1;
+   return 0;
 }
 
 EOLIAN static void
 _elm_genlist_elm_interface_scrollable_content_pos_set(Eo *obj, Elm_Genlist_Data *sid EINA_UNUSED, Evas_Coord x, Evas_Coord y, Eina_Bool sig)
 {
-    if (!_atspi_enabled())
-      {
-        eo_do_super(obj, MY_CLASS, elm_interface_scrollable_content_pos_set(x,y,sig));
+   if (!_atspi_enabled())
+     {
+       eo_do_super(obj, MY_CLASS, elm_interface_scrollable_content_pos_set(x,y,sig));
+       return;
+     }
+
+   int old_x, old_y, delta_y;
+   eo_do_super(obj, MY_CLASS, elm_interface_scrollable_content_pos_get(&old_x,&old_y));
+   eo_do_super(obj, MY_CLASS, elm_interface_scrollable_content_pos_set(x,y,sig));
+   delta_y = old_y - y;
+
+   //check if highlighted item is genlist descendant
+   Evas_Object * highlighted_obj = _elm_object_accessibility_currently_highlighted_get();
+   Evas_Object * parent = highlighted_obj;
+   if (eo_isa(highlighted_obj, ELM_WIDGET_CLASS))
+     {
+        while ((parent = elm_widget_parent_get(parent)))
+          if (parent == obj)
+            break;
+     }
+   else if (eo_isa(highlighted_obj, EDJE_OBJECT_CLASS))
+     {
+        while ((parent = evas_object_smart_parent_get(parent)))
+          if (parent == obj)
+            break;
+     }
+   else
+     {
+        WRN("Improper highlighted object: %p", highlighted_obj);
         return;
-      }
+     }
 
-    int old_x, old_y, delta_y;
-    eo_do_super(obj, MY_CLASS, elm_interface_scrollable_content_pos_get(&old_x,&old_y));
-    eo_do_super(obj, MY_CLASS, elm_interface_scrollable_content_pos_set(x,y,sig));
-    delta_y = old_y - y;
+   if (parent)
+     {
+        int obj_x, obj_y, w, h, hx, hy, hw, hh;
+        evas_object_geometry_get(obj, &obj_x, &obj_y, &w, &h);
 
-    //check if highlighted item is genlist descendant
-    Evas_Object * highlighted_obj = _elm_object_accessibility_currently_highlighted_get();
-    Evas_Object * parent = highlighted_obj;
-    if (eo_isa(highlighted_obj, ELM_WIDGET_CLASS))
-      {
-         while ((parent = elm_widget_parent_get(parent)))
-           if (parent == obj)
-             break;
-      }
-    else if (eo_isa(highlighted_obj, EDJE_OBJECT_CLASS))
-      {
-         while ((parent = evas_object_smart_parent_get(parent)))
-           if (parent == obj)
-             break;
-      }
-    if (parent)
-      {
-         int obj_x, obj_y, w, h, hx, hy, hw, hh;
-         evas_object_geometry_get(obj, &obj_x, &obj_y, &w, &h);
+        evas_object_geometry_get(highlighted_obj, &hx, &hy, &hw, &hh);
 
-         evas_object_geometry_get(highlighted_obj, &hx, &hy, &hw, &hh);
+        Elm_Gen_Item * next_previous_item = NULL;
+        int viewport_position_result = _is_item_in_viewport(obj_y, h, hy, hh);
+        //only highlight if move direction is correct
+        //sometimes highlighted item is brought in and it does not fit viewport
+        //however content goes to the viewport position so soon it will
+        //meet _is_item_in_viewport condition
+        if ((viewport_position_result < 0 && delta_y > 0) ||
+           (viewport_position_result > 0 && delta_y < 0))
+          {
 
-         Elm_Gen_Item * next_previous_item = NULL;
-         int viewport_position_result = _is_item_in_viewport(obj_y, h, hy, hh);
-         //only highlight if move direction is correct
-         //sometimes highlighted item is brought in and it does not fit viewport
-         //however content goes to the viewport position so soon it will
-         //meet _is_item_in_viewport condition
-         if ((viewport_position_result < 0 && delta_y > 0) ||
-            (viewport_position_result > 0 && delta_y < 0))
-           {
+             Eina_List *realized_items = elm_genlist_realized_items_get(obj);
+             Eo *item;
+             Eina_List *l;
+             Eina_Bool traverse_direction = viewport_position_result > 0;
+             l = traverse_direction ? realized_items: eina_list_last(realized_items);
 
-              Eina_List *realized_items = elm_genlist_realized_items_get(obj);
-              Eo *item;
-              Eina_List *l;
-              Eina_Bool traverse_direction = viewport_position_result > 0;
-              l = traverse_direction ? realized_items: eina_list_last(realized_items);
+             while(l)
+               {
+                  item = eina_list_data_get(l);
+                  ELM_GENLIST_ITEM_DATA_GET(item, it_data);
+                  next_previous_item = ELM_GEN_ITEM_FROM_INLIST(EINA_INLIST_GET(it_data));
+                  evas_object_geometry_get(VIEW(next_previous_item), &hx, &hy, &hw, &hh);
+                  if (_is_item_in_viewport(obj_y, h, hy, hh) == 0)
+                    break;
 
-              while(l)
-                {
-                   item = eina_list_data_get(l);
-                   ELM_GENLIST_ITEM_DATA_GET(item, it_data);
-                   next_previous_item = ELM_GEN_ITEM_FROM_INLIST(EINA_INLIST_GET(it_data));
-                   evas_object_geometry_get(VIEW(next_previous_item), &hx, &hy, &hw, &hh);
-                   if (_is_item_in_viewport(obj_y, h, hy, hh) == 0)
-                     break;
+                  next_previous_item = NULL;
 
-                   next_previous_item = NULL;
-
-                   l = traverse_direction ? eina_list_next(l): eina_list_prev(l);
-               }
-           }
-         if (next_previous_item)
-           eo_do(EO_OBJ(next_previous_item), elm_interface_atspi_component_highlight_grab());
-      }
+                  l = traverse_direction ? eina_list_next(l): eina_list_prev(l);
+              }
+          }
+        if (next_previous_item)
+          eo_do(EO_OBJ(next_previous_item), elm_interface_atspi_component_highlight_grab());
+     }
 }
 // Tizen only (20150914)
 #include "elm_genlist.eo.c"

@@ -2774,7 +2774,7 @@ _anim_end(Elm_Gengrid_Data *sd)
            {
               sd->items = eina_inlist_remove(sd->items, EINA_INLIST_GET(sd->reorder.it1));
               sd->items = eina_inlist_remove(sd->items, EINA_INLIST_GET(sd->reorder.it2));
-           
+
               if (it1_prev)
                 {
                    tmp = eina_inlist_find(sd->items, EINA_INLIST_GET(it1_prev));
@@ -2783,7 +2783,7 @@ _anim_end(Elm_Gengrid_Data *sd)
                 }
               else
                 sd->items = eina_inlist_prepend(sd->items, EINA_INLIST_GET(sd->reorder.it2));
-           
+
               if (it2_prev)
                 {
                    tmp = eina_inlist_find(sd->items, EINA_INLIST_GET(it2_prev));
@@ -2807,16 +2807,16 @@ _anim_end(Elm_Gengrid_Data *sd)
           {
              sd->items = eina_inlist_remove(sd->items, EINA_INLIST_GET(sd->reorder.it1));
              sd->items = eina_inlist_remove(sd->items, EINA_INLIST_GET(sd->reorder.it2));
-          
+
              if (it1_prev)
-               {  
+               {
                   tmp = eina_inlist_find(sd->items, EINA_INLIST_GET(it1_prev));
                   sd->items = eina_inlist_append_relative(sd->items, EINA_INLIST_GET(sd->reorder.it2),
                                                           tmp);
                }
              else
                sd->items = eina_inlist_prepend(sd->items, EINA_INLIST_GET(sd->reorder.it2));
-        
+
              if (it2_prev)
                {
                   tmp = eina_inlist_find(sd->items, EINA_INLIST_GET(it2_prev));
@@ -6067,6 +6067,12 @@ _elm_gengrid_elm_interface_scrollable_content_pos_set(Eo *obj, Elm_Gengrid_Data 
           if (parent == obj)
             break;
      }
+   else
+     {
+        WRN("Improper highlighted object: %p", highlighted_obj);
+        return;
+     }
+
     if (parent)
       {
         int obj_x, obj_y, w, h, hx, hy, hw, hh;

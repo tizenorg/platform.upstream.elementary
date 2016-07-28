@@ -1845,6 +1845,8 @@ _elm_win_accessibility_highlight_obj_del(void *data,
 {
    ELM_WIN_DATA_GET(data, sd);
 
+   /* set _accessibility_currently_highlighted_obj to NULL */
+   elm_object_accessibility_highlight_set(obj, EINA_FALSE);
    _elm_win_accessibility_highlight_hide(sd->obj);
 }
 
