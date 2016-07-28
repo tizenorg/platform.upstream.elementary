@@ -3379,6 +3379,11 @@ _elm_list_elm_interface_scrollable_content_pos_set(Eo *obj EINA_UNUSED, Elm_List
           if (parent == obj)
             break;
      }
+   else
+     {
+        WRN("Improper highlighted object: %p", highlighted_obj);
+        return; 
+     }
 
    if (parent)
      {
