@@ -51,6 +51,11 @@ struct _Elm_Conformant_Data
    Ecore_Timer                   *land_indi_timer;
    Ecore_Timer                   *port_indi_timer;
 
+   //TIZEN_ONLY(20160728) : indicator opacity mode implementation//
+   Ecore_Timer                   *indicator_effect_timer;
+   Eina_Bool                      on_indicator_effect : 1;
+   //END
+
    int                            rot;
 };
 

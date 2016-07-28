@@ -57,6 +57,7 @@ static Evas_Object *_precreated_conform_obj = NULL;
  * ILLUME_STK="0, 568, 800, 32"
  */
 #ifdef HAVE_ELEMENTARY_X
+
 static Eina_Bool
 _conformant_part_geometry_get_from_env(const char *part,
                                        int *sx,
@@ -98,6 +99,8 @@ _conformant_part_geometry_get_from_env(const char *part,
    return EINA_TRUE;
 }
 #endif
+
+static void _indicator_show_effect(Evas_Object *conformant, double duration);
 
 static void
 _conformant_part_size_hints_set(Evas_Object *obj,
@@ -584,6 +587,29 @@ _create_landscape_indicator(Evas_Object *obj)
    return land_indicator;
 }
 
+static Eina_Bool
+_indicator_visible_type_set(Evas_Object *obj, Eina_Bool visible)
+{
+   Evas_Object *top = NULL;
+   Ecore_Wl_Window *wlwin = NULL;
+
+   top = elm_widget_top_get(obj);
+   if (!top) return EINA_FALSE;
+
+   wlwin = elm_win_wl_window_get(top);
+   if (!wlwin) return EINA_FALSE;
+
+   if (visible)
+     {
+        ecore_wl_indicator_visible_type_set(wlwin, ECORE_WL_INDICATOR_VISIBLE_TYPE_SHOWN);
+     }
+   else
+     {
+        ecore_wl_indicator_visible_type_set(wlwin, ECORE_WL_INDICATOR_VISIBLE_TYPE_HIDDEN);
+     }
+   return EINA_TRUE;
+}
+
 static void
 _indicator_mode_set(Evas_Object *conformant, Elm_Win_Indicator_Mode indmode)
 {
@@ -665,6 +691,8 @@ _on_indicator_mode_changed(void *data,
      _indicator_mode_set(conformant, indmode);
    if (ind_o_mode != sd->ind_o_mode)
      _indicator_opacity_set(conformant, ind_o_mode);
+
+   _indicator_show_effect(conformant, 3);
    return EINA_TRUE;
 }
 
@@ -713,6 +741,50 @@ _on_rotation_changed(void *data,
         elm_layout_content_set(conformant, INDICATOR_PART, sd->portrait_indicator);
      }
    return EINA_TRUE;
+}
+
+static Eina_Bool
+_indicator_hide_effect(void *data)
+{
+   Evas_Object *conformant = data;
+
+   DBG("[INDICATOR]Hide effect ");
+   ELM_CONFORMANT_DATA_GET(conformant, sd);
+   sd->on_indicator_effect = EINA_FALSE;
+
+   if(((sd->rot == 90) || (sd->rot == 270)) ||
+       (sd->ind_o_mode == ELM_WIN_INDICATOR_TRANSPARENT))
+      {
+        elm_object_signal_emit(conformant, "indicator,hide,effect", "elm");
+        sd->indicator_effect_timer = NULL;
+        _indicator_visible_type_set(data, EINA_FALSE);
+      }
+   return ECORE_CALLBACK_CANCEL;
+}
+
+static void
+_indicator_show_effect(Evas_Object *conformant, double duration)
+{
+   ELM_CONFORMANT_DATA_GET(conformant, sd);
+   sd->on_indicator_effect = EINA_TRUE;
+
+   DBG("[INDICATOR]Show effect ");
+   elm_object_signal_emit(conformant, "indicator,show,effect", "elm");
+
+   if (sd->indicator_effect_timer) ecore_timer_del(sd->indicator_effect_timer);
+      sd->indicator_effect_timer = ecore_timer_add(duration, _indicator_hide_effect, conformant);
+
+   _indicator_visible_type_set(conformant, EINA_TRUE);
+}
+
+static void
+_on_indicator_flick_done(void *data,
+                         Evas_Object *obj EINA_UNUSED,
+                         void *event_info EINA_UNUSED)
+{
+   DBG("lick event has been invoked");
+   Evas_Object *conformant = data;
+   _indicator_show_effect(conformant, 3);
 }
 
 EOLIAN static Elm_Theme_Apply
@@ -1121,6 +1193,8 @@ _elm_conformant_evas_object_smart_del(Eo *obj, Elm_Conformant_Data *sd)
 #ifdef HAVE_ELEMENTARY_WAYLAND
    evas_object_smart_callback_del_full
      (sd->win, "conformant,changed", _on_conformant_changed, obj);
+   evas_object_smart_callback_del_full
+     (sd->win, "indicator,flick,done", _on_indicator_flick_done, obj);
 #endif
    //
    // TIZEN_ONLY(20160628): Unregister callbacks for ATSPI bridge enable/disable
@@ -1227,6 +1301,8 @@ _elm_conformant_eo_base_constructor(Eo *obj, Elm_Conformant_Data *sd)
 #ifdef HAVE_ELEMENTARY_WAYLAND
    evas_object_smart_callback_add
      (sd->win, "conformant,changed", _on_conformant_changed, obj);
+   evas_object_smart_callback_add
+     (sd->win, "indicator,flick,done", _on_indicator_flick_done, obj);
 #endif
    //
 
