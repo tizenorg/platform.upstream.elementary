@@ -353,8 +353,6 @@ _atspi_expose_title(Elm_Naviframe_Item_Data *it)
 {
    Eina_Bool connected = EINA_FALSE;
 
-   if (!_elm_config->atspi_mode) return;
-
    // If bridge is connected expose it now
    eo_do(_elm_atspi_bridge_get(), connected = elm_obj_atspi_bridge_connected_get());
    if (connected)
