@@ -1534,6 +1534,10 @@ _config_flush_load(void)
 static void
 _config_flush_get(void)
 {
+   double pre_scale;
+
+   pre_scale = _elm_config->scale;
+
    _elm_config_font_overlays_cancel();
    _color_overlays_cancel();
    _config_free(_elm_config);
@@ -1545,7 +1549,8 @@ _config_flush_get(void)
    evas_font_reinit();
    _elm_config_font_overlay_apply();
    _elm_config_color_overlay_apply();
-   _elm_rescale();
+   if(pre_scale != _elm_config->scale)
+     _elm_rescale();
    _elm_recache();
    _elm_clouseau_reload();
    _elm_config_key_binding_hash();
