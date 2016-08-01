@@ -332,8 +332,9 @@ elm_init(int    argc,
    system_handlers[1] = ecore_event_handler_add(ECORE_EVENT_LOCALE_CHANGED, _sys_lang_changed, NULL);
    _accessibility_currently_highlighted_obj = NULL;
 
-   if (_elm_config->atspi_mode != ELM_ATSPI_MODE_OFF)
-     _elm_atspi_bridge_init();
+   //TIZEN_ONLY(20160801): runtime enable,disable atspi mode
+   _elm_atspi_bridge_init();
+   //
 
 //TIZEN_ONLY(20160628):  Add Performance log for cold booting
 #ifdef ENABLE_TTRACE
@@ -1023,8 +1024,9 @@ elm_quicklaunch_fork(int    argc,
    setsid();
    if (chdir(cwd) != 0) perror("could not chdir");
    ecore_app_args_set(argc, (const char **)argv);
-   if (_elm_config->atspi_mode != ELM_ATSPI_MODE_OFF)
-     _elm_atspi_bridge_init();
+   //TIZEN_ONLY(20160801): runtime enable,disable atspi mode
+   _elm_atspi_bridge_init();
+   //
    ret = qr_main(argc, argv);
    exit(ret);
    return EINA_TRUE;
