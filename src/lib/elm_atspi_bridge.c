@@ -101,6 +101,9 @@ typedef struct _Elm_Atspi_Bridge_Data
    Eina_List *socket_queue;
    Eina_List *plug_queue;
    Eina_Bool connected : 1;
+   // TIZEN_ONLY(20160802): do not handle events if the window is not activated
+   Eina_Bool window_activated : 1;
+   //
 } Elm_Atspi_Bridge_Data;
 
 
@@ -3958,6 +3961,13 @@ _state_changed_signal_send(void *data, Eo *obj EINA_UNUSED, const Eo_Event_Descr
    const char *type_desc;
    ELM_ATSPI_BRIDGE_DATA_GET_OR_RETURN_VAL(data, pd, EINA_FALSE);
 
+   // TIZEN_ONLY(20160802): do not handle events if the window is not activated
+   if ((state_data->type == ELM_ATSPI_STATE_ACTIVE) && eo_isa(obj, ELM_WIN_CLASS))
+     {
+        pd->window_activated = state_data->new_value;
+     }
+   //
+
    if (!STATE_TYPE_GET(pd->object_state_broadcast_mask, state_data->type))
      return EINA_FALSE;
 
@@ -4381,9 +4391,19 @@ _bridge_cache_build(Eo *bridge, void *obj)
    if (eo_isa(obj, ELM_INTERFACE_ATSPI_WINDOW_INTERFACE))
      {
         if (STATE_TYPE_GET(ss, ELM_ATSPI_STATE_ACTIVE))
-          _window_signal_send(bridge, obj, ELM_INTERFACE_ATSPI_WINDOW_EVENT_WINDOW_ACTIVATED, NULL);
+          {
+             _window_signal_send(bridge, obj, ELM_INTERFACE_ATSPI_WINDOW_EVENT_WINDOW_ACTIVATED, NULL);
+             // TIZEN_ONLY(20160802): do not handle events if the window is not activated
+             pd->window_activated = EINA_TRUE;
+             //
+          }
         else
-          _window_signal_send(bridge, obj, ELM_INTERFACE_ATSPI_WINDOW_EVENT_WINDOW_DEACTIVATED, NULL);
+          {
+             _window_signal_send(bridge, obj, ELM_INTERFACE_ATSPI_WINDOW_EVENT_WINDOW_DEACTIVATED, NULL);
+             // TIZEN_ONLY(20160802): do not handle events if the window is not activated
+             pd->window_activated = EINA_FALSE;
+             //
+          }
      }
    eo_do(obj, children = elm_interface_atspi_accessible_children_get());
    EINA_LIST_FREE(children, child)
@@ -4767,6 +4787,10 @@ _elm_atspi_bridge_key_filter(void *data, void *loop EINA_UNUSED, int type, void 
    Eo *bridge = data;
 
    ELM_ATSPI_BRIDGE_DATA_GET_OR_RETURN_VAL(bridge, pd, EINA_TRUE);
+
+   // TIZEN_ONLY(20160802): do not handle events if the window is not activated
+   if (!pd->window_activated) return EINA_TRUE;
+   //
 
    if ((type != ECORE_EVENT_KEY_DOWN) && (type != ECORE_EVENT_KEY_UP)) return EINA_TRUE;
 
