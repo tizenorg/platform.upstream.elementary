@@ -883,6 +883,11 @@ _key_action_move(Evas_Object *obj, const char *params)
         elm_widget_focus_cycle(sd->hover, ELM_FOCUS_RIGHT);
         return EINA_TRUE;
      }
+   else if (sd->expanded && !strcmp(dir, "escape"))
+     {
+        elm_hoversel_hover_end(obj);
+        return EINA_TRUE;
+     }   
    else return EINA_FALSE;
 }
 
