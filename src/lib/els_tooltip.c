@@ -48,6 +48,9 @@ struct _Elm_Tooltip
    Ecore_Timer             *hide_timer;
    Ecore_Job               *reconfigure_job;
    Evas_Coord               mouse_x, mouse_y;
+// TIZEN_ONLY(20160802): Add Accessibilty Code for Tooltip
+   Eina_Bool                read_out;
+//
    struct
      {
         Evas_Coord            x, y, bx, by;
@@ -221,6 +224,24 @@ _elm_tooltip_hide(Elm_Tooltip *tt)
    tt->tooltip = NULL;
    evas_object_del(del);
 }
+
+// TIZEN_ONLY(20160802): Add Accessibilty Code for Tooltip
+static void
+_elm_tooltip_read(Evas_Object *obj)
+{
+   const char* txt = NULL;
+
+   txt = elm_object_text_get(obj);
+   if (txt)
+     {
+       if (_elm_config->atspi_mode)
+         elm_atspi_bridge_utils_say(txt, 1, NULL, NULL);
+
+       else
+         elm_access_say(txt);
+     }
+}
+//
 
 static void
 _elm_tooltip_reconfigure_job(void *data)
@@ -646,6 +667,13 @@ _elm_tooltip_reconfigure(Elm_Tooltip *tt)
      }
 #undef FDIF
    if (tt->tt_win) evas_object_show(tt->tt_win);
+
+// TIZEN_ONLY(20160802): Add Accessibilty Code for Tooltip
+   if (_elm_config->access_mode || _elm_config->voice_guide || _elm_config->atspi_mode)
+     {
+        if (tt->read_out) _elm_tooltip_read(tt->content);
+     }
+//
 }
 
 static void
@@ -953,6 +981,9 @@ elm_object_sub_tooltip_content_cb_set(Evas_Object *eventarea, Evas_Object *owner
         elm_widget_tooltip_add(tt->owner, tt);
      }
 
+// TIZEN_ONLY(20160802): Add Accessibilty Code for Tooltip
+   tt->read_out = EINA_TRUE;
+//
    tt->func = func;
    tt->data = data;
    tt->del_cb = del_cb;
@@ -1006,6 +1037,16 @@ elm_object_tooltip_domain_translatable_text_set(Evas_Object *obj, const char *do
      (obj, _elm_tooltip_trans_label_create, data,
       _elm_tooltip_trans_label_del_cb);
 }
+
+// TIZEN_ONLY(20160802): Add Accessibilty Code for Tooltip
+EAPI void
+elm_object_tooltip_access_enable_set (Evas_Object *obj, Eina_Bool mode)
+{
+   ELM_TOOLTIP_GET_OR_RETURN(tt, obj);
+
+   tt->read_out = mode;
+}
+//
 
 EAPI void
 elm_object_tooltip_content_cb_set(Evas_Object *obj, Elm_Tooltip_Content_Cb func, const void *data, Evas_Smart_Cb del_cb)
