@@ -84,6 +84,11 @@ Requires:       %{name} = %{version}
 %description devel
 Development components for the elementary package
 
+%package theme
+Summary:        Default theme for elementary
+
+%description theme
+Default theme which provides various styles for elementary.
 
 %prep
 %setup -q
@@ -146,6 +151,9 @@ install -m 0644 %SOURCE100 %{buildroot}%{_tmpfilesdir}/elementary.conf
 %{_tmpfilesdir}/elementary.conf
 
 %exclude %{_datadir}/elementary/config/
+%exclude %{_datadir}/elementary/themes/
+%exclude %{_datadir}/elementary/images/
+%exclude %{_datadir}/elementary/objects/
 
 %if ! %dbus_unavailable
 %files examples
@@ -158,6 +166,8 @@ install -m 0644 %SOURCE100 %{buildroot}%{_tmpfilesdir}/elementary.conf
 %manifest %{name}.manifest
 %defattr(-,root,root,-)
 %{_datadir}/applications/*
+%{_datadir}/elementary/images/*
+%{_datadir}/elementary/objects/*
 %{_bindir}/elementary_config
 %{_bindir}/elementary_test*
 %{_bindir}/elementary_codegen
@@ -173,3 +183,6 @@ install -m 0644 %SOURCE100 %{buildroot}%{_tmpfilesdir}/elementary.conf
 %{_libdir}/cmake/Elementary/ElementaryConfig.cmake
 %{_libdir}/cmake/Elementary/ElementaryConfigVersion.cmake
 /usr/share/eolian/include/elementary-*1/*.eot
+
+%files theme
+%{_datadir}/elementary/themes/*
