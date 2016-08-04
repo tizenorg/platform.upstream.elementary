@@ -1971,9 +1971,9 @@ _elm_colorselector_evas_object_smart_add(Eo *obj, Elm_Colorselector_Data *priv)
      CRI("Failed to set layout!");
 
    _create_colorpalette(obj);
-
-   _create_colorcomponents(obj);
    /* TIZEN_ONLY(20160722) : change default mode to enhance performance
+   _create_colorcomponents(obj);
+
    elm_layout_signal_emit(obj, "elm,state,both", "elm");
 
    priv->mode = ELM_COLORSELECTOR_BOTH;
@@ -2375,6 +2375,7 @@ _elm_colorselector_mode_set(Eo *obj, Elm_Colorselector_Data *sd, Elm_Colorselect
         break;
 
       case ELM_COLORSELECTOR_COMPONENTS:
+        _create_colorcomponents(obj);
         if (!elm_layout_content_set(obj, "elm.selector", sd->col_bars_area))
           elm_layout_content_set(obj, "selector", sd->col_bars_area);
         elm_layout_signal_emit(obj, "elm,state,components", "elm");
@@ -2383,6 +2384,7 @@ _elm_colorselector_mode_set(Eo *obj, Elm_Colorselector_Data *sd, Elm_Colorselect
         break;
 
       case ELM_COLORSELECTOR_BOTH:
+        _create_colorcomponents(obj);
         if (!elm_layout_content_set(obj, "elm.palette", sd->palette_box))
           elm_layout_content_set(obj, "palette", sd->palette_box);
         if (!elm_layout_content_set(obj, "elm.selector", sd->col_bars_area))
@@ -2401,6 +2403,7 @@ _elm_colorselector_mode_set(Eo *obj, Elm_Colorselector_Data *sd, Elm_Colorselect
         break;
 
       case ELM_COLORSELECTOR_ALL:
+        _create_colorcomponents(obj);
         _create_colorpicker(obj);
         if (!elm_layout_content_set(obj, "elm.palette", sd->palette_box))
           elm_layout_content_set(obj, "palette", sd->palette_box);
