@@ -25,13 +25,13 @@ struct _Elm_Custom_Palette
                          as deprecated. */
 typedef enum
 {
-   ELM_COLORSELECTOR_PALETTE = 0, /**< only color palette is displayed */
+   ELM_COLORSELECTOR_PALETTE = 0, /**< only color palette is displayed, default */
    ELM_COLORSELECTOR_COMPONENTS, /**< only color selector is displayed */
-   ELM_COLORSELECTOR_BOTH, /**< Both Palette and selector is displayed, default */
+   ELM_COLORSELECTOR_BOTH, /**< Both Palette and selector is displayed */
    ELM_COLORSELECTOR_PICKER, /**< only color picker is displayed */
    ELM_COLORSELECTOR_PLANE, /**< @deprecated This mode is not supported. If you use this, nothing will be shown */
    ELM_COLORSELECTOR_PALETTE_PLANE, /**< @deprecated This mode is not supported. If you use this, it will be shown same with ELM_COLORSELECTOR_PALETTE mode */
-   ELM_COLORSELECTOR_ALL /**< all possible color selector is displayed */
+   ELM_COLORSELECTOR_ALL /**< @deprecated This mode is not supported. If you use this, it will be shown same with ELM_COLORSELECTOR_PALETTE mode */
 } Elm_Colorselector_Mode;
 /* END */
 

@@ -62,6 +62,7 @@ class Elm.Colorselector (Elm.Layout, Elm_Interface_Atspi_Widget_Action,
             [[Set Colorselector's mode.
 
               Colorselector supports three modes palette only, selector only and both.
+              Only palette mode is supported in Tizen 3.0.
             ]]
          }
          get {
